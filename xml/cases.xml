@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <global>
+        <logfileRootDir>TestResults</logfileRootDir>
+        <defaultSnapshot>ICABase</defaultSnapshot>
+        <email>
+            <recipients>
+                <to>myboss@mycompany.com</to>
+                <to>myself@mycompany.com</to>
+            </recipients>
+            <sender>myself@mycompany.com</sender>
+            <subject>ESX Automation Test</subject>
+            <smtpServer>mysmtphost.mycompany.com</smtpServer>
+        </email>
+    </global>
+
+    <testSuites>
+        <suite>
+            <suiteName>open_vm_tools</suiteName>
+            <suiteTests>
+                <suiteTest>check_pam_unix2</suiteTest>
+            </suiteTests>
+        </suite>
+    </testSuites>
+
+    <testCases>
+        <test>
+            <testName>check_pam_unix2</testName>
+            <testScript>ovt_check_pam_unix2.sh</testScript>
+            <files>remote-scripts/ovt_check_pam_unix2.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testparams>
+                <param>TC_COVERED=ESX-OVT-001</param>
+            </testparams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+    </testCases>
+
+    <VMs>
+	    <vm>
+            <hvServer>ESXI_HOST_IPADDRESS</hvServer>
+            <vmName>VM_NAME</vmName>
+            <os>Linux</os>
+            <ipv4></ipv4>
+            <sshKey>id_rsa.ppk</sshKey>
+            <suite>open_vm_tools</suite>
+        </vm>
+    </VMs>
+
+</config>
