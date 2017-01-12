@@ -23,6 +23,7 @@
 ## v1.1 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
 ## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
 ##                              disconnecting VCenter server functions.
+## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
 ###############################################################################
 
 <#
@@ -218,7 +219,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         return $null
     }
 
-    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -hs 'Ubuntu\|SUSE\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux Server [0-9]\.[0-9]\|Oracle' /etc/{issue,*release,*version}"
+    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -hs 'Ubuntu\|SUSE\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux Server release [0-9]\.[0-9]\|Oracle' /etc/{issue,*release,*version}"
     if (-not $distro)
     {
         Write-Error -Message "Return value is null" -Category InvalidData -ErrorAction SilentlyContinue
@@ -244,10 +245,10 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         "*Debian*"  {  $LinuxDistro = "Debian"
                        break
                     }
-        "*Red Hat Enterprise Linux Server 7.*" {  $linuxDistro = "RedHat7"
+        "*Red Hat Enterprise Linux Server release 7.*" {  $linuxDistro = "RedHat7"
                        break
                     }
-        "*Red Hat Enterprise Linux Server 6.*" {  $linuxDistro = "RedHat6"
+        "*Red Hat Enterprise Linux Server release 6.*" {  $linuxDistro = "RedHat6"
                        break
                     }
         "*Oracle*" {  $linuxDistro = "Oracle"
@@ -1010,4 +1011,59 @@ function RunRemoteScript($remoteScript)
     del runtest.sh -ErrorAction "SilentlyContinue"
 
     return $retValue
+}
+
+#######################################################################
+#
+# Check modules in vm.
+#
+#######################################################################
+function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
+{
+    <#
+    .Synopsis
+        Use SSH to check module in a Linux VM.
+    .Description
+        Use SSH to check module in a Linux VM.
+    .Parameter ipv4
+        IPv4 address of the VM the module is to be checked.
+    .Parameter sshKey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\Ssh
+    .Parameter module
+        Module name to be checked in linux VM.
+    .Example
+        CheckModule "192.168.1.101" "lisa_id_rsa.ppk" "vmxnet3"
+    #>
+
+    if (-not $ipv4)
+    {
+        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $sshKey)
+    {
+        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $module)
+    {
+        Write-Error -Message "module name is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+    # get around plink questions
+    echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+
+    $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
+    if ( $vm_module.Trim() -eq $module.Trim() )
+    {
+        return $True
+    }
+    else
+    {
+        return $False
+    }
+
 }
