@@ -2,46 +2,39 @@
 
 ###############################################################################
 ##
-## .____    .___  _________   _____            ___________ _____________  ___
-## |    |   |   |/   _____/  /  _  \           \_   _____//   _____/\   \/  /
-## |    |   |   |\_____  \  /  /_\  \   ______  |    __)_ \_____  \  \     / 
-## |    |___|   |/        \/    |    \ /_____/  |        \/        \ /     \ 
-## |_______ \___/_______  /\____|__  /         /_______  /_______  //___/\  \
-##         \/           \/         \/                  \/        \/       \_/
+## ___________ _____________  ___         .____    .___  _________   _____   
+## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
+##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
+##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
+## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
+##         \/        \/       \_/                 \/           \/         \/ 
 ##
 ###############################################################################
 ## 
-## Based on github.com/LIS/lis-test project, make it work with VMware 
-## ESX testing.
-## 
-## All rights reserved. 
-## Licensed under the Apache License, Version 2.0 (the ""License"");
-## you may not use this file except in compliance with the License.
-## You may obtain a copy of the License at
-##     http://www.apache.org/licenses/LICENSE-2.0  
-##
-## THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
-## OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
-## ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
-## PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
-##
-## See the Apache Version 2.0 License for specific language governing
-## permissions and limitations under the License.
+## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
+## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
+## aspects of vSphere maagement, including network, storage, VM, guest OS and 
+## more. This framework automates the tasks required to test the 
+## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
+## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
+## 
 ###############################################################################
 
-# Description:
-#
-# This script contains all distro-specific functions, as well as other common functions
-# used in the LIS test scripts.
-# Private variables used in scripts should use the __VAR_NAME notation. Using the bash built-in
-# `declare' statement also restricts the variable's scope. Same for "private" functions.
-#
-###########################################################################################
+###############################################################################
+## 
+## Description:
+## This script contains all distro-specific functions, as well as other common 
+## functions used in the LIS test scripts.
+## Private variables used in scripts should use the __VAR_NAME notation. Using 
+## the bash built-in `declare' statement also restricts the variable's scope. 
+## Same for "private" functions.
+##
+###############################################################################
 
 # Set IFS to space\t\n
 IFS=$' \t\n'

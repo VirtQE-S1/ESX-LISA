@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <suiteName>open_vm_tools</suiteName>
+            <suiteName>esx_automation_cases</suiteName>
             <suiteTests>
                 <suiteTest>check_pam_unix2</suiteTest>
             </suiteTests>
@@ -45,8 +45,8 @@
             <vmName>VM_NAME</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
-            <sshKey>id_rsa.ppk</sshKey>
-            <suite>open_vm_tools</suite>
+            <sshKey>demo_id_rsa.ppk</sshKey>
+            <suite>esx_automation_cases</suite>
         </vm>
     </VMs>
 
