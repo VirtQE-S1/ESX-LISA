@@ -1,19 +1,29 @@
 ###############################################################################
 ##
-## ___________ _____________  ___         .____    .___  _________   _____   
-## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
-##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
-##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
-## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
-##         \/        \/       \_/                 \/           \/         \/ 
+## .____    .___  _________   _____            ___________ _____________  ___
+## |    |   |   |/   _____/  /  _  \           \_   _____//   _____/\   \/  /
+## |    |   |   |\_____  \  /  /_\  \   ______  |    __)_ \_____  \  \     /
+## |    |___|   |/        \/    |    \ /_____/  |        \/        \ /     \
+## |_______ \___/_______  /\____|__  /         /_______  /_______  //___/\  \
+##         \/           \/         \/                  \/        \/       \_/
 ##
 ###############################################################################
-## 
-## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
-## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
-## aspects of vSphere maagement, including network, storage, VM, guest OS and 
-## more. This framework automates the tasks required to test the 
-## Redhat Enterprise Linux Server on WMware ESX Server.
+##
+## Fork from github.com/LIS/lis-test, make it work with VMware ESX testing
+##
+## All rights reserved.
+## Licensed under the Apache License, Version 2.0 (the ""License"");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
+##     http://www.apache.org/licenses/LICENSE-2.0
+##
+## THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+## OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
+## ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
+## PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
+##
+## See the Apache Version 2.0 License for specific language governing
+## permissions and limitations under the License.
 ##
 ###############################################################################
 ##
@@ -23,6 +33,7 @@
 ## v1.1 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
 ## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
 ##                              disconnecting VCenter server functions.
+## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro
 ###############################################################################
 
 <#
@@ -67,9 +78,9 @@ function PowerCLIImport () {
 # Connect to VI Server
 #
 ###############################################################################
-function ConnectToVIServer ([string] $visIpAddr, 
-                            [string] $visUsername, 
-                            [string] $visPassword, 
+function ConnectToVIServer ([string] $visIpAddr,
+                            [string] $visUsername,
+                            [string] $visPassword,
                             [string] $visProtocol)
 {
     <#
@@ -142,17 +153,17 @@ function ConnectToVIServer ([string] $visIpAddr,
                          -Force | Out-Null
         if (-not $?)
         {
-            "Error : Cannot connect with vCenter with $visIpAddr " + 
+            "Error : Cannot connect with vCenter with $visIpAddr " +
             "address, $visProtocol protocol, username $visUsername, " +
             "and password $visPassword."
             exit
         }
-        "Debug : vCenter connected with " + 
+        "Debug : vCenter connected with " +
         "session id $($global:DefaultVIServer.SessionId)"
     }
     else
     {
-        "Info : vCenter connected already! " + 
+        "Info : vCenter connected already! " +
         "Session id: $($global:DefaultVIServer.SessionId)"
     }
 }
@@ -218,7 +229,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         return $null
     }
 
-    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -hs 'Ubuntu\|SUSE\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux Server [0-9]\.[0-9]\|Oracle' /etc/{issue,*release,*version}"
+    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -hs 'Ubuntu\|SUSE\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux Server release [0-9]\.[0-9]\|Oracle' /etc/{issue,*release,*version}"
     if (-not $distro)
     {
         Write-Error -Message "Return value is null" -Category InvalidData -ErrorAction SilentlyContinue
@@ -244,10 +255,10 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         "*Debian*"  {  $LinuxDistro = "Debian"
                        break
                     }
-        "*Red Hat Enterprise Linux Server 7.*" {  $linuxDistro = "RedHat7"
+        "*Red Hat Enterprise Linux Server release 7.*" {  $linuxDistro = "RedHat7"
                        break
                     }
-        "*Red Hat Enterprise Linux Server 6.*" {  $linuxDistro = "RedHat6"
+        "*Red Hat Enterprise Linux Server release 6.*" {  $linuxDistro = "RedHat6"
                        break
                     }
         "*Oracle*" {  $linuxDistro = "Oracle"
@@ -455,7 +466,7 @@ function GenerateIpv4($tempipv4, $oldipv4)
     [int]$i= $null
     [int]$check = $null
     if ($oldipv4 -eq $null){
-        [int]$octet = 102   
+        [int]$octet = 102
     }
     else {
         $oldIpPart = $oldipv4.Split(".")
@@ -634,7 +645,7 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
     .Parameter server
         Name of the server hosting the VM.
     .Parameter timeout
-        Timeout in seconds to wait for the VM to enter Off state
+        Timeout in seconds to wait for the VM to enter a Hyper-V Off state
     .Parameter sshKey
         Name of the SSH key file to use.  Note this function assumes the
         ssh key a directory with a relative path of .\Ssh
@@ -817,9 +828,9 @@ function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout
 {
     <#
     .Synopsis
-        Wait for a VM to enter the Off state.
+        Wait for a VM to enter the Hyper-V Off state.
     .Description
-        Wait for a VM to enter the Off state
+        Wait for a VM to enter the Hyper-V Off state
     .Parameter vmName
         Name of the VM that is stopping.
     .Parameter hvSesrver
@@ -829,6 +840,7 @@ function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout
     .Example
         WaitForVMToStop "testVM" "localhost" 300
     a#>
+	[System.Reflection.Assembly]::LoadWithPartialName("Microsoft.HyperV.PowerShell")
     $tmo = $timeout
     while ($tmo -gt 0)
     {
@@ -1010,4 +1022,59 @@ function RunRemoteScript($remoteScript)
     del runtest.sh -ErrorAction "SilentlyContinue"
 
     return $retValue
+}
+
+#######################################################################
+#
+# Check modules in vm.
+#
+#######################################################################
+function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
+{
+    <#
+    .Synopsis
+        Use SSH to check module in a Linux VM.
+    .Description
+        Use SSH to check module in a Linux VM.
+    .Parameter ipv4
+        IPv4 address of the VM the module is to be checked.
+    .Parameter sshKey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\Ssh
+    .Parameter module
+        Module name to be checked in linux VM.
+    .Example
+        CheckModule "192.168.1.101" "lisa_id_rsa.ppk" "vmxnet3"
+    #>
+
+    if (-not $ipv4)
+    {
+        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $sshKey)
+    {
+        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $module)
+    {
+        Write-Error -Message "module name is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+    # get around plink questions
+    echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+
+    $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
+    if ( $vm_module.Trim() -eq $module.Trim() )
+    {
+        return $True
+    }
+    else
+    {
+        return $False
+    }
+
 }
