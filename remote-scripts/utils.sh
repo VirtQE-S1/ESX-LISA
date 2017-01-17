@@ -2,19 +2,19 @@
 
 ###############################################################################
 ##
-## ___________ _____________  ___         .____    .___  _________   _____   
-## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
-##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
+## ___________ _____________  ___         .____    .___  _________   _____
+## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
+##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
-##         \/        \/       \_/                 \/           \/         \/ 
+##         \/        \/       \_/                 \/           \/         \/
 ##
 ###############################################################################
-## 
-## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
-## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
-## aspects of vSphere maagement, including network, storage, VM, guest OS and 
-## more. This framework automates the tasks required to test the 
+##
+## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
+## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
+## aspects of vSphere maagement, including network, storage, VM, guest OS and
+## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
 ###############################################################################
@@ -22,16 +22,16 @@
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
-## 
+##
 ###############################################################################
 
 ###############################################################################
-## 
+##
 ## Description:
-## This script contains all distro-specific functions, as well as other common 
+## This script contains all distro-specific functions, as well as other common
 ## functions used in the LIS test scripts.
-## Private variables used in scripts should use the __VAR_NAME notation. Using 
-## the bash built-in `declare' statement also restricts the variable's scope. 
+## Private variables used in scripts should use the __VAR_NAME notation. Using
+## the bash built-in `declare' statement also restricts the variable's scope.
 ## Same for "private" functions.
 ##
 ###############################################################################
@@ -297,6 +297,20 @@ GetDistro()
 	esac
 
 	return 0
+}
+
+#Checks if "Call Trace" message appears in the system logs
+CheckCallTrace()
+{
+	while true; do
+		[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
+		content=$(grep -i "Call Trace" $logfile)
+		if [[ -n $content ]]; then
+			LogMsg "Warning: System get Call Trace in $logfile"
+			echo "Warning: System get Call Trace in $logfile" >> ~/summary.log
+			break
+		fi
+	done
 }
 
 # Function to get all synthetic network interfaces
