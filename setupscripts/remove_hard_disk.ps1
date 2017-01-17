@@ -1,31 +1,13 @@
 ###############################################################################
 ##
-## All rights reserved.
-## Licensed under the Apache License, Version 2.0 (the ""License"");
-## you may not use this file except in compliance with the License.
-## You may obtain a copy of the License at
-##     http://www.apache.org/licenses/LICENSE-2.0
-##
-## THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
-## OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
-## ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
-## PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
-##
-## See the Apache Version 2.0 License for specific language governing
-## permissions and limitations under the License.
-##
+## Description:
+##   This script will remove hard disk from VM
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - xuli - 01/16/2017 - Draft script for remove hard disk.
 ##
 ###############################################################################
-##
-## Description:
-##    This script will remove hard disk from VM
-##
-###############################################################################
-
 <#
 .Synopsis
     This script will remove hard disk from VM.
@@ -42,7 +24,6 @@
     semicolons. The testParams for this script identify disk
     type, size, format
 
-
     A typical XML definition for this test case would look similar
     to the following:
 
@@ -50,7 +31,8 @@
         <testName>HotAdd_SCSI_Dynamic</testName>
         <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
         <testScript>stor_lis_disk.sh</testScript>
-        <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh </files>
+        <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
+        remote-scripts/stor_utils.sh </files>
         <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
         <timeout>18000</timeout>
         <testparams>
