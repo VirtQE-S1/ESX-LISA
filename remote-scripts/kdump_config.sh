@@ -1,72 +1,78 @@
 #!/bin/bash
 
-########################################################################
-#
-# Linux on Hyper-V and Azure Test Code, ver. 1.0.0
-# Copyright (c) Microsoft Corporation
-#
-# All rights reserved.
-# Licensed under the Apache License, Version 2.0 (the ""License"");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
-# OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
-# ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
-# PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
-#
-# See the Apache Version 2.0 License for specific language governing
-# permissions and limitations under the License.
-#
-########################################################################
+###############################################################################
+## 
+## Description:
+##   Config kdump.conf and grub.conf
+##   Config kdump.conf and grub.conf based on requirment
+## 
+###############################################################################
+##
+## Revision:
+## v1.0 - boyang - 18/01/2017 - Build script.
+##
+###############################################################################
 
-ICA_TESTRUNNING="TestRunning"
-ICA_TESTABORTED="TestAborted"
-
-kdump_conf=/etc/kdump.conf
-dump_path=/var/crash
-sys_kexec_crash=/sys/kernel/kexec_crash_loaded
-kdump_sysconfig=/etc/sysconfig/kdump
+dos2unix utils.sh
 
 #
-# Functions definitions
+# Source utils.sh
 #
-LogMsg()
-{
-    # To add the time-stamp to the log file
-    echo `date "+%a %b %d %T %Y"` ": ${1}"
+. utils.sh || {
+    echo "Error: unable to source utils.sh!"
+    exit 1
 }
 
-UpdateTestState()
-{
-    echo $1 >> ~/state.txt
-}
-
-#######################################################################
 #
-# LinuxRelease()
+# Source constants file and initialize most common variables
 #
-#######################################################################
-LinuxRelease()
-{
-    DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux" /etc/{issue,*release,*version}`
+UtilsInit
 
-    case $DISTRO in
-        *buntu*)
-            echo "UBUNTU";;
-        Fedora*)
-            echo "FEDORA";;
-        CentOS*)
-            echo "CENTOS";;
-        *SUSE*)
-            echo "SLES";;
-        *Red*Hat*)
-            echo "RHEL";;
-        Debian*)
-            echo "DEBIAN";;
-    esac
-}
+###############################################################################
+##
+## Notice:
+##
+###############################################################################
+
+kdump_conf="/etc/kdump.conf"
+dump_path="/var/crash"
+sys_kexec_crash="/sys/kernel/kexec_crash_loaded"
+kdump_sysconfig="/etc/sysconfig/kdump"
+grub_conf=""
+
+
+# Based on DISTRO to modify grub.conf and kdump.conf
+case $DISTRO in 
+	redhat_6)
+		echo "DISTRO is $DISTRO, both BIOS and EFI mode will modify /etc/grub.conf"
+		grub_conf="/etc/grub.conf"
+		if [ -f $grub_conf ]
+		then
+			LogMsg "PASS. Find out grub file in VM."
+			UpdateSummary "PASS. Find out grub file in VM."
+
+			echo "Start to modify $grub_conf......"
+		else
+			LogMsg "Failed. Can't find out grub file or not a file."
+			UpdateSummary "Failed. Can't find out grub file in VM."
+			SetTestStateFailed
+		fi
+	redhat_7)
+		echo "DISTRO is $DISTRO, both BIOS and EFI mode will modify /etc/default/grub"
+		grub_conf="/etc/default/grub"
+		if [ -f $grub_conf ]
+		then
+			LogMsg "PASS. Find out grub file in VM."
+			UpdateSummary "PASS. Find out grub file in VM."
+
+			echo "Start to modify $grub_conf......"
+		else
+			LogMsg "Failed. Can't find out grub file or not a file."
+			UpdateSummary "Failed. Can't find out grub file in VM."
+			SetTestStateFailed
+		fi
+
+esac
 
 #######################################################################
 #
@@ -224,118 +230,6 @@ ConfigRhel()
     fi
 }
 
-
-#######################################################################
-#
-# ConfigSles()
-#
-#######################################################################
-ConfigSles()
-{
-    LogMsg "Configuring kdump (Sles)..."
-    echo "Configuring kdump (Sles)..." >> summary.log
-
-    if [[ -d /boot/grub2 ]]; then
-        if grep -iq "crashkernel=" /etc/default/grub
-        then
-            sed -i "s/crashkernel=218M-:109M/crashkernel=$crashkernel/g" /etc/default/grub
-        else
-            sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/GRUB_CMDLINE_LINUX_DEFAULT=\"crashkernel=$crashkernel /g" /etc/default/grub
-        fi
-        grep -iq "crashkernel=$crashkernel" /etc/default/grub
-        if [ $? -ne 0 ]; then
-            LogMsg "ERROR: Could not set the new crashkernel value in /etc/default/grub."
-            echo "ERROR: Could not set the new crashkernel value in /etc/default/grub." >> ~/summary.log
-            UpdateTestState "TestAborted"
-            exit 2
-        else
-            LogMsg "Success: updated the crashkernel value to: $crashkernel."
-            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
-        fi
-        grub2-mkconfig -o /boot/grub2/grub.cfg
-    fi
-
-    if [[ -d /boot/grub ]]; then
-        if grep -iq "crashkernel=" /boot/grub/menu.lst
-        then
-            sed -i "s/crashkernel=218M-:109M/crashkernel=$crashkernel/g" /boot/grub/menu.lst
-        else
-            sed -i "s/rootdelay=300/rootdelay=300 crashkernel=$crashkernel/g" /boot/grub/menu.lst
-        fi
-        grep -iq "crashkernel=$crashkernel" /boot/grub/menu.lst
-        if [ $? -ne 0 ]; then
-            LogMsg "ERROR: Could not configure set the new crashkernel value in /etc/default/grub."
-            echo "ERROR: Could not configure set the new crashkernel value in /etc/default/grub." >> ~/summary.log
-            UpdateTestState "TestAborted"
-            exit 2
-        else
-            LogMsg "Success: updated the crashkernel value to: $crashkernel."
-            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
-        fi
-    fi
-
-    LogMsg "Enabling kdump"
-    echo "Enabling kdump" >> ~/summary.log
-    chkconfig boot.kdump on
-    if [ $? -ne 0 ]; then
-        systemctl enable kdump.service
-        if [ $? -ne 0 ]; then
-            LogMsg "ERROR: FAILED to enable kdump."
-            echo "ERROR: FAILED to enable kdump." >> ~/summary.log
-            UpdateTestState "TestAborted"
-            exit 1
-        else
-            LogMsg "Success: kdump enabled."
-            echo "Success: kdump enabled." >> ~/summary.log
-        fi
-    else
-        LogMsg "Success: kdump enabled."
-        echo "Success: kdump enabled." >> ~/summary.log
-    fi
-}
-
-#######################################################################
-#
-# ConfigUbuntu()
-#
-#######################################################################
-ConfigUbuntu()
-{
-    LogMsg "Configuring kdump (Ubuntu)..."
-    echo "Configuring kdump (Ubuntu)..." >> summary.log
-    sed -i 's/USE_KDUMP=0/USE_KDUMP=1/g' /etc/default/kdump-tools
-    grep -q "USE_KDUMP=1" /etc/default/kdump-tools
-    if [ $? -ne 0 ]; then
-        LogMsg "ERROR: kdump-tools are not existent or cannot be modified."
-        echo "ERROR: kdump-tools are not existent or cannot be modified." >> summary.log
-        UpdateTestState "TestAborted"
-        exit 1
-    fi
-    sed -i "s/crashkernel=\S*/crashkernel=$crashkernel/g" /boot/grub/grub.cfg
-    grep -q "crashkernel=$crashkernel" /boot/grub/grub.cfg
-    if [ $? -ne 0 ]; then
-        LogMsg "WARNING: Could not configure set the new crashkernel value in /etc/default/grub. Maybe the default value is wrong. We try other configure."
-        echo "WARNING: Could not configure set the new crashkernel value in /etc/default/grub. Maybe the default value is wrong. We try other configure." >> summary.log
-
-        sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/GRUB_CMDLINE_LINUX_DEFAULT=\"crashkernel=$crashkernel /g" /etc/default/grub
-        grep -q "crashkernel=$crashkernel" /etc/default/grub
-        if [ $? -ne 0 ]; then
-            LogMsg "ERROR: Failed to configure the new crashkernel."
-            echo "ERROR: Failed to configure the new crashkernel." >> summary.log
-            UpdateTestState "TestAborted"
-            exit 2
-        else
-            update-grub
-            LogMsg "Succesfully updated the crashkernel value to: $crashkernel."
-            echo "Succesfully updated the crashkernel value to: $crashkernel." >> summary.log
-        fi
-    else
-        LogMsg "Success: updated the crashkernel value to: $crashkernel."
-        echo "Success: updated the crashkernel value to: $crashkernel." >> summary.log
-    fi
-    sed -i 's/LOAD_KEXEC=true/LOAD_KEXEC=false/g' /etc/default/kexec
-
-}
 
 #######################################################################
 #
