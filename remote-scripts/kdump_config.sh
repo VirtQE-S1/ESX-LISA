@@ -147,7 +147,7 @@ ConfigRhel()
         echo path $dump_path >> $kdump_conf
         LogMsg "Success: Updated the path to /var/crash."
         echo "Success: Updated the path to /var/crash." >> summary.log
-    fi  
+    fi
 
     sed -i '/^default/ s/default/#default/g' $kdump_conf
     if [ $? -ne 0 ]; then
@@ -159,7 +159,7 @@ ConfigRhel()
         echo 'default reboot' >>  $kdump_conf
         LogMsg "Success: Updated the default behaviour to reboot."
         echo "Success: Updated the default behaviour to reboot." >> summary.log
-    fi 
+    fi
 
     if [[ -z "$os_RELEASE" ]]; then
         GetOSVersion
@@ -168,7 +168,7 @@ ConfigRhel()
     if [[ $os_RELEASE =~ ^5.* ]] || [[ $os_RELEASE =~ ^6.[0-2] ]] ; then
         RhelExtraSettings
     fi
-    
+
     if [[ -d /boot/grub2 ]]; then
         LogMsg "Update grub"
         if grep -iq "crashkernel=" /etc/default/grub
@@ -185,7 +185,7 @@ ConfigRhel()
             exit 2
         else
             LogMsg "Success: updated the crashkernel value to: $crashkernel."
-            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log    
+            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
         fi
         grub2-mkconfig -o /boot/grub2/grub.cfg
     else
@@ -204,7 +204,7 @@ ConfigRhel()
                 exit 2
             else
                 LogMsg "Success: updated the crashkernel value to: $crashkernel."
-                echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log   
+                echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
             fi
         fi
     fi
@@ -220,7 +220,7 @@ ConfigRhel()
         exit 1
     else
         LogMsg "Success: kdump enabled."
-        echo "Success: kdump enabled." >> ~/summary.log     
+        echo "Success: kdump enabled." >> ~/summary.log
     fi
 }
 
@@ -250,7 +250,7 @@ ConfigSles()
             exit 2
         else
             LogMsg "Success: updated the crashkernel value to: $crashkernel."
-            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log   
+            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
         fi
         grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
@@ -270,7 +270,7 @@ ConfigSles()
             exit 2
         else
             LogMsg "Success: updated the crashkernel value to: $crashkernel."
-            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log   
+            echo "Success: updated the crashkernel value to: $crashkernel." >> ~/summary.log
         fi
     fi
 
@@ -290,7 +290,7 @@ ConfigSles()
         fi
     else
         LogMsg "Success: kdump enabled."
-        echo "Success: kdump enabled." >> ~/summary.log        
+        echo "Success: kdump enabled." >> ~/summary.log
     fi
 }
 
@@ -309,7 +309,7 @@ ConfigUbuntu()
         LogMsg "ERROR: kdump-tools are not existent or cannot be modified."
         echo "ERROR: kdump-tools are not existent or cannot be modified." >> summary.log
         UpdateTestState "TestAborted"
-        exit 1    
+        exit 1
     fi
     sed -i "s/crashkernel=\S*/crashkernel=$crashkernel/g" /boot/grub/grub.cfg
     grep -q "crashkernel=$crashkernel" /boot/grub/grub.cfg
@@ -328,7 +328,7 @@ ConfigUbuntu()
             update-grub
             LogMsg "Succesfully updated the crashkernel value to: $crashkernel."
             echo "Succesfully updated the crashkernel value to: $crashkernel." >> summary.log
-        fi    
+        fi
     else
         LogMsg "Success: updated the crashkernel value to: $crashkernel."
         echo "Success: updated the crashkernel value to: $crashkernel." >> summary.log
@@ -344,6 +344,7 @@ ConfigUbuntu()
 #######################################################################
 UpdateTestState $ICA_TESTRUNNING
 crashkernel=$1
+touch kdump_config.sh_is_executed
 
 cd ~
 # Delete any old summary.log file
@@ -363,7 +364,7 @@ dos2unix utils.sh
 }
 
 #
-# Checking the negotiated VMBus version 
+# Checking the negotiated VMBus version
 #
 vmbus_string=`dmesg | grep "Vmbus version:3.0"`
 
@@ -389,7 +390,7 @@ case $distro in
             exit 2
         else
             ConfigUbuntu
-        fi    
+        fi
     ;;
     "SLES")
         if [ "$crashkernel" == "auto" ]; then
@@ -397,7 +398,7 @@ case $distro in
             echo "WARNING: crashkernel=auto doesn't work for SLES. Please use this pattern: crashkernel=X@Y." >> ~/summary.log
             UpdateTestState $ICA_TESTABORTED
             exit 2
-        else    
+        else
             ConfigSles
         fi
     ;;
@@ -406,7 +407,7 @@ case $distro in
         LogMsg "${msg}"
         echo "${msg}" >> ~/summary.log
         ConfigRhel
-    ;; 
+    ;;
 esac
 
 # Cleaning up any previous crash dump files
