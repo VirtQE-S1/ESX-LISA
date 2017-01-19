@@ -295,7 +295,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
             }
             else
             {
-                LogMsg 0 "Error: Test suite $($ts.name) does not have any tests"
+                LogMsg 0 "Error: Test suite $($suite.suiteName) does not have any tests"
                 return $done
             }
             break
