@@ -1,20 +1,8 @@
 ###############################################################################
 ##
-## Fork from github.com/LIS/lis-test, make it work with VMware ESX testing
-##
-## All rights reserved.
-## Licensed under the Apache License, Version 2.0 (the ""License"");
-## you may not use this file except in compliance with the License.
-## You may obtain a copy of the License at
-##     http://www.apache.org/licenses/LICENSE-2.0
-##
-## THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
-## OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
-## ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
-## PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
-##
-## See the Apache Version 2.0 License for specific language governing
-## permissions and limitations under the License.
+## Description:
+##  Push and execute kdump_config.sh, kdump_execute.sh, kdump_results.sh in VM
+##  Trigger kdump successfully and get vmcore
 ##
 ###############################################################################
 ##
@@ -27,13 +15,6 @@
 ##
 ###############################################################################
 
-###############################################################################
-##
-## Description:
-##  Push and execute kdump_config.sh, kdump_execute.sh, kdump_results.sh in VM
-##  Trigger kdump successfully and get vmcore
-##
-###############################################################################
 <#
 .Synopsis
     Trigger target VM kdump.
@@ -160,20 +141,15 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 ###############################################################################
 #
-# Put your test script here
-# NOTES:
-# 1. Please check testParams first according to your case requirement
-# 2. Please close VI Server connection at the end of your test but
-#    before return cmdlet by useing function - DisconnectWithVIServer
+# Main Body
 #
 ###############################################################################
 
 #
-# Sending required scripts to VM for generating kernel panic with appropriate permissions
+# Send kdump_config.sh script to VM for configuring kdump.conf and grub.conf
 #
 Write-Host -F DarkGray "kdump.ps1: Start to send kdump_config.sh to VM......."
 $retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_config.sh" "/root/kdump_config.sh"
->>>>>>> origin/master
 if (-not $retVal)
 {
     Write-Output "Error: Failed to send kdump_config.sh to VM."
@@ -205,40 +181,41 @@ if (-not $retVal)
     return $false
 }
 Write-Output "Rebooting the VM."
+Write-host -F Green "kdump.ps1: Success: Reboot VM......."
 
 #
 # Waiting the VM to start up
 #
-Write-Output "Waiting the VM to have a connection..."
+Write-Output "Waiting the VM to have a connection."
 Write-Host -F DarkGray "kdump.ps1: Waiting the VM to have a connection......."
-#WaitForVMToStartSSH $ipv4 180 -> Will failed below function
+#WaitForVMToStartSSH $ipv4 180 ---> Seem it doesn't work, Will failed below function
 Start-Sleep -S 240
 
 #
 # Sending required scripts to VM for generating kernel panic with appropriate permissions
 #
-Write-Host -F DarkGray "kdump.ps1: Start to send kdump_execute.sh to VM......."
-$retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_execute.sh" "/root/kdump_execute.sh"
-if (-not $retVal)
-{
-    Write-Output "Error: Failed to send kdump_execute.sh to VM."
-    return $false
-}
-Write-Output "Success: Send kdump_execute.sh to VM."
-Write-host -F Green "kdump.ps1: Success: Send kdump_execute.sh to VM......."
+#Write-Host -F DarkGray "kdump.ps1: Start to send kdump_execute.sh to VM......."
+#$retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_execute.sh" "/root/kdump_execute.sh"
+#if (-not $retVal)
+#{
+#    Write-Output "Error: Failed to send kdump_execute.sh to VM."
+#    return $false
+#}
+#Write-Output "Success: Send kdump_execute.sh to VM."
+#Write-host -F Green "kdump.ps1: Success: Send kdump_execute.sh to VM......."
 
 #
 # SendCommandToVM: execute kdump_config.sh
 #
-Write-Host -F DarkGray "kdump.ps1: Start to execute kdump_execute.sh in VM......."
-$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
-if (-not $retVal)
-{
-    Write-Output "Error: Failed to execute kdump_execute.sh to VM."
-    return $false
-}
-Write-Output "Success: Execute kdump_execute.sh to VM."
-Write-host -F Green "kdump.ps1: Success: Execute kdump_execute.sh in VM......."
+#Write-Host -F DarkGray "kdump.ps1: Start to execute kdump_execute.sh in VM......."
+#$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
+#if (-not $retVal)
+#{
+#    Write-Output "Error: Failed to execute kdump_execute.sh to VM."
+#    return $false
+#}
+#Write-Output "Success: Execute kdump_execute.sh to VM."
+#Write-host -F Green "kdump.ps1: Success: Execute kdump_execute.sh in VM......."
 
 #
 # Get summary.log
