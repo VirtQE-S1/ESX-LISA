@@ -287,7 +287,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
 
     foreach ($suite in $xmlData.config.testSuites.suite)
     {
-        if ($suite.suiteName -eq $vm.suite)
+        if ($vm.suites.suite -contains $suite.suiteName)
         {
             if ($suite.suiteTests)
             {
