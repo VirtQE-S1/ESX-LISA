@@ -2452,7 +2452,7 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Test case may optionally create a summary.log.
     #
-    $summaryLog = "${testDir}\$($vm.vmName)__${currentTest}_summary.log"
+    $summaryLog = "${testDir}\$($vm.vmName)_${currentTest}_summary.log"
     del $summaryLog -ErrorAction "SilentlyContinue"
     GetFileFromVM $vm "summary.log" $summaryLog
     if (test-path $summaryLog)
