@@ -60,7 +60,7 @@
                 <param>crashkernel=256M@128M</param>
                 <param>TC_COVERED=ESX-KDUMP-002</param>
                 <param>VCPU=2</param>
-                <param>VMMemory=2GB</param>
+                <param>VMMemory=4GB</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>

@@ -109,6 +109,13 @@ Config_Kdump(){
 
 }
 
+###############################################################################
+##
+## Config_Grub()
+##  Based on $DISTRO, will confirm $grub_conf value to modify $crashkernel
+##
+###############################################################################
+
 Config_Grub(){
 		echo "DISTRO is $DISTRO, both BIOS and EFI mode will modify $grub_conf."
 		grub_conf=$1
@@ -193,3 +200,5 @@ else
 	LogMsg "WARNING: $dump_path doesn't esxit, will create it."	
 	UpdateSummary "WARNING: $dump_path doesn't esxit, will create it."	
 fi
+
+SetTestStateCompleted
