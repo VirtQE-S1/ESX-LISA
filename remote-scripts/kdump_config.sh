@@ -54,8 +54,8 @@ Config_Kdump(){
 		LogMsg "Start to modify $kdump_conf......."
 		UpdateSummary "Start to modify $kdump_conf......."
 		sed -i '/^path/ s/path/#path/g' $kdump_conf
-    		if [ $? -ne 0 ] 
-		then
+		grep -iq "^#path" $kdump_conf
+		if [ $? -ne 0 ]; then
 			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
 		       	UpdateSummary "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
         		SetTestStateFailed
@@ -68,16 +68,27 @@ Config_Kdump(){
 
 		# Modify default action as reboot after crash
 		sed -i '/^default/ s/default/#default/g' $kdump_conf
-		if [ $? -ne 0 ]
-		then
-			LogMsg "ERROR: Failed to comment default behaviour in /etc/kdump_conf. Probably kdump is not installed."
-			UpdateSummary "ERROR: Failed to comment default behaviour in /etc/kdump.conf. Probably kdump is not installed."
+		grep -iq "^#default" $kdump_conf
+		if [ $? -ne 0 ]; then
+			LogMsg "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
+		       	UpdateSummary "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
         		SetTestStateFailed
-			exit 1
+        		exit 1
 		else
-			echo 'default reboot' >>  $kdump_conf
-			LogMsg "Success: Updated the default behaviour to reboot."
-			UpdateSummary "Success: Updated the default behaviour to reboot."
+			echo "path $dump_path" >> $kdump_conf
+			LogMsg "Success: Updated the path to /var/crash."
+			UpdateSummary "Success: Updated the path to /var/crash."
+		fi
+
+		# Modify vmcore collection method and level
+		sed -i '/^core_collector/ s/core_collector/#core_collector/g' $kdump_conf
+		grep -iq "^#core_collector" $kdump_conf
+		if [ $? -ne 0 ]; then
+			echo "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
+        		exit 1
+		else
+			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
+			echo "Success: Updated vmcore collection method to makedumpfile."
 		fi
 
 	else
@@ -122,7 +133,7 @@ Config_Grub(){
 	
 }
 
-
+# Ensure script start to execute in /root
 cd ~
 
 # Both RHEL6 and RHEL7 set kdump.conf as the same rules
@@ -154,14 +165,22 @@ esac
 service kdump restart
 if [ $? -ne 0 ]
 then
-	LogMsg "FAILED: Could not restart kdump service."
-	UpdateSummary "FAILED: Could not restart kdump service."
+	LogMsg "FAILED: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
+	UpdateSummary "FAILED: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg "SUCCESS: Could restart kdump service well."
-	UpdateSummary "SUCCESS: Could restart kdump service well."
+	LogMsg "SUCCESS: Could restart kdump service well with new parameters."
+	UpdateSummary "SUCCESS: Could restart kdump service well with new parameters."
 fi
 
 # Cleaning up any previous crash dump files
-rm -rf /var/crash/*
+if [ -d $dump_path ]
+then
+	LogMsg "SUCCESS: $dump_path esxits, will clean up any vmcores."	
+	UpdateSummary "SUCCESS: $dump_path esxits, will clean up any vmcores."	
+	rm -rf $dump_path/*
+else
+	LogMsg "WARNING: $dump_path doesn't esxit, will create it."	
+	UpdateSummary "WARNING: $dump_path doesn't esxit, will create it."	
+fi
