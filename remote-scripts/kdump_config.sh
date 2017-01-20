@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ###############################################################################
-## 
+##
 ## Description:
 ##   Config kdump.conf and grub.conf
 ##   Config kdump.conf and grub.conf based on requirment
-## 
+##
 ###############################################################################
 ##
 ## Revision:
@@ -37,12 +37,21 @@ UtilsInit
 kdump_conf="/etc/kdump.conf"
 dump_path="/var/crash"
 
+# No matter BIOS or EFI, they have the same grub.conf in RHEL6
+# No matter BIOS or EFI, they have the same grub in RHEL7
 rhel6_grub="/etc/grub.conf"
 rhel7_grub="/etc/default/grub"
 
 grub_conf=""
 
 crashkernel=$1
+
+###############################################################################
+##
+## Config_Kdump()
+##  No matter VM is RHEL6 or RHEL7, will set the same rules for kdump.conf
+##
+###############################################################################
 
 Config_Kdump(){
 	if [ -f $kdump_conf ]
@@ -54,7 +63,7 @@ Config_Kdump(){
 		LogMsg "Start to modify $kdump_conf......."
 		UpdateSummary "Start to modify $kdump_conf......."
 		sed -i '/^path/ s/path/#path/g' $kdump_conf
-    		if [ $? -ne 0 ] 
+    		if [ $? -ne 0 ]
 		then
 			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
 		       	UpdateSummary "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
@@ -113,13 +122,13 @@ Config_Grub(){
 				LogMsg "Success: updated the crashkernel value to: $crashkernel."
 				UpdateSummary "Success: updated the crashkernel value to: $crashkernel."
 			fi
-			
+
 		else
 			LogMsg "Failed. Can't find out grub file or not a file."
 			UpdateSummary "Failed. Can't find out grub file in VM."
 			SetTestStateFailed
 		fi
-	
+
 }
 
 
@@ -129,7 +138,7 @@ cd ~
 Config_Kdump
 
 # Based on DISTRO to modify grub.conf or grub
-case $DISTRO in 
+case $DISTRO in
 	redhat_6)
 		$grub_conf=$rhel6_grub
 		Config_grub $grub_conf
