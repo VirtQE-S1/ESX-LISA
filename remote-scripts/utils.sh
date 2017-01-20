@@ -22,7 +22,7 @@
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
-##
+## v1.2 - xuli - 1/20/2017 - add call trace check function CheckCallTrace()
 ###############################################################################
 
 ###############################################################################
@@ -73,9 +73,6 @@ declare -a SYNTH_NET_INTERFACES
 
 # LEGACY_NET_INTERFACES is an array containing all legacy network interfaces found
 declare -a LEGACY_NET_INTERFACES
-
-
-
 
 
 ######################################## Functions ########################################
@@ -298,19 +295,19 @@ GetDistro()
 
 	return 0
 }
-
-#Checks if "Call Trace" message appears in the system logs
+# Function to checks if "Call Trace" message appears in the system logs
+# if have, return 1, else retun 0
 CheckCallTrace()
 {
-	while true; do
-		[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
-		content=$(grep -i "Call Trace" $logfile)
-		if [[ -n $content ]]; then
-			LogMsg "Warning: System get Call Trace in $logfile"
-			echo "Warning: System get Call Trace in $logfile" >> ~/summary.log
-			break
-		fi
-	done
+	[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
+	content=$(grep -i "Call Trace" $logfile)
+	if [[ -n $content ]]; then
+		LogMsg "Error: System get Call Trace in $logfile"
+		return 1
+	else
+		LogMsg "No Call Trace in $logfile"
+		return 0
+	fi
 }
 
 # Function to get all synthetic network interfaces

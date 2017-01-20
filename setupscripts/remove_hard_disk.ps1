@@ -100,18 +100,17 @@ while ($True)
             {
                 Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True
 
-            if ( -not $?)
-            {
-                Throw "Error : Cannot remove hard disk of the VM $vmName"
-                return $False
-            }
-            else
-            {
-                write-output " Done: remove disk"
-            }
-            Start-Sleep -s 1
-            # wait for name refresh, exit this loop and get the new disk list
-            break;
+                if ( -not $?)
+                {
+                    Throw "Error : Cannot remove hard disk of the VM $vmName"
+                    return $False
+                }
+                else
+                {
+                    write-output " Done: remove disk"
+                }
+                # exit this loop and get the new disk list
+                break;
             }
         }
     }

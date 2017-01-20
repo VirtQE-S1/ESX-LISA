@@ -9,18 +9,19 @@
 ##
 ## Revision:
 ## v1.0 - xuli - 09/01/2017 - Draft script for case stor_utils.sh
-##
+## v1.1 - xuli - 09/20/2017 - update function comment to inner function
 ###############################################################################
 
-###############################################################################
-# Description:
-#   Perform data integrity test by checksum
-# Parameters:
-# $1 : storage device name /dev/sdb
-# Return: 0 : if CheckIntegrity successfully, otherwise, return 1
-###############################################################################
 CheckIntegrity()
 {
+    ############################################################################
+    # Description:
+    #   Perform data integrity test by checksum
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # Return: 0 : if CheckIntegrity successfully, otherwise, return 1
+    ############################################################################
+
     targetDevice=$1
     testFile="/dev/shm/testsource"
     blockSize=$((32*1024*1024))
@@ -64,15 +65,15 @@ CheckIntegrity()
     return 0
 }
 
-###############################################################################
-# Description:
-#   Use fdisk /dev/sdb to create partition /dev/sdb1
-# Parameters:
-# $1 : storage device name /dev/sdb
-# Return: 0 : if fdisk successfully, otherwise, return 1
-###############################################################################
 DoFdisk()
 {
+    ############################################################################
+    # Description:
+    #   Use fdisk /dev/sdb to create partition /dev/sdb1
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # Return: 0 : if fdisk successfully, otherwise, return 1
+    ############################################################################
     local driveName=$1
 
     (echo d;echo;echo w)|fdisk $driveName
@@ -87,16 +88,17 @@ DoFdisk()
     fi
 }
 
-###############################################################################
-# Description:
-#   Make partition as target file system by mkfs
-# Parameters:
-# $1 : storage device name /dev/sdb
-# $2 : target file system type, e.g. ext3, ext4, xfs
-# Return: 0 : if mkfs successfully, otherwise, return 1
-###############################################################################
+
 DoMakeFs()
 {
+    ############################################################################
+    # Description:
+    #   Make partition as target file system by mkfs
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # $2 : target file system type, e.g. ext3, ext4, xfs
+    # Return: 0 : if mkfs successfully, otherwise, return 1
+    ############################################################################
     local driveName=$1
     local fs=$2
     # for xfs, if overwrite original file system, need to use -f
@@ -115,16 +117,17 @@ DoMakeFs()
     fi
   }
 
-###############################################################################
-# Description:
-#    mount /dev/sdb1 to mountpoint,e.g. /mnt
-# Parameters:
-# $1 : storage device name /dev/sdb
-# $2 : mountPoint, e.g. /mnt
-# Return: 0 : if mount successfully, otherwise, return 1
-###############################################################################
+
 DoMountFs()
 {
+    ############################################################################
+    # Description:
+    #    mount /dev/sdb1 to mountpoint,e.g. /mnt
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # $2 : mountPoint, e.g. /mnt
+    # Return: 0 : if mount successfully, otherwise, return 1
+    ############################################################################
     local driveName=$1
     local mountPoint=$2
     mount ${driveName}1 $mountPoint
@@ -137,18 +140,18 @@ DoMountFs()
     fi
 }
 
-###############################################################################
-# Description:
-# create file under by dd,#dd if=/dev/zero of=/mnt/Example/data bs=10M count=5
-# Parameters:
-# $1 : inFile
-# $2 : outFile
-# $3 : bs
-# $4 : count
-# Return: 0 : if dd file successfully, otherwise, return 1
-###############################################################################
 DoDDFile()
 {
+    ############################################################################
+    # Description:
+    # create file under by dd,dd if=/dev/zero of=/mnt/Example/data bs=10M count=5
+    # Parameters:
+    # $1 : inFile
+    # $2 : outFile
+    # $3 : bs
+    # $4 : count
+    # Return: 0 : if dd file successfully, otherwise, return 1
+    ############################################################################
     local inFile=$1
     local outFile=$2
     local bs=$3
@@ -164,17 +167,17 @@ DoDDFile()
     fi
 }
 
-###############################################################################
-# Description:
-#    umount mountpoint,e.g. /mnt
-# Parameters:
-# $1 : mountPoint, e.g. /mnt
-# $2 : boolean value for clean fs, if set as "true", will remove file under
-#      mountPoint, otherwise, will not clean file.
-# Return: 0 : if umount successfully, otherwise, return 1
-###############################################################################
 DoUMountFs()
 {
+    ############################################################################
+    # Description:
+    #    umount mountpoint,e.g. /mnt
+    # Parameters:
+    # $1 : mountPoint, e.g. /mnt
+    # $2 : boolean value for clean fs, if set as "true", will remove file under
+    #      mountPoint, otherwise, will not clean file.
+    # Return: 0 : if umount successfully, otherwise, return 1
+    ############################################################################
     local mountPoint=$1
     local cleanfs=$2
     umount $mountPoint
@@ -190,18 +193,18 @@ DoUMountFs()
     fi
 }
 
-###############################################################################
-# Description:
-#    check disk size by fdisk and compare with expected file size
-# Parameters:
-# $1 : storage device name /dev/sdb
-# $2 : expected disk size, this size must be bytes, when add 1G disk,
-#      1073741824 shows in fdisk
-#      dynamicDiskSize=$(($OriginalSizeGB*1024*1024*1024))
-# Return: 0 : if disk size is same with expected size, otherwise, return 1
-###############################################################################
 CheckDiskSize()
 {
+    ############################################################################
+    # Description:
+    #    check disk size by fdisk and compare with expected file size
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # $2 : expected disk size, this size must be bytes, when add 1G disk,
+    #      1073741824 shows in fdisk
+    #      dynamicDiskSize=$(($OriginalSizeGB*1024*1024*1024))
+    # Return: 0 : if disk size is same with expected size, otherwise, return 1
+    ############################################################################
     local driveName=$1
     local dynamicDiskSize=$2
 
@@ -222,21 +225,21 @@ CheckDiskSize()
     done
 }
 
-###############################################################################
-# Description:
-#   Count the number of SCSI= and IDE= entries in constants, then compare with
-#   /dev/sd* except /dev/sda.
-# Parameters:
-# $1 : storage device name /dev/sdb
-# $2 : expected disk size, this size must be bytes, when add 1G disk,
-#      1073741824 shows in fdisk
-#      dynamicDiskSize=$(($OriginalSizeGB*1024*1024*1024))
-# Return: 0 : if disk number in constant.sh is same with /dev/sd*,
-#        otherwise, return 1
-###############################################################################
 
 CheckDiskCount()
 {
+    ############################################################################
+    # Description:
+    #   Count the number of SCSI= and IDE= entries in constants, then compare
+    # with /dev/sd* except /dev/sda.
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # $2 : expected disk size, this size must be bytes, when add 1G disk,
+    #      1073741824 shows in fdisk
+    #      dynamicDiskSize=$(($OriginalSizeGB*1024*1024*1024))
+    # Return: 0 : if disk number in constant.sh is same with /dev/sd*,
+    #        otherwise, return 1
+    ############################################################################
     diskCount=0
     for entry in $(cat ./constants.sh)
     do
@@ -273,19 +276,18 @@ CheckDiskCount()
         return 0
     fi
 }
-###############################################################################
-# Description:
-#   Fdisk disk, and create a file system, mount, then create file on it, umount,
-#   CheckIntegrity
-# Parameters:
-# $1 : storage device name /dev/sdb
-# $2 : file system type
-
-# Return: 0 : test file system successfully, otherwise, return 1
-###############################################################################
 
 TestSingleFileSystem()
 {
+    ############################################################################
+    # Description:
+    #   Fdisk disk, and create a file system, mount, then create file on it,
+    # umount, CheckIntegrity
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # $2 : file system type
+    # Return: 0 : test file system successfully, otherwise, return 1
+    ############################################################################
     local driveName=$1
     local fs=$2
 
@@ -333,17 +335,17 @@ TestSingleFileSystem()
     fi
     return 0
  }
- ###############################################################################
- # Description:
- #   Call TestSingleFileSystem, do fdisk disk,create a file system, mount,
- # then create file on it, umount for multiple file systems,
- # Parameters:
- # $1 : file system array: e.g. (ext3, ext4, xfs)
- # Return: 0 : test file systems successfully, otherwise, return 1
- ###############################################################################
 
  TestMultiplFileSystems()
  {
+    ###########################################################################
+    # Description:
+    #   Call TestSingleFileSystem, do fdisk disk,create a file system, mount,
+    # then create file on it, umount for multiple file systems,
+    # Parameters:
+    # $1 : file system array: e.g. (ext3, ext4, xfs)
+    # Return: 0 : test file systems successfully, otherwise, return 1
+    ###########################################################################
     local fileSystems=("$@")
     for driveName in /dev/sd*[^0-9];
     do

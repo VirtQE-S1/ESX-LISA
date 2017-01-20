@@ -8,8 +8,8 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xuli - 09/01/2017 - Draft script for case stor_lis_disk.sh
-##
+## v1.0 - xuli - 01/09/2017 - Draft script for case stor_lis_disk.sh
+## v2.0 - xuli - 01/20/2017 - Update check call trace as final step
 ###############################################################################
 dos2unix utils.sh
 # Source utils.sh
@@ -62,12 +62,9 @@ else
     LogMsg "disk size check successfully "
 fi
 
-# Check for call trace log
-CheckCallTrace &
-
 # If does not define file system type, use ext3 as default.
-if  [ ! ${fileSystems} ];
-then fileSystems=(ext3 ext4 xfs)
+if  [ ! ${fileSystems} ];then
+    fileSystems=(ext3)
 fi
 TestMultiplFileSystems ${fileSystems[@]}
 if [ "$?" != "0" ]; then
@@ -78,6 +75,16 @@ if [ "$?" != "0" ]; then
 else
     UpdateSummary "Disk file test Successfully "
     LogMsg "Disk file test Successfully."
+
+fi
+# Check for call trace log
+CheckCallTrace
+if [ "$?" != "0" ]; then
+    UpdateSummary "Call trace exists during testing"
+    SetTestStateFailed
+    exit 1
+else
+    UpdateSummary "No call trace during testing"
     SetTestStateCompleted
     exit 0
 fi
