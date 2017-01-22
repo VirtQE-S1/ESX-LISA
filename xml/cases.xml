@@ -94,10 +94,7 @@
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suites>
-                    <suite>open_vm_tools</suite>
-                    <suite>general_operation</suite>
-            </suites>
+            <suite>esx_automation_cases</suite>
         </vm>
     </VMs>
 
