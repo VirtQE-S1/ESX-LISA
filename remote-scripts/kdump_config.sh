@@ -37,9 +37,11 @@ UtilsInit
 kdump_conf="/etc/kdump.conf"
 dump_path="/var/crash"
 
-# No matter BIOS or EFI, they have the same grub.conf in RHEL6
+# Re-write /etc/grub.conf, cant' update $crashkernel 
+# RHEL6 BIOS, re-write /boot/grub/grub.conf to update $crashkernel
+# RHEL6 EFI, re-write /boot/efi/EFI/redhat/grub.conf to update $crashkernel
+rhel6_grub=`find /boot/ -name "grub.conf"`
 # No matter BIOS or EFI, they have the same grub in RHEL7
-rhel6_grub="/etc/grub.conf"
 rhel7_grub="/etc/default/grub"
 
 grub_conf=""
@@ -84,20 +86,23 @@ Config_Kdump(){
         		SetTestStateFailed
         		exit 1
 		else
-			echo "path $dump_path" >> $kdump_conf
-			LogMsg "Success: Updated the path to /var/crash."
-			UpdateSummary "Success: Updated the path to /var/crash."
+			echo "default reboot" >> $kdump_conf
+			LogMsg "Success: Updated the default action reboot after kdump."
+			UpdateSummary "Success: Updated the default action reboot after kdump."
 		fi
 
 		# Modify vmcore collection method and level
 		sed -i '/^core_collector/ s/core_collector/#core_collector/g' $kdump_conf
 		grep -iq "^#core_collector" $kdump_conf
 		if [ $? -ne 0 ]; then
-			echo "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
+			LogMsg "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
+			UpdateSummary "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
+        		SetTestStateFailed
         		exit 1
 		else
 			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
-			echo "Success: Updated vmcore collection method to makedumpfile."
+			LogMsg "Success: Updated vmcore collection method to makedumpfile."
+			UpdateSummary "Success: Updated vmcore collection method to makedumpfile."
 		fi
 
 	else
@@ -158,11 +163,11 @@ Config_Kdump
 # Based on DISTRO to modify grub.conf or grub
 case $DISTRO in
 	redhat_6)
-		$grub_conf=$rhel6_grub
-		Config_grub $grub_conf
+		grub_conf=$rhel6_grub
+		Config_Grub $grub_conf
 	redhat_7)
 		$grub_conf=$rhel7_grub
-		Config_grub $grub_conf
+		Config_Grub $grub_conf
 
 		grub2-mkconfig -o /boot/grub2/grub.cfg
 		if [ $? -ne 0 ]
