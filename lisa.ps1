@@ -747,7 +747,7 @@ function RunTests ([String] $xmlFilename )
     
     $logFile = Join-Path -path $testDir -childPath $logFile
         
-    LogMsg 0 "LIS Automation script - version $lisaVersion"
+    LogMsg 0 "ESX-LISA - version $lisaVersion"
     LogMsg 4 "Info : Created directory: $testDir"
     LogMsg 4 "Info : Logfile =  $logfile"
     LogMsg 4 "Info : Using XML file:  $xmlFilename"

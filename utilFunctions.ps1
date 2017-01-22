@@ -44,23 +44,24 @@
 function PowerCLIImport () {
     <#
     .Description
-        Import vmware.vimautomation.core module if it does not exist.
+        Import VMware.VimAutomation.Core module if it does not exist.
     #>
-    $snapins = Get-PSSnapin
+    $modules = Get-Module
 
     $foundVimautomation = $False
-    foreach($snapin in $snapins)
+    foreach($module in $modules)
     {
-        if($snapin.Name -eq "vmware.vimautomation.core")
+        if($module.Name -eq "VMware.VimAutomation.Core")
         {
-            "Info: PowerCLI module vmware.vimautomation.core already exists."
+            "Info: PowerCLI module VMware.VimAutomation.Core already exists."
             $foundVimautomation = $True
+            break
         }
     }
 
     if (-not $foundVimautomation)
     {
-        Add-PSSnapin vmware.vimautomation.core
+        Import-Module VMware.VimAutomation.Core
     }
 }
 
@@ -295,7 +296,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
             }
             else
             {
-                LogMsg 0 "Error: Test suite $($ts.name) does not have any tests"
+                LogMsg 0 "Error: Test suite $($suite.suiteName) does not have any tests"
                 return $done
             }
             break
