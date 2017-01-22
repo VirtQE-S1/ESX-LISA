@@ -220,15 +220,15 @@ Write-host -F Green "kdump.ps1: Success: Execute kdump_execute.sh in VM......."
 #
 # Get summary.log
 #
-#Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
-#$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir
-#if (-not $retVal)
-#{
-#    Write-Output "Error: Failed to get summary.log from VM."
-#    return $false
-#}
-#Write-Output "Success: Get summary.log from VM."
-#Write-Host -F Green "kdump.ps1: Success: Get summary.log from VM......."
+Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
+$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir
+if (-not $retVal)
+{
+    Write-Output "Error: Failed to get summary.log from VM."
+    return $false
+}
+Write-Output "Success: Get summary.log from VM."
+Write-Host -F Green "kdump.ps1: Success: Get summary.log from VM......."
 
 #
 # Trigger the kernel panic
