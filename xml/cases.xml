@@ -16,9 +16,14 @@
 
     <testSuites>
         <suite>
-            <suiteName>esx_automation_cases</suiteName>
+            <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>check_pam_unix2</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <suiteName>general_operation</suiteName>
+            <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
