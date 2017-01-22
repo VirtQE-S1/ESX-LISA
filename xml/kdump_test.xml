@@ -22,7 +22,7 @@
                 <suiteTest>crash_smp</suiteTest>
                 <!-- Only for REDHAT. Test with crashkernel=auto -->
                 <suiteTest>crash_auto_size</suiteTest>
-                <suiteTest>Crash_Diff_Size</suiteTest>
+                <suiteTest>crash_diff_size</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -113,11 +113,11 @@
     <VMs>
         <vm>
             <hvServer>10.73.196.236</hvServer>
-            <vmName>boyang_esx_rhel6</vmName>
+            <vmName>boyang_esx_lisa_rhel6_bios</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
-            <sshKey>id_rsa.ppk</sshKey>
-            <suite>KDUMP</suite>
+            <sshKey>demo_id_rsa.ppk</sshKey>
+            <suite>kdump</suite>
         </vm>
     </VMs>
 
