@@ -73,8 +73,8 @@ Config_Kdump(){
         		exit 1
 		else
 			echo "path $dump_path" >> $kdump_conf
-			LogMsg "Success: Updated the path to /var/crash."
-			UpdateSummary "Success: Updated the path to /var/crash."
+			LogMsg "SUCCESS: Updated the path to /var/crash."
+			UpdateSummary "SUCCESS: Updated the path to /var/crash."
 		fi
 
 		# Modify default action as reboot after crash
@@ -87,8 +87,8 @@ Config_Kdump(){
         		exit 1
 		else
 			echo "default reboot" >> $kdump_conf
-			LogMsg "Success: Updated the default action reboot after kdump."
-			UpdateSummary "Success: Updated the default action reboot after kdump."
+			LogMsg "SUCCESS: Updated the default action reboot after kdump."
+			UpdateSummary "SUCCESS: Updated the default action reboot after kdump."
 		fi
 
 		# Modify vmcore collection method and level
@@ -101,8 +101,8 @@ Config_Kdump(){
         		exit 1
 		else
 			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
-			LogMsg "Success: Updated vmcore collection method to makedumpfile."
-			UpdateSummary "Success: Updated vmcore collection method to makedumpfile."
+			LogMsg "SUCCESS: Updated vmcore collection method to makedumpfile."
+			UpdateSummary "SUCCESS: Updated vmcore collection method to makedumpfile."
 		fi
 
 	else
@@ -137,13 +137,13 @@ Config_Grub(){
 
 			grep -iq "crashkernel=$crashkernel" $grub_conf
 			if [ $? -ne 0 ]; then
-				LogMsg "FAILED: Could not set the new crashkernel value in /etc/default/grub."
-				UpdateSummary "FAILED: Could not set the new crashkernel value in /etc/default/grub."
+				LogMsg "FAIL: Could not set the new crashkernel value in /etc/default/grub."
+				UpdateSummary "FAIL: Could not set the new crashkernel value in /etc/default/grub."
 				SetTestStateFailed
 				exit 1
 			else
-				LogMsg "Success: updated the crashkernel value to: $crashkernel."
-				UpdateSummary "Success: updated the crashkernel value to: $crashkernel."
+				LogMsg "SUCCESS: updated the crashkernel value to: $crashkernel."
+				UpdateSummary "SUCCESS: updated the crashkernel value to: $crashkernel."
 			fi
 
 		else
@@ -165,6 +165,7 @@ case $DISTRO in
 	redhat_6)
 		grub_conf=$rhel6_grub
 		Config_Grub $grub_conf
+	;;
 	redhat_7)
 		$grub_conf=$rhel7_grub
 		Config_Grub $grub_conf
@@ -172,22 +173,29 @@ case $DISTRO in
 		grub2-mkconfig -o /boot/grub2/grub.cfg
 		if [ $? -ne 0 ]
 		then
-			LogMsg "FAILED: Could not execute grub2-mkconfig."
-			UpdateSummary "FAILED: Could not grub2-mkconfig."
+			LogMsg "FAIL: Could not execute grub2-mkconfig."
+			UpdateSummary "FAIL: Could not grub2-mkconfig."
 			SetTestStateFailed
 			exit 1
 		else
-			LogMsg "Success: Execute grub2-mkconfig well."
-			UpdateSummary "Success: Execute grub2-mkconfig well."
+			LogMsg "SUCCESS: Execute grub2-mkconfig well."
+			UpdateSummary "SUCCESS: Execute grub2-mkconfig well."
 		fi
+	;;
+	*)
+		LogMsg "FAIL: Unknow OS"
+		UpdateSummary "FAIL: Unknow OS"
+		exit 1
+	;;
+		
 esac
 
 # Restart kdump.service
 service kdump restart
 if [ $? -ne 0 ]
 then
-	LogMsg "FAILED: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
-	UpdateSummary "FAILED: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
+	LogMsg "FAIL: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
+	UpdateSummary "FAIL: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
 	SetTestStateFailed
 	exit 1
 else
