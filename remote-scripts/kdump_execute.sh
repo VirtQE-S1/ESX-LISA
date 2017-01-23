@@ -47,7 +47,6 @@ Check_Kdump_Running(){
 		then
 			LogMsg "FAIL: Kdump isn't active after reboot."
 			UpdateSummary "FAIL: kdump service isn't active after reboot."
-        		SetTestStateFailed
 			exit 1
 			
 		else
@@ -65,7 +64,6 @@ Check_Kdump_Running(){
 		else
 			LogMsg "FAIL: Kdump isn't active after reboot."
 			UpdateSummary "FAIL: kdump service isn't active after reboot."
-        		SetTestStateFailed
 			exit 1
 		fi
 		;;
@@ -79,7 +77,6 @@ ConfigureNMI()
     if [ $? -ne 0 ]; then
         LogMsg "Failed to enable kernel to call panic when it receives a NMI."
         UpdateSummary "Failed to enable kernel to call panic when it receives a NMI."
-        SetTestStateFailed
         exit 1
     else
         LogMsg "Success: enabling kernel to call panic when it receives a NMI."
@@ -100,20 +97,19 @@ ConfigureNMI
 service kdump restart
 if [ $? -ne 0 ]
 then
-	LogMsg "FAIL: Could not restart kdump service."
-	UpdateSummary "FAIL: Could not restart kdump service."
-	SetTestStateFailed
+	LogMsg "FAIL: Could not restart kdump service with new parameters after reboot."
+	UpdateSummary "FAIL: Could not restart kdump service with new parameters after reboot."
 	exit 1
 else
-	LogMsg "SUCCESS: Could restart kdump service well with new parameters."
-	UpdateSummary "SUCCESS: Could restart kdump service well with new parameters."
+	LogMsg "SUCCESS: Could restart kdump service well with new parameters after reboot."
+	UpdateSummary "SUCCESS: Could restart kdump service well with new parameters after reboot."
 fi
 
 # Ensure kdump service status.
 Check_Kdump_Running
 
-LogMsg "Preparing for kernel panic..."
-UpdateSummary "Preparing for kernel panic..."
+LogMsg "Preparing for kernel panic......."
+UpdateSummary "Preparing for kernel panic......."
 sync
 if [ -f $proc_sys_kernel_sysrq ]
 then
@@ -125,5 +121,3 @@ else
         UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
 	exit 1
 fi
-
-SetTestStateCompleted

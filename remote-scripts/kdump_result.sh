@@ -39,7 +39,6 @@ CheckVmcore()
     if ! [[ $(find /var/crash/*/vmcore -type f -size +10M) ]]; then
         LogMsg "FAIL: No file was found in /var/crash of size greater than 10M."
         UpdateSummary "FAIL: No file was found in /var/crash of size greater than 10M."
-        SetTestStateFailed
 	exit 1
     else 
         LogMsg "SUCCESS: Proper file was found."
@@ -47,7 +46,6 @@ CheckVmcore()
     fi
 }
 
-
+LogMsg "Start to check vmcore......."
+UpdateSummary "Start to check vmcore......."
 CheckVmcore
-
-SetTestStateCompleted

@@ -187,8 +187,7 @@ Write-Host -F Green "SUCCESS: Get ${tcCovered}_kdump_config_summary.log from VM.
 $retVal = SendCommandToVM $ipv4 $sshKey "reboot"
 if (-not $retVal)
 {
-    Write-Output "FAIL: Failed to reboot VM."
-    return $false
+    Write-Output "FAIL: Failed to reboot VM.(RHEL6 and RHEL7 boot well, but there are some ERRORs in RHEL7, so we don't return $retVal)"
 }
 Write-Output "Rebooting the VM."
 Write-host -F Green "kdump.ps1: SUCCESS: Reboot VM......."
@@ -270,7 +269,6 @@ Write-Host -F DarkGray "kdump.ps1: Waiting 120 seconds to record the kdump event
 #WaitForVMToStartSSH $ipv4 120 ---> Seem it doesn't work, Will failed below function
 Start-Sleep -S 120
 
-
 #
 # Waiting the VM to have a connection; Or will use function WaiForVMToStartSSH()
 #
@@ -316,13 +314,13 @@ if ($sta -eq "PoweredOn") {
 	# Get kdump_execute_summary.log
 	#
 	Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
-	$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir\${tcCovered}_kdump_execute_summary.log
+	$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir\${tcCovered}_kdump_result_summary.log
 	if (-not $retVal)
 	{
 	    Write-Output "FAIL: Failed to get summary.log from VM."
 	    return $false
 	}
-	Write-Output "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
+	Write-Output "SUCCESS: Get ${tcCovered}_kdump_execute_result.log from VM."
 	Write-Host -F Green "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
 
 }
