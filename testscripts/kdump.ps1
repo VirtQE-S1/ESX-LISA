@@ -7,11 +7,7 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - boyang - 01/03/2017 - Crash_Single_Size, Crash_SMP, Crash_Auto_Size
-## v1.1 - boyang - 01/06/2017 - Valid all test parameters.
-## V1.2 - boyang - 01/08/2017 - Add new case Test Crash_Diff_size
-## V1.3 - boyang - 01/09/2017 - Add description for kdump.ps1
-## V1.4 - boyang - 01/10/2017 - Use WaitForVMToStartSSH and GetFileFromVM
+## V1.0 - boyang - 01/18/2017 - Build script
 ##
 ###############################################################################
 
@@ -39,19 +35,19 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 #
 if (-not $vmName)
 {
-    "Error: VM name cannot be null!"
+    "FAIL: VM name cannot be null!"
     exit
 }
 
 if (-not $hvServer)
 {
-    "Error: hvServer cannot be null!"
+    "FAIL: hvServer cannot be null!"
     exit
 }
 
 if (-not $testParams)
 {
-    Throw "Error: No test parameters specified"
+    Throw "FAIL: No test parameters specified"
 }
 
 #
@@ -106,27 +102,27 @@ else
 }
 
 if ($null -eq $sshKey) {
-    "Error: Test parameter sshKey was not specified"
+    "FAIL: Test parameter sshKey was not specified"
     return $False
 }
 
 if ($null -eq $ipv4) {
-    "Error: Test parameter ipv4 was not specified"
+    "FAIL: Test parameter ipv4 was not specified"
     return $False
 }
 
 if ($null -eq $crashkernel) {
-    "Error: Test parameter crashkernel was not specified"
+    "FAIL: Test parameter crashkernel was not specified"
     return $False
 }
 
 if ($null -eq $logdir) {
-    "Error: Test parameter logdir was not specified"
+    "FAIL: Test parameter logdir was not specified"
     return $False
 }
 
 if ($null -eq $tcCovered) {
-    "Error: Test parameter tcCovered was not specified"
+    "FAIL: Test parameter tcCovered was not specified"
     return $False
 }
 #
@@ -152,11 +148,11 @@ Write-Host -F DarkGray "kdump.ps1: Start to send kdump_config.sh to VM......."
 $retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_config.sh" "/root/kdump_config.sh"
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to send kdump_config.sh to VM."
+    Write-Output "FAIL: Failed to send kdump_config.sh to VM."
     return $false
 }
-Write-Output "Success: Send kdump_config.sh to VM."
-Write-host -F Green "kdump.ps1: Success: Send kdump_config.sh to VM......."
+Write-Output "SUCCESS: Send kdump_config.sh to VM."
+Write-host -F Green "kdump.ps1: SUCCESS: Send kdump_config.sh to VM......."
 
 #
 # SendCommandToVM: execute kdump_config.sh
@@ -165,11 +161,25 @@ Write-Host -F DarkGray "kdump.ps1: Start to execute kdump_config.sh in VM.......
 $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to execute kdump_config.sh in VM."
+    Write-Output "FAIL: Failed to execute kdump_config.sh in VM."
     return $false
 }
-Write-Output "Success: Execute kdump_config.sh in VM."
-Write-host -F Green "kdump.ps1: Success: Execute kdump_config.sh in VM......."
+Write-Output "SUCCESS: Execute kdump_config.sh in VM."
+Write-host -F Green "kdump.ps1: SUCCESS: Execute kdump_config.sh in VM......."
+
+#
+# Get kdump_config_summary.log
+#
+Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
+$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir\${tcCovered}_kdump_config_summary.log
+if (-not $retVal)
+{
+    Write-Output "FAIL: Failed to get summary.log from VM."
+    return $false
+}
+Write-Output "SUCCESS: Get ${tcCovered}_kdump_config_summary.log from VM."
+Write-Host -F Green "SUCCESS: Get ${tcCovered}_kdump_config_summary.log from VM."
+
 
 #
 # Rebooting the VM in order to apply the kdump settings
@@ -177,11 +187,11 @@ Write-host -F Green "kdump.ps1: Success: Execute kdump_config.sh in VM......."
 $retVal = SendCommandToVM $ipv4 $sshKey "reboot"
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to reboot VM."
+    Write-Output "FAIL: Failed to reboot VM."
     return $false
 }
 Write-Output "Rebooting the VM."
-Write-host -F Green "kdump.ps1: Success: Reboot VM......."
+Write-host -F Green "kdump.ps1: SUCCESS: Reboot VM......."
 
 #
 # Waiting the VM to start up
@@ -189,20 +199,20 @@ Write-host -F Green "kdump.ps1: Success: Reboot VM......."
 Write-Output "Waiting the VM to have a connection."
 Write-Host -F DarkGray "kdump.ps1: Waiting the VM to have a connection......."
 #WaitForVMToStartSSH $ipv4 180 ---> Seem it doesn't work, Will failed below function
-Start-Sleep -S 240
+Start-Sleep -S 120
 
 #
-# Sending required scripts to VM for generating kernel panic with appropriate permissions
+# Send kdump_execute.sh script to VM for checking kdump status after reboot
 #
 Write-Host -F DarkGray "kdump.ps1: Start to send kdump_execute.sh to VM......."
 $retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_execute.sh" "/root/kdump_execute.sh"
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to send kdump_execute.sh to VM."
+    Write-Output "FAIL: Failed to send kdump_execute.sh to VM."
     return $false
 }
-Write-Output "Success: Send kdump_execute.sh to VM."
-Write-host -F Green "kdump.ps1: Success: Send kdump_execute.sh to VM......."
+Write-Output "SUCCESS: Send kdump_execute.sh to VM."
+Write-host -F Green "kdump.ps1: SUCCESS: Send kdump_execute.sh to VM......."
 
 #
 # SendCommandToVM: execute kdump_config.sh
@@ -211,24 +221,24 @@ Write-Host -F DarkGray "kdump.ps1: Start to execute kdump_execute.sh in VM......
 $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to execute kdump_execute.sh to VM."
+    Write-Output "FAIL: Failed to execute kdump_execute.sh to VM."
     return $false
 }
-Write-Output "Success: Execute kdump_execute.sh to VM."
-Write-host -F Green "kdump.ps1: Success: Execute kdump_execute.sh in VM......."
+Write-Output "SUCCESS: Execute kdump_execute.sh to VM."
+Write-host -F Green "kdump.ps1: SUCCESS: Execute kdump_execute.sh in VM......."
 
 #
-# Get summary.log
+# Get kdump_execute_summary.log
 #
 Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
-$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir
+$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir\${tcCovered}_kdump_execute_summary.log
 if (-not $retVal)
 {
-    Write-Output "Error: Failed to get summary.log from VM."
+    Write-Output "FAIL: Failed to get summary.log from VM."
     return $false
 }
-Write-Output "Success: Get summary.log from VM."
-Write-Host -F Green "kdump.ps1: Success: Get summary.log from VM......."
+Write-Output "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
+Write-Host -F Green "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
 
 #
 # Trigger the kernel panic
@@ -245,19 +255,20 @@ else {
     $retVal = SendCommandToVM $ipv4 $sshKey "echo 'echo c > /proc/sysrq-trigger' | at now + 1 minutes"
     if (-not $retVal)
     {
-        Write-Output "Error: Failed to trigger kdump in VM."
+        Write-Output "FAIL: Failed to trigger kdump in VM."
         return $false
     }
-    Write-Output "Success: Trigger kdump well in VM."
-    Write-host -F Green "kdump.ps1: Success: Trigger kdump well in VM......"
+    Write-Output "SUCCESS: Trigger kdump well in VM."
+    Write-host -F Green "kdump.ps1: SUCCESS: Trigger kdump well in VM......"
 }
 
 #
 # Give the host a few seconds to record the event
 #
 Write-Output "Waiting 180 seconds to record the kdump event..."
-Write-Host -F DarkGray "kdump.ps1: Waiting 180 seconds to record the kdump event..."
-Start-Sleep -S 180
+Write-Host -F DarkGray "kdump.ps1: Waiting 120 seconds to record the kdump event..."
+#WaitForVMToStartSSH $ipv4 120 ---> Seem it doesn't work, Will failed below function
+Start-Sleep -S 120
 
 
 #
@@ -265,8 +276,8 @@ Start-Sleep -S 180
 #
 Write-Output "Checking the VM connection after kernel panic..."
 Write-Host -F DarkGray "kdump.ps1: Checking the VM connection after kernel panic......."
-#WaitForVMToStartSSH $ipv4 180
-Start-Sleep -S 240
+#WaitForVMToStartSSH $ipv4 120 ---> Seem it doesn't work, Will failed below function
+Start-Sleep -S 120
 
 #
 # Verifying if the kernel panic process creates a vmcore file of size 10M+
@@ -275,25 +286,45 @@ Write-Host -F DarkGray "Connection to VM is good. Checking the result..."
 $vmobj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $sta = $vmobj.PowerState
 if ($sta -eq "PoweredOn") {
-    Write-Host -F DarkGray "kdump.ps1: Start to send kdump_result.sh to VM......."
-    $retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_result.sh" "/root/kdump_result.sh"
-    if (-not $retVal)
-    {
-        Write-Output "Error: Failed to send kdump_result.sh to VM."
-        return $false
-    }
-    Write-Output "Success: send kdump_result.sh to VM."
-    Write-host -F Green "kdump.ps1: Success: send kdump_result.sh to VM......."
+	#
+	# Send kdump_execute.sh script to VM for checking kdump status after reboot
+	#
+	Write-Host -F DarkGray "kdump.ps1: Start to send kdump_result.sh to VM......."
+	$retVal = SendFileToVM $ipv4 $sshKey ".\remote-scripts\kdump_result.sh" "/root/kdump_result.sh"
+	if (-not $retVal)
+	{
+	    Write-Output "FAIL: Failed to send kdump_result.sh to VM."
+	    return $false
+	}
+	Write-Output "SUCCESS: send kdump_result.sh to VM."
+	Write-host -F Green "kdump.ps1: SUCCESS: send kdump_result.sh to VM......."
+	
+	#
+	# SendCommandToVM: execute kdump_result.sh
+	#
+	Write-Host -F DarkGray "kdump.ps1: Start to Execute kdump_results.sh......."
+	$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_result.sh && chmod u+x kdump_result.sh && ./kdump_result.sh"
+	if (-not $retVal)
+	{
+	    Write-Output "FAIL: Failed to execute kdump_result.sh in VM."
+	    return $false
+	}
+	Write-Output "SUCCESS: execute kdump_result.sh in VM."
+	Write-host -F Green "SUCCESS: execute kdump_result.sh in VM......."
 
-    Write-Host -F DarkGray "kdump.ps1: Start to Execute kdump_results.sh......."
-    $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_result.sh && chmod u+x kdump_result.sh && ./kdump_result.sh"
-    if (-not $retVal)
-    {
-        Write-Output "Error: Failed to execute kdump_result.sh in VM."
-        return $false
-    }
-    Write-Output "Success: execute kdump_result.sh in VM."
-    Write-host -F Green "Success: execute kdump_result.sh in VM......."
+	#
+	# Get kdump_execute_summary.log
+	#
+	Write-Host -F DarkGray "kdump.ps1: Start to get summary.log from VM......."
+	$retVal = GetFileFromVM $ipv4 $sshKey "summary.log" $logdir\${tcCovered}_kdump_execute_summary.log
+	if (-not $retVal)
+	{
+	    Write-Output "FAIL: Failed to get summary.log from VM."
+	    return $false
+	}
+	Write-Output "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
+	Write-Host -F Green "SUCCESS: Get ${tcCovered}_kdump_execute_summary.log from VM."
+
 }
 
 return $retVal

@@ -35,10 +35,11 @@ UtilsInit
 ###############################################################################
 
 proc_sys_kernel_sysrq="/proc/sys/kernel/sysrq"
+
 Check_Kdump_Running(){
-	LogMsg "Waiting 50 seconds for kdump to become active."
-	UpdateSummary "Waiting 50 seconds for kdump to become active."
-	sleep 50
+	LogMsg "Waiting 30 seconds for kdump to become active."
+	UpdateSummary "Waiting 30 seconds for kdump to become active."
+	sleep 30
 	case $DISTRO in
 	redhat_6)
 		service kdump status | grep "not operational"
@@ -92,8 +93,23 @@ ConfigureNMI()
 #
 #######################################################################
 
+# As NMI, can't triggered in Linux ENV. Will put it here firstly.
 ConfigureNMI
 
+# Restart kdump.service after reboot and modification.
+service kdump restart
+if [ $? -ne 0 ]
+then
+	LogMsg "FAIL: Could not restart kdump service."
+	UpdateSummary "FAIL: Could not restart kdump service."
+	SetTestStateFailed
+	exit 1
+else
+	LogMsg "SUCCESS: Could restart kdump service well with new parameters."
+	UpdateSummary "SUCCESS: Could restart kdump service well with new parameters."
+fi
+
+# Ensure kdump service status.
 Check_Kdump_Running
 
 LogMsg "Preparing for kernel panic..."

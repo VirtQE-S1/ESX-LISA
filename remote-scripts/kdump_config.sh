@@ -65,6 +65,7 @@ Config_Kdump(){
 		LogMsg "Start to modify $kdump_conf......."
 		UpdateSummary "Start to modify $kdump_conf......."
 		sed -i '/^path/ s/path/#path/g' $kdump_conf
+		grep -iq "^#path" $kdump_conf
     		if [ $? -ne 0 ]
 		then
 			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
@@ -167,7 +168,7 @@ case $DISTRO in
 		Config_Grub $grub_conf
 	;;
 	redhat_7)
-		$grub_conf=$rhel7_grub
+		grub_conf=$rhel7_grub
 		Config_Grub $grub_conf
 
 		grub2-mkconfig -o /boot/grub2/grub.cfg

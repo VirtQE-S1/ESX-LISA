@@ -43,7 +43,7 @@
                 <param>VMMemory=4GB</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -63,7 +63,7 @@
                 <param>VMMemory=4GB</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -83,7 +83,7 @@
                 <param>VMMemory=2GB</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -104,7 +104,7 @@
                 <param>VMMemory=8GB</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
