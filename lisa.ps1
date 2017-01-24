@@ -22,6 +22,10 @@
 ##                                Incorporate VMware PowerCLI with framework
 ## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
+## v1.2 - xiaofwan - 1/22/2017 - Fix a typo issue
+## v1.3 - xiaofwan - 1/23/2017 - Insert suite name into result dir name, such as
+##                               cases-open_vm_tools-20170120-141152
+##
 ###############################################################################
 
 
@@ -739,15 +743,20 @@ function RunTests ([String] $xmlFilename )
             return $false
         }
     }
+
+    if (-not $suite)
+    {
+        $suite = $xmlConfig.config.VMs.vm.suite
+    }
     
     $fname = [System.IO.Path]::GetFilenameWithoutExtension($xmlFilename)
-    $testRunDir = $fname + "-" + $Script:testStartTime.ToString("yyyyMMdd-HHmmss")
+    $testRunDir = $fname + "-" + $suite + "-" + $Script:testStartTime.ToString("yyyyMMdd-HHmmss")
     $testDir = join-path -path $rootDir -childPath $testRunDir
     mkdir $testDir | out-null
     
     $logFile = Join-Path -path $testDir -childPath $logFile
         
-    LogMsg 0 "LIS Automation script - version $lisaVersion"
+    LogMsg 0 "ESX-LISA - version $lisaVersion"
     LogMsg 4 "Info : Created directory: $testDir"
     LogMsg 4 "Info : Logfile =  $logfile"
     LogMsg 4 "Info : Using XML file:  $xmlFilename"
