@@ -102,7 +102,7 @@ if ((Get-NetworkAdapter -VM $vmOut).Type -contains $nic_type)
 else
 {
     "Info : VM $vmName does not have $nic_type NIC, need to add one"
-     New-NetworkAdapter -VM $vmOut -Type $nic_type -NetworkName $network_name -StartConnected
+     New-NetworkAdapter -VM $vmOut -Type $nic_type -NetworkName "$network_name" -StartConnected
      if ( $? -ne $True )
      {
          "Error : New $nic_type to $vmName failed"
