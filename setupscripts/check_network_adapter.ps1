@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##   Check vm has specified NIC, such as Vmxnet3, e1000
+##   Check vm has specified NIC, include: Vmxnet3, e1000e, e1000
 ##   If yes, do nothing; if no, add one
 ##
 ###############################################################################
@@ -13,10 +13,10 @@
 
 <#
 .Synopsis
-    Check vm has specified NIC, such as Vmxnet3, e1000
+    Check vm has specified NIC, include: Vmxnet3, e1000e, e1000
 
 .Description
-    Check vm has specified NIC, such as Vmxnet3, e1000.
+    Check vm has specified NIC, include: Vmxnet3, e1000e, e1000
 
 .Parameter vmName
     Name of the test VM.
