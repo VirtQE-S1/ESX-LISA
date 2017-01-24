@@ -1,8 +1,8 @@
 ###############################################################################
 ##
 ## Description:
-##   Check vm has VMXNET3 NIC
-##   If yes, do nothing; if no, add one VMXNET3 NIC
+##   Check vm has specified NIC, such as VMXNET3, e1000e
+##   If yes, do nothing; if no, add one
 ##
 ###############################################################################
 ##
@@ -13,10 +13,10 @@
 
 <#
 .Synopsis
-    Check vm has VMXNET3 NIC
+    Check vm has specified NIC, such as VMXNET3, e1000e
 
 .Description
-    Check vm has VMXNET3 NIC.
+    Check vm has specified NIC, such as VMXNET3, e1000e.
 
 .Parameter vmName
     Name of the test VM.
@@ -80,6 +80,13 @@ foreach ($p in $params)
 #
 ###############################################################################
 $network_name = "VM Network"
+
+if (-not $nic_type)
+{
+    "Error: No nic_type specified"
+    return $False
+}
+
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
