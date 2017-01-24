@@ -1,0 +1,109 @@
+###############################################################################
+##
+## Description:
+##   Check vm has VMXNET3 NIC
+##   If yes, do nothing; if no, add one VMXNET3 NIC
+##
+###############################################################################
+##
+## Revision:
+## v1.0 - hhei - 1/23/2017 - Setup scripts.
+##
+###############################################################################
+
+<#
+.Synopsis
+    Check vm has VMXNET3 NIC
+
+.Description
+    Check vm has VMXNET3 NIC.
+
+.Parameter vmName
+    Name of the test VM.
+
+.Parameter testParams
+    Semicolon separated list of test parameters.
+#>
+
+param([String] $vmName, [String] $hvServer, [String] $testParams)
+#
+# Checking the input arguments
+#
+if (-not $vmName)
+{
+    "Error: VM name cannot be null!"
+    exit
+}
+
+if (-not $hvServer)
+{
+    "Error: hvServer cannot be null!"
+    exit
+}
+
+if (-not $testParams)
+{
+    Throw "Error: No test parameters specified"
+}
+
+#
+# Display the test parameters so they are captured in the log file
+#
+"TestParams : '${testParams}'"
+
+#
+# Parse the test parameters
+#
+$rootDir = $null
+$sshKey = $null
+$ipv4 = $null
+$tcCovered = "undefined"
+
+$params = $testParams.Split(";")
+foreach ($p in $params)
+{
+    $fields = $p.Split("=")
+    switch ($fields[0].Trim())
+    {
+    "sshKey"       { $sshKey = $fields[1].Trim() }
+    "rootDir"      { $rootDir = $fields[1].Trim() }
+    "ipv4"         { $ipv4 = $fields[1].Trim() }
+    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
+    "nic_type"     { $nic_type = $fields[1].Trim() }
+    default        {}
+    }
+}
+
+###############################################################################
+#
+# Main script
+#
+###############################################################################
+$network_name = "VM Network"
+$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmOut)
+{
+    "Error : Unable to get VM object for VM $vmName"
+    return $False
+}
+
+if ((Get-NetworkAdapter -VM $vmOut).Type -contains $nic_type)
+{
+    "Info : VM $vmName already has $nic_type NIC"
+    return $True
+}
+else
+{
+    "Info : VM $vmName does not have $nic_type NIC, need to add one"
+     New-NetworkAdapter -VM $vmOut -Type $nic_type -NetworkName $network_name -StartConnected
+     if ( $? -ne $True )
+     {
+         "Error : New $nic_type to $vmName failed"
+         return $False
+     }
+     else
+     {
+         "Info : New $nic_type to $vmName successfully"
+         return $True
+     }
+}
