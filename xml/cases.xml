@@ -29,6 +29,15 @@
                 <suiteTest>go_check_memory</suiteTest>
             </suiteTests>
         </suite>
+        <suite>
+            <suiteName>acceptance</suiteName>
+            <suiteTests>
+                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
+                <suiteTest>go_check_memory</suiteTest>
+            </suiteTests>
+        </suite>
     </testSuites>
 
     <testCases>
