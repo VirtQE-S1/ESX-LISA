@@ -22,6 +22,9 @@
 ##                                Incorporate VMware PowerCLI with framework
 ## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
+## v1.2 - xiaofwan - 1/25/2017 - Insert suite name into result dir name,
+##                               such as cases-open_vm_tools-20170120-141152
+##
 ###############################################################################
 
 <#
@@ -559,7 +562,12 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
         $logPath = (Get-Item -Path ".\" -Verbose).FullName + "\" + $logDir    
     }
 
-    $str += "Logs can be found at " + $logPath + "\" + $fname + "-" + $startTime.ToString("yyyyMMdd-HHmmss") + "<br /><br />"
+     if (-not $suite)
+    {
+        $suite = $xmlConfig.config.VMs.vm.suite
+    }
+
+    $str += "Logs can be found at " + $logPath + "\" + $fname + "-" + $suite + "-" + $startTime.ToString("yyyyMMdd-HHmmss") + "<br /><br />"
     $str += "</pre><br />"
     return $str
 }
