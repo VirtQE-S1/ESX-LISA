@@ -24,6 +24,9 @@
 ## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
 ##                              disconnecting VCenter server functions.
 ## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
+## v1.4 - xiaofwan - 1/25/2016 - Add four test result state RO variable to mark
+##                               test case result.
+##
 ###############################################################################
 
 <#
@@ -34,6 +37,14 @@
     Test Case Utility functions.  This is a collection of function
     commonly used by PowerShell test case scripts and setup scripts.
 #>
+
+#
+# test result codes
+#
+New-Variable Passed              -value "Passed"              -option ReadOnly
+New-Variable Skipped             -value "Skipped"             -option ReadOnly
+New-Variable Aborted             -value "Aborted"             -option ReadOnly
+New-Variable Failed              -value "Failed"              -option ReadOnly
 
 ###############################################################################
 #

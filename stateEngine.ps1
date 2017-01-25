@@ -25,6 +25,9 @@
 ## v1.2 - xiaofwan - 12/29/2016 - Fix snapshot checking issue found by @xuli.
 ## v1.3 - xiaofwan - 1/9/2017 - Add new feature: snapshot auto-create if there's
 ##                              no snapshot found in VM.
+## v1.4 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
+##                               test case not applicable in current scenario.
+##
 ###############################################################################
 
 <#
@@ -223,8 +226,17 @@ New-Variable Disabled            -value "Disabled"            -option ReadOnly
 # test completion codes
 #
 New-Variable TestCompleted       -value "TestCompleted"       -option ReadOnly
+New-Variable TestSkipped         -value "TestSkipped"         -option ReadOnly
 New-Variable TestAborted         -value "TestAborted"         -option ReadOnly
 New-Variable TestFailed          -value "TestFailed"          -option ReadOnly
+
+#
+# test result codes
+#
+New-Variable Passed              -value "Passed"              -option ReadOnly
+New-Variable Skipped             -value "Skipped"             -option ReadOnly
+New-Variable Aborted             -value "Aborted"             -option ReadOnly
+New-Variable Failed              -value "Failed"              -option ReadOnly
 
 #
 # Supported OSs
@@ -2327,7 +2339,6 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         if (test-path $stateFile)
         {
-            $vm.testCaseResults = "Aborted"
             $contents = Get-Content -Path $stateFile
             if ($null -ne $contents)
             {
@@ -2338,6 +2349,11 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 elseif ($contents -eq $TestCompleted)
                 {
                     $vm.testCaseResults = "Success"
+                    UpdateState $vm $CollectLogFiles
+                }
+                elseif ($contents -eq $TestSkipped)
+                {
+                    $vm.testCaseResults = "Skipped"
                     UpdateState $vm $CollectLogFiles
                 }
                 elseif ($contents -eq $TestAborted)
@@ -2420,15 +2436,18 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Update the e-mail summary
     #
-    $completionCode = "Aborted"
-    if ( ($($vm.testCaseResults) -eq "Success") )
+    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "Skipped"))
     {
-        $completionCode = "Success"
+        $completionCode = $vm.testCaseResults
         $vm.individualResults = $vm.individualResults -replace ".$","1"
     }
     elseif ( ($($vm.testCaseResults) -eq "Failed") )
     {
         $completionCode = "Failed"
+    }
+    else
+    {
+        $completionCode = "Aborted"
     }
 
     $iterationMsg = $null
@@ -2631,7 +2650,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $testData = GetTestData $vm.currentTest $xmlData
     $testResults = $false
 
-    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "True") )
+    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "True") -or ($($vm.testCaseResults) -eq "Skipped") )
     {
         $testResults = $true
     }
@@ -3455,6 +3474,11 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($jobResults[-1] -eq $True)
             {
                 $completionCode = "Success"
+                $vm.individualResults = $vm.individualResults -replace ".$","1"
+            }
+            elseif ($jobResults[-1] -eq $Skipped)
+            {
+                $completionCode = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
         }
