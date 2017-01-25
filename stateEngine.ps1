@@ -27,6 +27,8 @@
 ##                              no snapshot found in VM.
 ## v1.4 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
 ##                               test case not applicable in current scenario.
+## v1.5 - xiaofwan - 1/25/2016 - $vm.testCaseResults only contains "Passed", 
+##                               "Failed", "Skipped", "Aborted", and "none".
 ##
 ###############################################################################
 
@@ -1716,7 +1718,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) no test named $($vm.currentTest) was found in xml file"
         $vm.emailSummary += "    No test named $($vm.currentTest) was found - test aborted<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -1807,7 +1809,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot push $constFile to $($vm.vmName)"
             $vm.emailSummary += "    Cannot push $constFile to VM<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1825,7 +1827,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) unable to convert EOL on file $constFile"
                 $vm.emailSummary += "    Unable to convert EOL on file $constFile<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1834,7 +1836,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for ${constFile}"
             $vm.emailSummary += "    Unable to create dos2unix command for ${constFile}<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1858,7 +1860,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) error pushing file '$testFile' to VM"
                 $vm.emailSummary += "    Unable to push test file '$testFile' to VM<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1871,7 +1873,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) test case $($vm.currentTest) does not have a testScript"
         $vm.emailSummary += "    Test case $($vm.currentTest) does not have a testScript.<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -1894,7 +1896,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) unable to set EOL on test script file $testScript"
                 $vm.emailSummary += "    Unable to set EOL on file $testScript<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1903,7 +1905,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for ${testScript}"
             $vm.emailSummary += "    Unable to create dos2unix command for $testScript<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1916,7 +1918,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "$($vm.vmName) unable to set x bit on test script $testScript"
             $vm.emailSummary += "    Unable to set x bit on test script $testScript<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -2096,7 +2098,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot fine test data for test '$($vm.currentTest)"
         $vm.emailSummary += "    Cannot fine test data for test '$($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2109,7 +2111,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) test case $($vm.currentTest) does not have a testScript"
         $vm.emailSummary += "    Test case $($vm.currentTest) does not have a testScript.<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2126,7 +2128,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) unable to create runtest.sh"
         $vm.emailSummary += "    Unable to create runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2137,7 +2139,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot copy runtest.sh to VM"
         $vm.emailSummary += "    Cannot copy runtest.sh to VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2149,7 +2151,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot set x bit on runtest.sh"
         $vm.emailSummary += "    Cannot set x bit on runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2160,7 +2162,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for runtest.sh"
         $vm.emailSummary += "    Cannot create dos2unix command for runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2170,7 +2172,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) Unable to correct the EOL on runtest.sh"
         $vm.emailSummary += "    Unable to correct the EOL on runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2184,7 +2186,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) Unable to start atd on VM"
         $vm.emailSummary += "    Unable to start atd on VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2198,7 +2200,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) unable to submit runtest.sh to atd on VM"
         $vm.emailSummary += "    Unable to submit runtest.sh to atd on VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2255,7 +2257,7 @@ function DoTestStarting([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) time out starting test $($vm.currentTest)"
         $vm.emailSummary += "    time out starting test $($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2326,7 +2328,7 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) time out running test $($vm.currentTest)"
         $vm.emailSummary += "    time out running test $($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $CollectLogFiles
         return
     }
@@ -2348,12 +2350,12 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 }
                 elseif ($contents -eq $TestCompleted)
                 {
-                    $vm.testCaseResults = "Success"
+                    $vm.testCaseResults = $Passed
                     UpdateState $vm $CollectLogFiles
                 }
                 elseif ($contents -eq $TestSkipped)
                 {
-                    $vm.testCaseResults = "Skipped"
+                    $vm.testCaseResults = $Skipped
                     UpdateState $vm $CollectLogFiles
                 }
                 elseif ($contents -eq $TestAborted)
@@ -2363,7 +2365,7 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 elseif($contents -eq $TestFailed)
                 {
                     AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) failed. See logfile for details"
-                    $vm.testCaseResults = "Failed"
+                    $vm.testCaseResults = $Failed
                 }
                 else
                 {
@@ -2436,18 +2438,18 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Update the e-mail summary
     #
-    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "Skipped"))
+    if ( ($($vm.testCaseResults) -eq $Passed) -or ($($vm.testCaseResults) -eq $Skipped))
     {
         $completionCode = $vm.testCaseResults
         $vm.individualResults = $vm.individualResults -replace ".$","1"
     }
-    elseif ( ($($vm.testCaseResults) -eq "Failed") )
+    elseif ( ($($vm.testCaseResults) -eq $Failed) )
     {
-        $completionCode = "Failed"
+        $completionCode = $Failed
     }
     else
     {
-        $completionCode = "Aborted"
+        $completionCode = $Aborted
     }
 
     $iterationMsg = $null
@@ -2650,7 +2652,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $testData = GetTestData $vm.currentTest $xmlData
     $testResults = $false
 
-    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "True") -or ($($vm.testCaseResults) -eq "Skipped") )
+    if ( ($($vm.testCaseResults) -eq $Passed) -or ($($vm.testCaseResults) -eq $Skipped) )
     {
         $testResults = $true
     }
@@ -3222,7 +3224,7 @@ function DoStartPS1Test([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
 
-    $vm.testCaseResults = "False"
+    $vm.testCaseResults = $Failed
 
     if (! (test-path $testScript))
     {
@@ -3390,7 +3392,6 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     if ($jobStatus.State -eq "Completed")
     {
-        $vm.testCaseResults = "True"
         UpdateState $vm $PS1TestCompleted
     }
 }
@@ -3441,7 +3442,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Collect log data
     #
-    $completionCode = "Failed"
+    $completionCode = $Failed
     $jobID = $vm.jobID
     if ($jobID -ne "none")
     {
@@ -3471,14 +3472,16 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
-            if ($jobResults[-1] -eq $True)
+            if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $True)
             {
-                $completionCode = "Success"
+                $completionCode = $Passed
+                $vm.testCaseResults = $Passed
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
             elseif ($jobResults[-1] -eq $Skipped)
             {
                 $completionCode = $Skipped
+                $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
         }
