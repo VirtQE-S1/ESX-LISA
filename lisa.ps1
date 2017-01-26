@@ -25,6 +25,7 @@
 ## v1.2 - xiaofwan - 1/22/2017 - Fix a typo issue
 ## v1.3 - xiaofwan - 1/23/2017 - Insert suite name into result dir name, such as
 ##                               cases-open_vm_tools-20170120-141152
+## v1.4 - xiaofwan - 1/26/2017 - Remove TC_COVERED param due to useless any more
 ##
 ###############################################################################
 
@@ -121,10 +122,8 @@
         <testCases>
             <test>
                 <testName>debug_demo_case</testName>
+                <testID>ESX-DEMO-001</testID>
                 <testScript>testscripts\debug_demo.ps1</testScript>
-                <testparams>
-                    <param>TC_COVERED=ESX-DEMO-001</param>
-                </testparams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>

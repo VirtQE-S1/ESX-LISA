@@ -43,12 +43,10 @@
     <testCases>
         <test>
             <testName>check_pam_unix2</testName>
+            <testID>ESX-OVT-001</testID>
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
-            <testparams>
-                <param>TC_COVERED=ESX-OVT-001</param>
-            </testparams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -56,11 +54,11 @@
         </test>
         <test>
             <testName>go_check_modules</testName>
+            <testID>ESX-GO-001</testID>
             <testScript>testscripts\go_check_modules.ps1</testScript>
             <testParams>
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
-                <param>TC_COVERED=ESX-GO-001</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -69,10 +67,10 @@
         </test>
         <test>
             <testName>go_check_cpu</testName>
+            <testID>ESX-GO-002</testID>
             <setupScript>setupscripts\change_cpu.ps1</setupScript>
             <testScript>testscripts\go_check_cpu.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=ESX-GO-002</param>
                 <param>VCPU=4</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -82,10 +80,10 @@
         </test>
         <test>
             <testName>go_check_memory</testName>
+            <testID>ESX-GO-003</testID>
             <setupScript>setupscripts\change_memory.ps1</setupScript>
             <testScript>testscripts\go_check_memory.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=ESX-GO-003</param>
                 <param>VMMemory=1GB</param>
                 <param>standard_diff=0.1</param>
             </testParams>
@@ -103,7 +101,7 @@
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suite>esx_automation_cases</suite>
+            <suite>acceptance</suite>
         </vm>
     </VMs>
 

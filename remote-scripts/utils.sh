@@ -24,6 +24,7 @@
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
 ## v1.2 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
 ##                               test case not applicable in current scenario.
+## v1.3 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
 ## 
 ###############################################################################
 
@@ -131,8 +132,6 @@ UtilsInit()
 		UpdateSummary "Error: constants file $__LIS_CONSTANTS_FILE missing or not a regular file. Cannot source it!"
 		return 3
 	fi
-
-	[ -n "$TC_COVERED" ] && UpdateSummary "Test covers $TC_COVERED" || UpdateSummary "Starting unknown test due to missing TC_COVERED variable"
 
 	GetDistro && LogMsg "Testscript running on $DISTRO" || LogMsg "Warning: test running on unknown distro!"
 
