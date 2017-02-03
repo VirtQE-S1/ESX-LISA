@@ -29,7 +29,8 @@
 ##                               test case not applicable in current scenario.
 ## v1.5 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
-## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support. 
+## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
+## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ##
 ###############################################################################
 
@@ -450,8 +451,8 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
     if ($vmObj.PowerState -ne "PoweredOff")
     {
         LogMsg 3 "Info : $($vm.vmName) is not in a stopped state - stopping VM"
-        $outStopVm = Stop-VM -VM $vmObj -Confirm:$False
-        if ($outStopVm -eq $False -or $outStopVm.PowerState -ne "PoweredOff")
+        $outStopVm = Stop-VM -VM $vmObj -Confirm:$false
+        if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff")
         {
             LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
             $vm.emailSummary += "Unable to stop VM. VM was disabled and no tests run<br />"
@@ -482,7 +483,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Find the snapshot we need and apply the snapshot
     #
-    $snapshotFound = $False
+    $snapshotFound = $false
     $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
     $snapsOut = Get-Snapshot -VM $vmObj
     if ($snapsOut)
@@ -492,7 +493,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($s.Name -eq $snapshotName)
             {
                 LogMsg 3 "Info : $($vm.vmName) is being reset to snapshot $($s.Name)"
-                $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$False
+                $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
                 if ($setsnapOut)
                 {
                     $snapshotFound = $true
@@ -524,7 +525,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($vmObj.PowerState -eq "Suspended")
             {
                 LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$False
+                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
                 if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                 {
                     LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -833,7 +834,7 @@ function DoSystemDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Mark current test the first case or after rebooted
     # 
-    $vm.isRebooted = $True.ToString()
+    $vm.isRebooted = $true.ToString()
 
     $iterationMsg = $null
     if ($vm.iteration -ne "-1")
@@ -939,7 +940,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
             #
             # Find the snapshot we need and apply the snapshot
             #
-            $snapshotFound = $False
+            $snapshotFound = $false
             $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
             $snapsOut = Get-Snapshot -VM $vmObj
             if ($snapsOut)
@@ -949,7 +950,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     if ($s.Name -eq $snapshotName)
                     {
                         LogMsg 3 "Info : $($vm.vmName) is being reset to snapshot $($s.Name)"
-                        $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$False
+                        $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
                         if ($setsnapOut)
                         {
                             $snapshotFound = $true
@@ -981,7 +982,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     if ($vmObj.PowerState -eq "Suspended")
                     {
                         LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$False
+                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
                         if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                         {
                             LogMsg 0 "Error : ApplyCheckpoint is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -1092,10 +1093,10 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
     if ($testData -is [System.Xml.XmlElement])
     {
         $testName = $testData.testName
-        $abortOnError = $True
+        $abortOnError = $true
         if ($testData.onError -eq "Continue")
         {
-            $abortOnError = $False
+            $abortOnError = $false
         }
 
         if ($testData.setupScript)
@@ -1237,7 +1238,7 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
     # Start the VM and wait for the state to go to Running
     #
     LogMsg 6 "Info : $($vm.vmName) is being started"
-    $startvmOut = Start-VM -VM $vmObj -Confirm:$False
+    $startvmOut = Start-VM -VM $vmObj -Confirm:$false
 
     $timeout = 180
     while ($timeout -gt 0)
@@ -1273,7 +1274,7 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
-            $stopvmOut = Stop-VM -VM $v -Confirm:$False
+            $stopvmOut = Stop-VM -VM $v -Confirm:$false
             if (-not $stopvmOut)
             {
                 LogMsg 0 "Error : DoStartSystem cannot stop the VM $($vm.vmName)"
@@ -2650,7 +2651,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 #
                 # Mark next test not rebooted
                 #
-                $vm.isRebooted = $False.ToString()
+                $vm.isRebooted = $false.ToString()
 
                 UpdateState $vm $SystemUp
 
@@ -2969,7 +2970,7 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         #
         # Try to force the VM to a stopped state
         #
-        $stopvmOut = Stop-VM -VM $v -Confirm:$False
+        $stopvmOut = Stop-VM -VM $v -Confirm:$false
         if (-not $stopvmOut)
         {
             LogMsg 0 "Error : DoForceShutDown cannot stop the VM $($vm.vmName)"
@@ -3043,7 +3044,7 @@ function DoFinished([System.Xml.XmlElement] $vm, [XML] $xmlData)
         foreach ($viserver in $global:DefaultVIServer)
         {
             LogMsg 5 "Info : DoFinished disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$False
+            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
 }
@@ -3079,7 +3080,7 @@ function DoDisabled([System.Xml.XmlElement] $vm, [XML] $xmlData)
         foreach ($viserver in $global:DefaultVIServer)
         {
             LogMsg 5 "Info : DoDisabled disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$False
+            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
 }
@@ -3315,7 +3316,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
-            if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $True)
+            if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $true)
             {
                 $completionCode = $Passed
                 $vm.testCaseResults = $Passed

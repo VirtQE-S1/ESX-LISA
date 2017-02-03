@@ -26,6 +26,7 @@
 ## v1.3 - xiaofwan - 1/23/2017 - Insert suite name into result dir name, such as
 ##                               cases-open_vm_tools-20170120-141152
 ## v1.4 - xiaofwan - 1/26/2017 - Remove TC_COVERED param due to useless any more
+## v1.5 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ##
 ###############################################################################
 
@@ -620,25 +621,25 @@ function RunInitShutdownScript([String] $scriptName, [String] $xmlFilename )
     if (-not $scriptName)
     {
         LogMsg 0 "Warn : RunInitShutdownScript() received a null scriptName"
-        return $False
+        return $false
     }
     
     if (-not $xmlFilename)
     {
         LogMsg 0 "Warn : RunInitShutdownScript() received a null xmlFilename"
-        return $False
+        return $false
     }
 
     if (-not (test-path $scriptName))
     {
         LogMsg 0 "Warn : ICAInit script does not exist: ${scriptName}"
-        return $False
+        return $false
     }
 
     if (-not (test-path $xmlFilename))
     {
         LogMsg 0 "Warn : XML file for ICAInit script does not exist: ${xmlFilename}"
-        return $False
+        return $false
     }
 
     #
@@ -764,7 +765,7 @@ function RunTests ([String] $xmlFilename )
     {
         LogMsg 0 "Error: Access denied. The script must be run as Administrator."
         LogMsg 0 "Error:                The WMI calls require administrator privileges."
-        return $False
+        return $false
     }
 
     #

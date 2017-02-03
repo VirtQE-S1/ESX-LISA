@@ -26,6 +26,7 @@
 ##                               such as cases-open_vm_tools-20170120-141152
 ## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
+## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ##
 ###############################################################################
 
@@ -53,13 +54,13 @@ function PowerCLIImport () {
     #>
     $modules = Get-Module
 
-    $foundVimautomation = $False
+    $foundVimautomation = $false
     foreach($module in $modules)
     {
         if($module.Name -eq "VMware.VimAutomation.Core")
         {
             "Info: PowerCLI module VMware.VimAutomation.Core already exists."
-            $foundVimautomation = $True
+            $foundVimautomation = $true
             break
         }
     }
@@ -190,7 +191,7 @@ function HasItBeenTooLong([String] $timestamp, [Int] $timeout)
         Type : [Int]
 
     .ReturnValue
-        Return $True if current time is greater than timestamp + timeout,
+        Return $true if current time is greater than timestamp + timeout,
                $false otherwise.
         Output type : [Boolean]
 
@@ -203,19 +204,19 @@ function HasItBeenTooLong([String] $timestamp, [Int] $timeout)
     if (-not $timeStamp)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     if (-not $timeout)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     if ($timeout -le 0)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     $now = [DateTime]::Now
@@ -679,7 +680,7 @@ function ShutDownVM([System.Xml.XmlElement] $vm)
             if (-not (SendCommandToVM $vm "init 0") )
             {
                 LogMsg 0 "Warn : $($vm.vmName) could not send shutdown command to the VM. Using ESXi to stop the VM."
-                Stop-VM -VM $v -Confirm:$False | out-null
+                Stop-VM -VM $v -Confirm:$false | out-null
             }
         }
     }
@@ -719,7 +720,7 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
         RunPSScript "fed13" "hvServer1" ".\AddNic.ps1" $testData ".\myLog.log"
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $scriptMode = "unknown"
 
@@ -729,19 +730,19 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     if (-not $vm)
     {
         logMsg 0 "Error: RunPSScript() was passed a numm VM"
-        return $False
+        return $false
     }
 
     if (-not $scriptName)
     {
         logMsg 0 ("Error: RunPSScript($vmName, $hvServer, null) was passed a null scriptName")
-        return $False
+        return $false
     }
 
     if (-not $xmlData)
     {
         logMsg 0 ("Error: RunPSScript($vmName, $hvServer, $scriptName, testData, null) was passed null test data")
-        return $False
+        return $false
     }
 
     if ($mode)
@@ -752,7 +753,7 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     if (-not (test-path -path $scriptName))
     {
         logMsg 0 ("Error: RunPSScript() script file '$scriptName' does not exist.")
-        return $False
+        return $false
     }
 
     $vmName = $vm.vmName
@@ -763,7 +764,7 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     if (-not $testData)
     {
         LogMsg 0 "$($vm.vmName) Unable to collect test data for test $($vm.currentTest)"
-        return $False
+        return $false
     }
 
     #
@@ -835,7 +836,7 @@ function TestPort ([String] $serverName, [Int] $port=22, [Int] $to=3)
         Test-Port $serverName -port 22 -timeout 5
     #>
 
-    $retVal = $False
+    $retVal = $false
     $timeout = $to * 1000
 
     #
@@ -927,7 +928,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
         True if the file was successfully copied, false otherwise.
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -939,7 +940,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
     $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
@@ -976,7 +977,7 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
         True if the file was successfully copied, false otherwise.
    #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -994,7 +995,7 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
     $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${hostname}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
@@ -1029,7 +1030,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
         True if the file was successfully copied, false otherwise.
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -1052,7 +1053,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
 
     if ($commandTimeout -gt 0)
     {
-        $retVal = $True
+        $retVal = $true
         LogMsg 2 "Success: $vmName successfully sent command to VM. Command = '$command'"
     }
 
@@ -1475,7 +1476,7 @@ function GetIPv4([String] $vmName, [String] $hvServer)
 #######################################################################
 function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlElement] $testData)
 {
-    $retVal = $True
+    $retVal = $true
 
     $vmName = $vm.vmName
     $testName = $testData.testName
@@ -1489,7 +1490,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         if (-not (Test-Path -Path "${sshKey}"))
         {
             LogMsg 0 "Error: ${vmName} - the VM sshkey '${sshKey}' does not exist"
-            $retVal = $False
+            $retVal = $false
         }
     }
 
@@ -1505,7 +1506,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${preStartScript}"))
                 {
                     LogMsg 0 "Error: $($vm.vmName) - the VM preStartConfig script '${preStartScript}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1514,7 +1515,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($vm.preStartConfig)"))
             {
                 LogMsg 0 "Error: $($vm.vmName) - the VM preStartConfig script '${preStartScript}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1531,7 +1532,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the setup script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1540,7 +1541,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.setupScript)"))
             {
                 LogMsg 0 "Error: ${vmName} - the setup script '$($testData.setupScript)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1557,7 +1558,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the PreTest script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1566,7 +1567,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.preTest)"))
             {
                 LogMsg 0 "Error: ${vmName} - the PreTest script '$($testData.preTest)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1583,7 +1584,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the PostTest script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1592,7 +1593,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.postTest)"))
             {
                 LogMsg 0 "Error: ${vmName} - the PostTest script '$($testData.postTest)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1609,7 +1610,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the cleanup script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1618,7 +1619,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.cleanupScript)"))
             {
                 LogMsg 0 "Error: ${vmName} - the cleanup script '$($testData.cleanupScript)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1635,7 +1636,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "${testFile}"))
             {
                 LogMsg 0 "Error: ${vmName} - the test file '${testFile}' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1649,7 +1650,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         if (-not (Test-Path -Path "${testFile}"))
         {
             LogMsg 0 "Error: ${vmName} - the test script '${testFile}' for test '${testName}' does not exist"
-            $retVal = $False
+            $retVal = $false
         }
     }
 
