@@ -24,7 +24,7 @@
 ##                                Merge bug fix from LISA
 ## v1.2 - xiaofwan - 1/25/2017 - Insert suite name into result dir name,
 ##                               such as cases-open_vm_tools-20170120-141152
-## v1.3 - xiaofwan - 1/25/2016 - $vm.testCaseResults only contains "Passed", 
+## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
 ##
 ###############################################################################
