@@ -25,10 +25,11 @@
 ## v1.2 - xiaofwan - 12/29/2016 - Fix snapshot checking issue found by @xuli.
 ## v1.3 - xiaofwan - 1/9/2017 - Add new feature: snapshot auto-create if there's
 ##                              no snapshot found in VM.
-## v1.4 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
+## v1.4 - xiaofwan - 1/25/2017 - Add a new result status - Skipped, which marks
 ##                               test case not applicable in current scenario.
-## v1.5 - xiaofwan - 1/25/2016 - $vm.testCaseResults only contains "Passed", 
+## v1.5 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
+## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support. 
 ##
 ###############################################################################
 
@@ -312,7 +313,7 @@ function RunICTests([XML] $xmlConfig)
         #
         # Add the state related xml elements to each VM xml node
         #
-        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "state", "emailSummary", "jobID", "testCaseResults", "iteration")
+        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "iteration", "isRebooted")
         foreach($element in $xmlElementsToAdd)
         {
             if (-not $vm.${element})
@@ -829,12 +830,19 @@ function DoSystemDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     UpdateCurrentTest $vm $xmlData
 
+    #
+    # Mark current test the first case or after rebooted
+    # 
+    $vm.isRebooted = $True.ToString()
+
     $iterationMsg = $null
     if ($vm.iteration -ne "-1")
     {
         $iterationMsg = " (iteration $($vm.iteration))"
     }
     LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
+
+    $vm.caseStartTime = [DateTime]::Now.ToString()
 
     if ($($vm.currentTest) -eq "done")
     {
@@ -1546,6 +1554,11 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $vm.emailSummary += "DoSystemUp received a null xmlData parameter - disabling VM<br />"
         $vm.currentTest = "done"
         UpdateState $vm $ForceShutdown
+    }
+
+    if (-not [bool]$vm.isRebooted)
+    {
+         $vm.caseStartTime = [DateTime]::Now.ToString()
     }
 
     $hostname = $vm.ipv4
@@ -2630,6 +2643,15 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
             }
             else
             {
+                $caseEndTime = [DateTime]::Now
+                $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+                LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+
+                #
+                # Mark next test not rebooted
+                #
+                $vm.isRebooted = $False.ToString()
+
                 UpdateState $vm $SystemUp
 
                 $nextTestData = GetTestData $nextTest $xmlData
@@ -2764,6 +2786,10 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
+            $caseEndTime = [DateTime]::Now
+            $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+            LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+            
             UpdateState $vm $SystemDown
         }
     }
@@ -2867,7 +2893,10 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
         LogMsg 0 "Error : $($vm.vmName) entered RunCleanupScript state when test $($vm.currentTest) does not have a cleanup script"
         $vm.emailSummary += "Entered RunCleanupScript but test does not have a cleanup script<br />"
     }
-
+    $caseEndTime = [DateTime]::Now
+    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+    
     UpdateState $vm $SystemDown
 }
 
