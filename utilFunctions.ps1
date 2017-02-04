@@ -29,6 +29,7 @@
 ## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
 ##                              Correct some comment issues.
+## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
 ##
 ###############################################################################
 
@@ -1301,26 +1302,6 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
     del lisaErr.tmp -ErrorAction "SilentlyContinue"
 
     return $retVal
-}
-
-#####################################################################
-#
-# Test-Admin()
-#
-#####################################################################
-function Test-Admin ()
-{
-    <#
-    .Synopsis
-        Check if process is running as an Administrator
-    .Description
-        Test if the user context this process is running as
-        has Administrator privileges
-    .Example
-        Test-Admin
-    #>
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
 #######################################################################
