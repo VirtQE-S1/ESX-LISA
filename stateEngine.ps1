@@ -31,6 +31,7 @@
 ##                               "Failed", "Skipped", "Aborted", and "none".
 ## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
 ## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
 ##
 ###############################################################################
 
@@ -260,6 +261,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+#
+# Generate an JUnit formated XML object to store case results.
+#
+$testResult = GetJUnitXML
+
 ########################################################################
 #
 # RunICTests()
@@ -333,6 +339,11 @@ function RunICTests([XML] $xmlConfig)
         # Correct the default iteration value
         #
         $vm.iteration = "-1"
+
+        #
+        # Add test suite into test result XML
+        #
+        SetResultSuite $vm.suite $testResult
 
         #
         # Add some information to the email summary text
@@ -2350,6 +2361,9 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $iterationMsg = "($($vm.iteration))"
     }
 
+    $testID = GetTestID $currentTest $xmlData
+    SetTestResult $currentTest $testID $completionCode
+
     $vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
 
     #
@@ -2648,6 +2662,8 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
                 LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
 
+                SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+
                 #
                 # Mark next test not rebooted
                 #
@@ -2791,6 +2807,8 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
             $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
             LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
             
+            SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+
             UpdateState $vm $SystemDown
         }
     }
@@ -2898,6 +2916,8 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
     LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
     
+    SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+
     UpdateState $vm $SystemDown
 }
 
@@ -3047,6 +3067,8 @@ function DoFinished([System.Xml.XmlElement] $vm, [XML] $xmlData)
             Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
+
+    SaveResultToXML $testDir
 }
 
 ########################################################################
@@ -3334,6 +3356,9 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     LogMsg 0 "Info : ${vmName} Status for test $($vm.currentTest) = ${completionCode}"
+
+    $testID = GetTestID $currentTest $xmlData
+    SetTestResult $currentTest $testID $completionCode
 
     #
     # Update e-mail summary

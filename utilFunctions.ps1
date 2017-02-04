@@ -27,6 +27,8 @@
 ## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
 ## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+##                              Correct some comment issues.
 ##
 ###############################################################################
 
@@ -44,7 +46,7 @@
 
 ###############################################################################
 #
-# Import VMware Powershell module
+# PowerCLIImport
 #
 ###############################################################################
 function PowerCLIImport () {
@@ -73,7 +75,7 @@ function PowerCLIImport () {
 
 ###############################################################################
 #
-# Connect to VI Server
+# ConnectToVIServer
 #
 ###############################################################################
 function ConnectToVIServer ([string] $visIpAddr, 
@@ -164,6 +166,202 @@ function ConnectToVIServer ([string] $visIpAddr,
         "Info : vCenter connected already! " + 
         "Session id: $($global:DefaultVIServer.SessionId)"
     }
+}
+
+#####################################################################
+#
+# GetJUnitXML 
+#
+#####################################################################
+function GetJUnitXML()
+{
+    <#
+    .Synopsis
+        Generate a JUnit XML object from template file.
+
+    .Description
+        Load JUnit XML result template file, and generate an XML object.
+
+    .ReturnValue
+        An xml object of JUnit result.
+        Output type: [XML]
+    .Example
+        GetJUnitXML
+    #>
+    LogMsg 6 ("Info :    GetJUnitXML()")
+
+    $template = @'
+<testsuite name="">
+<testcase id="" name="" time="">
+    <skipped/>
+    <failure type=""></failure>
+</testcase>
+</testsuite>
+'@
+
+    $guid = [System.Guid]::NewGuid().ToString("N")
+    $templatePath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), $guid + ".txt");
+
+    $template | Out-File $templatePath -encoding UTF8
+    # load template into XML object
+    $junit_xml = New-Object xml
+    $junit_xml.Load($templatePath)
+
+    Remove-Item $templatePath
+
+    return $junit_xml
+}
+
+#####################################################################
+#
+# SetResultSuite
+#
+#####################################################################
+function SetResultSuite([String] $testSuite)
+{
+    <#
+    .Synopsis
+        Configure test suite in result XML object.
+
+    .Description
+        Find the test suite, and configure test suite into result XML object.
+
+    .Parameter testSuite
+        The name of the test suite to run
+        Type : [String]
+
+    .Example
+        SetResultSuite "acceptance"
+    #>
+    LogMsg 6 ("Info :    SetResultSuite($($testSuite))")
+
+    $testResult.testsuite.name = $testSuite
+}
+
+#####################################################################
+#
+# SetTestResult
+#
+#####################################################################
+function SetTestResult([String] $testName, [String] $testID, [String] $completionCode)
+{
+    <#
+    .Synopsis
+        Add test case result into result XML object except running time.
+
+    .Description
+        Clone a test case group as template, add test result into that group.
+
+    .Parameter testName
+        The name of the test
+        Type : [String]
+
+    .Parameter testID
+        The ID of the test
+        Type : [String]
+
+    .Parameter completionCode
+        The test result, such as Passed, Failed, Skipped, and Aborted
+        Type : [String]
+
+    .Example
+        SetTestResult $testName $testID $completionCode
+    #>
+    LogMsg 6 ("Info :    SetTestResult($($testName))")
+
+    $newTestCaseTemplate = (@($testResult.testsuite.testcase)[0]).Clone()
+    $newTestCase = $newTestCaseTemplate.clone()
+    $newTestCase.name = $testName
+    $newTestCase.id = $testID
+    switch ($completionCode)
+    {
+        "Passed" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+        }
+        "Skipped" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[1]) | Out-Null
+        }
+        "Failed" {
+            $newTestCase.failure.type = "Failed"
+            $newTestCase.failure.InnerText = "Test $testName Failed."
+        }
+        "Aborted" {
+            $newTestCase.failure.type = "Aborted"
+            $newTestCase.failure.InnerText = "Test $testName Aborted."
+        }
+    }
+    $testResult.testsuite.AppendChild($newTestCase) > $null
+}
+
+#####################################################################
+#
+# SetRunningTime
+#
+#####################################################################
+function SetRunningTime([String] $testName, [String] $runningTime)
+{
+    <#
+    .Synopsis
+        Set running time in result XML object.
+
+    .Description
+        Find the test case, and configure test running time into result XML object.
+
+    .Parameter testName
+        The test name
+        Type : [String]
+    
+    .Parameter runningTime
+        The duration of test running
+        Type : [String]
+
+    .Example
+        SetRunningTime $testName $runningTime
+    #>
+    LogMsg 6 ("Info :    SetRunningTime($runningTime)")
+    $runningTime = "{0:N2}" -f [float]$runningTime
+
+    foreach ($testCase in $testResult.testsuite.testcase)
+    {
+        if ($testCase.name -eq $testName)
+        {
+            $testCase.time = $runningTime
+        }
+    }
+}
+
+#####################################################################
+#
+# SaveResultToXML
+#
+#####################################################################
+function SaveResultToXML([String] $testDir)
+{
+    <#
+    .Synopsis
+        Save test result to XML file in result folder..
+
+    .Description
+        Export result XML object into an XML file.
+
+    .Parameter testDir
+        The folder storing test log.
+        Type : [String]
+
+    .Example
+        SaveResultToXML $testDir
+    #>
+    LogMsg 6 ("Info :    SaveResultToXML to ($($testDir))")
+
+    $resultXMLFileName = "Report-" + $testResult.testsuite.name + ".xml"
+
+    # remove users with undefined name (remove template)
+    $testResult.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$testResult.testsuite.RemoveChild($_) }
+    # save xml to file
+    $resultXMLFile = Join-Path -path $testDir -childPath $resultXMLFileName
+    $resultXMLFile = (Get-Item -Path ".\" -Verbose).FullName + "\" + $resultXMLFile
+    $testResult.Save($resultXMLFile)
 }
 
 #####################################################################
@@ -417,6 +615,48 @@ function GetTestData([String] $testName, [xml] $xmlData)
 
 #####################################################################
 #
+# GetTestID
+#
+#####################################################################
+function GetTestID([String] $testName, [xml] $xmlData)
+{
+    <#
+    .Synopsis
+        Retrieve the xml object for the test ID of specified test
+
+    .Description
+        Find the test named $testName, and return the testID field value, 
+        on $null if the test is not found.
+
+    .Parameter testName
+        The name of the test to return
+        Type : [String]
+
+    .ReturnValue
+        testID
+        Type: [String]
+
+    .Example
+        GetTestData "MyTest"
+    #>
+    LogMsg 6 ("Info :    GetTestID($($testName))")
+
+    $testID = $null
+
+    foreach ($test in $xmlData.config.testCases.test)
+    {
+        if ($test.testName -eq $testName)
+        {
+            $testID = $test.testID
+            break
+        }
+    }
+
+    return $testID
+}
+
+#####################################################################
+#
 # GetTestTimeout
 #
 #####################################################################
@@ -565,7 +805,7 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
         $logPath = (Get-Item -Path ".\" -Verbose).FullName + "\" + $logDir    
     }
 
-     if (-not $suite)
+    if (-not $suite)
     {
         $suite = $xmlConfig.config.VMs.vm.suite
     }
