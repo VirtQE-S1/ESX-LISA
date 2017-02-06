@@ -30,6 +30,8 @@
 ## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
 ##                              Correct some comment issues.
 ## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
+## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
+##                              case failed or aborted.
 ##
 ###############################################################################
 
@@ -284,10 +286,12 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
             $newTestCase.RemoveChild($newTestCase.ChildNodes[1]) | Out-Null
         }
         "Failed" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
             $newTestCase.failure.type = "Failed"
             $newTestCase.failure.InnerText = "Test $testName Failed."
         }
         "Aborted" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
             $newTestCase.failure.type = "Aborted"
             $newTestCase.failure.InnerText = "Test $testName Aborted."
         }
