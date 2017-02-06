@@ -22,6 +22,17 @@
 ##                                Incorporate VMware PowerCLI with framework
 ## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
+## v1.2 - xiaofwan - 1/25/2017 - Insert suite name into result dir name,
+##                               such as cases-open_vm_tools-20170120-141152
+## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
+##                               "Failed", "Skipped", "Aborted", and "none".
+## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+##                              Correct some comment issues.
+## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
+## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
+##                              case failed or aborted.
+##
 ###############################################################################
 
 <#
@@ -38,7 +49,7 @@
 
 ###############################################################################
 #
-# Import VMware Powershell module
+# PowerCLIImport
 #
 ###############################################################################
 function PowerCLIImport () {
@@ -48,13 +59,13 @@ function PowerCLIImport () {
     #>
     $modules = Get-Module
 
-    $foundVimautomation = $False
+    $foundVimautomation = $false
     foreach($module in $modules)
     {
         if($module.Name -eq "VMware.VimAutomation.Core")
         {
             "Info: PowerCLI module VMware.VimAutomation.Core already exists."
-            $foundVimautomation = $True
+            $foundVimautomation = $true
             break
         }
     }
@@ -67,7 +78,7 @@ function PowerCLIImport () {
 
 ###############################################################################
 #
-# Connect to VI Server
+# ConnectToVIServer
 #
 ###############################################################################
 function ConnectToVIServer ([string] $visIpAddr, 
@@ -162,6 +173,204 @@ function ConnectToVIServer ([string] $visIpAddr,
 
 #####################################################################
 #
+# GetJUnitXML 
+#
+#####################################################################
+function GetJUnitXML()
+{
+    <#
+    .Synopsis
+        Generate a JUnit XML object from template file.
+
+    .Description
+        Load JUnit XML result template file, and generate an XML object.
+
+    .ReturnValue
+        An xml object of JUnit result.
+        Output type: [XML]
+    .Example
+        GetJUnitXML
+    #>
+    LogMsg 6 ("Info :    GetJUnitXML()")
+
+    $template = @'
+<testsuite name="">
+<testcase id="" name="" time="">
+    <skipped/>
+    <failure type=""></failure>
+</testcase>
+</testsuite>
+'@
+
+    $guid = [System.Guid]::NewGuid().ToString("N")
+    $templatePath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), $guid + ".txt");
+
+    $template | Out-File $templatePath -encoding UTF8
+    # load template into XML object
+    $junit_xml = New-Object xml
+    $junit_xml.Load($templatePath)
+
+    Remove-Item $templatePath
+
+    return $junit_xml
+}
+
+#####################################################################
+#
+# SetResultSuite
+#
+#####################################################################
+function SetResultSuite([String] $testSuite)
+{
+    <#
+    .Synopsis
+        Configure test suite in result XML object.
+
+    .Description
+        Find the test suite, and configure test suite into result XML object.
+
+    .Parameter testSuite
+        The name of the test suite to run
+        Type : [String]
+
+    .Example
+        SetResultSuite "acceptance"
+    #>
+    LogMsg 6 ("Info :    SetResultSuite($($testSuite))")
+
+    $testResult.testsuite.name = $testSuite
+}
+
+#####################################################################
+#
+# SetTestResult
+#
+#####################################################################
+function SetTestResult([String] $testName, [String] $testID, [String] $completionCode)
+{
+    <#
+    .Synopsis
+        Add test case result into result XML object except running time.
+
+    .Description
+        Clone a test case group as template, add test result into that group.
+
+    .Parameter testName
+        The name of the test
+        Type : [String]
+
+    .Parameter testID
+        The ID of the test
+        Type : [String]
+
+    .Parameter completionCode
+        The test result, such as Passed, Failed, Skipped, and Aborted
+        Type : [String]
+
+    .Example
+        SetTestResult $testName $testID $completionCode
+    #>
+    LogMsg 6 ("Info :    SetTestResult($($testName))")
+
+    $newTestCaseTemplate = (@($testResult.testsuite.testcase)[0]).Clone()
+    $newTestCase = $newTestCaseTemplate.clone()
+    $newTestCase.name = $testName
+    $newTestCase.id = $testID
+    switch ($completionCode)
+    {
+        "Passed" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+        }
+        "Skipped" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[1]) | Out-Null
+        }
+        "Failed" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+            $newTestCase.failure.type = "Failed"
+            $newTestCase.failure.InnerText = "Test $testName Failed."
+        }
+        "Aborted" {
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+            $newTestCase.failure.type = "Aborted"
+            $newTestCase.failure.InnerText = "Test $testName Aborted."
+        }
+    }
+    $testResult.testsuite.AppendChild($newTestCase) > $null
+}
+
+#####################################################################
+#
+# SetRunningTime
+#
+#####################################################################
+function SetRunningTime([String] $testName, [String] $runningTime)
+{
+    <#
+    .Synopsis
+        Set running time in result XML object.
+
+    .Description
+        Find the test case, and configure test running time into result XML object.
+
+    .Parameter testName
+        The test name
+        Type : [String]
+    
+    .Parameter runningTime
+        The duration of test running
+        Type : [String]
+
+    .Example
+        SetRunningTime $testName $runningTime
+    #>
+    LogMsg 6 ("Info :    SetRunningTime($runningTime)")
+    $runningTime = "{0:N2}" -f [float]$runningTime
+
+    foreach ($testCase in $testResult.testsuite.testcase)
+    {
+        if ($testCase.name -eq $testName)
+        {
+            $testCase.time = $runningTime
+        }
+    }
+}
+
+#####################################################################
+#
+# SaveResultToXML
+#
+#####################################################################
+function SaveResultToXML([String] $testDir)
+{
+    <#
+    .Synopsis
+        Save test result to XML file in result folder..
+
+    .Description
+        Export result XML object into an XML file.
+
+    .Parameter testDir
+        The folder storing test log.
+        Type : [String]
+
+    .Example
+        SaveResultToXML $testDir
+    #>
+    LogMsg 6 ("Info :    SaveResultToXML to ($($testDir))")
+
+    $resultXMLFileName = "Report-" + $testResult.testsuite.name + ".xml"
+
+    # remove users with undefined name (remove template)
+    $testResult.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$testResult.testsuite.RemoveChild($_) }
+    # save xml to file
+    $resultXMLFile = Join-Path -path $testDir -childPath $resultXMLFileName
+    $resultXMLFile = (Get-Item -Path ".\" -Verbose).FullName + "\" + $resultXMLFile
+    $testResult.Save($resultXMLFile)
+}
+
+#####################################################################
+#
 # HasItBeenTooLong
 #
 #####################################################################
@@ -185,7 +394,7 @@ function HasItBeenTooLong([String] $timestamp, [Int] $timeout)
         Type : [Int]
 
     .ReturnValue
-        Return $True if current time is greater than timestamp + timeout,
+        Return $true if current time is greater than timestamp + timeout,
                $false otherwise.
         Output type : [Boolean]
 
@@ -198,19 +407,19 @@ function HasItBeenTooLong([String] $timestamp, [Int] $timeout)
     if (-not $timeStamp)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     if (-not $timeout)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     if ($timeout -le 0)
     {
         # Bad data - force a timeout
-        return $True
+        return $true
     }
 
     $now = [DateTime]::Now
@@ -411,6 +620,48 @@ function GetTestData([String] $testName, [xml] $xmlData)
 
 #####################################################################
 #
+# GetTestID
+#
+#####################################################################
+function GetTestID([String] $testName, [xml] $xmlData)
+{
+    <#
+    .Synopsis
+        Retrieve the xml object for the test ID of specified test
+
+    .Description
+        Find the test named $testName, and return the testID field value, 
+        on $null if the test is not found.
+
+    .Parameter testName
+        The name of the test to return
+        Type : [String]
+
+    .ReturnValue
+        testID
+        Type: [String]
+
+    .Example
+        GetTestData "MyTest"
+    #>
+    LogMsg 6 ("Info :    GetTestID($($testName))")
+
+    $testID = $null
+
+    foreach ($test in $xmlData.config.testCases.test)
+    {
+        if ($test.testName -eq $testName)
+        {
+            $testID = $test.testID
+            break
+        }
+    }
+
+    return $testID
+}
+
+#####################################################################
+#
 # GetTestTimeout
 #
 #####################################################################
@@ -485,7 +736,7 @@ function AbortCurrentTest([System.Xml.XmlElement] $vm, [string] $msg)
         logMsg 0 "Error: $($vm.vmName) $msg"
     }
 
-    $vm.testCaseResults = "False"
+    $vm.testCaseResults = $Aborted
     $vm.state = $CollectLogFiles
 
     logMsg 2 "Info : $($vm.vmName) transitioned to state $($vm.state)"
@@ -559,7 +810,12 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
         $logPath = (Get-Item -Path ".\" -Verbose).FullName + "\" + $logDir    
     }
 
-    $str += "Logs can be found at " + $logPath + "\" + $fname + "-" + $startTime.ToString("yyyyMMdd-HHmmss") + "<br /><br />"
+    if (-not $suite)
+    {
+        $suite = $xmlConfig.config.VMs.vm.suite
+    }
+
+    $str += "Logs can be found at " + $logPath + "\" + $fname + "-" + $suite + "-" + $startTime.ToString("yyyyMMdd-HHmmss") + "<br /><br />"
     $str += "</pre><br />"
     return $str
 }
@@ -669,7 +925,7 @@ function ShutDownVM([System.Xml.XmlElement] $vm)
             if (-not (SendCommandToVM $vm "init 0") )
             {
                 LogMsg 0 "Warn : $($vm.vmName) could not send shutdown command to the VM. Using ESXi to stop the VM."
-                Stop-VM -VM $v -Confirm:$False | out-null
+                Stop-VM -VM $v -Confirm:$false | out-null
             }
         }
     }
@@ -709,7 +965,7 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
         RunPSScript "fed13" "hvServer1" ".\AddNic.ps1" $testData ".\myLog.log"
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $scriptMode = "unknown"
 
@@ -719,19 +975,19 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     if (-not $vm)
     {
         logMsg 0 "Error: RunPSScript() was passed a numm VM"
-        return $False
+        return $false
     }
 
     if (-not $scriptName)
     {
         logMsg 0 ("Error: RunPSScript($vmName, $hvServer, null) was passed a null scriptName")
-        return $False
+        return $false
     }
 
     if (-not $xmlData)
     {
         logMsg 0 ("Error: RunPSScript($vmName, $hvServer, $scriptName, testData, null) was passed null test data")
-        return $False
+        return $false
     }
 
     if ($mode)
@@ -742,7 +998,7 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     if (-not (test-path -path $scriptName))
     {
         logMsg 0 ("Error: RunPSScript() script file '$scriptName' does not exist.")
-        return $False
+        return $false
     }
 
     $vmName = $vm.vmName
@@ -752,11 +1008,8 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
 
     if (-not $testData)
     {
-        if ([string]::Compare($vm.role, "SUT", $true) -eq $true)
-        {
-            LogMsg 0 "$($vm.vmName) Unable to collect test data for test $($vm.currentTest)"
-            return $False
-        }
+        LogMsg 0 "$($vm.vmName) Unable to collect test data for test $($vm.currentTest)"
+        return $false
     }
 
     #
@@ -828,7 +1081,7 @@ function TestPort ([String] $serverName, [Int] $port=22, [Int] $to=3)
         Test-Port $serverName -port 22 -timeout 5
     #>
 
-    $retVal = $False
+    $retVal = $false
     $timeout = $to * 1000
 
     #
@@ -920,7 +1173,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
         True if the file was successfully copied, false otherwise.
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -932,7 +1185,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
     $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
@@ -969,7 +1222,7 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
         True if the file was successfully copied, false otherwise.
    #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -987,7 +1240,7 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
     $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${hostname}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
@@ -1022,7 +1275,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
         True if the file was successfully copied, false otherwise.
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $vmName = $vm.vmName
     $hostname = $vm.ipv4
@@ -1045,7 +1298,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
 
     if ($commandTimeout -gt 0)
     {
-        $retVal = $True
+        $retVal = $true
         LogMsg 2 "Success: $vmName successfully sent command to VM. Command = '$command'"
     }
 
@@ -1053,26 +1306,6 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
     del lisaErr.tmp -ErrorAction "SilentlyContinue"
 
     return $retVal
-}
-
-#####################################################################
-#
-# Test-Admin()
-#
-#####################################################################
-function Test-Admin ()
-{
-    <#
-    .Synopsis
-        Check if process is running as an Administrator
-    .Description
-        Test if the user context this process is running as
-        has Administrator privileges
-    .Example
-        Test-Admin
-    #>
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
 #######################################################################
@@ -1225,7 +1458,7 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     #if previous test failed and the XML setting is set to Abort on "onError"
     # then try to quite Lisa
-    if ( (($vm.testCaseResults -eq "False") -or ($vm.testCaseResults -eq "none")) -and $previousTestData.onError -eq "Abort")
+    if ( (($vm.testCaseResults -eq $Aborted) -or ($vm.testCaseResults -eq $Failed)) -and $previousTestData.onError -eq "Abort")
     {
         $vm.currentTest = "done"
         return
@@ -1468,7 +1701,7 @@ function GetIPv4([String] $vmName, [String] $hvServer)
 #######################################################################
 function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlElement] $testData)
 {
-    $retVal = $True
+    $retVal = $true
 
     $vmName = $vm.vmName
     $testName = $testData.testName
@@ -1482,7 +1715,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         if (-not (Test-Path -Path "${sshKey}"))
         {
             LogMsg 0 "Error: ${vmName} - the VM sshkey '${sshKey}' does not exist"
-            $retVal = $False
+            $retVal = $false
         }
     }
 
@@ -1498,7 +1731,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${preStartScript}"))
                 {
                     LogMsg 0 "Error: $($vm.vmName) - the VM preStartConfig script '${preStartScript}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1507,7 +1740,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($vm.preStartConfig)"))
             {
                 LogMsg 0 "Error: $($vm.vmName) - the VM preStartConfig script '${preStartScript}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1524,7 +1757,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the setup script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1533,7 +1766,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.setupScript)"))
             {
                 LogMsg 0 "Error: ${vmName} - the setup script '$($testData.setupScript)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1550,7 +1783,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the PreTest script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1559,7 +1792,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.preTest)"))
             {
                 LogMsg 0 "Error: ${vmName} - the PreTest script '$($testData.preTest)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1576,7 +1809,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the PostTest script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1585,7 +1818,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.postTest)"))
             {
                 LogMsg 0 "Error: ${vmName} - the PostTest script '$($testData.postTest)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1602,7 +1835,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
                 if (-not (Test-Path -Path "${script}"))
                 {
                     LogMsg 0 "Error: ${vmName} - the cleanup script '${script}' for test '${testName}' does not exist"
-                    $retVal = $False
+                    $retVal = $false
                 }
             }
         }
@@ -1611,7 +1844,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "$($testData.cleanupScript)"))
             {
                 LogMsg 0 "Error: ${vmName} - the cleanup script '$($testData.cleanupScript)' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1628,7 +1861,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
             if (-not (Test-Path -Path "${testFile}"))
             {
                 LogMsg 0 "Error: ${vmName} - the test file '${testFile}' for test '${testName}' does not exist"
-                $retVal = $False
+                $retVal = $false
             }
         }
     }
@@ -1642,7 +1875,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         if (-not (Test-Path -Path "${testFile}"))
         {
             LogMsg 0 "Error: ${vmName} - the test script '${testFile}' for test '${testName}' does not exist"
-            $retVal = $False
+            $retVal = $false
         }
     }
 

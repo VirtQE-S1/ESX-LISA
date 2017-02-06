@@ -20,6 +20,8 @@
 ## Revision:
 ## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
+## v1.1 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+##
 ###############################################################################
 
 <#
@@ -177,10 +179,10 @@ function StartOSAtDaemon ([System.Xml.XmlElement] $vm)
 
     if (-not $vm)
     {
-        return $False
+        return $false
     }
 
-    $daemonStarted = $False
+    $daemonStarted = $false
 
     if ($vm.os)
     {
@@ -192,7 +194,7 @@ function StartOSAtDaemon ([System.Xml.XmlElement] $vm)
         $LinuxOS    {
                         if ( (SendCommandToVM $vm "/etc/init.d/atd start") )
                         {
-                             $daemonStarted = $True
+                             $daemonStarted = $true
                         }
                      }
 
@@ -200,7 +202,7 @@ function StartOSAtDaemon ([System.Xml.XmlElement] $vm)
         # FreeBSD uses crond which is started by default
         #
         $FreeBSDOS  {
-                        $daemonStarted = $True
+                        $daemonStarted = $true
                     }
 
         #
