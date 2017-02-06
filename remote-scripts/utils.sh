@@ -22,6 +22,9 @@
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
+## v1.2 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
+##                               test case not applicable in current scenario.
+## v1.3 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
 ## 
 ###############################################################################
 
@@ -56,6 +59,7 @@ declare __LIS_STATE_FILE="$LIS_HOME/state.txt"
 # LIS possible states recorded in state file
 declare __LIS_TESTRUNNING="TestRunning"      # The test is running
 declare __LIS_TESTCOMPLETED="TestCompleted"  # The test completed successfully
+declare __LIS_TESTSKIPPED="TestSkipped"  	 # The test is not supported by this scenario
 declare __LIS_TESTABORTED="TestAborted"      # Error during setup of test
 declare __LIS_TESTFAILED="TestFailed"        # Error during execution of test
 
@@ -129,8 +133,6 @@ UtilsInit()
 		return 3
 	fi
 
-	[ -n "$TC_COVERED" ] && UpdateSummary "Test covers $TC_COVERED" || UpdateSummary "Starting unknown test due to missing TC_COVERED variable"
-
 	GetDistro && LogMsg "Testscript running on $DISTRO" || LogMsg "Warning: test running on unknown distro!"
 
 	LogMsg "Successfully initialized testscript!"
@@ -168,6 +170,12 @@ SetTestStateFailed()
 SetTestStateAborted()
 {
 	__SetTestState "$__LIS_TESTABORTED"
+	return $?
+}
+
+SetTestStateSkipped()
+{
+	__SetTestState "$__LIS_TESTSKIPPED"
 	return $?
 }
 
