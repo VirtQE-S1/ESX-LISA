@@ -2,12 +2,15 @@
 ##
 ## Description:
 ##   Check modules in vm
-##   If true, case is passed; false, case is failed
+##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - hhei - 1/6/2017 - Check modules in vm.
+## v1.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
+##                          true is changed to passed,
+##                          false is changed to failed.
 ##
 ###############################################################################
 <#
@@ -56,7 +59,6 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$tcCovered = "undefined"
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -67,7 +69,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "rhel6_modules" { $rhel6_modules = $fields[1].Trim()}
     "rhel7_modules" { $rhel7_modules = $fields[1].Trim()}
     default        {}
@@ -101,7 +102,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $False
+$Result = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
@@ -116,40 +117,40 @@ else
     if ( -not $DISTRO )
     {
         "Error : Guest OS version is NULL"
-        $Result = $False
+        $Result = $Failed
     }
     elseif ( $DISTRO -eq "RedHat6" )
     {
         $modules_array = $rhel6_modules.split(",")
-        $Result = $True
+        $Result = $Passed
     }
     elseif ( $DISTRO -eq "RedHat7" )
     {
         $modules_array = $rhel7_modules.split(",")
-        $Result = $True
+        $Result = $Passed
     }
     else
     {
         "Error : Guest OS version is $DISTRO"
-        $Result = $False
+        $Result = $Failed
     }
 
     "Info : Guest OS version is $DISTRO"
 
-    if ( $Result -eq $True )
+    if ( $Result -eq $Passed )
     {
         foreach ( $m in $modules_array )
         {
             $module = $m.Trim()
             $r = CheckModule $ipv4 $sshKey $module
-            if ( $r -eq $True )
+            if ( $r -eq $true )
             {
                 "Info : Check module '$module' successfully"
             }
             else
             {
                 "Error : Check module '$module' failed"
-                $Result = $False
+                $Result = $Failed
             }
         }
     }
