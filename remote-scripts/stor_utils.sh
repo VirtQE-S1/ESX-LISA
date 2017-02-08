@@ -10,6 +10,9 @@
 ## Revision:
 ## v1.0 - xuli - 09/01/2017 - Draft script for case stor_utils.sh
 ## v1.1 - xuli - 09/20/2017 - update function comment to inner function
+## v1.2 - xuli - 02/08/2017 - Add function DoParted, update DoMountFs to support
+## mount type, e.g. nfs, add diskFormatType for TestMultiplFileSystems and
+## TestSingleFileSystem
 ###############################################################################
 
 CheckIntegrity()
@@ -88,6 +91,27 @@ DoFdisk()
     fi
 }
 
+DoParted()
+{
+    ############################################################################
+    # Description:
+    #   Use parted /dev/sdb to create partition /dev/sdb1
+    # Parameters:
+    # $1 : storage device name /dev/sdb
+    # Return: 0 : if parted successfully, otherwise, return 1
+    ############################################################################
+    local driveName=$1
+    parted -s -- $driveName mklabel gpt
+    parted -s -- $driveName mkpart primary 64s -64s
+
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully parted drive."
+        return 0
+    else
+        LogMsg "Error in parted drive, check disk is already mounted or not."
+        return 1
+    fi
+}
 
 DoMakeFs()
 {
@@ -117,7 +141,6 @@ DoMakeFs()
     fi
   }
 
-
 DoMountFs()
 {
     ############################################################################
@@ -126,11 +149,18 @@ DoMountFs()
     # Parameters:
     # $1 : storage device name /dev/sdb
     # $2 : mountPoint, e.g. /mnt
+    # $3 : mountType, e.g. nfs
     # Return: 0 : if mount successfully, otherwise, return 1
     ############################################################################
     local driveName=$1
     local mountPoint=$2
-    mount ${driveName}1 $mountPoint
+    local mountType=$3
+    if [ ! ${mountType} ]; then
+        mount ${driveName}1 $mountPoint
+    else
+        # mount -t nfs $NFS_Path /mnt
+        mount -t ${mountType} ${driveName} $mountPoint
+    fi
     if [ "$?" = "0" ]; then
         LogMsg "Drive mounted successfully..."
         return 0
@@ -225,7 +255,6 @@ CheckDiskSize()
     done
 }
 
-
 CheckDiskCount()
 {
     ############################################################################
@@ -285,17 +314,27 @@ TestSingleFileSystem()
     # umount, CheckIntegrity
     # Parameters:
     # $1 : storage device name /dev/sdb
-    # $2 : file system type
+    # $2 : file system type (ext4,ext3)
+    # $3 : disk format type, parted, or fdisk
     # Return: 0 : test file system successfully, otherwise, return 1
     ############################################################################
     local driveName=$1
     local fs=$2
+    local diskFormatType=$3
 
-    # fdisk /dev/sd*
-    DoFdisk $driveName
-    if [ "$?" != "0" ]; then
-        LogMsg "Error in fdisk $driveName"
-        return 1
+    if [ "$diskFormatType" = "parted" ]; then
+        DoParted $driveName
+        if [ "$?" != "0" ]; then
+            LogMsg "Error in parted $driveName"
+            return 1
+        fi
+    else
+        # fdisk /dev/sd*
+        DoFdisk $driveName
+        if [ "$?" != "0" ]; then
+            LogMsg "Error in fdisk $driveName"
+            return 1
+        fi
     fi
 
     #make file system
@@ -344,9 +383,11 @@ TestSingleFileSystem()
     # then create file on it, umount for multiple file systems,
     # Parameters:
     # $1 : file system array: e.g. (ext3, ext4, xfs)
+    # $2 : disk format type, e.g. fdisk or parted
     # Return: 0 : test file systems successfully, otherwise, return 1
     ###########################################################################
-    local fileSystems=("$@")
+    local fileSystems=($1)
+    local diskFormatType=$2
     for driveName in /dev/sd*[^0-9];
     do
      # Skip /dev/sda
@@ -358,7 +399,7 @@ TestSingleFileSystem()
                 if [ "$?" != "0" ]; then
                     LogMsg "File-system tools for $fs not present. Skip filesystem $fs."
                 else
-                    TestSingleFileSystem $driveName $fs
+                    TestSingleFileSystem $driveName $fs $diskFormatType
                     if [ "$?" != "0" ]; then
                         LogMsg "Disk file test failed."
                         return 1

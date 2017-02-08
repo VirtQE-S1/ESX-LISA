@@ -9,7 +9,7 @@
 ##
 ## Revision:
 ## v1.0 - xuli - 01/09/2017 - Draft script for case stor_lis_disk.sh
-## v2.0 - xuli - 01/20/2017 - Update check call trace as final step
+## v1.1 - xuli - 01/20/2017 - Update check call trace as final step
 ###############################################################################
 dos2unix utils.sh
 # Source utils.sh
@@ -25,7 +25,7 @@ UtilsInit
 UpdateSummary "$(uname -a)"
 
 dos2unix stor_utils.sh
-# Source utils.sh
+# Source stor_utils.sh
 . stor_utils.sh || {
     LogMsg "Error: unable to source stor_utils.sh!"
     UpdateSummary "Error: unable to source stor_utils.sh!"
@@ -66,7 +66,14 @@ fi
 if  [ ! ${fileSystems} ];then
     fileSystems=(ext3)
 fi
-TestMultiplFileSystems ${fileSystems[@]}
+
+if  [ ! $diskFormatType ];then
+    LogMsg "will use fdisk command to format disk"
+else
+    LogMsg "will use $diskFormatType command to format disk"
+fi
+
+TestMultiplFileSystems ${fileSystems[@]} $diskFormatType
 if [ "$?" != "0" ]; then
     UpdateSummary "Disk file test failed "
     LogMsg "Disk file test failed."
@@ -75,7 +82,6 @@ if [ "$?" != "0" ]; then
 else
     UpdateSummary "Disk file test Successfully "
     LogMsg "Disk file test Successfully."
-
 fi
 # Check for call trace log
 CheckCallTrace
