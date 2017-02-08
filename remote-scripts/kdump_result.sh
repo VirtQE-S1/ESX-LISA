@@ -34,18 +34,15 @@ UtilsInit
 ##
 ###############################################################################
 
-CheckVmcore()
-{
-    if ! [[ $(find /var/crash/*/vmcore -type f -size +10M) ]]; then
-        LogMsg "FAIL: No file was found in /var/crash of size greater than 10M."
-        UpdateSummary "FAIL: No file was found in /var/crash of size greater than 10M."
-	exit 1
-    else 
-        LogMsg "SUCCESS: Proper file was found."
-        UpdateSummary "SUCCESS: Proper file was found."
-    fi
-}
-
 LogMsg "Start to check vmcore......."
 UpdateSummary "Start to check vmcore......."
-CheckVmcore
+find /var/crash/*/vmcore -type f -size +10M
+if [ $? -eq 0 ]
+then
+	LogMsg "SUCCESS: Proper file was found."
+	UpdateSummary "SUCCESS: Proper file was found"
+else 
+	LogMsg "FAIL: No file was found in /var/crash of size greater than 10M."
+	UpdateSummary "FAIL: No file was found in /var/crash of size greater than 10M."
+	exit 1
+fi
