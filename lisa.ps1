@@ -22,6 +22,14 @@
 ##                                Incorporate VMware PowerCLI with framework
 ## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
+## v1.2 - xiaofwan - 1/22/2017 - Fix a typo issue
+## v1.3 - xiaofwan - 1/23/2017 - Insert suite name into result dir name, such as
+##                               cases-open_vm_tools-20170120-141152
+## v1.4 - xiaofwan - 1/26/2017 - Remove TC_COVERED param due to useless any more
+## v1.5 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v2.0 - xiaofwan - 2/4/2017 - Add running time and JUnit XML result support.
+## v2.0.1 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
+##
 ###############################################################################
 
 
@@ -117,10 +125,8 @@
         <testCases>
             <test>
                 <testName>debug_demo_case</testName>
+                <testID>ESX-DEMO-001</testID>
                 <testScript>testscripts\debug_demo.ps1</testScript>
-                <testparams>
-                    <param>TC_COVERED=ESX-DEMO-001</param>
-                </testparams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>
@@ -228,7 +234,7 @@ param([string] $cmdVerb,
 #
 # Global variables
 #
-$lisaVersion = "1.1"
+$lisaVersion = "2.0.1"
 $logfileRootDir = ".\TestResults"
 $logFile = "ica.log"
 
@@ -355,28 +361,6 @@ function    DumpParams()
     LogMsg 0 "Info : os:         $os"
     LogMsg 0 "Info : dbgLevel:   $dbgLevel"
 }
-
-
-#####################################################################
-#
-# Test-Admin
-#
-#####################################################################
-function Test-Admin()
-{
-    <#
-    .Synopsis
-        Check if process is running as an Administrator
-    .Description
-        Test if the user context this process is running as
-        has Administrator privileges
-    .Example
-        Test-Admin
-    #> 
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-}
-
 
 #####################################################################
 #
@@ -617,25 +601,25 @@ function RunInitShutdownScript([String] $scriptName, [String] $xmlFilename )
     if (-not $scriptName)
     {
         LogMsg 0 "Warn : RunInitShutdownScript() received a null scriptName"
-        return $False
+        return $false
     }
     
     if (-not $xmlFilename)
     {
         LogMsg 0 "Warn : RunInitShutdownScript() received a null xmlFilename"
-        return $False
+        return $false
     }
 
     if (-not (test-path $scriptName))
     {
         LogMsg 0 "Warn : ICAInit script does not exist: ${scriptName}"
-        return $False
+        return $false
     }
 
     if (-not (test-path $xmlFilename))
     {
         LogMsg 0 "Warn : XML file for ICAInit script does not exist: ${xmlFilename}"
-        return $False
+        return $false
     }
 
     #
@@ -739,9 +723,14 @@ function RunTests ([String] $xmlFilename )
             return $false
         }
     }
+
+    if (-not $suite)
+    {
+        $suite = $xmlConfig.config.VMs.vm.suite
+    }
     
     $fname = [System.IO.Path]::GetFilenameWithoutExtension($xmlFilename)
-    $testRunDir = $fname + "-" + $Script:testStartTime.ToString("yyyyMMdd-HHmmss")
+    $testRunDir = $fname + "-" + $suite + "-" + $Script:testStartTime.ToString("yyyyMMdd-HHmmss")
     $testDir = join-path -path $rootDir -childPath $testRunDir
     mkdir $testDir | out-null
     
@@ -751,13 +740,6 @@ function RunTests ([String] $xmlFilename )
     LogMsg 4 "Info : Created directory: $testDir"
     LogMsg 4 "Info : Logfile =  $logfile"
     LogMsg 4 "Info : Using XML file:  $xmlFilename"
-
-    if (-not (Test-Admin))
-    {
-        LogMsg 0 "Error: Access denied. The script must be run as Administrator."
-        LogMsg 0 "Error:                The WMI calls require administrator privileges."
-        return $False
-    }
 
     #
     # See if we need to modify the in memory copy of the .xml file
