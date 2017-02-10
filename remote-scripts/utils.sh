@@ -22,14 +22,10 @@
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
-<<<<<<< HEAD
-## v1.2 - xuli - 1/20/2017 - add call trace check function CheckCallTrace()
-=======
 ## v1.2 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
 ##                               test case not applicable in current scenario.
 ## v1.3 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
-## 
->>>>>>> upstream/master
+## v1.4 - xuli - 02/10/2017 - add call trace check function CheckCallTrace()
 ###############################################################################
 
 ###############################################################################
