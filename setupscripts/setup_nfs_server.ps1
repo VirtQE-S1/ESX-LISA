@@ -33,29 +33,29 @@ param ([String] $vmName, [String] $hvServer, [String] $testParams)
 
 function SetupNFSServer([String] $ipv4, [String] $sshkey)
 {
-    SendCommandToVM $ipv4 $sshkey "mkdir -p /nfs_share"
-    if (-not $?)
+    $sta = SendCommandToVM $ipv4 $sshkey "mkdir -p /nfs_share"
+    if (-not $sta)
     {
-        Throw "Error : Cannot add new hard disk to the VM $vmNameB"
+        Throw "Error : Cannot create /nfs_share path "
         return $false
     }
 
-    SendCommandToVM $ipv4 $sshkey "echo '/nfs_share    *(rw,nohide,no_root_squash,sync)' > /etc/exports"
-    if (-not $?)
+    $sta = SendCommandToVM $ipv4 $sshkey "echo '/nfs_share    *(rw,nohide,no_root_squash,sync)' > /etc/exports"
+    if (-not $sta)
     {
         Throw "Error : Cannot update /etc/export on VM $vmName"
         return $false
     }
 
-    SendCommandToVM $ipv4 $sshkey "service rpcbind restart"
-    if (-not $?)
+    $sta = SendCommandToVM $ipv4 $sshkey "service rpcbind restart"
+    if (-not $sta)
     {
         Throw "Error : restart rpcbind on VM $vmName"
         return $false
     }
 
-    SendCommandToVM $ipv4 $sshkey "service nfs restart"
-    if (-not $?)
+    $sta = SendCommandToVM $ipv4 $sshkey "service nfs restart"
+    if (-not $sta)
     {
         Throw "Error : restart rpcbind on VM $vmName"
         return $false
@@ -111,23 +111,36 @@ if (-not $vmObj)
     return $false
 }
 
+$snapsOut = Get-Snapshot -VM $vmObj
+
+Set-VM -VM $vmObj -Snapshot $snapsOut.Name -Confirm:$False
+if (-not $?)
+{
+    "Error: Failed to set snapshot for VM $vmNameB"
+    return $false
+}
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+
 if ( $vmObj.PowerState -ne "PoweredOn")
 {
     Start-VM -VM $vmObj -Confirm:$false
-    WaitForVMToStartSSH
-    if (-not $?)
-    {
-        "Error: Failed to start assistant VM $vmNameB"
-        return $false
-    }
-}
 
-#GetIPv4([String] $vmName, [String] $hvServer)
-$ipv4B = GetIPv4 $vmNameB $hvServer
-if ($ipv4B -eq $null)
-{
-    "Error: Failed to get ipAddress on assistant VM $vmNameB"
-    return $false
+    $timeout = 240
+    while ($timeout -gt 0)
+    {
+        $v = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+        if ($v -and $v.PowerState -eq "PoweredOn")
+        {
+            #GetIPv4([String] $vmName, [String] $hvServer)
+            $ipv4B = GetIPv4 $vmNameB $hvServer
+            if ($ipv4B -ne $null)
+            {
+                break
+            }
+        }
+        start-sleep -seconds 1
+        $timeout -= 1
+    }
 }
 
 $sta = SetupNFSServer $ipv4B $sshkey
