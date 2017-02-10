@@ -57,7 +57,6 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$tcCovered = "undefined"
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -68,7 +67,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "nic_type"     { $nic_type = $fields[1].Trim() }
     default        {}
     }
@@ -84,20 +82,20 @@ $network_name = "VM Network"
 if (-not $nic_type)
 {
     "Error: No nic_type specified"
-    return $False
+    return $Failed
 }
 
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
     "Error : Unable to get VM object for VM $vmName"
-    return $False
+    return $Failed
 }
 
 if ((Get-NetworkAdapter -VM $vmOut).Type -contains $nic_type)
 {
     "Info : VM $vmName already has $nic_type NIC"
-    return $True
+    return $Passed
 }
 else
 {
@@ -106,11 +104,11 @@ else
      if ( $? -ne $True )
      {
          "Error : New $nic_type to $vmName failed"
-         return $False
+         return $Failed
      }
      else
      {
          "Info : New $nic_type to $vmName successfully"
-         return $True
+         return $Passed
      }
 }
