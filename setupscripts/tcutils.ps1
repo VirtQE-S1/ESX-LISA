@@ -24,6 +24,9 @@
 ## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
 ##                              disconnecting VCenter server functions.
 ## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
+## v1.4 - xiaofwan - 1/25/2016 - Add four test result state RO variable to mark
+##                               test case result.
+##
 ###############################################################################
 
 <#
@@ -35,31 +38,40 @@
     commonly used by PowerShell test case scripts and setup scripts.
 #>
 
+#
+# test result codes
+#
+New-Variable Passed              -value "Passed"              -option ReadOnly
+New-Variable Skipped             -value "Skipped"             -option ReadOnly
+New-Variable Aborted             -value "Aborted"             -option ReadOnly
+New-Variable Failed              -value "Failed"              -option ReadOnly
+
 ###############################################################################
 #
 # Import VMware Powershell module
 #
 ###############################################################################
 function PowerCLIImport () {
-    <#
+   <#
     .Description
-        Import vmware.vimautomation.core module if it does not exist.
+        Import VMware.VimAutomation.Core module if it does not exist.
     #>
-    $snapins = Get-PSSnapin
+    $modules = Get-Module
 
     $foundVimautomation = $False
-    foreach($snapin in $snapins)
+    foreach($module in $modules)
     {
-        if($snapin.Name -eq "vmware.vimautomation.core")
+        if($module.Name -eq "VMware.VimAutomation.Core")
         {
-            "Info: PowerCLI module vmware.vimautomation.core already exists."
+            "Info: PowerCLI module VMware.VimAutomation.Core already exists."
             $foundVimautomation = $True
+            break
         }
     }
 
     if (-not $foundVimautomation)
     {
-        Add-PSSnapin vmware.vimautomation.core
+        Import-Module VMware.VimAutomation.Core
     }
 }
 
