@@ -62,7 +62,6 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$tcCovered = "undefined"
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -73,7 +72,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "TestLogDir"   { $testLogDir = $fields[1].Trim() }
     default        {}
     }
@@ -108,7 +106,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $result = $false
 $vmNameB = $vmName -replace "A","B"
-
 $ipv4B = GetIPv4 $vmNameB $hvServer
 
 if ($ipv4B -eq $null)

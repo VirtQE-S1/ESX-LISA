@@ -44,21 +44,11 @@ if [ ! ${NFS_Path} ]; then
     exit 1
 fi
 
-#Restart nfs service
-service nfs restart
-if [ "$?" = "0" ]; then
-    LogMsg "Nfs restart successfully..."
-else
-    LogMsg "Error in restart nfs..."
-    UpdateSummary "Error in restart nfs..."
-    SetTestStateFailed
-    exit 1
-fi
-
 #Mount nfs_path to /mnt
 DoMountFs $NFS_Path $mountPoint $mountType
 if [ "$?" = "0" ]; then
-    LogMsg "mount nfs path successfully "
+    LogMsg "mount nfs path successfully"
+    UpdateSummary "mount nfs path successfully"
 else
     LogMsg "Error in mount nfs path"
     UpdateSummary "Error in mount nfs path"
@@ -69,32 +59,38 @@ fi
 #Create file under /mnt
 DoDDFile "/dev/zero" "$mountPoint/data" "10M" "50"
 #dd if=/dev/zero of=/mnt/data bs=10M count=50
-if [ "$?" != "0" ]; then
+if [ "$?" = "0" ]; then
+    LogMsg "Successfully in dd file to $mountPoint"
+    UpdateSummary "Successfully in dd file to $mountPoint"
+else
     LogMsg "Error in dd file to $mountPoint"
+    UpdateSummary "Error in dd file to $mountPoint"
     SetTestStateFailed
     exit 1
-else
-    LogMsg "Successfully in dd file to $mountPoint"
 fi
 
 #umount /mnt and clean up /mnt file
 DoUMountFs $mountPoint "true"
-if [ "$?" != "0" ]; then
+if [ "$?" = "0" ]; then
+    LogMsg "Successfully in umount $mountPoint and clean file"
+    UpdateSummary "Successfully in umount $mountPoint and clean file"
+else
     LogMsg "Error in umount $mountPoint or clean file"
+    UpdateSummary "Error in umount $mountPoint or clean file"
     SetTestStateFailed
     exit 1
-else
-    LogMsg "Successfully in umount $mountPoint and clean file"
 fi
 
 # Check for call trace log
 CheckCallTrace
-if [ "$?" != "0" ]; then
-    UpdateSummary "Call trace exists during testing"
-    SetTestStateFailed
-    exit 1
-else
+if [ "$?" = "0" ]; then
+    LogMsg "No call trace during testing"
     UpdateSummary "No call trace during testing"
     SetTestStateCompleted
     exit 0
+else
+    LogMsg "Call trace exists during testing"
+    UpdateSummary "Call trace exists during testing"
+    SetTestStateFailed
+    exit 1
 fi

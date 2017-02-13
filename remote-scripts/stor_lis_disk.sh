@@ -45,26 +45,30 @@ dynamicDiskSize=$(($CapacityGB*1024*1024*1024))
 
 CheckDiskCount
 if [ "$?" != "0" ];then
+    LogMsg "disk count check failed "
     UpdateSummary "disk count check failed "
     SetTestStateFailed
     exit 1
 else
-    LogMsg "disk count check successfully "
+    LogMsg "disk count check successfully"
+    UpdateSummary "disk count check successfully"
 fi
 
 # check disk size
 CheckDiskSize $driveName $dynamicDiskSize
 if [ "$?" != "0" ]; then
+    LogMsg "Error in check disk size"
     UpdateSummary "Error in check disk size"
     SetTestStateFailed
     exit 1
 else
-    LogMsg "disk size check successfully "
+    LogMsg "disk size check successfully"
+    UpdateSummary "disk size check successfully"
 fi
 
 # If does not define file system type, use ext3 as default.
 if  [ ! ${fileSystems} ];then
-    fileSystems=(ext3)
+    fileSystems=(ext4)
 fi
 
 if  [ ! $diskFormatType ];then
@@ -75,21 +79,23 @@ fi
 
 TestMultiplFileSystems ${fileSystems[@]} $diskFormatType
 if [ "$?" != "0" ]; then
-    UpdateSummary "Disk file test failed "
-    LogMsg "Disk file test failed."
+    LogMsg "Disk file test failed"
+    UpdateSummary "Disk file test failed"
     SetTestStateFailed
     exit 1
 else
-    UpdateSummary "Disk file test Successfully "
-    LogMsg "Disk file test Successfully."
+    LogMsg "Disk file test Successfully"
+    UpdateSummary "Disk file test Successfully"
 fi
 # Check for call trace log
 CheckCallTrace
 if [ "$?" != "0" ]; then
+    LogMsg "Call trace exists during testing"
     UpdateSummary "Call trace exists during testing"
     SetTestStateFailed
     exit 1
 else
+    LogMsg "No call trace during testing"
     UpdateSummary "No call trace during testing"
     SetTestStateCompleted
     exit 0

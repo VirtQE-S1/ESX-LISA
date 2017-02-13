@@ -34,6 +34,7 @@
 
     <test>
         <testName>HotAdd_SCSI_Dynamic</testName>
+        <testID>ESX-STOR-001</testID>
         <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
         <testScript>stor_lis_disk.sh</testScript>
         <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
@@ -45,7 +46,6 @@
             <param>StorageFormat=Thin</param>
             <param>CapacityGB=3</param>
             <param>filesSystems=(ext4 ext3 xfs)</param>
-            <param>TC_COVERED=ESX-STOR-001</param>
         </testparams>
         <onError>Continue</onError>
     </test>

@@ -103,7 +103,6 @@ foreach ($p in $params)
 }
 
 $vmNameB = $vmName -replace "A","B"
-
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 if (-not $vmObj)
 {
@@ -113,7 +112,7 @@ if (-not $vmObj)
 
 $snapsOut = Get-Snapshot -VM $vmObj
 
-Set-VM -VM $vmObj -Snapshot $snapsOut.Name -Confirm:$False
+Set-VM -VM $vmObj -Snapshot $snapsOut -Confirm:$False
 if (-not $?)
 {
     "Error: Failed to set snapshot for VM $vmNameB"

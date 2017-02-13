@@ -8,8 +8,8 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xuli - 09/01/2017 - Draft script for case stor_utils.sh
-## v1.1 - xuli - 09/20/2017 - update function comment to inner function
+## v1.0 - xuli - 01/09/2017 - Draft script for case stor_utils.sh
+## v1.1 - xuli - 01/09/2017 - update function comment to inner function
 ## v1.2 - xuli - 02/08/2017 - Add function DoParted, update DoMountFs to support
 ## mount type, e.g. nfs, add diskFormatType for TestMultiplFileSystems and
 ## TestSingleFileSystem
@@ -102,8 +102,14 @@ DoParted()
     ############################################################################
     local driveName=$1
     parted -s -- $driveName mklabel gpt
-    parted -s -- $driveName mkpart primary 64s -64s
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully parted mklabel gpt."
+    else
+        LogMsg "Error in parted mklabel gpt, check disk is already mounted or not."
+        return 1
+    fi
 
+    parted -s -- $driveName mkpart primary 64s -64s
     if [ "$?" = "0" ]; then
         LogMsg "Successfully parted drive."
         return 0
@@ -165,7 +171,7 @@ DoMountFs()
         LogMsg "Drive mounted successfully..."
         return 0
     else
-        LogMsg "Error in mount ${driveName}1 with $mountPoint .."
+        LogMsg "Error in mount ${driveName} with $mountPoint .."
         return 1
     fi
 }
@@ -188,7 +194,7 @@ DoDDFile()
     local count=$4
 
     dd if=$inFile of=$outFile bs=$bs count=$count
-    if [ "$?" = "0" ]; then
+    if [ "$?" = "0" ] && [ -e $outFile ]; then
         LogMsg "Successful created dd file"
         return 0
     else
