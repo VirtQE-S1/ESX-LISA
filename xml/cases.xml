@@ -55,8 +55,10 @@
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
+            <setupscript>setupscripts\check_network_adapter.ps1</setupscript>
             <testScript>testscripts\go_check_modules.ps1</testScript>
             <testParams>
+                <param>nic_type=Vmxnet3</param>
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
             </testParams>

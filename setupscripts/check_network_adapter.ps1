@@ -82,33 +82,33 @@ $network_name = "VM Network"
 if (-not $nic_type)
 {
     "Error: No nic_type specified"
-    return $Failed
+    return $false
 }
 
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
     "Error : Unable to get VM object for VM $vmName"
-    return $Failed
+    return $false
 }
 
 if ((Get-NetworkAdapter -VM $vmOut).Type -contains $nic_type)
 {
     "Info : VM $vmName already has $nic_type NIC"
-    return $Passed
+    return $true
 }
 else
 {
     "Info : VM $vmName does not have $nic_type NIC, need to add one"
      New-NetworkAdapter -VM $vmOut -Type $nic_type -NetworkName "$network_name" -StartConnected
-     if ( $? -ne $True )
+     if ( $? -ne $true )
      {
-         "Error : New $nic_type to $vmName failed"
-         return $Failed
+         "Error : New $nic_type to $vmName false"
+         return $false
      }
      else
      {
          "Info : New $nic_type to $vmName successfully"
-         return $Passed
+         return $true
      }
 }
