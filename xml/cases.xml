@@ -37,8 +37,6 @@
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
             </suiteTests>
         </suite>
-
-
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
@@ -156,7 +154,6 @@
             <timeout>1800</timeout>
             <onError>Continue</onError>
         </test>
-
     </testCases>
 
     <VMs>
