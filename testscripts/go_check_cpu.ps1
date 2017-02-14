@@ -2,13 +2,16 @@
 ##
 ## Description:
 ##   Check cpu count in vm
-##   If true, case is passed; false, case is failed
+##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - hhei - 1/6/2017 - Check cpu count in vm.
 ## v1.1 - hhei - 1/10/2017 - Update log info.
+## v1.2 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
+##                          true is changed to passed,
+##                          false is changed to failed.
 ##
 ###############################################################################
 <#
@@ -57,7 +60,6 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$tcCovered = "undefined"
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -68,7 +70,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "VCPU"         { $numCPUs = [int]$fields[1].Trim() }
     default        {}
     }
@@ -101,7 +102,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $False
+$Result = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
@@ -114,7 +115,7 @@ else
     if ($vm_num -eq $numCPUs)
     {
         "Info : Set CPU count to $vm_num successfully"
-        $Result = $True
+        $Result = $Passed
     }
     else
     {
