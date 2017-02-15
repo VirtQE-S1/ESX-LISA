@@ -105,7 +105,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 $result = $false
-$vmNameB = $vmName -replace "A","B"
+$vmNameB = $vmName -replace "A$","B"
 $ipv4B = GetIPv4 $vmNameB $hvServer
 
 if ($ipv4B -eq $null)
