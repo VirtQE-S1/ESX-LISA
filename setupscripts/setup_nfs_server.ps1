@@ -102,7 +102,7 @@ foreach ($p in $params)
     }
 }
 
-$vmNameB = $vmName -replace "A","B"
+$vmNameB = $vmName -replace "A$","B"
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 if (-not $vmObj)
 {
