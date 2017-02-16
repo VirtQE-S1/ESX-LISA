@@ -471,16 +471,16 @@ TestSingleFileSystem()
         fi
 
         for fs in "${fileSystems[@]}"; do
-                command -v mkfs.$fs
+            command -v mkfs.$fs
+            if [ "$?" != "0" ]; then
+                LogMsg "File-system tools for $fs not present. Skip filesystem $fs."
+            else
+                TestSingleFileSystem $driveName $fs $diskFormatType
                 if [ "$?" != "0" ]; then
-                    LogMsg "File-system tools for $fs not present. Skip filesystem $fs."
-                else
-                    TestSingleFileSystem $driveName $fs $diskFormatType
-                    if [ "$?" != "0" ]; then
-                        LogMsg "Disk file test failed."
-                        return 1
-                    fi
+                    LogMsg "Disk file test failed."
+                    return 1
                 fi
+            fi
         done
     done
     return 0

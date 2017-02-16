@@ -115,7 +115,6 @@ if ($ipv4B -eq $null)
 }
 
 $sta = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
-
 if (-not $sta)
 {
     "Error : Cannot send command to vm for setting NFS_Path"
