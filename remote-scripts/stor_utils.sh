@@ -233,7 +233,7 @@ DoWriteReadFile()
         return 1
     fi
 
-    cat $mountPoint/ICA/ICA_Test.txt
+    grep 'testing' $mountPoint/ICA/ICA_Test.txt
     if [ "$?" = "0" ]; then
         LogMsg "Successfully read file $mountPoint/ICA/ICA_Test.txt"
     else

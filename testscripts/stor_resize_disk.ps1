@@ -45,30 +45,31 @@
     testScripts\stor_resize_disk
 #>
 param ([String] $vmName, [String] $hvServer, [String] $testParams)
-###############################################################################
+########################################################################
 #
-# Main script body
+# Checking the input arguments
 #
-###############################################################################
-# Make sure the required arguments were passed
-#
+
 if (-not $vmName)
 {
     "Error: no VMName was specified"
-    return $False
+    exit
 }
 
 if (-not $hvServer)
 {
     "Error: No hvServer was specified"
-    return $False
+    exit
 }
 
 if (-not $testParams)
 {
-    "Error: No test parameters specified"
-    return $False
+    Throw "Error: No test parameters specified"
 }
+#
+# Display the test parameters so they are captured in the log file
+#
+"TestParams : '${testParams}'"
 
 # Parse the testParams string
 #
@@ -126,18 +127,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$result = $false
+$result = $Failed
 
 if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat)
 {
     "Error: Unknown StorageFormat type: $storageFormat"
-    $result = $false
 }
 
 if (@("IDE", "SCSI") -notcontains $diskType)
 {
     "Error: Unknown StorageFormat type: $diskType"
-    $result = $false
 }
 
 "Info: partition/readwrite disk before resize"
@@ -146,7 +145,6 @@ $guest_script = "stor_lis_disk.sh"
 $sts =  RunRemoteScript $guest_script
 if( -not $sts[-1] ){
     "Error: Error while running $guest_script"
-    $result = $false
 }
 
 "Info: Resizing the VHDX to $newCapacityGB"
@@ -163,7 +161,6 @@ foreach ($disk in $diskList)
         if ( -not $diskResize)
         {
             "Error : Cannot resize hard disk of the VM $vmName"
-            $result = $false
         }
         else
         {
@@ -172,29 +169,29 @@ foreach ($disk in $diskList)
     }
 }
 
+# rescan guest disk to make fdisk show with new size
 $sta = SendCommandToVM $ipv4 $sshkey "echo 1 > /sys/block/sdb/device/rescan"
 if (-not $sta)
 {
     "Error : Cannot send command to rescan disk "
-    $result = $false
 }
 
+# replace newCapacityGB value to CapacityGB of constants.sh
 $sta = SendCommandToVM $ipv4 $sshkey "sed -i  's/CapacityGB=[0-9]*/CapacityGB=$($newCapacityGB)/g' ~/constants.sh"
 if (-not $sta)
 {
     "Error : Cannot send command to set CapacityGB as new size"
-    $result = $false
 }
 
+"Info: partition/readwrite disk after resize"
 $sts =  RunRemoteScript $guest_script
 if(-not $sts[-1])
 {
     "Error: Error while running $guest_script"
-    $result = $false
 }
 else
 {
-    $result = $true
+    $result = $Passed
 }
 "Info : stor_resize_disk script completed"
 DisconnectWithVIServer
