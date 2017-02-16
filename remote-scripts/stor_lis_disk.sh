@@ -10,6 +10,7 @@
 ## Revision:
 ## v1.0 - xuli - 01/09/2017 - Draft script for case stor_lis_disk.sh
 ## v1.1 - xuli - 01/20/2017 - Update check call trace as final step
+## v1.2 - xuli - 02/20/2017 - fix CheckDiskSizedisksize bug about driveName
 ###############################################################################
 dos2unix utils.sh
 # Source utils.sh
@@ -40,6 +41,7 @@ if [ ! ${CapacityGB} ]; then
     SetTestStateAborted
     exit 1
 fi
+
 # when add 1G disk, 1073741824 shows in fdisk
 dynamicDiskSize=$(($CapacityGB*1024*1024*1024))
 
@@ -54,17 +56,24 @@ else
     UpdateSummary "disk count check successfully"
 fi
 
-# check disk size
-CheckDiskSize $driveName $dynamicDiskSize
-if [ "$?" != "0" ]; then
-    LogMsg "Error in check disk size"
-    UpdateSummary "Error in check disk size"
-    SetTestStateFailed
-    exit 1
-else
-    LogMsg "disk size check successfully"
-    UpdateSummary "disk size check successfully"
-fi
+for driveName in /dev/sd*[^0-9];
+do
+ # Skip /dev/sda
+    if [ ${driveName} = "/dev/sda" ]; then
+        continue
+    fi
+    # check disk size
+    CheckDiskSize $driveName $dynamicDiskSize
+    if [ "$?" != "0" ]; then
+        LogMsg "Error in check disk size"
+        UpdateSummary "Error in check disk size"
+        SetTestStateFailed
+        exit 1
+    else
+        LogMsg "disk size check successfully"
+        UpdateSummary "disk size check successfully"
+    fi
+done
 
 # If does not define file system type, use ext3 as default.
 if  [ ! ${fileSystems} ];then

@@ -98,7 +98,7 @@ while ($True)
             # keep the vm system disk not removed
             if ($diskName -ne "Hard disk 1")
             {
-                Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True
+                Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
 
                 if ( -not $?)
                 {
