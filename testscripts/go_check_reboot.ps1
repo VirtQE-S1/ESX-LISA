@@ -1,33 +1,28 @@
 ###############################################################################
 ##
 ## Description:
-##   This script will mount nfs path from assistant VM to local path.
+##   Check reboot in vm
+##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xuli - 02/08/2017 - Draft script for mount nfs server to local path.
+## v1.0 - hhei - 1/6/2017 - Check reboot in vm.
 ##
 ###############################################################################
+
 <#
 .Synopsis
-    This script will mount nfs server to local path.
-.Description
-    The script will set up nfs server for assistant VM, the assistant VM name gets by replacing current VM name "A" to "B", nfs path is /nfs_share, dd file under mount point, then umount path.
-    unmount path.
-    The .xml entry to specify this startup script would be:
-    <testScript>testscripts\stor_nfs_client.ps1</testScript>
-.Parameter vmName
-    Name of the VM to add disk.
+    reboot in vm.
 
-.Parameter hvServer
-    Name of the ESXi server hosting the VM.
+.Description
+    Check reboot in vm.
+
+.Parameter vmName
+    Name of the test VM.
 
 .Parameter testParams
-    Test data for this test case
-
-.Example
-    setupScripts\stor_nfs_client
+    Semicolon separated list of test parameters.
 #>
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
@@ -72,7 +67,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TestLogDir"   { $testLogDir = $fields[1].Trim() }
     default        {}
     }
 }
@@ -105,31 +99,39 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 $result = $Failed
-$vmNameB = $vmName -replace "A$","B"
-$ipv4B = GetIPv4 $vmNameB $hvServer
-
-if ($ipv4B -eq $null)
+$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmOut)
 {
-    "Error: Failed to get ipAddress for assistant VM $vmNameB"
-}
-
-$sta = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
-if (-not $sta)
-{
-    "Error : Cannot send command to vm for setting NFS_Path"
-}
-
-$remoteScript="stor_lis_nfs.sh"
-$sta = RunRemoteScript $remoteScript
-if (-not $($sta[-1]))
-{
-    "Error: Failed to run for $remoteScript"
+    Write-Error -Message "go_check_reboot: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-    $result = $Passed
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+
+    Start-Sleep -seconds 5
+
+    # wait for vm to Start
+    $ip = ""
+    $t = 300
+    while ( $t -gt 0 )
+    {
+        $ip = GetIPv4 $vmName $hvServer
+        if ( -not $ip)
+        {
+            "Info : $vmName is rebooting now"
+            Start-Sleep -seconds 1
+            $t -= 1
+        }
+        else
+        {
+            "Info : $vmName is stared now, ip = $ip"
+            $result = $Passed
+            break
+        }
+    }
+
+    Start-Sleep -seconds 5
 }
 
-"Info : stor_nfs_client script completed"
 DisconnectWithVIServer
 return $result

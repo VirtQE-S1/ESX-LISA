@@ -13,6 +13,8 @@
 ## v1.2 - xuli - 02/08/2017 - Add function DoParted, update DoMountFs to support
 ## mount type, e.g. nfs, add diskFormatType for TestMultiplFileSystems and
 ## TestSingleFileSystem
+## v1.3 - xuli - 02/16/2017 - Add DoWriteReadFile funciton, minor update
+## CheckDiskSize for check "fdisk -l" return value
 ###############################################################################
 
 CheckIntegrity()
@@ -203,6 +205,61 @@ DoDDFile()
     fi
 }
 
+DoWriteReadFile()
+{
+    ############################################################################
+    # Description:
+    # create directory, write, read, remove file
+    # Parameters:
+    # $1 : mountPoint, e.g. /mnt
+    # Return: 0 : if write, read file successfully, otherwise, return 1
+    ############################################################################
+    local mountPoint=$1
+    mkdir -p $mountPoint/ICA/
+
+    echo 'testing' > /$mountPoint/ICA/ICA_Test.txt
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully create file $mountPoint/ICA/ICA_Test.txt"
+    else
+        LogMsg "Failed to create file $mountPoint/ICA/ICA_Test.txt"
+        return 1
+    fi
+
+    ls $mountPoint/ICA/ICA_Test.txt
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully list file $mountPoint/ICA/ICA_Test.txt"
+    else
+        LogMsg "Failed to list file $mountPoint/ICA/ICA_Test.txt"
+        return 1
+    fi
+
+    grep 'testing' $mountPoint/ICA/ICA_Test.txt
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully read file $mountPoint/ICA/ICA_Test.txt"
+    else
+        LogMsg "Failed to read file $mountPoint/ICA/ICA_Test.txt"
+        return 1
+    fi
+
+    # unalias rm 2> /dev/null
+    rm $mountPoint/ICA/ICA_Test.txt
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully delete file $mountPoint/ICA/ICA_Test.txt"
+    else
+        LogMsg "Failed to delete file $mountPoint/ICA/ICA_Test.txt"
+        return 1
+    fi
+
+    rmdir $mountPoint/ICA/
+    if [ "$?" = "0" ]; then
+        LogMsg "Successfully delete directory $mountPoint/ICA/"
+        return 0
+    else
+        LogMsg "Failed to delete directory $mountPoint/ICA/"
+        return 1
+    fi
+}
+
 DoUMountFs()
 {
     ############################################################################
@@ -245,6 +302,11 @@ CheckDiskSize()
     local dynamicDiskSize=$2
 
     fdisk -l $driveName > fdisk.dat 2> /dev/null
+    if [ "$?" = "0" ]; then
+        LogMsg "fdisk -l $driveName successfully..."
+    else
+        LogMsg "Error in fdisk -l $driveName"
+    fi
     elementCount=0
     for word in $(cat fdisk.dat)
     do
@@ -358,11 +420,18 @@ TestSingleFileSystem()
         return 1
     fi
 
-    # and create file under /mnt
+    # create file under /mnt by dd
     DoDDFile "/dev/zero" "/mnt/data" "10M" "50"
     #dd if=/dev/zero of=/mnt/Example/data bs=10M count=50
     if [ "$?" != "0" ]; then
         LogMsg "Error in dd file to $mountPoint"
+        return 1
+    fi
+
+    # create/write/read file under /mnt
+    DoWriteReadFile "/mnt"
+    if [ "$?" != "0" ]; then
+        LogMsg "Error in write,read file to $mountPoint"
         return 1
     fi
 
@@ -400,17 +469,18 @@ TestSingleFileSystem()
         if [ ${driveName} = "/dev/sda" ]; then
             continue
         fi
+
         for fs in "${fileSystems[@]}"; do
-                command -v mkfs.$fs
+            command -v mkfs.$fs
+            if [ "$?" != "0" ]; then
+                LogMsg "File-system tools for $fs not present. Skip filesystem $fs."
+            else
+                TestSingleFileSystem $driveName $fs $diskFormatType
                 if [ "$?" != "0" ]; then
-                    LogMsg "File-system tools for $fs not present. Skip filesystem $fs."
-                else
-                    TestSingleFileSystem $driveName $fs $diskFormatType
-                    if [ "$?" != "0" ]; then
-                        LogMsg "Disk file test failed."
-                        return 1
-                    fi
+                    LogMsg "Disk file test failed."
+                    return 1
                 fi
+            fi
         done
     done
     return 0

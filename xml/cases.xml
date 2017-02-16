@@ -35,6 +35,7 @@
                 <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
                 <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
+                <suiteTest>VHDxResizeToBigger</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -47,6 +48,7 @@
                 <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
                 <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
+                <suiteTest>VHDxResizeToBigger</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -154,6 +156,24 @@
             <timeout>1800</timeout>
             <onError>Continue</onError>
         </test>
+        <test>
+           <testName>VHDxResizeToBigger</testName>
+           <testID>ESX-STOR-004</testID>
+           <testScript>testscripts\stor_resize_disk.ps1</testScript>
+           <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+           <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+           <files>remote-scripts/utils.sh,remote-scripts/stor_utils.sh </files>
+           <timeout>600</timeout>
+           <onError>Continue</onError>
+           <testparams>
+                 <param>DiskType=SCSI</param>
+                 <param>StorageFormat=Thin</param>
+                 <param>CapacityGB=2</param>
+                 <param>NewCapacityGB=3</param>
+                 <param>fileSystems=(ext4)</param>
+           </testparams>
+       </test>
     </testCases>
 
     <VMs>
