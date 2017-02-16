@@ -114,7 +114,13 @@ if ($ipv4B -eq $null)
     $result = $false
 }
 
-SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
+$sta = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
+
+if (-not $sta)
+{
+    "Error : Cannot send command to vm for setting NFS_Path"
+    $result = $false
+}
 
 $remoteScript="stor_lis_nfs.sh"
 $sta = RunRemoteScript $remoteScript

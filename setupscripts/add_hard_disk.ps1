@@ -142,7 +142,7 @@ for ($pair=0; $pair -le $max; $pair++) {
         return $False
     }
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat
+    New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat  $storageFormat -ErrorAction SilentlyContinue
     if (-not $?)
     {
         Throw "Error : Cannot add new hard disk to the VM $vmName"
