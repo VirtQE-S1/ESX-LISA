@@ -25,6 +25,14 @@
 ## v1.2 - xiaofwan - 12/29/2016 - Fix snapshot checking issue found by @xuli.
 ## v1.3 - xiaofwan - 1/9/2017 - Add new feature: snapshot auto-create if there's
 ##                              no snapshot found in VM.
+## v1.4 - xiaofwan - 1/25/2017 - Add a new result status - Skipped, which marks
+##                               test case not applicable in current scenario.
+## v1.5 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
+##                               "Failed", "Skipped", "Aborted", and "none".
+## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
+## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+##
 ###############################################################################
 
 <#
@@ -198,7 +206,6 @@ New-Variable SystemStarting      -value "SystemStarting"      -option ReadOnly
 New-Variable SlowSystemStarting  -value "SlowSystemStarting"  -option ReadOnly
 New-Variable DiagnoseHungSystem  -value "DiagnoseHungSystem"  -option ReadOnly
 New-Variable SystemUp            -value "SystemUp"            -option ReadOnly
-New-Variable WaitForDependencyVM -value "WaitForDependencyVM" -option ReadOnly
 New-Variable PushTestFiles       -value "PushTestFiles"       -option ReadOnly
 New-Variable RunPreTestScript    -value "RunPreTestScript"    -option ReadOnly
 New-Variable StartTest           -value "StartTest"           -option ReadOnly
@@ -223,8 +230,17 @@ New-Variable Disabled            -value "Disabled"            -option ReadOnly
 # test completion codes
 #
 New-Variable TestCompleted       -value "TestCompleted"       -option ReadOnly
+New-Variable TestSkipped         -value "TestSkipped"         -option ReadOnly
 New-Variable TestAborted         -value "TestAborted"         -option ReadOnly
 New-Variable TestFailed          -value "TestFailed"          -option ReadOnly
+
+#
+# test result codes
+#
+New-Variable Passed              -value "Passed"              -option ReadOnly
+New-Variable Skipped             -value "Skipped"             -option ReadOnly
+New-Variable Aborted             -value "Aborted"             -option ReadOnly
+New-Variable Failed              -value "Failed"              -option ReadOnly
 
 #
 # Supported OSs
@@ -244,6 +260,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
+
+#
+# Generate an JUnit formated XML object to store case results.
+#
+$testResult = GetJUnitXML
 
 ########################################################################
 #
@@ -295,33 +316,11 @@ function RunICTests([XML] $xmlConfig)
     foreach ($vm in $xmlConfig.config.VMs.vm)
     {
         LogMsg 5 "Info : RunICTests() processing VM $($vm.vmName)"
-        $isSUTVM = $false
-        if ($vm.role -eq $null)
-        {
-            $isSUTVM = $true
-
-            $newElement = $xmlConfig.CreateElement("role")
-            $newElement.set_InnerText("SUT")
-            $results = $vm.AppendChild($newElement)
-        }
-        elseif ($vm.role.ToLower().StartsWith("nonsut"))
-        {
-            $isSUTVM = $false
-        }
-        elseif ($vm.role.ToLower().StartsWith("sut"))
-        {
-            $isSUTVM = $true
-        }
-        else
-        {
-            LogMsg 0 "Error : Unknown VM role specified in the XML file: $($vm.role)"
-            return
-        }
 
         #
         # Add the state related xml elements to each VM xml node
         #
-        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "state", "emailSummary", "jobID", "testCaseResults", "iteration")
+        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "iteration", "isRebooted")
         foreach($element in $xmlElementsToAdd)
         {
             if (-not $vm.${element})
@@ -340,6 +339,11 @@ function RunICTests([XML] $xmlConfig)
         # Correct the default iteration value
         #
         $vm.iteration = "-1"
+
+        #
+        # Add test suite into test result XML
+        #
+        SetResultSuite $vm.suite $testResult
 
         #
         # Add some information to the email summary text
@@ -375,23 +379,12 @@ function RunICTests([XML] $xmlConfig)
         if (-not $vmObj)
         {
             LogMsg 0 "Warn : The VM $($vm.vmName) does not exist"
-            if ($vm.role.ToLower().StartsWith("sut"))
-            {
-                LogMsg 0 "Warn : Tests will not be run on $($vm.vmName)"
-                UpdateState $vm $Disabled
+            LogMsg 0 "Warn : Tests will not be run on $($vm.vmName)"
+            UpdateState $vm $Disabled
 
-                $vm.emailSummary += "    The virtual machine $($vm.vmName) does not exist.<br />"
-                $vm.emailSummary += "    No tests were run on $($vm.vmName)<br />"
-                continue
-            }
-            else
-            {
-                LogMsg 0 "Error : the dependency VM $($vm.vmName) is missing. Testing will be ended."
-
-                $vm.emailSummary += "    The virtual machine $($vm.vmName) does not exist.<br />"
-                $vm.emailSummary += "    Testing is ended as the dependency VM is missing: $($vm.vmName)<br />"
-                return
-            }
+            $vm.emailSummary += "    The virtual machine $($vm.vmName) does not exist.<br />"
+            $vm.emailSummary += "    No tests were run on $($vm.vmName)<br />"
+            continue
         }
         else
         {
@@ -469,8 +462,8 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
     if ($vmObj.PowerState -ne "PoweredOff")
     {
         LogMsg 3 "Info : $($vm.vmName) is not in a stopped state - stopping VM"
-        $outStopVm = Stop-VM -VM $vmObj -Confirm:$False
-        if ($outStopVm -eq $False -or $outStopVm.PowerState -ne "PoweredOff")
+        $outStopVm = Stop-VM -VM $vmObj -Confirm:$false
+        if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff")
         {
             LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
             $vm.emailSummary += "Unable to stop VM. VM was disabled and no tests run<br />"
@@ -501,7 +494,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Find the snapshot we need and apply the snapshot
     #
-    $snapshotFound = $False
+    $snapshotFound = $false
     $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
     $snapsOut = Get-Snapshot -VM $vmObj
     if ($snapsOut)
@@ -511,7 +504,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($s.Name -eq $snapshotName)
             {
                 LogMsg 3 "Info : $($vm.vmName) is being reset to snapshot $($s.Name)"
-                $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$False
+                $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
                 if ($setsnapOut)
                 {
                     $snapshotFound = $true
@@ -543,7 +536,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($vmObj.PowerState -eq "Suspended")
             {
                 LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$False
+                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
                 if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                 {
                     LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -844,71 +837,32 @@ function DoSystemDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
     }
 
-    if ($vm.role.ToLower().StartsWith("sut"))
+    #
+    # Update the VMs current test
+    #
+    UpdateCurrentTest $vm $xmlData
+
+    #
+    # Mark current test the first case or after rebooted
+    # 
+    $vm.isRebooted = $true.ToString()
+
+    $iterationMsg = $null
+    if ($vm.iteration -ne "-1")
     {
-        #for SUT VMs:
+        $iterationMsg = " (iteration $($vm.iteration))"
+    }
+    LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
 
-        #
-        # Update the VMs current test
-        #
-        UpdateCurrentTest $vm $xmlData
+    $vm.caseStartTime = [DateTime]::Now.ToString()
 
-        $iterationMsg = $null
-        if ($vm.iteration -ne "-1")
-        {
-            $iterationMsg = " (iteration $($vm.iteration))"
-        }
-        LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
-
-        if ($($vm.currentTest) -eq "done")
-        {
-            UpdateState $vm $Finished
-
-            #check: if all SUT VMs are set to Finished, then shutdwon the NonSUT VM
-            $allSUTVMDone = $true
-
-            foreach( $v in $xmlData.config.VMs.vm )
-            {
-                if ($vm.role.ToLower().StartsWith("sut"))
-                {
-                    if ($($v.state) -ne $Finished)
-                    {
-                        $allSUTVMDone = $false
-                    }
-                }
-            }
-
-            #for NonSUT VM, if all SUT VMs are done, then shutdown them
-            if ($allSUTVMDone -eq $true)
-            {
-                foreach( $v in $xmlData.config.VMs.vm )
-                {
-                    if ($vm.role.ToLower().StartsWith("nonsut"))
-                    {
-                        if ($($v.state) -eq $Finished)
-                        {
-                            ShutDownVM $v
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            UpdateState $vm $ApplyCheckpoint
-        }
+    if ($($vm.currentTest) -eq "done")
+    {
+        UpdateState $vm $Finished
     }
     else
     {
-        #for NON-SUT VMs, put the VM state to run preStartScript or StartSystem
-        if ($vm.preStartConfig)
-        {
-            UpdateState $vm $RunSetupScript
-        }
-        else
-        {
-            UpdateState $vm $StartSystem
-        }
+        UpdateState $vm $ApplyCheckpoint
     }
 }
 
@@ -997,7 +951,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
             #
             # Find the snapshot we need and apply the snapshot
             #
-            $snapshotFound = $False
+            $snapshotFound = $false
             $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
             $snapsOut = Get-Snapshot -VM $vmObj
             if ($snapsOut)
@@ -1007,7 +961,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     if ($s.Name -eq $snapshotName)
                     {
                         LogMsg 3 "Info : $($vm.vmName) is being reset to snapshot $($s.Name)"
-                        $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$False
+                        $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
                         if ($setsnapOut)
                         {
                             $snapshotFound = $true
@@ -1039,7 +993,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     if ($vmObj.PowerState -eq "Suspended")
                     {
                         LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$False
+                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
                         if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                         {
                             LogMsg 0 "Error : ApplyCheckpoint is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -1143,69 +1097,37 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
 		}
 	}
 
-    if ($vm.role.ToLower().StartsWith("sut"))
+    #
+    # Run setup script if one is specified (this setup Script is defined in testcase level)
+    #
+    $testData = GetTestData $($vm.currentTest) $xmlData
+    if ($testData -is [System.Xml.XmlElement])
     {
-        #
-        # for SUT VMs:
-        # Run setup script if one is specified (this setup Script is defined in testcase level)
-        #
-        $testData = GetTestData $($vm.currentTest) $xmlData
-        if ($testData -is [System.Xml.XmlElement])
+        $testName = $testData.testName
+        $abortOnError = $true
+        if ($testData.onError -eq "Continue")
         {
-            $testName = $testData.testName
-            $abortOnError = $True
-            if ($testData.onError -eq "Continue")
+            $abortOnError = $false
+        }
+
+        if ($testData.setupScript)
+        {
+            if ($testData.setupScript.File)
             {
-                $abortOnError = $False
-            }
-
-            if ($testData.setupScript)
-            {
-                if ($testData.setupScript.File)
+                foreach ($script in $testData.setupScript.File)
                 {
-                    foreach ($script in $testData.setupScript.File)
-                    {
-                        LogMsg 3 "Info : $($vm.vmName) - running setup script '${script}'"
+                    LogMsg 3 "Info : $($vm.vmName) - running setup script '${script}'"
 
-                        if (-not (RunPSScript $vm $script $xmlData "Setup" $logfile))
-                        {
-                            #
-                            # If the setup script fails, fail the test. If <OnError>
-                            # is continue, continue on to the next test in the suite.
-                            # Otherwise, terminate testing.
-                            #
-                            LogMsg 0 "Error : VM $($vm.vmName) setup script ${script} for test ${testName} failed"
-                            $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - setup script failed")
-                            #$vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
-                            if ($abortOnError)
-                            {
-                                $vm.currentTest = "done"
-                                UpdateState $vm $finished
-                                return
-                            }
-                            else
-                            {
-                                UpdateState $vm $SystemDown
-                                return
-                            }
-                        }
-                    }
-                }
-                else  # the older, single setup script syntax
-                {
-                    LogMsg 3 "Info : $($vm.vmName) - running single setup script '$($testData.setupScript)'"
-
-                    if (-not (RunPSScript $vm $($testData.setupScript) $xmlData "Setup" $logfile))
+                    if (-not (RunPSScript $vm $script $xmlData "Setup" $logfile))
                     {
                         #
                         # If the setup script fails, fail the test. If <OnError>
                         # is continue, continue on to the next test in the suite.
                         # Otherwise, terminate testing.
                         #
-                        LogMsg 0 "Error : VM $($vm.vmName) setup script $($testData.setupScript) for test ${testName} failed"
-                        #$vm.emailSummary += "    Test $($vm.currentTest) : Failed - setup script failed<br />"
+                        LogMsg 0 "Error : VM $($vm.vmName) setup script ${script} for test ${testName} failed"
                         $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - setup script failed")
-
+                        #$vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
                         if ($abortOnError)
                         {
                             $vm.currentTest = "done"
@@ -1220,25 +1142,47 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     }
                 }
             }
-            else
+            else  # the older, single setup script syntax
             {
-                LogMsg 9 "INFO : $($vm.vmName) does not have setup script defined for test $($vm.currentTest)"
+                LogMsg 3 "Info : $($vm.vmName) - running single setup script '$($testData.setupScript)'"
+
+                if (-not (RunPSScript $vm $($testData.setupScript) $xmlData "Setup" $logfile))
+                {
+                    #
+                    # If the setup script fails, fail the test. If <OnError>
+                    # is continue, continue on to the next test in the suite.
+                    # Otherwise, terminate testing.
+                    #
+                    LogMsg 0 "Error : VM $($vm.vmName) setup script $($testData.setupScript) for test ${testName} failed"
+                    #$vm.emailSummary += "    Test $($vm.currentTest) : Failed - setup script failed<br />"
+                    $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - setup script failed")
+
+                    if ($abortOnError)
+                    {
+                        $vm.currentTest = "done"
+                        UpdateState $vm $finished
+                        return
+                    }
+                    else
+                    {
+                        UpdateState $vm $SystemDown
+                        return
+                    }
+                }
             }
-            UpdateState $vm $StartSystem
         }
         else
         {
-            LogMsg 0 "Error : $($vm.vmName) could not find test data for $($vm.currentTest)`n       The VM $($vm.vmName) will be disabled"
-            $vm.emailSummary += "Test $($vm.currentTest) : Aborted (no test data)<br />"
-            $vm.currentTest = "done"
-            UpdateState $vm $Disabled
+            LogMsg 9 "INFO : $($vm.vmName) does not have setup script defined for test $($vm.currentTest)"
         }
+        UpdateState $vm $StartSystem
     }
-    #for Non-SUT VMs:
-    # NonSUT will not run test cases directly so there will not have setup script defined
     else
     {
-        UpdateState $vm $StartSystem
+        LogMsg 0 "Error : $($vm.vmName) could not find test data for $($vm.currentTest)`n       The VM $($vm.vmName) will be disabled"
+        $vm.emailSummary += "Test $($vm.currentTest) : Aborted (no test data)<br />"
+        $vm.currentTest = "done"
+        UpdateState $vm $Disabled
     }
 }
 
@@ -1305,7 +1249,7 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
     # Start the VM and wait for the state to go to Running
     #
     LogMsg 6 "Info : $($vm.vmName) is being started"
-    $startvmOut = Start-VM -VM $vmObj -Confirm:$False
+    $startvmOut = Start-VM -VM $vmObj -Confirm:$false
 
     $timeout = 180
     while ($timeout -gt 0)
@@ -1341,7 +1285,7 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
-            $stopvmOut = Stop-VM -VM $v -Confirm:$False
+            $stopvmOut = Stop-VM -VM $v -Confirm:$false
             if (-not $stopvmOut)
             {
                 LogMsg 0 "Error : DoStartSystem cannot stop the VM $($vm.vmName)"
@@ -1624,6 +1568,11 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData)
         UpdateState $vm $ForceShutdown
     }
 
+    if (-not [bool]$vm.isRebooted)
+    {
+         $vm.caseStartTime = [DateTime]::Now.ToString()
+    }
+
     $hostname = $vm.ipv4
     $sshKey = $vm.sshKey
 
@@ -1642,16 +1591,7 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $os = (GetOSType $vm).ToString()
     LogMsg 9 "INFO : The OS type is $os"
 
-    If ($vm.role.ToLower().StartsWith("sut"))
-    {
-         #for SUT VM, needs to wait for NonSUT VM startup
-         UpdateState $vm $WaitForDependencyVM
-    }
-    else
-    {
-         #for NonSUT VM, run postStartConfig now (map to SUT VM's RunPreTestScript State).
-         UpdateState $vm $RunPreTestScript
-    }
+    UpdateState $vm $PushTestFiles
 
 }
 
@@ -1704,7 +1644,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) no test named $($vm.currentTest) was found in xml file"
         $vm.emailSummary += "    No test named $($vm.currentTest) was found - test aborted<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -1795,7 +1735,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot push $constFile to $($vm.vmName)"
             $vm.emailSummary += "    Cannot push $constFile to VM<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1813,7 +1753,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) unable to convert EOL on file $constFile"
                 $vm.emailSummary += "    Unable to convert EOL on file $constFile<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1822,7 +1762,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for ${constFile}"
             $vm.emailSummary += "    Unable to create dos2unix command for ${constFile}<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1846,7 +1786,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) error pushing file '$testFile' to VM"
                 $vm.emailSummary += "    Unable to push test file '$testFile' to VM<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1859,7 +1799,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) test case $($vm.currentTest) does not have a testScript"
         $vm.emailSummary += "    Test case $($vm.currentTest) does not have a testScript.<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -1882,7 +1822,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
             {
                 LogMsg 0 "Error : $($vm.vmName) unable to set EOL on test script file $testScript"
                 $vm.emailSummary += "    Unable to set EOL on file $testScript<br />"
-                $vm.testCaseResults = "False"
+                $vm.testCaseResults = $Aborted
                 UpdateState $vm $DetermineReboot
                 return
             }
@@ -1891,7 +1831,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for ${testScript}"
             $vm.emailSummary += "    Unable to create dos2unix command for $testScript<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1904,7 +1844,7 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "$($vm.vmName) unable to set x bit on test script $testScript"
             $vm.emailSummary += "    Unable to set x bit on test script $testScript<br />"
-            $vm.testCaseResults = "False"
+            $vm.testCaseResults = $Aborted
             UpdateState $vm $DetermineReboot
             return
         }
@@ -1955,80 +1895,57 @@ function DoRunPreTestScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
     else
     {
-        If ($vm.role.ToLower().StartsWith("sut"))
+        #
+        # Run pretest script if one is specified
+        #
+        $testData = GetTestData $($vm.currentTest) $xmlData
+        $testName = $testData.testName
+        if ($testData -is [System.Xml.XmlElement])
         {
-            #
-            # For SUT VMs: Run pretest script if one is specified
-            #
-            $testData = GetTestData $($vm.currentTest) $xmlData
-            $testName = $testData.testName
-            if ($testData -is [System.Xml.XmlElement])
+            if ($testData.preTest)
             {
-                if ($testData.preTest)
+                #
+                # If multiple pretest scripts specified
+                #
+                if ($testData.preTest.file)
                 {
-                    #
-                    # If multiple pretest scripts specified
-                    #
-                    if ($testData.preTest.file)
+                    foreach ($script in $testData.pretest.file)
                     {
-                        foreach ($script in $testData.pretest.file)
+                        LogMsg 3 "Info : $($vm.vmName) running PreTest script '${script}' for test $($testData.testName)"
+                        $sts = RunPSScript $vm $script $xmlData "PreTest"
+                        if (! $sts)
                         {
-                            LogMsg 3 "Info : $($vm.vmName) running PreTest script '${script}' for test $($testData.testName)"
-                            $sts = RunPSScript $vm $script $xmlData "PreTest"
-                            if (! $sts)
-                            {
-                                LogMsg 0 "Error : $($vm.vmName) PreTest script ${script} for test $($testData.testName) failed"
-                                $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - pretest script failed")
-                                UpdateState $vm $DetermineReboot
-                                return                            
-                            }
-                        }
-                    }
-                    else # Original syntax of <pretest>setupscripts\myPretest.ps1</pretest>
-                    {
-                        LogMsg 3 "Info : $($vm.vmName) - starting preTest script $($testData.setupScript)"
-
-                        $sts = RunPSScript $vm $($testData.preTest) $xmlData "PreTest"
-                        if (-not $sts)
-                        {
-                            LogMsg 0 "Error : VM $($vm.vmName) preTest script for test $($testData.testName) failed"
+                            LogMsg 0 "Error : $($vm.vmName) PreTest script ${script} for test $($testData.testName) failed"
                             $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - pretest script failed")
                             UpdateState $vm $DetermineReboot
-                            return
+                            return                            
                         }
                     }
                 }
-                else
+                else # Original syntax of <pretest>setupscripts\myPretest.ps1</pretest>
                 {
-                    LogMsg 9 "Info : $($vm.vmName) entered RunPreTestScript with no preTest script defined for test $($vm.currentTest)"
+                    LogMsg 3 "Info : $($vm.vmName) - starting preTest script $($testData.setupScript)"
+
+                    $sts = RunPSScript $vm $($testData.preTest) $xmlData "PreTest"
+                    if (-not $sts)
+                    {
+                        LogMsg 0 "Error : VM $($vm.vmName) preTest script for test $($testData.testName) failed"
+                        $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - pretest script failed")
+                        UpdateState $vm $DetermineReboot
+                        return
+                    }
                 }
             }
             else
             {
-                LogMsg 0 "Error : $($vm.vmName) could not find test data for $($vm.currentTest)"
+                LogMsg 9 "Info : $($vm.vmName) entered RunPreTestScript with no preTest script defined for test $($vm.currentTest)"
             }
-            UpdateState $vm $StartTest
         }
         else
         {
-            #
-            # For NonSUT VMs: Run postStartConfig script defined in the XML file, VM section
-            #
-            if ($vm.postStartConfig)
-            {
-                $sts = RunPSScript $vm $($vm.postStartConfig) $xmlData "postStartConfig"
-                if (-not $sts)
-                {
-                    LogMsg 0 "Error : Info : NonSUT VM $($vm.vmName) postStartConfig script for test $($vm.postStartConfig) failed"
-                }
-            }
-            else
-            {
-                LogMsg 9 "Info : NonSUT VM: $($vm.vmName) entered RunPreTestScript with no postStartConfig script defined"
-            }
-
-            UpdateState $vm $Finished
+            LogMsg 0 "Error : $($vm.vmName) could not find test data for $($vm.currentTest)"
         }
+        UpdateState $vm $StartTest
     }
 }
 
@@ -2084,7 +2001,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot fine test data for test '$($vm.currentTest)"
         $vm.emailSummary += "    Cannot fine test data for test '$($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2097,7 +2014,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) test case $($vm.currentTest) does not have a testScript"
         $vm.emailSummary += "    Test case $($vm.currentTest) does not have a testScript.<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2114,7 +2031,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) unable to create runtest.sh"
         $vm.emailSummary += "    Unable to create runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2125,7 +2042,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot copy runtest.sh to VM"
         $vm.emailSummary += "    Cannot copy runtest.sh to VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2137,7 +2054,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot set x bit on runtest.sh"
         $vm.emailSummary += "    Cannot set x bit on runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2148,7 +2065,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) cannot create dos2unix command for runtest.sh"
         $vm.emailSummary += "    Cannot create dos2unix command for runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2158,7 +2075,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) Unable to correct the EOL on runtest.sh"
         $vm.emailSummary += "    Unable to correct the EOL on runtest.sh<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2172,7 +2089,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) Unable to start atd on VM"
         $vm.emailSummary += "    Unable to start atd on VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2186,7 +2103,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) unable to submit runtest.sh to atd on VM"
         $vm.emailSummary += "    Unable to submit runtest.sh to atd on VM<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2243,7 +2160,7 @@ function DoTestStarting([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) time out starting test $($vm.currentTest)"
         $vm.emailSummary += "    time out starting test $($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $DetermineReboot
         return
     }
@@ -2314,7 +2231,7 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 0 "Error : $($vm.vmName) time out running test $($vm.currentTest)"
         $vm.emailSummary += "    time out running test $($vm.currentTest)<br />"
-        $vm.testCaseResults = "False"
+        $vm.testCaseResults = $Aborted
         UpdateState $vm $CollectLogFiles
         return
     }
@@ -2327,7 +2244,6 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         if (test-path $stateFile)
         {
-            $vm.testCaseResults = "Aborted"
             $contents = Get-Content -Path $stateFile
             if ($null -ne $contents)
             {
@@ -2337,7 +2253,12 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 }
                 elseif ($contents -eq $TestCompleted)
                 {
-                    $vm.testCaseResults = "Success"
+                    $vm.testCaseResults = $Passed
+                    UpdateState $vm $CollectLogFiles
+                }
+                elseif ($contents -eq $TestSkipped)
+                {
+                    $vm.testCaseResults = $Skipped
                     UpdateState $vm $CollectLogFiles
                 }
                 elseif ($contents -eq $TestAborted)
@@ -2347,7 +2268,7 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 elseif($contents -eq $TestFailed)
                 {
                     AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) failed. See logfile for details"
-                    $vm.testCaseResults = "Failed"
+                    $vm.testCaseResults = $Failed
                 }
                 else
                 {
@@ -2420,15 +2341,18 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Update the e-mail summary
     #
-    $completionCode = "Aborted"
-    if ( ($($vm.testCaseResults) -eq "Success") )
+    if ( ($($vm.testCaseResults) -eq $Passed) -or ($($vm.testCaseResults) -eq $Skipped))
     {
-        $completionCode = "Success"
+        $completionCode = $vm.testCaseResults
         $vm.individualResults = $vm.individualResults -replace ".$","1"
     }
-    elseif ( ($($vm.testCaseResults) -eq "Failed") )
+    elseif ( ($($vm.testCaseResults) -eq $Failed) )
     {
-        $completionCode = "Failed"
+        $completionCode = $Failed
+    }
+    else
+    {
+        $completionCode = $Aborted
     }
 
     $iterationMsg = $null
@@ -2436,6 +2360,9 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         $iterationMsg = "($($vm.iteration))"
     }
+
+    $testID = GetTestID $currentTest $xmlData
+    SetTestResult $currentTest $testID $completionCode
 
     $vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
 
@@ -2631,7 +2558,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $testData = GetTestData $vm.currentTest $xmlData
     $testResults = $false
 
-    if ( ($($vm.testCaseResults) -eq "Success") -or ($($vm.testCaseResults) -eq "True") )
+    if ( ($($vm.testCaseResults) -eq $Passed) -or ($($vm.testCaseResults) -eq $Skipped) )
     {
         $testResults = $true
     }
@@ -2731,6 +2658,17 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
             }
             else
             {
+                $caseEndTime = [DateTime]::Now
+                $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+                LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+
+                SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+
+                #
+                # Mark next test not rebooted
+                #
+                $vm.isRebooted = $false.ToString()
+
                 UpdateState $vm $SystemUp
 
                 $nextTestData = GetTestData $nextTest $xmlData
@@ -2865,6 +2803,12 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
+            $caseEndTime = [DateTime]::Now
+            $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+            LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+            
+            SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+
             UpdateState $vm $SystemDown
         }
     }
@@ -2968,6 +2912,11 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
         LogMsg 0 "Error : $($vm.vmName) entered RunCleanupScript state when test $($vm.currentTest) does not have a cleanup script"
         $vm.emailSummary += "Entered RunCleanupScript but test does not have a cleanup script<br />"
     }
+    $caseEndTime = [DateTime]::Now
+    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+    
+    SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
 
     UpdateState $vm $SystemDown
 }
@@ -3041,7 +2990,7 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         #
         # Try to force the VM to a stopped state
         #
-        $stopvmOut = Stop-VM -VM $v -Confirm:$False
+        $stopvmOut = Stop-VM -VM $v -Confirm:$false
         if (-not $stopvmOut)
         {
             LogMsg 0 "Error : DoForceShutDown cannot stop the VM $($vm.vmName)"
@@ -3115,9 +3064,11 @@ function DoFinished([System.Xml.XmlElement] $vm, [XML] $xmlData)
         foreach ($viserver in $global:DefaultVIServer)
         {
             LogMsg 5 "Info : DoFinished disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$False
+            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
+
+    SaveResultToXML $testDir
 }
 
 ########################################################################
@@ -3151,7 +3102,7 @@ function DoDisabled([System.Xml.XmlElement] $vm, [XML] $xmlData)
         foreach ($viserver in $global:DefaultVIServer)
         {
             LogMsg 5 "Info : DoDisabled disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$False
+            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
 }
@@ -3203,7 +3154,7 @@ function DoStartPS1Test([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
 
-    $vm.testCaseResults = "False"
+    $vm.testCaseResults = $Failed
 
     if (! (test-path $testScript))
     {
@@ -3242,70 +3193,6 @@ function DoStartPS1Test([System.Xml.XmlElement] $vm, [XML] $xmlData)
         {
             LogMsg 0 "Error : $($vm.vmName) - Cannot start PowerShell job for test $currentTest"
             UpdateState $vm $PS1TestCompleted
-        }
-    }
-}
-
-########################################################################
-#
-# DoWaitForDependencyVM()
-#
-########################################################################
-function DoWaitForDependencyVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
-{
-    <#
-    .Synopsis
-        if XML defined nonSUT VMs, then wait for it is ready (System started and setup configuration completed, and the VM transited to Finish
-    .Description
-        Wait for all nonSUT VM finished the startup and configuration
-    .Parameter vm
-        XML Element representing the VM under test
-    .Parameter xmlData
-        XML document driving the test.
-    .Example
-        DoWaitForDependencyVM $testVM $xmlData
-    #>
-
-    if (-not $vm -or $vm -isnot [System.Xml.XmlElement])
-    {
-        LogMsg 0 "Error : DoWaitForDependencyVM received an bad vm parameter"
-        return
-    }
-
-    LogMsg 9 "Info : DoWaitForDependencyVM($($vm.vmName))"
-
-    if (-not $xmlData -or $xmlData -isnot [XML])
-    {
-        LogMsg 0 "Error : DoWaitForDependencyVM received a null or bad xmlData parameter - disabling VM"
-        $vm.emailSummary += "DoWaitForDependencyVM received a null xmlData parameter - disabling VM<br />"
-        $vm.currentTest = "done"
-        UpdateState $vm $ForceShutdown
-    }
-
-    #if this is not a SUT VM, it should not wait for others.
-    If ($vm.role.ToLower().StartsWith("nonsut"))
-    {
-         LogMsg 3 "Warn : DoWaitForDependencyVM() should not be called by a NonSUT VM"
-         UpdateState $vm $Finished
-    }
-    else
-    {
-        #assume all NonSUT VM finished
-        $allNonSUTVMFinished = $true
-        foreach( $v in $xmlData.config.VMs.vm )
-        {
-            if ($vm.role.ToLower().StartsWith("nonsut"))
-            {
-                if ($($v.state) -ne $Finished)
-                {
-                    $allNonSUTVMFinished = $false
-                }
-            }
-        }
-
-        if ($allNonSUTVMFinished -eq $true)
-        {
-            UpdateState $vm $PushTestFiles
         }
     }
 }
@@ -3371,7 +3258,6 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     if ($jobStatus.State -eq "Completed")
     {
-        $vm.testCaseResults = "True"
         UpdateState $vm $PS1TestCompleted
     }
 }
@@ -3422,7 +3308,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     # Collect log data
     #
-    $completionCode = "Failed"
+    $completionCode = $Failed
     $jobID = $vm.jobID
     if ($jobID -ne "none")
     {
@@ -3452,9 +3338,16 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
-            if ($jobResults[-1] -eq $True)
+            if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $true)
             {
-                $completionCode = "Success"
+                $completionCode = $Passed
+                $vm.testCaseResults = $Passed
+                $vm.individualResults = $vm.individualResults -replace ".$","1"
+            }
+            elseif ($jobResults[-1] -eq $Skipped)
+            {
+                $completionCode = $Skipped
+                $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
         }
@@ -3463,6 +3356,9 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     LogMsg 0 "Info : ${vmName} Status for test $($vm.currentTest) = ${completionCode}"
+
+    $testID = GetTestID $currentTest $xmlData
+    SetTestResult $currentTest $testID $completionCode
 
     #
     # Update e-mail summary

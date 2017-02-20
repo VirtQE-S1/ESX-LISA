@@ -2,19 +2,19 @@
 
 ###############################################################################
 ##
-## ___________ _____________  ___         .____    .___  _________   _____   
-## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
-##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
+## ___________ _____________  ___         .____    .___  _________   _____
+## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
+##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
-##         \/        \/       \_/                 \/           \/         \/ 
+##         \/        \/       \_/                 \/           \/         \/
 ##
 ###############################################################################
-## 
-## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
-## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
-## aspects of vSphere maagement, including network, storage, VM, guest OS and 
-## more. This framework automates the tasks required to test the 
+##
+## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
+## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
+## aspects of vSphere maagement, including network, storage, VM, guest OS and
+## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
 ###############################################################################
@@ -22,16 +22,19 @@
 ## Revision:
 ## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
 ## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
-## 
+## v1.2 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
+##                               test case not applicable in current scenario.
+## v1.3 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
+## v1.4 - xuli - 02/10/2017 - add call trace check function CheckCallTrace()
 ###############################################################################
 
 ###############################################################################
-## 
+##
 ## Description:
-## This script contains all distro-specific functions, as well as other common 
+## This script contains all distro-specific functions, as well as other common
 ## functions used in the LIS test scripts.
-## Private variables used in scripts should use the __VAR_NAME notation. Using 
-## the bash built-in `declare' statement also restricts the variable's scope. 
+## Private variables used in scripts should use the __VAR_NAME notation. Using
+## the bash built-in `declare' statement also restricts the variable's scope.
 ## Same for "private" functions.
 ##
 ###############################################################################
@@ -56,6 +59,7 @@ declare __LIS_STATE_FILE="$LIS_HOME/state.txt"
 # LIS possible states recorded in state file
 declare __LIS_TESTRUNNING="TestRunning"      # The test is running
 declare __LIS_TESTCOMPLETED="TestCompleted"  # The test completed successfully
+declare __LIS_TESTSKIPPED="TestSkipped"  	 # The test is not supported by this scenario
 declare __LIS_TESTABORTED="TestAborted"      # Error during setup of test
 declare __LIS_TESTFAILED="TestFailed"        # Error during execution of test
 
@@ -73,9 +77,6 @@ declare -a SYNTH_NET_INTERFACES
 
 # LEGACY_NET_INTERFACES is an array containing all legacy network interfaces found
 declare -a LEGACY_NET_INTERFACES
-
-
-
 
 
 ######################################## Functions ########################################
@@ -129,8 +130,6 @@ UtilsInit()
 		return 3
 	fi
 
-	[ -n "$TC_COVERED" ] && UpdateSummary "Test covers $TC_COVERED" || UpdateSummary "Starting unknown test due to missing TC_COVERED variable"
-
 	GetDistro && LogMsg "Testscript running on $DISTRO" || LogMsg "Warning: test running on unknown distro!"
 
 	LogMsg "Successfully initialized testscript!"
@@ -168,6 +167,12 @@ SetTestStateFailed()
 SetTestStateAborted()
 {
 	__SetTestState "$__LIS_TESTABORTED"
+	return $?
+}
+
+SetTestStateSkipped()
+{
+	__SetTestState "$__LIS_TESTSKIPPED"
 	return $?
 }
 
@@ -297,6 +302,20 @@ GetDistro()
 	esac
 
 	return 0
+}
+# Function to checks if "Call Trace" message appears in the system logs
+# if have, return 1, else retun 0
+CheckCallTrace()
+{
+	[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
+	content=$(grep -i "Call Trace" $logfile)
+	if [[ -n $content ]]; then
+		LogMsg "Error: System get Call Trace in $logfile"
+		return 1
+	else
+		LogMsg "No Call Trace in $logfile"
+		return 0
+	fi
 }
 
 # Function to get all synthetic network interfaces

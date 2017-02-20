@@ -1,31 +1,33 @@
 ###############################################################################
 ##
 ## Description:
-##   Check cpu count in vm
-##   Return passed, case is passed; return failed, case is failed
+##   This script will mount nfs path from assistant VM to local path.
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check cpu count in vm.
-## v1.1 - hhei - 1/10/2017 - Update log info.
-## v1.2 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##                          true is changed to passed,
-##                          false is changed to failed.
+## v1.0 - xuli - 02/08/2017 - Draft script for mount nfs server to local path.
 ##
 ###############################################################################
 <#
 .Synopsis
-    Demo script ONLY for test script.
-
+    This script will mount nfs server to local path.
 .Description
-    A demo for Powershell script as test script.
-
+    The script will set up nfs server for assistant VM, the assistant VM name gets by replacing current VM name "A" to "B", nfs path is /nfs_share, dd file under mount point, then umount path.
+    unmount path.
+    The .xml entry to specify this startup script would be:
+    <testScript>testscripts\stor_nfs_client.ps1</testScript>
 .Parameter vmName
-    Name of the test VM.
+    Name of the VM to add disk.
+
+.Parameter hvServer
+    Name of the ESXi server hosting the VM.
 
 .Parameter testParams
-    Semicolon separated list of test parameters.
+    Test data for this test case
+
+.Example
+    setupScripts\stor_nfs_client
 #>
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
@@ -70,7 +72,7 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "VCPU"         { $numCPUs = [int]$fields[1].Trim() }
+    "TestLogDir"   { $testLogDir = $fields[1].Trim() }
     default        {}
     }
 }
@@ -102,28 +104,32 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $Failed
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj)
+$result = $Failed
+$vmNameB = $vmName -replace "A$","B"
+$ipv4B = GetIPv4 $vmNameB $hvServer
+
+if ($ipv4B -eq $null)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    "Error: Failed to get ipAddress for assistant VM $vmNameB"
+}
+
+$sta = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
+if (-not $sta)
+{
+    "Error : Cannot send command to vm for setting NFS_Path"
+}
+
+$remoteScript="stor_lis_nfs.sh"
+$sta = RunRemoteScript $remoteScript
+if (-not $($sta[-1]))
+{
+    "Error: Failed to run for $remoteScript"
 }
 else
 {
-    # check cpu number in vm
-    $vm_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
-    if ($vm_num -eq $numCPUs)
-    {
-        "Info : Set CPU count to $vm_num successfully"
-        $Result = $Passed
-    }
-    else
-    {
-        "Error : Set CPU count failed"
-    }
-
+    $result = $Passed
 }
 
-"Info : go_check_cpu.ps1 script completed"
+"Info : stor_nfs_client script completed"
 DisconnectWithVIServer
-return $Result
+return $result
