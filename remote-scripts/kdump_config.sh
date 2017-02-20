@@ -65,11 +65,11 @@ Config_Kdump(){
 		LogMsg "Start to modify $kdump_conf......."
 		UpdateSummary "Start to modify $kdump_conf......."
 		sed -i '/^path/ s/path/#path/g' $kdump_conf
+		grep -iq "^#path" $kdump_conf
     		if [ $? -ne 0 ]
 		then
 			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
 		       	UpdateSummary "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
-        		SetTestStateFailed
         		exit 1
 		else
 			echo "path $dump_path" >> $kdump_conf
@@ -83,7 +83,6 @@ Config_Kdump(){
 		if [ $? -ne 0 ]; then
 			LogMsg "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
 		       	UpdateSummary "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
-        		SetTestStateFailed
         		exit 1
 		else
 			echo "default reboot" >> $kdump_conf
@@ -97,7 +96,6 @@ Config_Kdump(){
 		if [ $? -ne 0 ]; then
 			LogMsg "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
 			UpdateSummary "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
-        		SetTestStateFailed
         		exit 1
 		else
 			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
@@ -108,7 +106,6 @@ Config_Kdump(){
 	else
 		LogMsg "Failed. Can't find out kdump.conf file or not a file."
 		UpdateSummary "Failed. Can't find out kdump.conf file in VM."
-		SetTestStateFailed
 		exit 1
 	fi
 
@@ -139,7 +136,6 @@ Config_Grub(){
 			if [ $? -ne 0 ]; then
 				LogMsg "FAIL: Could not set the new crashkernel value in /etc/default/grub."
 				UpdateSummary "FAIL: Could not set the new crashkernel value in /etc/default/grub."
-				SetTestStateFailed
 				exit 1
 			else
 				LogMsg "SUCCESS: updated the crashkernel value to: $crashkernel."
@@ -149,7 +145,6 @@ Config_Grub(){
 		else
 			LogMsg "Failed. Can't find out grub file or not a file."
 			UpdateSummary "Failed. Can't find out grub file in VM."
-			SetTestStateFailed
 		fi
 
 }
@@ -167,7 +162,7 @@ case $DISTRO in
 		Config_Grub $grub_conf
 	;;
 	redhat_7)
-		$grub_conf=$rhel7_grub
+		grub_conf=$rhel7_grub
 		Config_Grub $grub_conf
 
 		grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -175,7 +170,6 @@ case $DISTRO in
 		then
 			LogMsg "FAIL: Could not execute grub2-mkconfig."
 			UpdateSummary "FAIL: Could not grub2-mkconfig."
-			SetTestStateFailed
 			exit 1
 		else
 			LogMsg "SUCCESS: Execute grub2-mkconfig well."
@@ -196,7 +190,6 @@ if [ $? -ne 0 ]
 then
 	LogMsg "FAIL: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
 	UpdateSummary "FAIL: Could not restart kdump service, maybe new parameters in $kdump_conf has problems"
-	SetTestStateFailed
 	exit 1
 else
 	LogMsg "SUCCESS: Could restart kdump service well with new parameters."
@@ -213,5 +206,3 @@ else
 	LogMsg "WARNING: $dump_path doesn't esxit, will create it."	
 	UpdateSummary "WARNING: $dump_path doesn't esxit, will create it."	
 fi
-
-SetTestStateCompleted
