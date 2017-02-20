@@ -27,6 +27,7 @@
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
+                <suiteTest>go_check_reboot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -49,6 +50,7 @@
                 <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
                 <suiteTest>VHDxResizeToBigger</suiteTest>
+                <suiteTest>go_check_reboot</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -174,6 +176,15 @@
                  <param>fileSystems=(ext4)</param>
            </testparams>
        </test>
+        <test>
+            <testName>go_check_reboot</testName>
+            <testID>ESX-GO-004</testID>
+            <testScript>testscripts\go_check_reboot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
     </testCases>
 
     <VMs>

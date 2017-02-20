@@ -108,6 +108,7 @@ else
 {
     bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
 
+    # Note: start sleep for few seconds to wait for vm to stop first
     Start-Sleep -seconds 5
 
     # wait for vm to Start
@@ -130,6 +131,7 @@ else
         }
     }
 
+    # Note: start sleep for few seconds to wait for vm start, then exit
     Start-Sleep -seconds 5
 }
 
