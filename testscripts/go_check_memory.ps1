@@ -2,12 +2,16 @@
 ##
 ## Description:
 ##   Check memory in vm
-##   If true, passed; If false, failed.
+##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - hhei - 1/9/2017 - Check memory in vm.
+## v1.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
+##                          true is changed to passed,
+##                          false is changed to failed.
+##
 ###############################################################################
 <#
 .Synopsis
@@ -91,7 +95,6 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$tcCovered = "undefined"
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -102,7 +105,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "VMMemory"     { $mem = $fields[1].Trim() }
     "standard_diff"{ $standard_diff = $fields[1].Trim() }
     default        {}
@@ -138,7 +140,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $staticMemory = ConvertStringToDecimal $mem.ToUpper()
 
-$Result = $False
+$Result = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
@@ -155,7 +157,7 @@ else
     if ( -not $meminfo_total )
     {
         "Error : Get MemTotal from /proc/meminfo failed"
-        $Result = $False
+        $Result = $Failed
     }
     else
     {
@@ -171,18 +173,18 @@ else
             if ( $diff -lt $standard_diff -and $diff -gt 0 )
             {
                 "Info : Check memory in vm passed, diff is $diff (standard is $standard_diff)"
-                $Result = $True
+                $Result = $Passed
             }
             else
             {
                 "Error : Check memory in vm failed, actual is: $diff (standard is $standard_diff)"
-                $Result = $False
+                $Result = $Failed
             }
         }
         else
         {
             "Error : Get kdump memory size from /sys/kernel/kexec_crash_size failed"
-            $Result = $False
+            $Result = $Failed
         }
     }
 

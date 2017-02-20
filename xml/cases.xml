@@ -29,17 +29,37 @@
                 <suiteTest>go_check_memory</suiteTest>
             </suiteTests>
         </suite>
+        <suite>
+            <suiteName>storage</suiteName>
+            <suiteTests>
+                <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
+                <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
+                <suiteTest>VHDx_Mount_NFS_server</suiteTest>
+                <suiteTest>VHDxResizeToBigger</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <suiteName>acceptance</suiteName>
+            <suiteTests>
+                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
+                <suiteTest>go_check_memory</suiteTest>
+                <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
+                <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
+                <suiteTest>VHDx_Mount_NFS_server</suiteTest>
+                <suiteTest>VHDxResizeToBigger</suiteTest>
+            </suiteTests>
+        </suite>
     </testSuites>
 
     <testCases>
         <test>
             <testName>check_pam_unix2</testName>
+            <testID>ESX-OVT-001</testID>
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
-            <testparams>
-                <param>TC_COVERED=ESX-OVT-001</param>
-            </testparams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -47,11 +67,13 @@
         </test>
         <test>
             <testName>go_check_modules</testName>
+            <testID>ESX-GO-001</testID>
+            <setupscript>setupscripts\check_network_adapter.ps1</setupscript>
             <testScript>testscripts\go_check_modules.ps1</testScript>
             <testParams>
+                <param>nic_type=Vmxnet3</param>
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
-                <param>TC_COVERED=ESX-GO-001</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -60,10 +82,10 @@
         </test>
         <test>
             <testName>go_check_cpu</testName>
+            <testID>ESX-GO-002</testID>
             <setupScript>setupscripts\change_cpu.ps1</setupScript>
             <testScript>testscripts\go_check_cpu.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=ESX-GO-002</param>
                 <param>VCPU=4</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -73,10 +95,10 @@
         </test>
         <test>
             <testName>go_check_memory</testName>
+            <testID>ESX-GO-003</testID>
             <setupScript>setupscripts\change_memory.ps1</setupScript>
             <testScript>testscripts\go_check_memory.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=ESX-GO-003</param>
                 <param>VMMemory=1GB</param>
                 <param>standard_diff=0.1</param>
             </testParams>
@@ -85,6 +107,73 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>HotAdd_SCSI_Dynamic</testName>
+            <testID>ESX-STOR-001</testID>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testScript>stor_lis_disk.sh</testScript>
+            <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
+            remote-scripts/stor_utils.sh </files>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testparams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=3</param>
+                <param>fileSystems=(ext4 ext3 xfs btrfs)</param>
+            </testparams>
+            <onError>Continue</onError>
+        </test>
+        <test>
+            <testName>HotAdd_SCSI_Dynamic_2T</testName>
+            <testID>ESX-STOR-003</testID>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testScript>stor_lis_disk.sh</testScript>
+            <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
+            remote-scripts/stor_utils.sh </files>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testparams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=2050</param>
+                <!-- <param>fileSystems=(ext4 ext3 xfs btrfs)</param> -->
+                <param>fileSystems=(ext4 xfs)</param>
+                <param>diskFormatType=parted</param>
+            </testparams>
+            <onError>Continue</onError>
+        </test>
+        <test>
+            <testName>VHDx_Mount_NFS_server</testName>
+            <testID>ESX-STOR-002</testID>
+            <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
+            <testScript>testscripts\stor_nfs_client.ps1</testScript>
+            <files>remote-scripts/utils.sh,
+            remote-scripts/stor_utils.sh </files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+        </test>
+        <test>
+           <testName>VHDxResizeToBigger</testName>
+           <testID>ESX-STOR-004</testID>
+           <testScript>testscripts\stor_resize_disk.ps1</testScript>
+           <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+           <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+           <files>remote-scripts/utils.sh,remote-scripts/stor_utils.sh </files>
+           <timeout>600</timeout>
+           <onError>Continue</onError>
+           <testparams>
+                 <param>DiskType=SCSI</param>
+                 <param>StorageFormat=Thin</param>
+                 <param>CapacityGB=2</param>
+                 <param>NewCapacityGB=3</param>
+                 <param>fileSystems=(ext4)</param>
+           </testparams>
+       </test>
     </testCases>
 
     <VMs>
@@ -94,7 +183,7 @@
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suite>esx_automation_cases</suite>
+            <suite>acceptance</suite>
         </vm>
     </VMs>
 

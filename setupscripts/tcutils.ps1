@@ -1,18 +1,18 @@
 ###############################################################################
 ##
-## ___________ _____________  ___         .____    .___  _________   _____   
-## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
-##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
+## ___________ _____________  ___         .____    .___  _________   _____
+## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
+##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
-##         \/        \/       \_/                 \/           \/         \/ 
+##         \/        \/       \_/                 \/           \/         \/
 ##
 ###############################################################################
-## 
-## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
-## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
-## aspects of vSphere maagement, including network, storage, VM, guest OS and 
-## more. This framework automates the tasks required to test the 
+##
+## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
+## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
+## aspects of vSphere maagement, including network, storage, VM, guest OS and
+## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
 ###############################################################################
@@ -24,6 +24,9 @@
 ## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
 ##                              disconnecting VCenter server functions.
 ## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
+## v1.4 - xiaofwan - 1/25/2016 - Add four test result state RO variable to mark
+##                               test case result.
+##
 ###############################################################################
 
 <#
@@ -34,6 +37,14 @@
     Test Case Utility functions.  This is a collection of function
     commonly used by PowerShell test case scripts and setup scripts.
 #>
+
+#
+# test result codes
+#
+New-Variable Passed              -value "Passed"              -option ReadOnly
+New-Variable Skipped             -value "Skipped"             -option ReadOnly
+New-Variable Aborted             -value "Aborted"             -option ReadOnly
+New-Variable Failed              -value "Failed"              -option ReadOnly
 
 ###############################################################################
 #
@@ -69,9 +80,9 @@ function PowerCLIImport () {
 # Connect to VI Server
 #
 ###############################################################################
-function ConnectToVIServer ([string] $visIpAddr, 
-                            [string] $visUsername, 
-                            [string] $visPassword, 
+function ConnectToVIServer ([string] $visIpAddr,
+                            [string] $visUsername,
+                            [string] $visPassword,
                             [string] $visProtocol)
 {
     <#
@@ -144,17 +155,17 @@ function ConnectToVIServer ([string] $visIpAddr,
                          -Force | Out-Null
         if (-not $?)
         {
-            "Error : Cannot connect with vCenter with $visIpAddr " + 
+            "Error : Cannot connect with vCenter with $visIpAddr " +
             "address, $visProtocol protocol, username $visUsername, " +
             "and password $visPassword."
             exit
         }
-        "Debug : vCenter connected with " + 
+        "Debug : vCenter connected with " +
         "session id $($global:DefaultVIServer.SessionId)"
     }
     else
     {
-        "Info : vCenter connected already! " + 
+        "Info : vCenter connected already! " +
         "Session id: $($global:DefaultVIServer.SessionId)"
     }
 }
@@ -457,7 +468,7 @@ function GenerateIpv4($tempipv4, $oldipv4)
     [int]$i= $null
     [int]$check = $null
     if ($oldipv4 -eq $null){
-        [int]$octet = 102   
+        [int]$octet = 102
     }
     else {
         $oldIpPart = $oldipv4.Split(".")
@@ -876,8 +887,7 @@ function RunRemoteScript($remoteScript)
        Write-Output "ERROR: Unable to copy runtest.sh to the VM"
        return $False
     }
-
-     .\bin\pscp -i ssh\${sshKey} .\remote-scripts\ica\${remoteScript} root@${ipv4}:
+     .\bin\pscp -i ssh\${sshKey} .\remote-scripts\${remoteScript} root@${ipv4}:
     if (-not $?)
     {
        Write-Output "ERROR: Unable to copy ${remoteScript} to the VM"

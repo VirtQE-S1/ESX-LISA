@@ -1,25 +1,22 @@
 ###############################################################################
 ##
 ## Description:
-##   Check cpu count in vm
+##   Check reboot in vm
 ##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check cpu count in vm.
-## v1.1 - hhei - 1/10/2017 - Update log info.
-## v1.2 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##                          true is changed to passed,
-##                          false is changed to failed.
+## v1.0 - hhei - 1/6/2017 - Check reboot in vm.
 ##
 ###############################################################################
+
 <#
 .Synopsis
-    Demo script ONLY for test script.
+    reboot in vm.
 
 .Description
-    A demo for Powershell script as test script.
+    Check reboot in vm.
 
 .Parameter vmName
     Name of the test VM.
@@ -70,7 +67,6 @@ foreach ($p in $params)
     "sshKey"       { $sshKey = $fields[1].Trim() }
     "rootDir"      { $rootDir = $fields[1].Trim() }
     "ipv4"         { $ipv4 = $fields[1].Trim() }
-    "VCPU"         { $numCPUs = [int]$fields[1].Trim() }
     default        {}
     }
 }
@@ -102,28 +98,40 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $Failed
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj)
+$result = $Failed
+$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmOut)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "go_check_reboot: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-    # check cpu number in vm
-    $vm_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
-    if ($vm_num -eq $numCPUs)
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+
+    Start-Sleep -seconds 5
+
+    # wait for vm to Start
+    $ip = ""
+    $t = 300
+    while ( $t -gt 0 )
     {
-        "Info : Set CPU count to $vm_num successfully"
-        $Result = $Passed
-    }
-    else
-    {
-        "Error : Set CPU count failed"
+        $ip = GetIPv4 $vmName $hvServer
+        if ( -not $ip)
+        {
+            "Info : $vmName is rebooting now"
+            Start-Sleep -seconds 1
+            $t -= 1
+        }
+        else
+        {
+            "Info : $vmName is stared now, ip = $ip"
+            $result = $Passed
+            break
+        }
     }
 
+    Start-Sleep -seconds 5
 }
 
-"Info : go_check_cpu.ps1 script completed"
 DisconnectWithVIServer
-return $Result
+return $result
