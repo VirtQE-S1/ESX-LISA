@@ -132,7 +132,7 @@ else
     }
 
     # Note: start sleep for few seconds to wait for vm start, then exit
-    Start-Sleep -seconds 5
+    Start-Sleep -seconds 20
 }
 
 DisconnectWithVIServer
