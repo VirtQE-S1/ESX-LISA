@@ -36,6 +36,8 @@
 ##                               firmware and ESX version.
 ## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
 ## v2.0 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
+## v2.1 - xiaofwan - 2/21/2017 - Move case running time calculation into 
+##                               SetRunningTime function.
 ##
 ###############################################################################
 
@@ -414,7 +416,7 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
 # SetRunningTime
 #
 #####################################################################
-function SetRunningTime([String] $testName, [String] $runningTime)
+function SetRunningTime([String] $testName, [System.Xml.XmlElement] $vm)
 {
     <#
     .Synopsis
@@ -427,15 +429,20 @@ function SetRunningTime([String] $testName, [String] $runningTime)
         The test name
         Type : [String]
     
-    .Parameter runningTime
-        The duration of test running
-        Type : [String]
+   .Parameter vm
+        An XML element representing the VM
+        Type : [System.Xml.XmlElement]
 
     .Example
-        SetRunningTime $testName $runningTime
+        SetRunningTime $testName $vm
     #>
-    LogMsg 6 ("Info :    SetRunningTime($runningTime)")
-    $runningTime = "{0:N2}" -f [float]$runningTime
+    LogMsg 6 ("Info :    SetRunningTime($testName)")
+
+    $caseEndTime = [DateTime]::Now
+    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+    
+    $runningTime = "{0:N2}" -f $deltaTime.TotalMinutes
 
     foreach ($testCase in $testResult.testsuite.testcase)
     {

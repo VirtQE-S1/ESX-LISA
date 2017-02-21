@@ -36,6 +36,8 @@
 ##                               are visable in XML result.
 ## v2.0 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
 ## v2.1 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
+## v2.2 - xiaofwan - 2/21/2017 - Add SetRunningTime in ForceShutDown to support 
+##                               time calculation in force shut down scenario.
 ##
 ###############################################################################
 
@@ -2628,11 +2630,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
             }
             else
             {
-                $caseEndTime = [DateTime]::Now
-                $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-                LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-
-                SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+                SetRunningTime $vm.currentTest $vm
 
                 #
                 # Mark next test not rebooted
@@ -2773,11 +2771,7 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
-            $caseEndTime = [DateTime]::Now
-            $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-            LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-            
-            SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+            SetRunningTime $vm.currentTest $vm
 
             UpdateState $vm $SystemDown
         }
@@ -2882,11 +2876,7 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
         LogMsg 0 "Error : $($vm.vmName) entered RunCleanupScript state when test $($vm.currentTest) does not have a cleanup script"
         $vm.emailSummary += "Entered RunCleanupScript but test does not have a cleanup script<br />"
     }
-    $caseEndTime = [DateTime]::Now
-    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-    
-    SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+    SetRunningTime $vm.currentTest $vm
 
     UpdateState $vm $SystemDown
 }
@@ -2953,6 +2943,8 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     if ($v.PowerState -eq "PoweredOff")
     {
+        SetRunningTime $vm.currentTest $vm
+        
         UpdateState $vm $nextState
     }
     else
@@ -2982,6 +2974,8 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
             if ($v.PowerState -eq "PoweredOff")
             {
+                SetRunningTime $vm.currentTest $vm
+
                 UpdateState $vm $nextState
                 break
             }
