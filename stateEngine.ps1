@@ -35,6 +35,7 @@
 ## v1.9 - xiaofwan - 2/21/2017 - ESX host version, kernel and firmware version
 ##                               are visable in XML result.
 ## v2.0 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
+## v2.1 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
 ##
 ###############################################################################
 
@@ -339,8 +340,9 @@ function RunICTests([XML] $xmlConfig)
         $vm.AppendChild($newElement);
 
         #
-        # Add test suite into test result XML
+        # Add test suite and test date time into test result XML
         #
+        SetTimeStamp $testStartTime.toString()
         SetResultSuite $vm.suite
 
         #

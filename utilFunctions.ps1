@@ -35,6 +35,7 @@
 ## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
 ##                               firmware and ESX version.
 ## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
+## v2.0 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
 ##
 ###############################################################################
 
@@ -197,7 +198,7 @@ function GetJUnitXML()
     LogMsg 6 ("Info :    GetJUnitXML()")
 
     $template = @'
-<testsuite name="">
+<testsuite name="" timestamp="">
 <properties>
     <property name="esx.version" value="" />
     <property name="kernel.version" value="" />
@@ -322,6 +323,32 @@ function SetResultSuite([String] $testSuite)
     LogMsg 6 ("Info :    SetResultSuite($($testSuite))")
 
     $testResult.testsuite.name = $testSuite
+}
+
+#####################################################################
+#
+# SetTimeStamp
+#
+#####################################################################
+function SetTimeStamp([String] $testTimeStamp)
+{
+    <#
+    .Synopsis
+        Add test date time in result XML object.
+
+    .Description
+        Find the test suite, and configure test date time into result XML object.
+
+    .Parameter testTimeStamp
+        The start time of test run
+        Type : [String]
+
+    .Example
+        SetTimeStamp "02/21/2017 13:14:25"
+    #>
+    LogMsg 6 ("Info :    SetTimeStamp($($testTimeStamp))")
+
+    $testResult.testsuite.timestamp = $testTimeStamp
 }
 
 #####################################################################
