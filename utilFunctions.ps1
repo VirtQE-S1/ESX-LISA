@@ -34,6 +34,7 @@
 ##                              case failed or aborted.
 ## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
 ##                               firmware and ESX version.
+## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
 ##
 ###############################################################################
 
@@ -595,9 +596,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
     }
 
     #
-    # We found the tests for the VMs test suite. Next find the next test
-    # to run.  If we are iterating the current test, and there are more
-    # iterations to run, just return the current test.
+    # We found the tests for the VMs test suite. Next find the next test to run.
     #
     if ($tests)
     {
@@ -617,42 +616,6 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
                 break
             }
             $prev = $t
-        }
-    }
-
-    if ($vm.iteration -ne "-1")
-    {
-        if ($vm.currentTest -eq "none" -or $vm.currentTest -eq "done")
-        {
-            LogMsg 0 "Error: $($vm.vmName) has a non zero iteration count for test $($vm.currentTest)"
-            return $done
-        }
-
-        $testData = GetTestData $vm.currentTest $xmlData
-        if ($testData)
-        {
-            if ($testData.maxIterations)
-            {
-                $iterationNumber = [int] $vm.iteration
-                $maxIterations = [int] $testData.maxIterations
-                if ($iterationNumber -lt $maxIterations)
-                {
-                    #
-                    # There are more iterations, so return current test
-                    #
-                    $nextTest = [string] $vm.currentTest
-                }
-            }
-            else
-            {
-                LogMsg 0 "Error: $($vm.vmName) has a none zero iteration count, but test $($vm.currentTest) does not have maxIterations"
-                return $done
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: $($vm.vmName) cannot find test data for test $($vm.currentTest)"
-            return $done
         }
     }
 
@@ -1454,27 +1417,6 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     #
-    # Add the iteration information if test case is being iterated
-    #
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationParam = GetIterationParam $vm $xmlData
-        if ($iterationParam)
-        {
-            $tp += "iteration=$($vm.iteration);"
-
-            if ($iterationParam -ne "")
-            {
-                $tp += "iterationParam=${iterationParam};"
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: $($vm.vmName) bad iteration param for test $($vm.currentTest)"
-        }
-    }
-
-    #
     # Include the test log directory path
     #
     $tp += "rootDir=$PWD;"
@@ -1546,39 +1488,9 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
         return
     }
 
-    if ($previousTestData.maxIterations)
-    {
-         $iterationCount = (([int] $vm.iteration) + 1)
-         $vm.iteration = $iterationCount.ToString()
-         if ($iterationCount -ge [int] $previousTestData.maxIterations)
-         {
-             $nextTest = GetNextTest $vm $xmlData
-             $vm.currentTest = [string] $nextTest
-             $testData = GetTestData $vm.currentTest $xmlData
-             if ($testData.maxIterations)
-             {
-                 $vm.iteration = "0"
-             }
-             else
-             {
-                 $vm.iteration = "-1"
-             }
-         }
-    }
-    else
-    {
-        $nextTest = GetNextTest $vm $xmlData
-        $vm.currentTest = [string] $nextTest
-        $testData = GetTestData $vm.currentTest $xmlData
-        if ($testData.maxIterations)
-        {
-            $vm.iteration = "0"
-        }
-        else
-        {
-            $vm.iteration = "-1"
-        }
-    }
+    $nextTest = GetNextTest $vm $xmlData
+    $vm.currentTest = [string] $nextTest
+    $testData = GetTestData $vm.currentTest $xmlData
 
     # Reset test results if we've moved on to the next test case
     if ($vm.currentTest -ne "done")
@@ -1586,88 +1498,6 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $vm.testCaseResults = "none"
         $vm.individualResults += "0"
     }
-}
-
-#######################################################################
-#
-# GetIterationparam()
-#
-#######################################################################
-function GetIterationParam([System.Xml.XmlElement] $vm, [XML] $xmlData)
-{
-    <#
-    .Synopsis
-        Return the iteration parameter.
-    .Description
-        Test case iteration is a feature that is not completed yet.
-        The idea is to run a test case n number of times.  Each
-        time the test is run, the iteration count is incremented.
-        The iteration value is passed as a test parameter.
-    .Parameter $vm
-        The XML element for the VM under test.
-    .Parameter $xmlData
-        The XML Document of the test data.
-    .Output
-        $null on error
-        if no iteration param
-        'param if valid iteration param
-    .Example
-        GetIterationParam $testVM $xmlTestData
-    #>
-
-    $iterationParam = $null
-
-    if (-not $VM)
-    {
-        LogMsg 0 "Error: GetIterationParam() received a null VM object"
-        return $null
-    }
-
-    if (-not $xmlData)
-    {
-        LogMsg 0 "Error: GetIterationParam() received a null xmlData object"
-        return $null
-    }
-
-    $testData = GetTestData $vm.currentTest $xmlData
-    if ($testData)
-    {
-        if ($testData.maxIterations)
-        {
-            $iterationParam = ""
-
-            if ($testData.iterationParams)
-            {
-                if ($testData.iterationParams.param.count -eq 1)
-                {
-                    $iterationParam = $testData.iterationParams.param
-                }
-                else
-                {
-                    if ($testData.iterationParams.param.count -eq $testData.maxIterations)
-                    {
-                        $iterationNumber = [int] $vm.iteration
-                        $iterationParam = ($testData.iterationParams.param[$iterationNumber]).ToString()
-                    }
-                    else
-                    {
-                        LogMsg 0 "Error: GetIterationParam() incorrect number of iterationParams for test $($vm.currentTest)"
-                        $iterationParam = $null
-                    }
-                }
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: GetIterationParam() was called for a non-iterated test case"
-        }
-    }
-    else
-    {
-        LogMsg 0 "Error: GetIterationParam() could not find test data for test $($vm.currentTest)"
-    }
-
-    return $iterationParam
 }
 
 #######################################################################

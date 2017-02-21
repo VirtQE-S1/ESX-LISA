@@ -34,6 +34,7 @@
 ## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
 ## v1.9 - xiaofwan - 2/21/2017 - ESX host version, kernel and firmware version
 ##                               are visable in XML result.
+## v2.0 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
 ##
 ###############################################################################
 
@@ -322,7 +323,7 @@ function RunICTests([XML] $xmlConfig)
         #
         # Add the state related xml elements to each VM xml node
         #
-        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "iteration", "isRebooted")
+        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "isRebooted")
         foreach($element in $xmlElementsToAdd)
         {
             if (-not $vm.${element})
@@ -336,11 +337,6 @@ function RunICTests([XML] $xmlConfig)
         $newElement = $xmlConfig.CreateElement("individualResults")
         $newElement.set_InnerText("");
         $vm.AppendChild($newElement);
-
-        #
-        # Correct the default iteration value
-        #
-        $vm.iteration = "-1"
 
         #
         # Add test suite into test result XML
@@ -854,13 +850,6 @@ function DoSystemDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
     # 
     $vm.isRebooted = $true.ToString()
 
-    $iterationMsg = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationMsg = " (iteration $($vm.iteration))"
-    }
-    LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
-
     $vm.caseStartTime = [DateTime]::Now.ToString()
 
     if ($($vm.currentTest) -eq "done")
@@ -1134,7 +1123,6 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
                         #
                         LogMsg 0 "Error : VM $($vm.vmName) setup script ${script} for test ${testName} failed"
                         $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - setup script failed")
-                        #$vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
                         if ($abortOnError)
                         {
                             $vm.currentTest = "done"
@@ -1719,24 +1707,6 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 9 "Info : $($vm.vmName) Adding ipv4=$($vm.ipv4)"
         "ipv4=$($vm.ipv4)" | out-file -encoding ASCII -append -filePath $constFile
-    }
-
-    #
-    # Add the iteration information if test case is being iterated
-    #
-    if ($vm.iteration -ne "-1")
-    {
-        "iteration=$($vm.iteration)" | out-file -encoding ASCII -append -filePath $constFile
-
-        if ($testData.iterationParams)
-        {
-            $iterationParam = GetIterationParam $vm $xmlData
-
-            if ($iterationParam -and $iterationparam -ne "")
-            {
-                "iterationParam=${iterationParam}" | out-file -encoding ASCII -append -filePath $constFile
-            }
-        }
     }
 
     #
@@ -2346,11 +2316,6 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     $currentTest = $vm.currentTest
-    $iterationNum = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationNum = $($vm.iteration)
-    }
 
     #
     # Update the e-mail summary
@@ -2369,21 +2334,15 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $completionCode = $Aborted
     }
 
-    $iterationMsg = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationMsg = "($($vm.iteration))"
-    }
-
     $testID = GetTestID $currentTest $xmlData
     SetTestResult $currentTest $testID $completionCode
 
-    $vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
+    $vm.emailSummary += ("    Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
 
     #
     # Collect test results
     #
-    $logFilename = "$($vm.vmName)_${currentTest}_${iterationNum}.log"
+    $logFilename = "$($vm.vmName)_${currentTest}.log"
     LogMsg 4 "Info : $($vm.vmName) collecting logfiles"
     if (-not (GetFileFromVM $vm "${currentTest}.log" "${testDir}\${logFilename}") )
     {
@@ -2431,7 +2390,7 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     SendCommandToVM $vm "rm -f state.txt"
 
-    LogMsg 0 "Info : $($vm.vmName) Status for test $currentTest $iterationMsg = $completionCode"
+    LogMsg 0 "Info : $($vm.vmName) Status for test $currentTest - $completionCode"
 
 
     if ( $($testData.postTest) )
@@ -2659,12 +2618,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
             UpdateCurrentTest $vm $xmlData
 
-            $iterationMsg = $null
-            if ($vm.iteration -ne "-1")
-            {
-                $iterationMsg = "(iteration $($vm.iteration))"
-            }
-            LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
+            LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest)"
 
             if ($vm.currentTest -eq "done")
             {
