@@ -32,6 +32,8 @@
 ## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
 ## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+## v1.9 - xiaofwan - 2/21/2017 - ESX host version, kernel and firmware version
+##                               are visable in XML result.
 ##
 ###############################################################################
 
@@ -343,7 +345,7 @@ function RunICTests([XML] $xmlConfig)
         #
         # Add test suite into test result XML
         #
-        SetResultSuite $vm.suite $testResult
+        SetResultSuite $vm.suite
 
         #
         # Add some information to the email summary text
@@ -353,7 +355,7 @@ function RunICTests([XML] $xmlConfig)
         $outGetCliVer = Get-PowerCLIVersion
         $vm.emailSummary += "    PowerCLI :  $($outGetCliVer.UserFriendlyVersion) <br />"
         $outGlobalVar = $global:DefaultVIServer
-        $vm.emailSummary += "    vCenter :  version $($outGlobalVar.Version) build $($outGlobalVar.Build) <br />"
+        $vm.emailSummary += "    vCenter :  version $($outGlobalVar.Version) build $($outGlobalVar.Build) <br />" 
         #
         # Verify the ESXi serer is on and connected.
         #
@@ -371,6 +373,11 @@ function RunICTests([XML] $xmlConfig)
         $vm.emailSummary += "    Suite : running at ESXi host $($vm.hvServer) <br />"
         $vm.emailSummary += "    Host : $($vm.hvServer) with ESXi $($vmhostOut.Version) build $($vmhostOut.Build)<br />"
         $vm.emailSummary += "<br /><br />"
+
+        #
+        # Add ESX host version into result XML
+        #
+        SetESXVersion "$($vmhostOut.Version) build $($vmhostOut.Build)"
 
         #
         # Make sure the VM actually exists
@@ -1590,6 +1597,13 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     $os = (GetOSType $vm).ToString()
     LogMsg 9 "INFO : The OS type is $os"
+
+    #
+    # Add guest kernel version and firmware info int result XML
+    #
+    $kernelVer = GetKernelVersion
+    $firmwareVer = GetFirmwareVersion
+    SetOSInfo $kernelVer $firmwareVer
 
     UpdateState $vm $PushTestFiles
 

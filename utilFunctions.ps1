@@ -32,6 +32,8 @@
 ## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
 ## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
 ##                              case failed or aborted.
+## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
+##                               firmware and ESX version.
 ##
 ###############################################################################
 
@@ -195,6 +197,11 @@ function GetJUnitXML()
 
     $template = @'
 <testsuite name="">
+<properties>
+    <property name="esx.version" value="" />
+    <property name="kernel.version" value="" />
+    <property name="firmware.version" value="" />
+</properties>
 <testcase id="" name="" time="">
     <skipped/>
     <failure type=""></failure>
@@ -213,6 +220,81 @@ function GetJUnitXML()
     Remove-Item $templatePath
 
     return $junit_xml
+}
+
+#####################################################################
+#
+# SetESXVersion
+#
+#####################################################################
+function SetESXVersion([String] $ver)
+{
+    <#
+    .Synopsis
+        Add ESX version into XML result.
+
+    .Description
+        Find the ESX version property and set ESX version into result XML object.
+
+    .Parameter ver
+        The version of ESX host.
+        Type : [String]
+
+    .Example
+        SetESXVersion "6.0 build 4192238"
+    #>
+    LogMsg 6 ("Info :    SetESXVersion($($ver))")
+
+    foreach ($property in $testResult.testsuite.properties.property)
+    {
+        if ($property.name -eq "esx.version")
+        {
+            $property.value = $ver
+            return
+        }
+    }
+}
+
+#####################################################################
+#
+# SetOSInfo
+#
+#####################################################################
+function SetOSInfo([String] $kernelVer, [String] $firmwareVer)
+{
+    <#
+    .Synopsis
+        Add Kernel and firmware version into XML result.
+
+    .Description
+        Find the Kernel and firmware version properties and set Kernel
+        and firmware version into result XML object.
+
+    .Parameter kernelVer
+        The version of guest kernel.
+        Type : [String]
+
+    .Parameter firmwareVer
+        The version of guest firmware info.
+        Type : [String]
+
+    .Example
+        SetOSInfo "2.6.32-694.el6.x86_64" "BIOS"
+    #>
+    LogMsg 6 ("Info :    SetOSInfo($($kernelVer), $($firmwareVer))")
+
+    foreach ($property in $testResult.testsuite.properties.property)
+    {
+        if ($property.name -eq "kernel.version" -and $property.value -eq "")
+        {
+            $property.value = $kernelVer
+        }
+        
+        if ($property.name -eq "firmware.version" -and $property.value -eq "")
+        {
+            $property.value = $firmwareVer
+        }
+    }
 }
 
 #####################################################################
