@@ -32,6 +32,12 @@
 ## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
 ## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
 ##                              case failed or aborted.
+## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
+##                               firmware and ESX version.
+## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
+## v2.0 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
+## v2.1 - xiaofwan - 2/21/2017 - Move case running time calculation into 
+##                               SetRunningTime function.
 ##
 ###############################################################################
 
@@ -194,7 +200,12 @@ function GetJUnitXML()
     LogMsg 6 ("Info :    GetJUnitXML()")
 
     $template = @'
-<testsuite name="">
+<testsuite name="" timestamp="">
+<properties>
+    <property name="esx.version" value="" />
+    <property name="kernel.version" value="" />
+    <property name="firmware.version" value="" />
+</properties>
 <testcase id="" name="" time="">
     <skipped/>
     <failure type=""></failure>
@@ -213,6 +224,81 @@ function GetJUnitXML()
     Remove-Item $templatePath
 
     return $junit_xml
+}
+
+#####################################################################
+#
+# SetESXVersion
+#
+#####################################################################
+function SetESXVersion([String] $ver)
+{
+    <#
+    .Synopsis
+        Add ESX version into XML result.
+
+    .Description
+        Find the ESX version property and set ESX version into result XML object.
+
+    .Parameter ver
+        The version of ESX host.
+        Type : [String]
+
+    .Example
+        SetESXVersion "6.0 build 4192238"
+    #>
+    LogMsg 6 ("Info :    SetESXVersion($($ver))")
+
+    foreach ($property in $testResult.testsuite.properties.property)
+    {
+        if ($property.name -eq "esx.version")
+        {
+            $property.value = $ver
+            return
+        }
+    }
+}
+
+#####################################################################
+#
+# SetOSInfo
+#
+#####################################################################
+function SetOSInfo([String] $kernelVer, [String] $firmwareVer)
+{
+    <#
+    .Synopsis
+        Add Kernel and firmware version into XML result.
+
+    .Description
+        Find the Kernel and firmware version properties and set Kernel
+        and firmware version into result XML object.
+
+    .Parameter kernelVer
+        The version of guest kernel.
+        Type : [String]
+
+    .Parameter firmwareVer
+        The version of guest firmware info.
+        Type : [String]
+
+    .Example
+        SetOSInfo "2.6.32-694.el6.x86_64" "BIOS"
+    #>
+    LogMsg 6 ("Info :    SetOSInfo($($kernelVer), $($firmwareVer))")
+
+    foreach ($property in $testResult.testsuite.properties.property)
+    {
+        if ($property.name -eq "kernel.version" -and $property.value -eq "")
+        {
+            $property.value = $kernelVer
+        }
+        
+        if ($property.name -eq "firmware.version" -and $property.value -eq "")
+        {
+            $property.value = $firmwareVer
+        }
+    }
 }
 
 #####################################################################
@@ -239,6 +325,32 @@ function SetResultSuite([String] $testSuite)
     LogMsg 6 ("Info :    SetResultSuite($($testSuite))")
 
     $testResult.testsuite.name = $testSuite
+}
+
+#####################################################################
+#
+# SetTimeStamp
+#
+#####################################################################
+function SetTimeStamp([String] $testTimeStamp)
+{
+    <#
+    .Synopsis
+        Add test date time in result XML object.
+
+    .Description
+        Find the test suite, and configure test date time into result XML object.
+
+    .Parameter testTimeStamp
+        The start time of test run
+        Type : [String]
+
+    .Example
+        SetTimeStamp "02/21/2017 13:14:25"
+    #>
+    LogMsg 6 ("Info :    SetTimeStamp($($testTimeStamp))")
+
+    $testResult.testsuite.timestamp = $testTimeStamp
 }
 
 #####################################################################
@@ -304,7 +416,7 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
 # SetRunningTime
 #
 #####################################################################
-function SetRunningTime([String] $testName, [String] $runningTime)
+function SetRunningTime([String] $testName, [System.Xml.XmlElement] $vm)
 {
     <#
     .Synopsis
@@ -317,15 +429,20 @@ function SetRunningTime([String] $testName, [String] $runningTime)
         The test name
         Type : [String]
     
-    .Parameter runningTime
-        The duration of test running
-        Type : [String]
+   .Parameter vm
+        An XML element representing the VM
+        Type : [System.Xml.XmlElement]
 
     .Example
-        SetRunningTime $testName $runningTime
+        SetRunningTime $testName $vm
     #>
-    LogMsg 6 ("Info :    SetRunningTime($runningTime)")
-    $runningTime = "{0:N2}" -f [float]$runningTime
+    LogMsg 6 ("Info :    SetRunningTime($testName)")
+
+    $caseEndTime = [DateTime]::Now
+    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
+    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
+    
+    $runningTime = "{0:N2}" -f $deltaTime.TotalMinutes
 
     foreach ($testCase in $testResult.testsuite.testcase)
     {
@@ -513,9 +630,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
     }
 
     #
-    # We found the tests for the VMs test suite. Next find the next test
-    # to run.  If we are iterating the current test, and there are more
-    # iterations to run, just return the current test.
+    # We found the tests for the VMs test suite. Next find the next test to run.
     #
     if ($tests)
     {
@@ -535,42 +650,6 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData)
                 break
             }
             $prev = $t
-        }
-    }
-
-    if ($vm.iteration -ne "-1")
-    {
-        if ($vm.currentTest -eq "none" -or $vm.currentTest -eq "done")
-        {
-            LogMsg 0 "Error: $($vm.vmName) has a non zero iteration count for test $($vm.currentTest)"
-            return $done
-        }
-
-        $testData = GetTestData $vm.currentTest $xmlData
-        if ($testData)
-        {
-            if ($testData.maxIterations)
-            {
-                $iterationNumber = [int] $vm.iteration
-                $maxIterations = [int] $testData.maxIterations
-                if ($iterationNumber -lt $maxIterations)
-                {
-                    #
-                    # There are more iterations, so return current test
-                    #
-                    $nextTest = [string] $vm.currentTest
-                }
-            }
-            else
-            {
-                LogMsg 0 "Error: $($vm.vmName) has a none zero iteration count, but test $($vm.currentTest) does not have maxIterations"
-                return $done
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: $($vm.vmName) cannot find test data for test $($vm.currentTest)"
-            return $done
         }
     }
 
@@ -1372,27 +1451,6 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     #
-    # Add the iteration information if test case is being iterated
-    #
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationParam = GetIterationParam $vm $xmlData
-        if ($iterationParam)
-        {
-            $tp += "iteration=$($vm.iteration);"
-
-            if ($iterationParam -ne "")
-            {
-                $tp += "iterationParam=${iterationParam};"
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: $($vm.vmName) bad iteration param for test $($vm.currentTest)"
-        }
-    }
-
-    #
     # Include the test log directory path
     #
     $tp += "rootDir=$PWD;"
@@ -1464,39 +1522,9 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
         return
     }
 
-    if ($previousTestData.maxIterations)
-    {
-         $iterationCount = (([int] $vm.iteration) + 1)
-         $vm.iteration = $iterationCount.ToString()
-         if ($iterationCount -ge [int] $previousTestData.maxIterations)
-         {
-             $nextTest = GetNextTest $vm $xmlData
-             $vm.currentTest = [string] $nextTest
-             $testData = GetTestData $vm.currentTest $xmlData
-             if ($testData.maxIterations)
-             {
-                 $vm.iteration = "0"
-             }
-             else
-             {
-                 $vm.iteration = "-1"
-             }
-         }
-    }
-    else
-    {
-        $nextTest = GetNextTest $vm $xmlData
-        $vm.currentTest = [string] $nextTest
-        $testData = GetTestData $vm.currentTest $xmlData
-        if ($testData.maxIterations)
-        {
-            $vm.iteration = "0"
-        }
-        else
-        {
-            $vm.iteration = "-1"
-        }
-    }
+    $nextTest = GetNextTest $vm $xmlData
+    $vm.currentTest = [string] $nextTest
+    $testData = GetTestData $vm.currentTest $xmlData
 
     # Reset test results if we've moved on to the next test case
     if ($vm.currentTest -ne "done")
@@ -1504,88 +1532,6 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $vm.testCaseResults = "none"
         $vm.individualResults += "0"
     }
-}
-
-#######################################################################
-#
-# GetIterationparam()
-#
-#######################################################################
-function GetIterationParam([System.Xml.XmlElement] $vm, [XML] $xmlData)
-{
-    <#
-    .Synopsis
-        Return the iteration parameter.
-    .Description
-        Test case iteration is a feature that is not completed yet.
-        The idea is to run a test case n number of times.  Each
-        time the test is run, the iteration count is incremented.
-        The iteration value is passed as a test parameter.
-    .Parameter $vm
-        The XML element for the VM under test.
-    .Parameter $xmlData
-        The XML Document of the test data.
-    .Output
-        $null on error
-        if no iteration param
-        'param if valid iteration param
-    .Example
-        GetIterationParam $testVM $xmlTestData
-    #>
-
-    $iterationParam = $null
-
-    if (-not $VM)
-    {
-        LogMsg 0 "Error: GetIterationParam() received a null VM object"
-        return $null
-    }
-
-    if (-not $xmlData)
-    {
-        LogMsg 0 "Error: GetIterationParam() received a null xmlData object"
-        return $null
-    }
-
-    $testData = GetTestData $vm.currentTest $xmlData
-    if ($testData)
-    {
-        if ($testData.maxIterations)
-        {
-            $iterationParam = ""
-
-            if ($testData.iterationParams)
-            {
-                if ($testData.iterationParams.param.count -eq 1)
-                {
-                    $iterationParam = $testData.iterationParams.param
-                }
-                else
-                {
-                    if ($testData.iterationParams.param.count -eq $testData.maxIterations)
-                    {
-                        $iterationNumber = [int] $vm.iteration
-                        $iterationParam = ($testData.iterationParams.param[$iterationNumber]).ToString()
-                    }
-                    else
-                    {
-                        LogMsg 0 "Error: GetIterationParam() incorrect number of iterationParams for test $($vm.currentTest)"
-                        $iterationParam = $null
-                    }
-                }
-            }
-        }
-        else
-        {
-            LogMsg 0 "Error: GetIterationParam() was called for a non-iterated test case"
-        }
-    }
-    else
-    {
-        LogMsg 0 "Error: GetIterationParam() could not find test data for test $($vm.currentTest)"
-    }
-
-    return $iterationParam
 }
 
 #######################################################################
