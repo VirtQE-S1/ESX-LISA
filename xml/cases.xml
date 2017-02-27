@@ -42,6 +42,15 @@
             </suiteTests>
         </suite>
         <suite>
+            <suiteName>kdump</suiteName>
+            <suiteTests>
+                <suiteTest>crash_single_core</suiteTest>
+                <suiteTest>crash_smp</suiteTest>
+                <suiteTest>crash_auto_size</suiteTest>
+                <suiteTest>crash_diff_size</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>check_pam_unix2</suiteTest>
@@ -49,12 +58,15 @@
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
-                <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
                 <suiteTest>VHDxResizeToBigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
+                <suiteTest>crash_single_core</suiteTest>
+                <suiteTest>crash_smp</suiteTest>
+                <suiteTest>crash_auto_size</suiteTest>
+                <suiteTest>crash_diff_size</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -204,6 +216,85 @@
             <testScript>testscripts\go_vm_shutdown.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>crash_single_core</testName>
+            <testID>ESX-KDUMP-001</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\change_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\kdump.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>crashkernel=128M</param>
+                <param>VCPU=1</param>
+                <param>VMMemory=2GB</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>crash_smp</testName>
+            <testID>ESX-KDUMP-002</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\change_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\kdump.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>crashkernel=128M</param>
+                <param>VCPU=2</param>
+                <param>VMMemory=4GB</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>crash_auto_size</testName>
+	    <testID>ESX-KDUMP-003</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\change_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\kdump.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>crashkernel=auto</param>
+                <param>VCPU=4</param>
+                <param>VMMemory=8GB</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>crash_diff_size</testName>
+	    <testID>ESX-KDUMP-004</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\change_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\kdump.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>crashkernel=192M</param>
+                <param>VCPU=8</param>
+                <param>VMMemory=16GB</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
