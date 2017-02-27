@@ -28,6 +28,8 @@
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
+                <suiteTest>go_vm_install_by_iso</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -51,6 +53,8 @@
                 <suiteTest>VHDx_Mount_NFS_server</suiteTest>
                 <suiteTest>VHDxResizeToBigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
+                <suiteTest>go_vm_install_by_iso</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -182,6 +186,24 @@
             <testScript>testscripts\go_check_reboot.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_vm_install_by_iso</testName>
+            <testID>ESX-GO-005</testID>
+            <testScript>testscripts\go_vm_install_by_iso.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_vm_shutdown</testName>
+            <testID>ESX-GO-006</testID>
+            <testScript>testscripts\go_vm_shutdown.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
