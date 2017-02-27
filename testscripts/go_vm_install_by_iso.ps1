@@ -1,13 +1,13 @@
 ###############################################################################
 ##
 ## Description:
-##   Check reboot in vm
+##   Check vm, because vm is already installed by iso, so only check vm exists
 ##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check reboot in vm.
+## v1.0 - hhei - 2/21/2017 - Check vm.
 ##
 ###############################################################################
 
@@ -102,37 +102,12 @@ $result = $Failed
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
-    Write-Error -Message "go_check_reboot: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "go_vm_install_by_iso: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-    bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-
-    # Note: start sleep for few seconds to wait for vm to stop first
-    Start-Sleep -seconds 5
-
-    # wait for vm to Start
-    $ip = ""
-    $t = 300
-    while ( $t -gt 0 )
-    {
-        $ip = GetIPv4 $vmName $hvServer
-        if ( -not $ip)
-        {
-            "Info : $vmName is rebooting now"
-            Start-Sleep -seconds 1
-            $t -= 1
-        }
-        else
-        {
-            "Info : $vmName is stared now, ip = $ip"
-            $result = $Passed
-            break
-        }
-    }
-
-    # Note: start sleep for few seconds to wait for vm start, then exit
-    Start-Sleep -seconds 20
+    "Info : Find $vmName"
+    $result = $Passed
 }
 
 DisconnectWithVIServer

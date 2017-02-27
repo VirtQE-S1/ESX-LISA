@@ -1,13 +1,13 @@
 ###############################################################################
 ##
 ## Description:
-##   Check reboot in vm
+##   shutdown vm, in the guest, execute command: shutdown
 ##   Return passed, case is passed; return failed, case is failed
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check reboot in vm.
+## v1.0 - hhei - 2/21/2017 - shutdown vm.
 ##
 ###############################################################################
 
@@ -98,41 +98,64 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$result = $Failed
+$Result = $Failed
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
-    Write-Error -Message "go_check_reboot: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "go_vm_shutdown: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-    bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-
-    # Note: start sleep for few seconds to wait for vm to stop first
-    Start-Sleep -seconds 5
-
-    # wait for vm to Start
-    $ip = ""
-    $t = 300
-    while ( $t -gt 0 )
+    $DISTRO = ""
+    $command = ""
+    $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+    if ( -not $DISTRO )
     {
-        $ip = GetIPv4 $vmName $hvServer
-        if ( -not $ip)
-        {
-            "Info : $vmName is rebooting now"
-            Start-Sleep -seconds 1
-            $t -= 1
-        }
-        else
-        {
-            "Info : $vmName is stared now, ip = $ip"
-            $result = $Passed
-            break
-        }
+        "Error : Guest OS version is NULL"
+        $Result = $Failed
+    }
+    elseif ( $DISTRO -eq "RedHat6" )
+    {
+        $command = "poweroff"
+        $Result = $Passed
+    }
+    elseif ( $DISTRO -eq "RedHat7" )
+    {
+        $command = "systemctl poweroff"
+        $Result = $Passed
+    }
+    else
+    {
+        "Error : Guest OS version is $DISTRO"
+        $Result = $Failed
     }
 
-    # Note: start sleep for few seconds to wait for vm start, then exit
-    Start-Sleep -seconds 20
+    "Info : Guest OS version is $DISTRO"
+
+    if ( $Result -eq $Passed )
+    {
+        "Info : Poweroff $vmName now"
+        bin\plink.exe -i ssh\${sshKey} root@${ipv4} "$command"
+        Start-Sleep -seconds 5
+
+        $timeout = 300
+        while ( $timeout -gt 0 )
+        {
+            $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+            if ($vmObj.PowerState -ne "PoweredOff")
+            {
+                Start-Sleep -seconds 1
+                $timeout -= 1
+            }
+            else
+            {
+                $Result = $Passed
+                break
+            }
+        }
+
+    }
+
 }
 
 DisconnectWithVIServer
