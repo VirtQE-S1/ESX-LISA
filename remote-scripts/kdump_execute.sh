@@ -19,8 +19,8 @@ dos2unix utils.sh
 # Source utils.sh
 #
 . utils.sh || {
-    echo "Error: unable to source utils.sh!"
-    exit 1
+	echo "Error: unable to source utils.sh!"
+	exit 1
 }
 
 #
@@ -37,9 +37,6 @@ UtilsInit
 proc_sys_kernel_sysrq="/proc/sys/kernel/sysrq"
 
 Check_Kdump_Running(){
-	LogMsg "Waiting 30 seconds for kdump to become active."
-	UpdateSummary "Waiting 30 seconds for kdump to become active."
-	sleep 30
 	case $DISTRO in
 	redhat_6)
 		service kdump status | grep "not operational"
@@ -48,39 +45,41 @@ Check_Kdump_Running(){
 			LogMsg "FAIL: Kdump isn't active after reboot."
 			UpdateSummary "FAIL: kdump service isn't active after reboot."
 			exit 1
-			
 		else
-			LogMsg "SUCCESS: kdump service is active after reboot!"
-			UpdateSummary "SUCCESS: kdump service is active after reboot!"
+			LogMsg "PASS: kdump service is active after reboot!"
+			UpdateSummary "PASS: kdump service is active after reboot!"
 		fi
 		;;
 	redhat_7)
 		service kdump status | grep "Active: active (exited)"
 		if  [ $? -eq 0 ]
 		then
-			LogMsg "SUCCESS: kdump service is active after reboot!"
-			UpdateSummary "SUCCESS: kdump service is active after reboot!"
-			
+			LogMsg "PASS: kdump service is active after reboot!"
+			UpdateSummary "PASS: kdump service is active after reboot!"
 		else
 			LogMsg "FAIL: Kdump isn't active after reboot."
 			UpdateSummary "FAIL: kdump service isn't active after reboot."
 			exit 1
 		fi
 		;;
+        *)
+			LogMsg "FAIL: Unknown OS!"
+			UpdateSummary "FAIL: Unknown OS!"
+			exit 1
+		;;
 	esac
-
 }
 
 ConfigureNMI()
 {
-    sysctl -w kernel.unknown_nmi_panic=1
-    if [ $? -ne 0 ]; then
-        LogMsg "Failed to enable kernel to call panic when it receives a NMI."
-        UpdateSummary "Failed to enable kernel to call panic when it receives a NMI."
-        exit 1
+	sysctl -w kernel.unknown_nmi_panic=1
+	if [ $? -ne 0 ]; then
+		LogMsg "FAIL: Fail to enable kernel to call panic when it receives a NMI."
+		UpdateSummary "FAIL: Fail to enable kernel to call panic when it receives a NMI."
+		exit 1
     else
-        LogMsg "Success: enabling kernel to call panic when it receives a NMI."
-        UpdateSummary "Success: enabling kernel to call panic when it receives a NMI."
+		LogMsg "PASS: Enabling kernel to call panic when it receives a NMI."
+		UpdateSummary "PASS: Enabling kernel to call panic when it receives a NMI."
     fi
 }
 
@@ -91,7 +90,7 @@ ConfigureNMI()
 #######################################################################
 
 # As NMI, can't triggered in Linux ENV. Will put it here firstly.
-ConfigureNMI
+# ConfigureNMI
 
 # Restart kdump.service after reboot and modification.
 service kdump restart
@@ -101,8 +100,8 @@ then
 	UpdateSummary "FAIL: Could not restart kdump service with new parameters after reboot."
 	exit 1
 else
-	LogMsg "SUCCESS: Could restart kdump service well with new parameters after reboot."
-	UpdateSummary "SUCCESS: Could restart kdump service well with new parameters after reboot."
+	LogMsg "PASS: Could restart kdump service well with new parameters after reboot."
+	UpdateSummary "PASS: Could restart kdump service well with new parameters after reboot."
 fi
 
 # Ensure kdump service status.
@@ -110,14 +109,13 @@ Check_Kdump_Running
 
 LogMsg "Preparing for kernel panic......."
 UpdateSummary "Preparing for kernel panic......."
-sync
 if [ -f $proc_sys_kernel_sysrq ]
-then
-        LogMsg "Success: $proc_sys_kernel_sysrq esxits"
-        UpdateSummary "Success: $proc_sys_kernel_sysrq esxits"
-	echo 1 > $proc_sys_kernel_sysrq
+then	
+		LogMsg "PASS: $proc_sys_kernel_sysrq esxits"
+		UpdateSummary "PASS: $proc_sys_kernel_sysrq esxits"
+		echo 1 > $proc_sys_kernel_sysrq
 else
-        LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
-        UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
+		LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
+		UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
 	exit 1
 fi
