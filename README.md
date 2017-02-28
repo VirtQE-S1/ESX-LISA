@@ -29,7 +29,7 @@ run on a VM.
 Provides utility functions used by the automation.
 
 ### OSAbstractions.ps1
-Functions that return a OS specific command line.  This was added when Integrated services were added to FreeBSD.
+Functions that return a OS specific command line.
 
 ## Command sample
 A test run is driven by an XML file.  A sample command might look like the following:
@@ -95,10 +95,8 @@ A very simple XML file would look something like the following:
         <testCases>
             <test>
                 <testName>debug_demo_case</testName>
+                <testID>ESX-DEMO-001</testID>
                 <testScript>testscripts\debug_demo.ps1</testScript>
-                <testparams>
-                    <param>TC_COVERED=ESX-DEMO-001</param>
-                </testparams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>
@@ -164,7 +162,8 @@ a Putty Private Key (.ppk).
     | $ENVVISPROTOCOL | Connection protocol with vSphere Center Server, such as HTTPS. |
 
 5.  Edit xml\debug_demo.xml, replace ESXI_HOST_IPADDRESS and VM_NAME with your settings.
-6.  Run demo case with the following cmdlet:
+6.  Run demo case with one of the following cmdlets:
 
     .\lisa.ps1 run .\xml\debug_demo.xml -dbgLevel 10
+    .\lisa.ps1 run .\xml\debug_demo.xml -vmName VM_NAME -hvServer ESXI_HOST_IPADDRESS -sshKey demo_id_rsa.ppk -suite debug_demo_suite -os Linux -dbgLevel 10
 
