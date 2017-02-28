@@ -26,6 +26,7 @@
 ## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
 ## v1.4 - xiaofwan - 1/25/2016 - Add four test result state RO variable to mark
 ##                               test case result.
+## v1.5 - xiaofwan - 2/28/2016 - Add WaitForVMSSHReady function.
 ##
 ###############################################################################
 
@@ -430,10 +431,10 @@ function GetIPv4([String] $vmName, [String] $hvServer)
         Try the various methods to extract an IPv4 address from a VM.
     .Parameter vmName
         Name of the VM to retrieve the IP address from.
-    .Parameter xmlData
-        XML configuration settings.
+    .Parameter hvServer
+       IP address of host the VM located
     .Example
-        GetIPv4 $testVMName $xmlData
+        GetIPv4 $testVMName $hvServer
     #>
 
     $errMsg = $null
@@ -816,6 +817,57 @@ function WaitForVMToStartSSH([String] $ipv4addr, [int] $timeout)
     if (-not $retVal)
     {
         Write-Error -Message "WaitForVMToStartSSH: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ErrorAction SilentlyContinue
+    }
+
+    return $retVal
+}
+
+#######################################################################
+#
+# WaitForVMSSHReady()
+#
+#######################################################################
+function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [int] $timeout)
+{
+    <#
+    .Synopsis
+        Wait for a Linux VM to have IP address assigned and start SSH
+    .Description
+        Wait for a Linux VM to have IP address assigned and start SSH.
+        This is done by testing if the target machine is lisetning on
+        port 22.
+    .Parameter vmName
+        Name of the VM to retrieve the IP address from.
+    .Parameter hvServer
+       IP address of host the VM located
+    .Parameter timeout
+        Timeout in second to wait
+    .Example
+        WaitForVMSSHReady VM_NAME HOST_IP 300
+    #>
+
+    $retVal = $false
+
+    $waitTimeOut = $timeout
+    while($waitTimeOut -gt 0)
+    {
+        $vmipv4 = GetIPv4 $vmName $hvServer
+        if ($vmipv4)
+        {
+            $result = echo y | bin\plink -i .\ssh\demo_id_rsa.ppk root@10.73.199.44 "echo 911"
+            if ($result -eq 911)
+            {
+                $retVal = $true
+                break
+            }
+        }
+        $waitTimeOut -= 2  # Note - Test Port will sleep for 5 seconds
+        Start-Sleep -s 2
+    }
+
+    if (-not $retVal)
+    {
+        Write-Error -Message "WaitForVMSSHReady: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ErrorAction SilentlyContinue
     }
 
     return $retVal
