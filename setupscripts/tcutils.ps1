@@ -827,7 +827,7 @@ function WaitForVMToStartSSH([String] $ipv4addr, [int] $timeout)
 # WaitForVMSSHReady()
 #
 #######################################################################
-function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [int] $timeout)
+function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [String] $sshKey, [int] $timeout)
 {
     <#
     .Synopsis
@@ -840,6 +840,9 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [int] $timeout)
         Name of the VM to retrieve the IP address from.
     .Parameter hvServer
        IP address of host the VM located
+    .Parameter sshKey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\ssh
     .Parameter timeout
         Timeout in second to wait
     .Example
@@ -854,7 +857,7 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [int] $timeout)
         $vmipv4 = GetIPv4 $vmName $hvServer
         if ($vmipv4)
         {
-            $result = echo y | bin\plink -i .\ssh\demo_id_rsa.ppk root@10.73.199.44 "echo 911"
+            $result = echo y | bin\plink -i ssh\${sshKey} root@${vmipv4} "echo 911"
             if ($result -eq 911)
             {
                 $retVal = $true
