@@ -38,6 +38,7 @@
 ## v2.1 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
 ## v2.2 - xiaofwan - 2/21/2017 - Add SetRunningTime in ForceShutDown to support 
 ##                               time calculation in force shut down scenario.
+## v2.3 - xiaofwan - 2/28/2017 - Remove summary log from emailSummary. 
 ##
 ###############################################################################
 
@@ -2359,16 +2360,6 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $summaryLog = "${testDir}\$($vm.vmName)_${currentTest}_summary.log"
     del $summaryLog -ErrorAction "SilentlyContinue"
     GetFileFromVM $vm "summary.log" $summaryLog
-    if (test-path $summaryLog)
-    {
-        $content = Get-Content -path $summaryLog
-        foreach ($line in $content)
-        {
-            $vm.emailSummary += "          $line<br />"
-        }
-        #Comment: The log parser may read VM information from this log file, such as Linux kernel version, etc. So don't delete this log:
-        #del $summaryLog
-    }
 
     #
     # If this test has additional files as specified in the <uploadFiles> tag,
