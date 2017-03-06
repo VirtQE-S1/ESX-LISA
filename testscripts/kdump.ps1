@@ -179,8 +179,8 @@ else
 #
 Write-Output "Start to execute kdump_config.sh in VM."
 Write-Host -F Cyan "kdump.ps1: Start to execute kdump_config.sh in VM......."
-$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
-#$retVal = .\bin\plink -i ssh\${sshKey} root@${ipv4} "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
+#$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
+$retVal = .\bin\plink -i ssh\${sshKey} root@${ipv4} "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
 if (-not $retVal)
 {
 	Write-Output "FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal."
