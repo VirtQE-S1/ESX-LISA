@@ -60,8 +60,8 @@ crashkernel=$1
 Config_Kdump(){
 	if [ -f $kdump_conf ]
 	then
-		LogMsg "PASS. Find out kdump.conf file in VM."
-		UpdateSummary "PASS. Find out kdump.conf file in VM."
+		LogMsg "PASS. Find out $kdump_conf file in VM."
+		UpdateSummary "PASS. Find out $kdump_conf file in VM."
 
 		# Modify path to /var/crash
 		LogMsg "Start to modify $kdump_conf......."
@@ -75,8 +75,8 @@ Config_Kdump(){
 			exit 1
 		else
 			echo "path $dump_path" >> $kdump_conf
-			LogMsg "SUCCESS: Updated the path to /var/crash."
-			UpdateSummary "SUCCESS: Updated the path to /var/crash."
+			LogMsg "SUCCESS: Updated the path to $dump_path."
+			UpdateSummary "SUCCESS: Updated the path to $dump_path."
 		fi
 
 		# Modify default action as reboot after crash
@@ -98,8 +98,8 @@ Config_Kdump(){
 		grep -iq "^#core_collector" $kdump_conf
 		if [ $? -ne 0 ]
 		then
-			LogMsg "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
-			UpdateSummary "ERROR: Failed to comment vmcore collection method in /etc/kdump.conf. Probably kdump is not installed."
+			LogMsg "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed."
+			UpdateSummary "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed."
 			exit 1
 		else
 			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
@@ -107,8 +107,8 @@ Config_Kdump(){
 			UpdateSummary "SUCCESS: Updated vmcore collection method to makedumpfile."
 		fi
 	else
-		LogMsg "Failed. Can't find out kdump.conf file or not a file."
-		UpdateSummary "Failed. Can't find out kdump.conf file in VM."
+		LogMsg "Failed. Can't find out $kdump_conf file or not a file."
+		UpdateSummary "Failed. Can't find out $kdump_conf file in VM."
 		exit 1
 	fi
 }
@@ -121,12 +121,13 @@ Config_Kdump(){
 ###############################################################################
 
 Config_Grub(){
-		echo "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
+		LogMsg "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
+		UpdateSummary "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
 		#grub_conf=$1
 		if [ -f $1 ]
 		then
-			LogMsg "PASS. Find out grub file in VM."
-			UpdateSummary "PASS. Find out grub file in VM."
+			LogMsg "PASS. Find out $1 file in VM."
+			UpdateSummary "PASS. Find out $1 file in VM."
 
 			# Modify crashkernel as $crashkernel
 			if grep -iq "crashkernel=" $1
@@ -137,8 +138,8 @@ Config_Grub(){
 			grep -iq "crashkernel=$crashkernel" $1
 			if [ $? -ne 0 ]
 			then
-				LogMsg "FAIL: Could not set the new crashkernel value in /etc/default/grub."
-				UpdateSummary "FAIL: Could not set the new crashkernel value in /etc/default/grub."
+				LogMsg "FAIL: Could not set the new crashkernel value in $1."
+				UpdateSummary "FAIL: Could not set the new crashkernel value in $1."
 				exit 1
 			else
 				LogMsg "SUCCESS: updated the crashkernel value to: $crashkernel."
@@ -149,9 +150,6 @@ Config_Grub(){
 			UpdateSummary "Failed. Can't find out grub file in VM."
 		fi
 }
-
-# Ensure script start to execute in /root
-cd ~
 
 # Both RHEL6 and RHEL7 set kdump.conf as the same rules
 Config_Kdump
