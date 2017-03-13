@@ -43,6 +43,7 @@ if [ -n "$version" ]; then
                 LogMsg "Unistall the open-vm-tools Failed"
                 UpdateSummary "Test Failed. Unistall the open-vm-tools Failed."
                 SetTestStateFailed
+                exit 1
         else
                 LogMsg "Unistall the open-vm-tools"
                 UpdateSummary "Test Successfully. Unistall the open-vm-tools."
@@ -51,5 +52,6 @@ if [ -n "$version" ]; then
 else
         LogMsg "the open-vm-tools not installed"
         UpdateSummary "Test Failed. open-vm-tools not installed."
-        SetTestStateFailed
+        SetTestStateAborted
+        exit 1
 fi

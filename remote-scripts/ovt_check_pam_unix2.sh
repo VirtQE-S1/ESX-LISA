@@ -1,15 +1,15 @@
 #!/bin/bash
 
 ###############################################################################
-## 
+##
 ## Description:
 ##   This script checks file /etc/pam.d/vmtoolsd.
 ##   There should not have pam_unix2.so included.
-## 
+##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 12/29/2016 - Draft script for case ESX-OVT-001.
+## v1.0 - xiaofwan - 12/29/2016 - Draft script for case ESX-OVT-004.
 ## v1.1 - xiaofwan - 1/25/2016 - Skip this test case in RHEL-6.x environment.
 ##
 ###############################################################################

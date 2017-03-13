@@ -4,13 +4,12 @@
 ##
 ## Description:
 ##   This script checks file open-vm-tools version.
-##   The open-vm-tools version shoulb be open-vm-tools-10.1.5.
+##   The open-vm-tools version should be open-vm-tools-10.1.5.
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - ldu - 03/07/2017 - Draft script for case ESX-OVT-001.
-##
 ##
 ###############################################################################
 
@@ -48,7 +47,8 @@ if [ -n $version ]; then
 else
         LogMsg "Info : The open-vm-tools is not installed'"
         UpdateSummary "Test Failed,open-vm-tools is not installed ."
-        SetTestStateFailed
+        SetTestStateAborted
+        exit 1
 fi
 
 if [ "$version" = "$stanversion" ]; then
@@ -59,4 +59,5 @@ else
         LogMsg "Info : The build info not right'"
         UpdateSummary "Test Failed,open-vm-tools build info not right ."
         SetTestStateFailed
+        exit 1
 fi

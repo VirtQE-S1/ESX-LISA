@@ -18,7 +18,10 @@
         <suite>
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
-                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>ovt_check_build_info</suiteTest>
+                <suiteTest>ovt_check_vmtoold_status</suiteTest>
+                <suiteTest>ovt_unintall_ovt</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -53,7 +56,10 @@
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
-                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>ovt_check_build_info</suiteTest>
+                <suiteTest>ovt_check_vmtoold_status</suiteTest>
+                <suiteTest>ovt_unintall_ovt</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -72,17 +78,53 @@
     </testSuites>
 
     <testCases>
-        <test>
-            <testName>check_pam_unix2</testName>
-            <testID>ESX-OVT-001</testID>
-            <testScript>ovt_check_pam_unix2.sh</testScript>
-            <files>remote-scripts/ovt_check_pam_unix2.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+            <test>
+                <testName>ovt_check_build_version</testName>
+                <testID>ESX-OVT-001</testID>
+                <testScript>ovt_check_build_version.sh</testScript>
+                <files>remote-scripts/ovt_check_build_version.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <testParams>
+                    <param>stanversion=open-vm-tools-10.0.5-2.el7.x86_64</param>
+                </testParams>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+            </test>
+            <test>
+                <testName>ovt_check_vmtoolsd_status</testName>
+                <testID>ESX-OVT-002</testID>
+                <testScript>ovt_check_vmtoolsd_status.sh</testScript>
+                <files>remote-scripts/ovt_check_vmtoolsd_status.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+            </test>
+            <test>
+                <testName>ovt_uninstall_ovt</testName>
+                <testID>ESX-OVT-003</testID>
+                <testScript>uninstall_ovt.sh</testScript>
+                <files>remote-scripts/ovt_uninstall_ovt.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+            </test>
+            <test>
+                <testName>ovt_check_pam_unix2</testName>
+                <testID>ESX-OVT-004</testID>
+                <testScript>ovt_check_pam_unix2.sh</testScript>
+                <files>remote-scripts/ovt_check_pam_unix2.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+            </test>
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -229,7 +271,7 @@
             <testScript>testscripts\kdump.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>crashkernel=128M</param>
+                <param>LDU=128M</param>
                 <param>VCPU=1</param>
                 <param>VMMemory=2GB</param>
             </testParams>

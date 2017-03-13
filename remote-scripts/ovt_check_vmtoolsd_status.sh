@@ -4,13 +4,12 @@
 ##
 ## Description:
 ##   This script checks vmtoolsd status.
-##   Thevmtoolsd status should be running.
+##   The vmtoolsd status should be running.
 ##
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - ldu - 03/07/2017 - Draft script for case ESX-OVT-002.
-##
 ##
 ###############################################################################
 
@@ -28,7 +27,6 @@ UtilsInit
 #
 # Start the testing
 #
-UpdateSummary "$(uname -a)"
 
 if [[ $DISTRO != "redhat_7" ]]; then
     SetTestStateSkipped
@@ -41,8 +39,10 @@ if [ "$service" = "1" ]; then
   LogMsg $service
   UpdateSummary "Test Successfully. service vmtoolsd is running."
   SetTestStateCompleted
+  exit
 else
   LogMsg "Info : The service vmtoolsd is not running'"
   UpdateSummary "Test Successfully. The service vmtoolsd is not running."
   SetTestStateFailed
+  exit 1
 fi
