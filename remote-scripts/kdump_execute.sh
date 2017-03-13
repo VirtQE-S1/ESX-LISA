@@ -111,11 +111,11 @@ LogMsg "Preparing for kernel panic......."
 UpdateSummary "Preparing for kernel panic......."
 if [ -f $proc_sys_kernel_sysrq ]
 then	
-		LogMsg "PASS: $proc_sys_kernel_sysrq esxits"
-		UpdateSummary "PASS: $proc_sys_kernel_sysrq esxits"
-		echo 1 > $proc_sys_kernel_sysrq
+	LogMsg "PASS: $proc_sys_kernel_sysrq esxits."
+	UpdateSummary "PASS: $proc_sys_kernel_sysrq esxits."
+	echo 1 > $proc_sys_kernel_sysrq
 else
-		LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
-		UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit"
+	LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit."
+	UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit."
 	exit 1
 fi
