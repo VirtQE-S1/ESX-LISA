@@ -112,27 +112,12 @@ else
     Start-Sleep -seconds 5
 
     # wait for vm to Start
-    $ip = ""
-    $t = 300
-    while ( $t -gt 0 )
+    $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+    if ( $ret -eq $true )
     {
-        $ip = GetIPv4 $vmName $hvServer
-        if ( -not $ip)
-        {
-            "Info : $vmName is rebooting now"
-            Start-Sleep -seconds 1
-            $t -= 1
-        }
-        else
-        {
-            "Info : $vmName is stared now, ip = $ip"
-            $result = $Passed
-            break
-        }
+        $result = $Passed
     }
 
-    # Note: start sleep for few seconds to wait for vm start, then exit
-    Start-Sleep -seconds 20
 }
 
 DisconnectWithVIServer
