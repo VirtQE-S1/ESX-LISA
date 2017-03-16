@@ -21,6 +21,9 @@
 ## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
 ## v1.1 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
+## v1.2 - xiaofwan - 2/21/2017 - Two new functions to fetch kernel and firmware
+##                               version info.
+## v1.3 - xiaofwan - 2/27/2017 - Fix GetFirmwareVersion issue. 
 ##
 ###############################################################################
 
@@ -249,6 +252,56 @@ function GetOSType ([System.Xml.XmlElement] $vm)
     }
 
     return $os
+}
+
+#####################################################################
+#
+# GetKernelVersion()
+#
+#####################################################################
+function GetKernelVersion ()
+{
+	<#
+	.Synopsis
+    	Ask the OS to provide Kernel version.
+    .Description
+        Use SSH to send a uname command to the VM.  Use the
+        returned name as Kernel version.
+	#>
+
+    # plink will pending at waiting password if sshkey failed auth, so
+    # pipe a 'y' to response
+    $ver = echo y | bin\plink -i ssh\${sshKey} root@${hostname} "uname -r"
+
+    return $ver
+}
+
+
+#####################################################################
+#
+# GetFirmwareVersion()
+#
+#####################################################################
+function GetFirmwareVersion ()
+{
+	<#
+	.Synopsis
+    	Ask the OS to provide firmware version.
+    .Description
+        Use SSH to send a uname command to the VM.  The firmware is 
+        based on shell command result.
+	#>
+
+    # plink will pending at waiting password if sshkey failed auth, so
+    # pipe a 'y' to response
+    $cmdResult = echo y | bin\plink -i ssh\${sshKey} root@${hostname} "[ -d /sys/firmware/efi ] && echo 0"
+
+    $firmware = "BIOS"
+    if ($cmdResult -eq "0")
+    {
+        $firmware = "EFI"
+    }
+    return $firmware
 }
 
 

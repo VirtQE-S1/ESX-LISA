@@ -32,6 +32,13 @@
 ## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
 ## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
 ## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+## v1.9 - xiaofwan - 2/21/2017 - ESX host version, kernel and firmware version
+##                               are visable in XML result.
+## v2.0 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
+## v2.1 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
+## v2.2 - xiaofwan - 2/21/2017 - Add SetRunningTime in ForceShutDown to support 
+##                               time calculation in force shut down scenario.
+## v2.3 - xiaofwan - 2/28/2017 - Remove summary log from emailSummary. 
 ##
 ###############################################################################
 
@@ -320,7 +327,7 @@ function RunICTests([XML] $xmlConfig)
         #
         # Add the state related xml elements to each VM xml node
         #
-        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "iteration", "isRebooted")
+        $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "isRebooted")
         foreach($element in $xmlElementsToAdd)
         {
             if (-not $vm.${element})
@@ -336,14 +343,10 @@ function RunICTests([XML] $xmlConfig)
         $vm.AppendChild($newElement);
 
         #
-        # Correct the default iteration value
+        # Add test suite and test date time into test result XML
         #
-        $vm.iteration = "-1"
-
-        #
-        # Add test suite into test result XML
-        #
-        SetResultSuite $vm.suite $testResult
+        SetTimeStamp $testStartTime.toString()
+        SetResultSuite $vm.suite
 
         #
         # Add some information to the email summary text
@@ -353,7 +356,7 @@ function RunICTests([XML] $xmlConfig)
         $outGetCliVer = Get-PowerCLIVersion
         $vm.emailSummary += "    PowerCLI :  $($outGetCliVer.UserFriendlyVersion) <br />"
         $outGlobalVar = $global:DefaultVIServer
-        $vm.emailSummary += "    vCenter :  version $($outGlobalVar.Version) build $($outGlobalVar.Build) <br />"
+        $vm.emailSummary += "    vCenter :  version $($outGlobalVar.Version) build $($outGlobalVar.Build) <br />" 
         #
         # Verify the ESXi serer is on and connected.
         #
@@ -371,6 +374,11 @@ function RunICTests([XML] $xmlConfig)
         $vm.emailSummary += "    Suite : running at ESXi host $($vm.hvServer) <br />"
         $vm.emailSummary += "    Host : $($vm.hvServer) with ESXi $($vmhostOut.Version) build $($vmhostOut.Build)<br />"
         $vm.emailSummary += "<br /><br />"
+
+        #
+        # Add ESX host version into result XML
+        #
+        SetESXVersion "$($vmhostOut.Version) build $($vmhostOut.Build)"
 
         #
         # Make sure the VM actually exists
@@ -847,13 +855,6 @@ function DoSystemDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
     # 
     $vm.isRebooted = $true.ToString()
 
-    $iterationMsg = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationMsg = " (iteration $($vm.iteration))"
-    }
-    LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
-
     $vm.caseStartTime = [DateTime]::Now.ToString()
 
     if ($($vm.currentTest) -eq "done")
@@ -1127,7 +1128,6 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
                         #
                         LogMsg 0 "Error : VM $($vm.vmName) setup script ${script} for test ${testName} failed"
                         $vm.emailSummary += ("    Test {0, -25} : {1}<br />" -f ${testName}, "Failed - setup script failed")
-                        #$vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
                         if ($abortOnError)
                         {
                             $vm.currentTest = "done"
@@ -1591,6 +1591,13 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $os = (GetOSType $vm).ToString()
     LogMsg 9 "INFO : The OS type is $os"
 
+    #
+    # Add guest kernel version and firmware info int result XML
+    #
+    $kernelVer = GetKernelVersion
+    $firmwareVer = GetFirmwareVersion
+    SetOSInfo $kernelVer $firmwareVer
+
     UpdateState $vm $PushTestFiles
 
 }
@@ -1705,24 +1712,6 @@ function DoPushTestFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     {
         LogMsg 9 "Info : $($vm.vmName) Adding ipv4=$($vm.ipv4)"
         "ipv4=$($vm.ipv4)" | out-file -encoding ASCII -append -filePath $constFile
-    }
-
-    #
-    # Add the iteration information if test case is being iterated
-    #
-    if ($vm.iteration -ne "-1")
-    {
-        "iteration=$($vm.iteration)" | out-file -encoding ASCII -append -filePath $constFile
-
-        if ($testData.iterationParams)
-        {
-            $iterationParam = GetIterationParam $vm $xmlData
-
-            if ($iterationParam -and $iterationparam -ne "")
-            {
-                "iterationParam=${iterationParam}" | out-file -encoding ASCII -append -filePath $constFile
-            }
-        }
     }
 
     #
@@ -2332,11 +2321,6 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     $currentTest = $vm.currentTest
-    $iterationNum = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationNum = $($vm.iteration)
-    }
 
     #
     # Update the e-mail summary
@@ -2355,21 +2339,15 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
         $completionCode = $Aborted
     }
 
-    $iterationMsg = $null
-    if ($vm.iteration -ne "-1")
-    {
-        $iterationMsg = "($($vm.iteration))"
-    }
-
     $testID = GetTestID $currentTest $xmlData
     SetTestResult $currentTest $testID $completionCode
 
-    $vm.emailSummary += ("    Test {0,-25} : {2}<br />" -f $($vm.currentTest), $iterationMsg, $completionCode)
+    $vm.emailSummary += ("    Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
 
     #
     # Collect test results
     #
-    $logFilename = "$($vm.vmName)_${currentTest}_${iterationNum}.log"
+    $logFilename = "$($vm.vmName)_${currentTest}.log"
     LogMsg 4 "Info : $($vm.vmName) collecting logfiles"
     if (-not (GetFileFromVM $vm "${currentTest}.log" "${testDir}\${logFilename}") )
     {
@@ -2382,16 +2360,6 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     $summaryLog = "${testDir}\$($vm.vmName)_${currentTest}_summary.log"
     del $summaryLog -ErrorAction "SilentlyContinue"
     GetFileFromVM $vm "summary.log" $summaryLog
-    if (test-path $summaryLog)
-    {
-        $content = Get-Content -path $summaryLog
-        foreach ($line in $content)
-        {
-            $vm.emailSummary += "          $line<br />"
-        }
-        #Comment: The log parser may read VM information from this log file, such as Linux kernel version, etc. So don't delete this log:
-        #del $summaryLog
-    }
 
     #
     # If this test has additional files as specified in the <uploadFiles> tag,
@@ -2417,7 +2385,7 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData)
     #
     SendCommandToVM $vm "rm -f state.txt"
 
-    LogMsg 0 "Info : $($vm.vmName) Status for test $currentTest $iterationMsg = $completionCode"
+    LogMsg 0 "Info : $($vm.vmName) Status for test $currentTest - $completionCode"
 
 
     if ( $($testData.postTest) )
@@ -2645,12 +2613,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
             UpdateCurrentTest $vm $xmlData
 
-            $iterationMsg = $null
-            if ($vm.iteration -ne "-1")
-            {
-                $iterationMsg = "(iteration $($vm.iteration))"
-            }
-            LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest) ${iterationMsg}"
+            LogMsg 0 "Info : $($vm.vmName) currentTest updated to $($vm.currentTest)"
 
             if ($vm.currentTest -eq "done")
             {
@@ -2658,11 +2621,7 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData)
             }
             else
             {
-                $caseEndTime = [DateTime]::Now
-                $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-                LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-
-                SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+                SetRunningTime $vm.currentTest $vm
 
                 #
                 # Mark next test not rebooted
@@ -2803,11 +2762,7 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
         }
         else
         {
-            $caseEndTime = [DateTime]::Now
-            $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-            LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-            
-            SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+            SetRunningTime $vm.currentTest $vm
 
             UpdateState $vm $SystemDown
         }
@@ -2912,11 +2867,7 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData)
         LogMsg 0 "Error : $($vm.vmName) entered RunCleanupScript state when test $($vm.currentTest) does not have a cleanup script"
         $vm.emailSummary += "Entered RunCleanupScript but test does not have a cleanup script<br />"
     }
-    $caseEndTime = [DateTime]::Now
-    $deltaTime = $caseEndTime - [DateTime]::Parse($vm.caseStartTime)
-    LogMsg 0 "Info : $($vm.vmName) currentTest lasts $($deltaTime.hours) Hours, $($deltaTime.minutes) Minutes, $($deltaTime.seconds) seconds."
-    
-    SetRunningTime $vm.currentTest $deltaTime.TotalMinutes
+    SetRunningTime $vm.currentTest $vm
 
     UpdateState $vm $SystemDown
 }
@@ -2983,6 +2934,8 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     if ($v.PowerState -eq "PoweredOff")
     {
+        SetRunningTime $vm.currentTest $vm
+        
         UpdateState $vm $nextState
     }
     else
@@ -3012,6 +2965,8 @@ function DoForceShutDown([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
             if ($v.PowerState -eq "PoweredOff")
             {
+                SetRunningTime $vm.currentTest $vm
+
                 UpdateState $vm $nextState
                 break
             }
