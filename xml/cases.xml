@@ -18,7 +18,7 @@
         <suite>
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
-                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -35,45 +35,45 @@
         <suite>
             <suiteName>storage</suiteName>
             <suiteTests>
-                <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
-                <suiteTest>HotAdd_SCSI_Dynamic_2T</suiteTest>
-                <suiteTest>VHDx_Mount_NFS_server</suiteTest>
-                <suiteTest>VHDxResizeToBigger</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <suiteName>kdump</suiteName>
             <suiteTests>
-                <suiteTest>crash_single_core</suiteTest>
-                <suiteTest>crash_smp</suiteTest>
-                <suiteTest>crash_auto_size</suiteTest>
-                <suiteTest>crash_diff_size</suiteTest>
+                <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_smp</suiteTest>
+                <suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
-                <suiteTest>check_pam_unix2</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
-                <suiteTest>HotAdd_SCSI_Dynamic</suiteTest>
-                <suiteTest>VHDx_Mount_NFS_server</suiteTest>
-                <suiteTest>VHDxResizeToBigger</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
-                <suiteTest>crash_single_core</suiteTest>
-                <suiteTest>crash_smp</suiteTest>
-                <suiteTest>crash_auto_size</suiteTest>
-                <suiteTest>crash_diff_size</suiteTest>
+                <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_smp</suiteTest>
+                <suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>check_pam_unix2</testName>
+            <testName>ovt_check_pam_unix2</testName>
             <testID>ESX-OVT-001</testID>
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
@@ -126,7 +126,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>HotAdd_SCSI_Dynamic</testName>
+            <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testScript>stor_lis_disk.sh</testScript>
@@ -144,7 +144,7 @@
             <onError>Continue</onError>
         </test>
         <test>
-            <testName>HotAdd_SCSI_Dynamic_2T</testName>
+            <testName>stor_hotadd_scsi_dynamic_2t</testName>
             <testID>ESX-STOR-003</testID>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testScript>stor_lis_disk.sh</testScript>
@@ -164,7 +164,7 @@
             <onError>Continue</onError>
         </test>
         <test>
-            <testName>VHDx_Mount_NFS_server</testName>
+            <testName>stor_vhdx_mount_nfs_server</testName>
             <testID>ESX-STOR-002</testID>
             <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
             <testScript>testscripts\stor_nfs_client.ps1</testScript>
@@ -175,7 +175,7 @@
             <onError>Continue</onError>
         </test>
         <test>
-           <testName>VHDxResizeToBigger</testName>
+           <testName>stor_hdx_resize_to_bigger</testName>
            <testID>ESX-STOR-004</testID>
            <testScript>testscripts\stor_resize_disk.ps1</testScript>
            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
@@ -220,7 +220,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>crash_single_core</testName>
+            <testName>kdump_crash_single_core</testName>
             <testID>ESX-KDUMP-001</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -240,7 +240,7 @@
         </test>
 
         <test>
-            <testName>crash_smp</testName>
+            <testName>kdump_crash_smp</testName>
             <testID>ESX-KDUMP-002</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -260,7 +260,7 @@
         </test>
 
         <test>
-            <testName>crash_auto_size</testName>
+            <testName>kdump_crash_auto_size</testName>
 	    <testID>ESX-KDUMP-003</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -280,7 +280,7 @@
         </test>
 
         <test>
-            <testName>crash_diff_size</testName>
+            <testName>kdump_crash_diff_size</testName>
 	    <testID>ESX-KDUMP-004</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
