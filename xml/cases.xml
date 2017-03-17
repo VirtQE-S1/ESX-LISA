@@ -18,6 +18,9 @@
         <suite>
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
             </suiteTests>
         </suite>
@@ -53,17 +56,20 @@
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
-                <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
@@ -73,8 +79,44 @@
 
     <testCases>
         <test>
-            <testName>ovt_check_pam_unix2</testName>
+            <testName>ovt_check_build_version</testName>
             <testID>ESX-OVT-001</testID>
+            <testScript>ovt_check_build_version.sh</testScript>
+            <files>remote-scripts/ovt_check_build_version.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>stanversion=open-vm-tools-10.0.5-2.el7.x86_64</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_vmtoolsd_status</testName>
+            <testID>ESX-OVT-002</testID>
+            <testScript>ovt_check_vmtoolsd_status.sh</testScript>
+            <files>remote-scripts/ovt_check_vmtoolsd_status.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_uninstall_ovt</testName>
+            <testID>ESX-OVT-003</testID>
+            <testScript>ovt_uninstall_ovt.sh</testScript>
+            <files>remote-scripts/ovt_uninstall_ovt.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_pam_unix2</testName>
+            <testID>ESX-OVT-004</testID>
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -256,7 +298,7 @@
 				<param>crashkernel=128M</param>
 				<param>VCPU=2</param>
 				<param>VMMemory=4GB</param>
-				<param>TName=kdump_crash_smp</param>				
+				<param>TName=kdump_crash_smp</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>600</timeout>
@@ -278,7 +320,7 @@
 				<param>crashkernel=auto</param>
 				<param>VCPU=4</param>
 				<param>VMMemory=8GB</param>
-				<param>TName=kdump_crash_auto_size</param>				
+				<param>TName=kdump_crash_auto_size</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>600</timeout>
@@ -300,7 +342,7 @@
 				<param>crashkernel=256M</param>
 				<param>VCPU=8</param>
 				<param>VMMemory=16GB</param>
-				<param>TName=kdump_crash_diff_size</param>				
+				<param>TName=kdump_crash_diff_size</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>600</timeout>
