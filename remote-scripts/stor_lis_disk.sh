@@ -44,6 +44,12 @@ fi
 
 # when add 1G disk, 1073741824 shows in fdisk
 dynamicDiskSize=$(($CapacityGB*1024*1024*1024))
+if [ $DISTRO = "redhat_6" ] && [ $CapacityGB -ge 1024 ]; then
+    LogMsg "Skip rhel6 test if disk size larger then 1T."
+    UpdateSummary "Skip rhel6 test if disk size larger then 1T."
+    SetTestStateSkipped
+    exit
+fi
 
 CheckDiskCount
 if [ "$?" != "0" ];then
