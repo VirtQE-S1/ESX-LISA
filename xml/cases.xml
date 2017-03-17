@@ -64,6 +64,7 @@
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
