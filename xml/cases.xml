@@ -18,9 +18,9 @@
         <suite>
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
-                <suiteTest>ovt_check_build_info</suiteTest>
-                <suiteTest>ovt_check_vmtoold_status</suiteTest>
-                <suiteTest>ovt_unintall_ovt</suiteTest>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
             </suiteTests>
         </suite>
@@ -56,20 +56,20 @@
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
-                <suiteTest>ovt_check_build_info</suiteTest>
-                <suiteTest>ovt_check_vmtoold_status</suiteTest>
-                <suiteTest>ovt_unintall_ovt</suiteTest>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
-                <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
@@ -106,7 +106,7 @@
         <test>
             <testName>ovt_uninstall_ovt</testName>
             <testID>ESX-OVT-003</testID>
-            <testScript>uninstall_ovt.sh</testScript>
+            <testScript>ovt_uninstall_ovt.sh</testScript>
             <files>remote-scripts/ovt_uninstall_ovt.sh</files>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

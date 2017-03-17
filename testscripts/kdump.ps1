@@ -57,12 +57,12 @@ if (-not $testParams)
 }
 
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
 
 #
-# Parse the test parameters
+# Parse test parameters
 #
 $rootDir = $null
 $sshKey = $null
@@ -162,29 +162,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
 Write-Output "Start to execute kdump_config.sh in VM."
 Write-Host -F Cyan "kdump.ps1: Start to execute kdump_config.sh in VM......."
 $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
-if (-not $retVal)
+if ($retVal)
 {
-	Write-Output "FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_config.sh to VM, and retVal is $retVal......."
-	
-	#
-	# Debug: GetFileFromVM: get kdump_config.summary to local
-	#
-	$retVal = GetFileFromVM $ipv4 $sshKey "/root/summary.log" "${tname}_fail_kdump_config.log"
-	
-	return $Failed
+	Write-Output "PASS: Execute kdump_config.sh in VM."
+	Write-Host -F Green "kdump.ps1: PASS: Execute kdump_config.sh in VM......."	
+	$retVal = $Passed
 }
 else
 {
-	Write-Output "PASS: Execute kdump_config.sh in VM."
-	Write-Host -F Green "kdump.ps1: PASS: Execute kdump_config.sh in VM......."
-	
-	#
-	# Debug: GetFileFromVM: get pass_kdump_config.summary to local
-	#
-	GetFileFromVM $ipv4 $sshKey "/root/summary.log" "${logdir}/${tname}_pass_kdump_config.log"
-	
-	$retVal = $Passed
+	Write-Output "FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal."
+	Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_config.sh to VM, and retVal is $retVal......."
+	return $Failed
 }
 
 #
@@ -197,14 +185,12 @@ if (-not $retVal)
 {
 	Write-Output "PASS: Rebooting."
 	Write-Host -F Green "kdump.ps1: PASS: Rebooting......."
-
 	$retVal = $Passed
 }
 else
 {
 	Write-Output "FAIL: Failed to reboot VM."
 	Write-Host -F Red "kdump.ps1: FAIL: Failed to reboot VM......."
-
 	return $Failed
 }
 
@@ -213,20 +199,18 @@ else
 #
 Write-Output "Wait for VM SSH ready."
 Write-Host -F Cyan "kdump.ps1: Wait for VM SSH ready......."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 300
-if (-not $retVal)
-{
-	Write-Output "PASS: Failed to ready SSH, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
-
-	return $Failed
-}
-else
+$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 120
+if ($retVal)
 {
 	Write-Output "PASS: SSH is ready."
 	Write-Host -F Green "kdump.ps1: PASS: SSH is ready......."
-
 	$retVal = $Passed
+}
+else
+{
+	Write-Output "PASS: Failed to ready SSH, and retVal is $retVal."
+	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
+	return $Failed
 }
 
 #
@@ -235,29 +219,17 @@ else
 Write-Output "Start to execute kdump_execute.sh in VM."
 Write-Host -F Cyan "kdump.ps1: Start to execute kdump_execute.sh in VM........"
 $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
-if (-not $retVal)
-{
-	Write-Output "FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal."
-	Write-Host -F Yellow "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal........"
-
-	#
-	# Debug: GetFileFromVM: get kdump_execute.summary to local
-	#
-	GetFileFromVM $ipv4 $sshKey "/root/summary.log" "${logdir}/${tname}_fail_kdump_execute.log"
-
-	return $Failed
-}
-else
+if ($retVal)
 {
 	Write-Output "PASS: Execute kdump_execute.sh to VM."
 	Write-Host -F Green "kdump.ps1: PASS: Execute kdump_execute.sh in VM......."
-
-	#
-	# Debug: GetFileFromVM: get pass_kdump_execute.summary to local
-	#
-	GetFileFromVM $ipv4 $sshKey "/root/summary.log" "${logdir}/${tname}_pass_kdump_execute.log"
-	
 	$retVal = $Passed
+}
+else
+{
+	Write-Output "FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal."
+	Write-Host -F Yellow "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal........"
+	return $Failed
 }
 
 #
@@ -282,20 +254,18 @@ else
 #
 Write-Output "Wait for VM SSH ready."
 Write-Host -F Cyan "kdump.ps1: Wait for VM SSH ready......."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 300
-if (-not $retVal)
-{
-	Write-Output "PASS: Failed to ready SSH."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
-	
-	return $Failed
-}
-else
+$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 120
+if ($retVal)
 {
 	Write-Output "PASS: SSH is ready."
 	Write-Host -F Green "kdump.ps1: PASS: SSH is ready......."
-	
 	$retVal = $Passed
+}
+else
+{
+	Write-Output "PASS: Failed to ready SSH, and retVal is $retVal."
+	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
+	return $Failed
 }
 
 #
@@ -303,11 +273,18 @@ else
 #
 Write-Output "Start to check vmcore, SSH is ready, But maybe FS or vmcore is not ready."
 Write-Host -F Cyan "kdump.ps1: Start to check vmcore, SSH is ready, But maybe FS or vmcore is not ready......."
-$timeout = 300
+$timeout = 120
 while ($timeout -gt 0)
 {
 	$retVal = SendCommandToVM $ipv4 $sshKey "find /var/crash/*/vmcore* -type f -size +10M"
-	if (-not $retVal)
+	if ($retVal)
+	{
+		Write-Output "PASS: Generates vmcore in VM."
+		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM, and retVal is $retVal......."
+		$retVal = $Passed
+		break	
+	}
+	else
 	{
 		Write-Output "FAIL: Failed to get vmcore from VM, try again after $timeout"
 		Write-Host -F Yellow "kdump.ps1: FAIL: Failed to get vmcore from VM, try again after $timeout......."
@@ -316,30 +293,9 @@ while ($timeout -gt 0)
 		if ($timeout -eq 0)
 		{
 			Write-Output "FAIL: After timeout, can't get vmcore."
-			Write-Host -F Cyan "kdump.ps1: FAIL: After timeout, can't get vmcore......."
-
-			#
-			# Debug: GetFileFromVM: get fail_var_log_messages.log to local
-			#
-			GetFileFromVM $ipv4 $sshKey "/var/log/messages" "${logdir}/${tname}_fail_var_log_messages.log"
-			
+			Write-Host -F Cyan "kdump.ps1: FAIL: After timeout, can't get vmcore......."			
 			return $Failed
 		}
-	}
-	else
-	{
-		Write-Output "PASS: Generates vmcore in VM."
-		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM, and retVal is $retVal......."
-
-		#
-		# Debug: GetFileFromVM: get pass_check_vmcore.log to local
-		#
-		$retVal = SendCommandToVM $ipv4 $sshKey "find /var/crash/*/vmcore* -type f -size +10M > /root/summary.log"
-		GetFileFromVM $ipv4 $sshKey "/root/summary.log" "${logdir}/${tname}_pass_check_vmcore.log"
-		
-		$retVal = $Passed
-
-		break
 	}
 }
 
