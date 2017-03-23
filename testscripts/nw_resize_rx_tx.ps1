@@ -193,7 +193,6 @@ if (-not $retVal)
 #
 $rx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX:"
 $rx_new = $rx_new_temp | awk 'NR==2{print $2}'
-Write-Host -F Red "rx_new is $rx_new........"
 if ($rx_new -eq $rx_current)
 {
 	Write-Output "FAIL: Resize rx failed."
@@ -203,7 +202,6 @@ if ($rx_new -eq $rx_current)
 
 $tx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX:"
 $tx_new = $tx_new_temp | awk 'NR==2{print $2}'
-Write-Host -F Red "tx_new is $tx_new........"
 if ($tx_new -eq $tx_current)
 {
 	Write-Output "FAIL: Resize tx failed."
