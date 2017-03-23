@@ -35,13 +35,13 @@ fi
 
 cat /usr/lib64/open-vm-tools/plugins/vmsvc/libdeployPkgPlugin.so
 if [[ $? == 0 ]]; then
-    LogMsg "Test successfully. There's libdeployPkgPlugin.so file under /usr/sbin/."
-    UpdateSummary "Test successfully. There's libdeployPkgPlugin.so file under /usr/sbin/."
+    LogMsg "Test successfully. There's libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
+    UpdateSummary "Test successfully. There's libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
     SetTestStateCompleted
     exit
 else
-    LogMsg "Test Failed. There's NO libdeployPkgPlugin.so file under /usr/sbin/."
-    UpdateSummary "Test failed. There's NO libdeployPkgPlugin.so file under /usr/sbin/."
+    LogMsg "Test Failed. There's NO libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
+    UpdateSummary "Test failed. There's NO libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
     SetTestStateFailed
     exit 1
 fi
