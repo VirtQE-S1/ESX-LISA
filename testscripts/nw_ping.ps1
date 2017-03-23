@@ -6,7 +6,7 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 01/18/2017 - Build script and only support ping ESXi Host
+## V1.0 - boyang - 03/18/2017 - Build script and only support ping ESXi Host
 ##
 ###############################################################################
 
@@ -106,7 +106,6 @@ if ($null -eq $ipv4)
 	"FAIL: Test parameter ipv4 was not specified"
 	return $False
 }
-
 
 if ($null -eq $logdir)
 {
