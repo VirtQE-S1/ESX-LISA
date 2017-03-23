@@ -13,7 +13,8 @@
 ## V1.3 - boyang - 02/22/2017 - Check vmcore function into while
 ## V1.4 - boyang - 02/28/2017 - Send and execute kdump_execute.sh in while
 ## V1.5 - boyang - 02/03-2017 - Call WaitForVMSSHReady and Remove V1.4
-## V1.6 - boyang - 03/07/2017 - Remove push files
+## V1.6 - boyang - 03/07/2017 - Remove push files, framework will do it
+## V1.7 - boyang - 03/22/2017 - Execute kdump_execute.sh in while again
 ##
 ###############################################################################
 
@@ -160,18 +161,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # SendCommandToVM: execute kdump_config.sh in VM
 #
 Write-Output "Start to execute kdump_config.sh in VM."
-Write-Host -F Cyan "kdump.ps1: Start to execute kdump_config.sh in VM......."
 $retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
-if ($retVal)
-{
-	Write-Output "PASS: Execute kdump_config.sh in VM."
-	Write-Host -F Green "kdump.ps1: PASS: Execute kdump_config.sh in VM......."	
-	$retVal = $Passed
-}
-else
+if (-not $retVal)
 {
 	Write-Output "FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_config.sh to VM, and retVal is $retVal......."
+	Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal......."
 	return $Failed
 }
 
@@ -179,64 +173,53 @@ else
 # Rebooting VM in order to apply the kdump settings
 #
 Write-Output "Start to reboot VM after kdump and grub changed."
-Write-Host -F Cyan "kdump.ps1: Start to reboot VM after kdump and grub changed......."
-$retVal = .\bin\plink -i ssh\${sshKey} root@${ipv4} "init 6"
-if (-not $retVal)
-{
-	Write-Output "PASS: Rebooting."
-	Write-Host -F Green "kdump.ps1: PASS: Rebooting......."
-	$retVal = $Passed
-}
-else
-{
-	Write-Output "FAIL: Failed to reboot VM."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to reboot VM......."
-	return $Failed
-}
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
 #
-# WaitForVMSSHReady
+# WaitForVMSSHReady: RHEL6 needs more time
 #
 Write-Output "Wait for VM SSH ready."
-Write-Host -F Cyan "kdump.ps1: Wait for VM SSH ready......."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 120
-if ($retVal)
+$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 180
+if (-not $retVal)
 {
-	Write-Output "PASS: SSH is ready."
-	Write-Host -F Green "kdump.ps1: PASS: SSH is ready......."
-	$retVal = $Passed
-}
-else
-{
-	Write-Output "PASS: Failed to ready SSH, and retVal is $retVal."
+	Write-Output "FAIL: Failed to ready SSH, and retVal is $retVal."
 	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
 	return $Failed
 }
 
 #
-# SendCommandToVM: execute kdump_execute.sh in while
+# SendCommandToVM: execute kdump_execute.sh in while loop, in case kdump_execute.sh fail after reboot
 #
-Write-Output "Start to execute kdump_execute.sh in VM."
-Write-Host -F Cyan "kdump.ps1: Start to execute kdump_execute.sh in VM........"
-$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
-if ($retVal)
+$timeout = 60
+while ($timeout -gt 0)
 {
-	Write-Output "PASS: Execute kdump_execute.sh to VM."
-	Write-Host -F Green "kdump.ps1: PASS: Execute kdump_execute.sh in VM......."
-	$retVal = $Passed
-}
-else
-{
-	Write-Output "FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal."
-	Write-Host -F Yellow "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM, and retVal is $retVal........"
-	return $Failed
+	Write-Output "Start to execute kdump_execute.sh in VM, timeout leaves $timeout."
+	$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
+	if ($retVal)
+	{
+		Write-Output "PASS: Execute kdump_execute.sh to VM."
+		$retVal = $Passed
+		break
+	}
+	else
+	{
+		Write-Output "WARNING: Failed to execute kdump_execute.sh in VM, try again."
+		Write-Host -F Yellow "kdump.ps1: WARNING: Failed to execute kdump_execute.sh in VM, try again........"
+		Start-Sleep -S 6
+		$timeout = $timeout - 6
+		if ($timeout -eq 0)
+		{
+			Write-Output "FAIL: Failed to execute kdump_execute.sh in VM."
+			Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM......."			
+			return $Failed
+		}
+	}
 }
 
 #
 # Trigger the kernel panic
 #
 Write-Output "Trigger the kernel panic from PS."
-Write-Host -F Cyan "kdump.ps1: Trigger the kernel panic from PS......."
 if ($nmi -eq 1)
 {
 	# No function supports NMI trigger now
@@ -246,36 +229,27 @@ if ($nmi -eq 1)
 else
 {
 	$retVal = SendCommandToVM $ipv4 $sshKey "echo c > /proc/sysrq-trigger &"
-	Start-Sleep -S 6
 }
 
 #
-# WaitForVMSSHReady
+# WaitForVMSSHReady: RHEL6 needs more time
 #
 Write-Output "Wait for VM SSH ready."
-Write-Host -F Cyan "kdump.ps1: Wait for VM SSH ready......."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 120
-if ($retVal)
+$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 180
+if (-not $retVal)
 {
-	Write-Output "PASS: SSH is ready."
-	Write-Host -F Green "kdump.ps1: PASS: SSH is ready......."
-	$retVal = $Passed
-}
-else
-{
-	Write-Output "PASS: Failed to ready SSH, and retVal is $retVal."
+	Write-Output "FAIL: Failed to ready SSH, and retVal is $retVal."
 	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
 	return $Failed
 }
 
 #
 # Check vmcore after get VM IP
-#
-Write-Output "Start to check vmcore, SSH is ready, But maybe FS or vmcore is not ready."
-Write-Host -F Cyan "kdump.ps1: Start to check vmcore, SSH is ready, But maybe FS or vmcore is not ready......."
-$timeout = 120
+#	
+$timeout = 60
 while ($timeout -gt 0)
 {
+	Write-Output "Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout"
 	$retVal = SendCommandToVM $ipv4 $sshKey "find /var/crash/*/vmcore* -type f -size +10M"
 	if ($retVal)
 	{
@@ -286,8 +260,8 @@ while ($timeout -gt 0)
 	}
 	else
 	{
-		Write-Output "FAIL: Failed to get vmcore from VM, try again after $timeout"
-		Write-Host -F Yellow "kdump.ps1: FAIL: Failed to get vmcore from VM, try again after $timeout......."
+		Write-Output "WARNING: Failed to get vmcore from VM, try again."
+		Write-Host -F Yellow "kdump.ps1: WARNING: Failed to get vmcore from VM, try again......."
 		Start-Sleep -S 6
 		$timeout = $timeout - 6
 		if ($timeout -eq 0)
