@@ -22,6 +22,11 @@
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
+                <suiteTest>ovt_yum_install_ovt</suiteTest>
+                <suiteTest>ovt_check_mount.vmhgfs</suiteTest>
+                <suiteTest>ovt_check_libmspack_installed</suiteTest>
+                <suiteTest>ovt_check_deploypkg</suiteTest>
+                <suiteTest>ovt_check_vm-support</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -349,6 +354,61 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>
+        <test>
+                <testName>ovt_yum_install_ovt</testName>
+                <testID>ESX-OVT-005</testID>
+                <testScript>ovt_yum_install_ovt.sh</testScript>
+                <files>remote-scripts/ovt_yum_install_ovt.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_mount.vmhgfs</testName>
+                <testID>ESX-OVT-006</testID>
+                <testScript>ovt_check_mount.vmhgfs.sh</testScript>
+                <files>remote-scripts/ovt_check_mount.vmhgfs.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_libmspack_installed</testName>
+                <testID>ESX-OVT-007</testID>
+                <testScript>ovt_check_libmspack_installed.sh</testScript>
+                <files>remote-scripts/ovt_check_libmspack_installed.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_deploypkg</testName>
+                <testID>ESX-OVT-008</testID>
+                <testScript>ovt_check_deploypkg.sh</testScript>
+                <files>remote-scripts/ovt_check_deploypkg.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_vm-support</testName>
+                <testID>ESX-OVT-009</testID>
+                <testScript>ovt_check_vm-support.sh</testScript>
+                <files>remote-scripts/ovt_check_vm-support.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>	
 	</testCases>
 
     <VMs>
