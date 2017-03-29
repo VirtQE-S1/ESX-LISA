@@ -130,43 +130,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
+$retVal = $Failed
+
 #
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
+# After snapshot, defalut, NIC works and MTU is 1500
 #
 $eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig | grep ^e[tn][hps]"
 $eth = $eth_temp | awk '{print $1}' | awk -F : '{print $1}'
 
-$retVal = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
-if (-not $retVal)
-{
-	Write-Output "FAIL: $eth doesn't work."
-	Write-Host -F Red "nw_resize_rx_tx_max.ps1: FAIL: $eth doesn't work........"
-	return $Failed
-}
-
 #
-# Confirm MTU value of NIC is 1500, RHEL6.X and RHEL7.X hasve the different ifconfig output for MTU
-#
-$DISTRO = GetLinuxDistro $ipv4 $sshKey
-if ($DISTRO -eq "RedHat6")
-{
-	$mtu_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig $eth | grep MTU"
-	$mtu = $mtu_temp | awk -F : '{print $2}' | awk '{print $1}'
-}
-if ($DISTRO -eq "RedHat7")
-{
-	$mtu_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig $eth | grep mtu"
-	$mtu = $mtu_temp | awk '{print $4}'
-}
-if ($mtu -ne 1500)
-{
-	Write-Output "FAIL: $mtu isn't equal 1500."
-	Write-Host -F Red "nw_resize_rx_tx_max.ps1: FAIL: $mtu isn't equal 1500........."
-	return $Failed
-}
-
-#
-# Check $eth Ring current RX, TX parameters
+# Check $eth Ring current RX, TX parameters. defalut value isn't equal to MAX
 #
 $rx_current_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX:"
 $rx_current = $rx_current_temp | awk 'NR==2{print $2}'
@@ -186,12 +160,12 @@ $tx_max = $tx_max_temp | awk 'NR==1{print $2}'
 #
 # Resize rx, tx to MAX value
 #
-$retVal = SendCommandToVM $ipv4 $sshKey "ethtool -G $eth rx $rx_max tx $tx_max"
-if (-not $retVal)
+$result = SendCommandToVM $ipv4 $sshKey "ethtool -G $eth rx $rx_max tx $tx_max"
+if (-not $result)
 {
 	Write-Output "FAIL: Resize rx, tx failed."
-	Write-Host -F Red "nw_resize_rx_tx_max.ps1: FAIL: Resize rx, tx failed........"
-	return $Failed
+	DisconnectWithVIServer
+	return $Aborted
 }
 
 #
@@ -199,31 +173,29 @@ if (-not $retVal)
 #
 $rx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX:"
 $rx_new = $rx_new_temp | awk 'NR==2{print $2}'
-if ($rx_new -eq $rx_current)
+if ($rx_new -eq $rx_max)
 {
-	Write-Output "FAIL: Resize rx failed."
-	Write-Host -F Red "nw_resize_rx_tx_max.ps1: FAIL: FAIL: Resize rx failed........."
-	return $Failed
+	Write-Output "PASS: Resize rx passed."
+	$retVal = $Passed
 }
 
 $tx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX:"
 $tx_new = $tx_new_temp | awk 'NR==2{print $2}'
-if ($tx_new -eq $tx_current)
+if ($tx_new -eq $tx_max)
 {
-	Write-Output "FAIL: Resize tx failed."
-	Write-Host -F Red "nw_resize_rx_tx_max.ps1: FAIL: Resize tx failed........."
-	return $Failed
+	Write-Output "PASS: Resize tx passed."
+	$retVal = $Passed
 }
 
 #
 # Confirm NIC which RX, TX are MAX works
 #
-$retVal = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
-if (-not $retVal)
+$result = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
+if (-not $result)
 {
 	Write-Output "FAIL: $eth with new MTU doesn't work."
-	Write-Host -F Red "nw_resize_rx_tx_max: FAIL: $eth with new MTU doesn't work........"
-	return $Failed
+	DisconnectWithVIServer
+	return $Aborted
 }
 
 DisconnectWithVIServer

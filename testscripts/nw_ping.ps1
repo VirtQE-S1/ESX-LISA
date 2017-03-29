@@ -129,11 +129,18 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
-$result = $Failed
+$retVal = $Failed
 $package = 6000
 
 #
-# Ping Esxi Host
+# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
+# After snapshot, defalut, NIC works and MTU is 1500
+#
+$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ip addr | grep ^[1-9]:"
+$eth = $eth_temp | awk '{print $2}' | grep ^e[tn][hpos] | awk -F : '{print $1}'
+
+#
+# Ping Esxi Host. After snapshot, only one NIC(eth0, ens192, eno1678032, enp0s25) can ping $hvServer
 #
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
@@ -142,15 +149,14 @@ if (-not $vmOut)
 }
 else
 {
-	Write-Output "Start to ping VM's ESXi."
-	$retVal = SendCommandToVM $ipv4 $sshKey "ping -f $hvServer -c $package"
-	if ($retVal)
+	Write-Output "Start to ping VM's ESXi Host."
+	$result = SendCommandToVM $ipv4 $sshKey "ping -I $eth -f $hvServer -c $package"
+	if ($result)
 	{
-		Write-Output "PASS: Ping ESXi pass."
+		Write-Output "PASS: Ping ESXi passed."
 		$retVal = $Passed
 	}
 }
 
 DisconnectWithVIServer
-
 return $retVal

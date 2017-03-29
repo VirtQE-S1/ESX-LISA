@@ -129,14 +129,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
-$result = $Failed
+$retVal = $Failed
 $package = 4
 
 #
-# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
+# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
 #
-$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig | grep ^e[tn][hps]"
-$eth = $eth_temp | awk '{print $1}' | awk -F : '{print $1}'
+$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ip addr | grep ^[1-9]:"
+$eth = $eth_temp | awk '{print $2}' | grep ^e[tn][hpos] | awk -F : '{print $1}'
 
 #
 # Arping Esxi Host
@@ -149,10 +149,10 @@ if (-not $vmOut)
 else
 {
 	Write-Output "Start to arping VM's ESXi."
-	$retVal = SendCommandToVM $ipv4 $sshKey "arping -I $eth $hvServer -c $package"
-	if ($retVal)
+	$result = SendCommandToVM $ipv4 $sshKey "arping -I $eth $hvServer -c $package"
+	if ($result)
 	{
-		Write-Output "PASS: Arping ESXi pass."
+		Write-Output "PASS: Arping ESXi passed."
 		$retVal = $Passed
 	}
 }
