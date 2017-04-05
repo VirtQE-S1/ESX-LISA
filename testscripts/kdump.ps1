@@ -157,16 +157,18 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
+$retVal = $Failed
+
 #
 # SendCommandToVM: execute kdump_config.sh in VM
 #
 Write-Output "Start to execute kdump_config.sh in VM."
-$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
-if (-not $retVal)
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
+if (-not $result)
 {
-	Write-Output "FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_config.sh in VM, and retVal is $retVal......."
-	return $Failed
+	Write-Output "FAIL: Failed to execute kdump_config.sh in VM."
+	DisconnectWithVIServer
+	return $Aborted
 }
 
 #
@@ -179,26 +181,25 @@ bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 # WaitForVMSSHReady: RHEL6 needs more time
 #
 Write-Output "Wait for VM SSH ready."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 180
-if (-not $retVal)
+$result = WaitForVMSSHReady $vmName $hvServer $sshKey 180
+if (-not $result)
 {
-	Write-Output "FAIL: Failed to ready SSH, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
-	return $Failed
+	Write-Output "FAIL: Failed to ready SSH."
+	DisconnectWithVIServer
+	return $Aborted
 }
 
 #
 # SendCommandToVM: execute kdump_execute.sh in while loop, in case kdump_execute.sh fail after reboot
 #
-$timeout = 60
+$timeout = 120
 while ($timeout -gt 0)
 {
 	Write-Output "Start to execute kdump_execute.sh in VM, timeout leaves $timeout."
-	$retVal = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
-	if ($retVal)
+	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
+	if ($result)
 	{
 		Write-Output "PASS: Execute kdump_execute.sh to VM."
-		$retVal = $Passed
 		break
 	}
 	else
@@ -210,8 +211,9 @@ while ($timeout -gt 0)
 		if ($timeout -eq 0)
 		{
 			Write-Output "FAIL: Failed to execute kdump_execute.sh in VM."
-			Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM......."			
-			return $Failed
+			Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM......."
+			DisconnectWithVIServer			
+			return $Aborted
 		}
 	}
 }
@@ -223,38 +225,27 @@ Write-Output "Trigger the kernel panic from PS."
 if ($nmi -eq 1)
 {
 	# No function supports NMI trigger now
-	Write-Output "Will use NMI to trigger kdump"
+	Write-Output "Will use NMI to trigger kdump."
 	Start-Sleep -S 6
 }
 else
 {
-	$retVal = SendCommandToVM $ipv4 $sshKey "echo c > /proc/sysrq-trigger &"
-}
-
-#
-# WaitForVMSSHReady: RHEL6 needs more time
-#
-Write-Output "Wait for VM SSH ready."
-$retVal = WaitForVMSSHReady $vmName $hvServer $sshKey 180
-if (-not $retVal)
-{
-	Write-Output "FAIL: Failed to ready SSH, and retVal is $retVal."
-	Write-Host -F Red "kdump.ps1: FAIL: Failed to ready SSH, and retVal is $retVal........"
-	return $Failed
+	$result = SendCommandToVM $ipv4 $sshKey "echo c > /proc/sysrq-trigger &"
 }
 
 #
 # Check vmcore after get VM IP
-#	
-$timeout = 60
+#
+$timeout = 180
 while ($timeout -gt 0)
 {
+	Write-Host -F Red "kdump.ps1: Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout......."
 	Write-Output "Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout"
-	$retVal = SendCommandToVM $ipv4 $sshKey "find /var/crash/*/vmcore* -type f -size +10M"
-	if ($retVal)
+	$result = SendCommandToVM $ipv4 $sshKey "find /var/crash/ -name vmcore -type f -size +10M"
+	if ($result)
 	{
 		Write-Output "PASS: Generates vmcore in VM."
-		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM, and retVal is $retVal......."
+		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM......."
 		$retVal = $Passed
 		break	
 	}
@@ -267,8 +258,9 @@ while ($timeout -gt 0)
 		if ($timeout -eq 0)
 		{
 			Write-Output "FAIL: After timeout, can't get vmcore."
-			Write-Host -F Cyan "kdump.ps1: FAIL: After timeout, can't get vmcore......."			
-			return $Failed
+			Write-Host -F Cyan "kdump.ps1: FAIL: After timeout, can't get vmcore......."
+			DisconnectWithVIServer			
+			$retVal = $Failed
 		}
 	}
 }
