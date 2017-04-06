@@ -23,7 +23,7 @@
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>ovt_yum_install_ovt</suiteTest>
-                <suiteTest>ovt_check_mount.vmhgfs</suiteTest>
+                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
@@ -58,6 +58,15 @@
                 <suiteTest>kdump_crash_diff_size</suiteTest>
             </suiteTests>
         </suite>
+		<suite>
+			<suiteName>network</suiteName>
+			<suiteTests>
+				<suiteTest>nw_ping</suiteTest>
+				<suiteTest>nw_resize_rx_tx_max</suiteTest>
+				<suiteTest>nw_resize_rx_tx</suiteTest>
+				<suiteTest>nw_arping</suiteTest>
+			</suiteTests>
+		</suite>
         <suite>
             <suiteName>acceptance</suiteName>
             <suiteTests>
@@ -65,6 +74,11 @@
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
+                <suiteTest>ovt_yum_install_ovt</suiteTest>
+                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
+                <suiteTest>ovt_check_libmspack_installed</suiteTest>
+                <suiteTest>ovt_check_deploypkg</suiteTest>
+                <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -78,6 +92,10 @@
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
+				<suiteTest>nw_ping</suiteTest>
+				<suiteTest>nw_resize_rx_tx_max</suiteTest>
+				<suiteTest>nw_resize_rx_tx</suiteTest>
+				<suiteTest>nw_arping</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -131,6 +149,62 @@
             <noReboot>False</noReboot>
         </test>
         <test>
+                <testName>ovt_yum_install_ovt</testName>
+                <testID>ESX-OVT-005</testID>
+                <testScript>ovt_yum_install_ovt.sh</testScript>
+                <files>remote-scripts/ovt_yum_install_ovt.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>240</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_mount_vmhgfs</testName>
+                <testID>ESX-OVT-006</testID>
+                <testScript>ovt_check_mount_vmhgfs.sh</testScript>
+                <files>remote-scripts/ovt_check_mount_vmhgfs.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>240</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_libmspack_installed</testName>
+                <testID>ESX-OVT-007</testID>
+                <testScript>ovt_check_libmspack_installed.sh</testScript>
+                <files>remote-scripts/ovt_check_libmspack_installed.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_deploypkg</testName>
+                <testID>ESX-OVT-008</testID>
+                <testScript>ovt_check_deploypkg.sh</testScript>
+                <files>remote-scripts/ovt_check_deploypkg.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+        <test>
+                <testName>ovt_check_vm-support</testName>
+                <testID>ESX-OVT-009</testID>
+                <testScript>ovt_check_vm-support.sh</testScript>
+                <files>remote-scripts/ovt_check_vm-support.sh</files>
+                <files>remote-scripts/utils.sh</files>
+                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+                <timeout>120</timeout>
+                <onError>Continue</onError>
+                <noReboot>False</noReboot>
+        </test>
+
+        <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
             <setupscript>setupscripts\check_network_adapter.ps1</setupscript>
@@ -172,6 +246,34 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>go_check_reboot</testName>
+            <testID>ESX-GO-004</testID>
+            <testScript>testscripts\go_check_reboot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_vm_install_by_iso</testName>
+            <testID>ESX-GO-005</testID>
+            <testScript>testscripts\go_vm_install_by_iso.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_vm_shutdown</testName>
+            <testID>ESX-GO-006</testID>
+            <testScript>testscripts\go_vm_shutdown.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
@@ -239,33 +341,7 @@
                  <param>fileSystems=(ext4)</param>
            </testparams>
        </test>
-        <test>
-            <testName>go_check_reboot</testName>
-            <testID>ESX-GO-004</testID>
-            <testScript>testscripts\go_check_reboot.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>go_vm_install_by_iso</testName>
-            <testID>ESX-GO-005</testID>
-            <testScript>testscripts\go_vm_install_by_iso.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>go_vm_shutdown</testName>
-            <testID>ESX-GO-006</testID>
-            <testScript>testscripts\go_vm_shutdown.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+		
 		<test>
 			<testName>kdump_crash_single_core</testName>
 			<testID>ESX-KDUMP-001</testID>
@@ -354,61 +430,43 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>
+		
         <test>
-                <testName>ovt_yum_install_ovt</testName>
-                <testID>ESX-OVT-005</testID>
-                <testScript>ovt_yum_install_ovt.sh</testScript>
-                <files>remote-scripts/ovt_yum_install_ovt.sh</files>
-                <files>remote-scripts/utils.sh</files>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>120</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
+            <testName>nw_ping</testName>
+            <testID>ESX-NW-001</testID>
+            <testScript>testscripts\nw_ping.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
         <test>
-                <testName>ovt_check_mount.vmhgfs</testName>
-                <testID>ESX-OVT-006</testID>
-                <testScript>ovt_check_mount.vmhgfs.sh</testScript>
-                <files>remote-scripts/ovt_check_mount.vmhgfs.sh</files>
-                <files>remote-scripts/utils.sh</files>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>120</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
+            <testName>nw_resize_rx_tx_max</testName>
+            <testID>ESX-NW-002</testID>
+            <testScript>testscripts\nw_resize_rx_tx_max.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+		<test>
+            <testName>nw_resize_rx_tx</testName>
+            <testID>ESX-NW-003</testID>
+            <testScript>testscripts\nw_resize_rx_tx.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
         <test>
-                <testName>ovt_check_libmspack_installed</testName>
-                <testID>ESX-OVT-007</testID>
-                <testScript>ovt_check_libmspack_installed.sh</testScript>
-                <files>remote-scripts/ovt_check_libmspack_installed.sh</files>
-                <files>remote-scripts/utils.sh</files>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>120</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
+            <testName>nw_arping</testName>
+            <testID>ESX-NW-004</testID>
+            <testScript>testscripts\nw_arping.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
-        <test>
-                <testName>ovt_check_deploypkg</testName>
-                <testID>ESX-OVT-008</testID>
-                <testScript>ovt_check_deploypkg.sh</testScript>
-                <files>remote-scripts/ovt_check_deploypkg.sh</files>
-                <files>remote-scripts/utils.sh</files>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>120</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
-        </test>
-        <test>
-                <testName>ovt_check_vm-support</testName>
-                <testID>ESX-OVT-009</testID>
-                <testScript>ovt_check_vm-support.sh</testScript>
-                <files>remote-scripts/ovt_check_vm-support.sh</files>
-                <files>remote-scripts/utils.sh</files>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>120</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
-        </test>	
 	</testCases>
 
     <VMs>
