@@ -1,21 +1,22 @@
 ###############################################################################
 ##
 ## Description:
-##  Target VM ping ESXi Host and other Guest
+## Check NIX's RX and TX current value,
+## Resize NIC's RX and TX to other value
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 03/18/2017 - Build script and only support ping ESXi Host
+## V1.0 - boyang - 03/22/2017 - Build script
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Target VM ping function
+    Check and resize NIC's RX and TX to MAX value
 
 .Description
-    Trigger VM ping function with ESXi Host and other Guest
+    User can check and resize NIC's RX and TX to other value
 
 .Parameter vmName
     Name of the test VM.
@@ -130,33 +131,67 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 
 $retVal = $Failed
-$package = 6000
 
 #
-# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
+# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
 # After snapshot, defalut, NIC works and MTU is 1500
 #
-$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ip addr | grep ^[1-9]:"
-$eth = $eth_temp | awk '{print $2}' | grep ^e[tn][hpos] | awk -F : '{print $1}'
+$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig | grep ^e[tn][hps]"
+$eth = $eth_temp | awk '{print $1}' | awk -F : '{print $1}'
 
 #
-# Ping Esxi Host. After snapshot, only one NIC(eth0, ens192, eno1678032, enp0s25) can ping $hvServer
+# Check $eth Ring current RX, TX parameters
 #
-$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmOut)
+$rx_current_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX:"
+$rx_current = $rx_current_temp | awk 'NR==2{print $2}'
+$rx_other = $rx_current / 2
+
+$tx_current_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX:"
+$tx_current = $tx_current_temp | awk 'NR==2{print $2}'
+$tx_other = $tx_current / 2
+
+#
+# Resize rx, tx to other value
+#
+$result = SendCommandToVM $ipv4 $sshKey "ethtool -G $eth rx $rx_other tx $tx_other"
+if (-not $result)
 {
-    Write-Error -Message "nw_ping.ps1: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+	Write-Output "FAIL: Resize rx, tx failed."
+	DisconnectWithVIServer
+	return $Aborted
 }
-else
+
+#
+# Confirm RX, TX other value is done
+#
+$rx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX:"
+$rx_new = $rx_new_temp | awk 'NR==2{print $2}'
+
+if ($rx_new -eq $rx_other)
 {
-	Write-Output "Start to ping VM's ESXi Host."
-	$result = SendCommandToVM $ipv4 $sshKey "ping -I $eth -f $hvServer -c $package"
-	if ($result)
-	{
-		Write-Output "PASS: Ping ESXi passed."
-		$retVal = $Passed
-	}
+	Write-Output "PASS: Resize rx passed."
+	$retVal = $Passed
+}
+
+$tx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX:"
+$tx_new = $tx_new_temp | awk 'NR==2{print $2}'
+if ($tx_new -eq $tx_other)
+{
+	Write-Output "PASS: Resize tx passed."
+	$retVal = $Passed
+}
+
+#
+# Confirm NIC which RX, TX are MAX works
+#
+$result = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
+if (-not $result)
+{
+	Write-Output "FAIL: $eth with new RX, TX doesn't work."
+	DisconnectWithVIServer
+	return $Aborted
 }
 
 DisconnectWithVIServer
+
 return $retVal

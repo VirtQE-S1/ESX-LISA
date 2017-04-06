@@ -1,21 +1,21 @@
 ###############################################################################
 ##
 ## Description:
-##  Target VM ping ESXi Host and other Guest
+## Arping test connection in domain
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 03/18/2017 - Build script and only support ping ESXi Host
+## V1.0 - boyang - 03/18/2017 - Build script
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Target VM ping function
+    Arping test connection in domain
 
 .Description
-    Trigger VM ping function with ESXi Host and other Guest
+    Arping test connection in domain, can't confirm
 
 .Parameter vmName
     Name of the test VM.
@@ -130,33 +130,33 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 
 $retVal = $Failed
-$package = 6000
+$package = 4
 
 #
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
-# After snapshot, defalut, NIC works and MTU is 1500
 #
 $eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ip addr | grep ^[1-9]:"
 $eth = $eth_temp | awk '{print $2}' | grep ^e[tn][hpos] | awk -F : '{print $1}'
 
 #
-# Ping Esxi Host. After snapshot, only one NIC(eth0, ens192, eno1678032, enp0s25) can ping $hvServer
+# Arping Esxi Host
 #
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
-    Write-Error -Message "nw_ping.ps1: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "nw_arping.ps1: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-	Write-Output "Start to ping VM's ESXi Host."
-	$result = SendCommandToVM $ipv4 $sshKey "ping -I $eth -f $hvServer -c $package"
+	Write-Output "Start to arping VM's ESXi."
+	$result = SendCommandToVM $ipv4 $sshKey "arping -I $eth $hvServer -c $package"
 	if ($result)
 	{
-		Write-Output "PASS: Ping ESXi passed."
+		Write-Output "PASS: Arping ESXi passed."
 		$retVal = $Passed
 	}
 }
 
 DisconnectWithVIServer
+
 return $retVal
