@@ -108,7 +108,7 @@
             <files>remote-scripts/ovt_check_build_version.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>stanversion=open-vm-tools-10.0.5-2.el7.x86_64</param>
+                <param>stanversion=open-vm-tools-10.1.5-3.el7.x86_64</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -143,10 +143,10 @@
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
-            <noReboot>False</noReboot>
+			<noReboot>False</noReboot>
         </test>
         <test>
                 <testName>ovt_yum_install_ovt</testName>
@@ -171,7 +171,7 @@
                 <noReboot>False</noReboot>
         </test>
         <test>
-                <testName>ovt_check_libmspack_installed</testName>
+				<testName>ovt_check_libmspack_installed</testName>
                 <testID>ESX-OVT-007</testID>
                 <testScript>ovt_check_libmspack_installed.sh</testScript>
                 <files>remote-scripts/ovt_check_libmspack_installed.sh</files>

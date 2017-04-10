@@ -136,8 +136,7 @@ $package = 6000
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
 # After snapshot, defalut, NIC works and MTU is 1500
 #
-$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ip addr | grep ^[1-9]:"
-$eth = $eth_temp | awk '{print $2}' | grep ^e[tn][hpos] | awk -F : '{print $1}'
+$eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 
 #
 # Ping Esxi Host. After snapshot, only one NIC(eth0, ens192, eno1678032, enp0s25) can ping $hvServer

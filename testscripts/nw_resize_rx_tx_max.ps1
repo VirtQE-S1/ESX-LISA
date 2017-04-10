@@ -136,8 +136,7 @@ $retVal = $Failed
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
 # After snapshot, defalut, NIC works and MTU is 1500
 #
-$eth_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ifconfig | grep ^e[tn][hps]"
-$eth = $eth_temp | awk '{print $1}' | awk -F : '{print $1}'
+$eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 
 #
 # Check $eth Ring current RX, TX parameters. defalut value isn't equal to MAX
