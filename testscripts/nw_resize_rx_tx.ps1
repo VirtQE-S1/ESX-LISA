@@ -141,8 +141,6 @@ $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e
 #
 # Check $eth Ring current RX, TX parameters
 #
-#$rx_current_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print \$2}'"
-#$rx_current = $rx_current_temp | awk 'NR==2{print $2}'
 $rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
 $rx_current_temp2 = $rx_current_temp1 -split "RX:"
 $rx_current = $rx_current_temp2.Trim()[1]
@@ -150,10 +148,6 @@ write-host -f red "rx_current is $rx_current"
 $rx_other = $rx_current / 2
 write-host -f red "rx_other is $rx_other"
 
-
-
-#$tx_current_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print \$2}'"
-#$tx_current = $tx_current_temp | awk 'NR==2{print $2}'
 $tx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
 $tx_current_temp2 = $tx_current_temp1 -split "TX:"
 $tx_current = $tx_current_temp2.Trim()[1]
@@ -175,8 +169,6 @@ if (-not $result)
 #
 # Confirm RX, TX other value is done
 #
-#$rx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print \$2}"
-#$rx_new = $rx_new_temp | awk 'NR==2{print $2}'
 $rx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
 $rx_new_temp2 = $rx_new_temp1 -split "RX:"
 $rx_new = $rx_new_temp2.Trim()[1]
@@ -188,8 +180,6 @@ if ($rx_new -eq $rx_other)
 	$retVal = $Passed
 }
 
-#$tx_new_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX:"
-#$tx_new = $tx_new_temp | awk 'NR==2{print $2}'
 $tx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
 $tx_new_temp2 = $tx_new_temp1 -split "TX:"
 $tx_new = $tx_new_temp2.Trim()[1]
