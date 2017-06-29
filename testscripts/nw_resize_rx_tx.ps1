@@ -140,6 +140,7 @@ $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e
 
 #
 # Check $eth Ring current RX, TX parameters
+# For target RX, TX value = current RX TX value / 2
 #
 $rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
 $rx_current_temp2 = $rx_current_temp1 -split "RX:"
@@ -192,7 +193,7 @@ if ($tx_new -eq $tx_other)
 }
 
 #
-# Confirm NIC which RX, TX are MAX works
+# Confirm NIC which RX, TX are new value works
 #
 $result = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
 if (-not $result)

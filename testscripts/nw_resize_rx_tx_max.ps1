@@ -139,7 +139,8 @@ $retVal = $Failed
 $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 
 #
-# Check $eth Ring current RX, TX parameters. defalut value isn't equal to MAX
+# Check $eth current Ring RX, TX parameters. 
+# Defalut value isn't equal to MAX
 #
 $rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
 $rx_current_temp2 = $rx_current_temp1 -split "RX:"
@@ -155,7 +156,7 @@ write-host -f red "tx_current is $tx_current"
 # Get $eth RX, TX MAX value
 #
 $rx_max_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==1{print $2}'"
-$rx_max_temp2 = $rx_max_temp1 -split "RX:" 
+$rx_max_temp2 = $rx_max_temp1 -split "RX:"
 $rx_max = $rx_max_temp2.Trim()[1]
 write-host -f red "rx_max is $rx_max"
 
