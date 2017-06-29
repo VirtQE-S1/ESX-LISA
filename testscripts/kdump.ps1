@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Push and execute kdump_config.sh, kdump_execute.sh, kdump_result.sh in VM
+##  Push and execute kdump_config.sh, kdump_service.sh in VM
 ##  Trigger kdump successfully and get vmcore
 ##
 ###############################################################################
@@ -15,6 +15,7 @@
 ## V1.5 - boyang - 02/03-2017 - Call WaitForVMSSHReady and Remove V1.4
 ## V1.6 - boyang - 03/07/2017 - Remove push files, framework will do it
 ## V1.7 - boyang - 03/22/2017 - Execute kdump_execute.sh in while again
+## V1.8 - boyang - 06/29/2017 - Remove kdump_execute.sh and trigger kdump as a service with booting
 ##
 ###############################################################################
 
@@ -160,9 +161,23 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 #
-# SendCommandToVM: execute kdump_config.sh in VM
+# SendCommandToVM: push kdump_trigger_service.sh to vm. it will be executed after kdump_config.sh
+# As if framework to trigger the kdump, framework will not connect the target vm and timeout
+# kdump_trigger_service.sh as a service with booting, will off and del itself to voide trigger kdump forever, later trigger kdump
 #
-Write-Output "Start to execute kdump_config.sh in VM."
+Write-Output "Start to execute kdump_trigger_service.sh in VM."
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_trigger_service.sh && chmod u+x kdump_trigger_service.sh"
+if (-not $result)
+{
+	Write-Output "FAIL: Failed to execute kdump_trigger_service.sh in VM."
+	DisconnectWithVIServer
+	return $Aborted
+}
+
+#
+# SendCommandToVM: push and execute kdump_config.sh
+# After configure kdump config and will set kdump_trigger_service.sh a service 
+#
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
@@ -178,68 +193,12 @@ Write-Output "Start to reboot VM after kdump and grub changed."
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
 #
-# WaitForVMSSHReady: RHEL6 needs more time
-#
-Write-Output "Wait for VM SSH ready."
-$result = WaitForVMSSHReady $vmName $hvServer $sshKey 180
-if (-not $result)
-{
-	Write-Output "FAIL: Failed to ready SSH."
-	DisconnectWithVIServer
-	return $Aborted
-}
-
-#
-# SendCommandToVM: execute kdump_execute.sh in while loop, in case kdump_execute.sh fail after reboot
-#
-$timeout = 120
-while ($timeout -gt 0)
-{
-	Write-Output "Start to execute kdump_execute.sh in VM, timeout leaves $timeout."
-	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_execute.sh && chmod u+x kdump_execute.sh && ./kdump_execute.sh"
-	if ($result)
-	{
-		Write-Output "PASS: Execute kdump_execute.sh to VM."
-		break
-	}
-	else
-	{
-		Write-Output "WARNING: Failed to execute kdump_execute.sh in VM, try again."
-		Write-Host -F Yellow "kdump.ps1: WARNING: Failed to execute kdump_execute.sh in VM, try again........"
-		Start-Sleep -S 6
-		$timeout = $timeout - 6
-		if ($timeout -eq 0)
-		{
-			Write-Output "FAIL: Failed to execute kdump_execute.sh in VM."
-			Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_execute.sh in VM......."
-			DisconnectWithVIServer			
-			return $Aborted
-		}
-	}
-}
-
-#
-# Trigger the kernel panic
-#
-Write-Output "Trigger the kernel panic from PS."
-if ($nmi -eq 1)
-{
-	# No function supports NMI trigger now
-	Write-Output "Will use NMI to trigger kdump."
-	Start-Sleep -S 6
-}
-else
-{
-	$result = SendCommandToVM $ipv4 $sshKey "echo c > /proc/sysrq-trigger &"
-}
-
-#
 # Check vmcore after get VM IP
 #
 $timeout = 180
 while ($timeout -gt 0)
 {
-	Write-Host -F Red "kdump.ps1: Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout......."
+	Write-Host -F Yellow "kdump.ps1: Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout......."
 	Write-Output "Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout"
 	$result = SendCommandToVM $ipv4 $sshKey "find /var/crash/ -name vmcore -type f -size +10M"
 	if ($result)
