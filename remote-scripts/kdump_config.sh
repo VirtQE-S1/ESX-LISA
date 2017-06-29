@@ -9,8 +9,9 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - boyang - 01/18/2017 - Build script.
-## v1.1 - boyang - 02/23/2017 - Remove kdump restart after configuration.
+## v1.0 - boyang - 01/18/2017 - Build script
+## v1.1 - boyang - 02/23/2017 - Remove kdump restart after configuration
+## v1.2 - boyang - 06/29/2017 - Setup kdump_trigger_service under /etc/init.d
 ##
 ###############################################################################
 
@@ -38,11 +39,12 @@ UtilsInit
 kdump_conf="/etc/kdump.conf"
 dump_path="/var/crash"
 
-# Re-write /etc/grub.conf, cant' update $crashkernel
+# Re-write /etc/grub.conf, or cant' update $crashkernel
 # RHEL6 BIOS, re-write /boot/grub/grub.conf to update $crashkernel
 # RHEL6 EFI, re-write /boot/efi/EFI/redhat/grub.conf to update $crashkernel
 rhel6_grub_conf=`find /boot/ -name "grub.conf"`
-# No matter BIOS or EFI, they have the same grub in RHEL7
+
+# RHEL7 BIOS and EFI, they have the same grub
 rhel7_grub="/etc/default/grub"
 rhel7_grub_cfg=`find /boot/ -name "grub.cfg"`
 
@@ -180,6 +182,11 @@ case $DISTRO in
 		exit 1
 	;;
 esac
+
+# Setup kdump_trigger service under /etc/init.d
+cp /root/kdump_trigger_service.sh /etc/init.d/
+chkconfig --add kdump_trigger_service.sh
+chkconfig kdump_trigger_service.sh on
 
 # Cleaning up any previous crash dump files
 if [ -d $dump_path ]
