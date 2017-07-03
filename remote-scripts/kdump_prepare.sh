@@ -10,6 +10,7 @@
 ##
 ## Revision:
 ## v1.0 - boyang - 18/01/2017 - Build script.
+## v1.1 - boyang - 06/29/2017 - Setup kdump_trigger_service under /etc/init.d
 ##
 ###############################################################################
 
@@ -89,26 +90,31 @@ ConfigureNMI()
 #
 #######################################################################
 
-# As NMI, can't triggered in Linux ENV. Will put it here firstly.
+# As NMI, can't triggered in Linux ENV. Will put it here firstly
 # ConfigureNMI
 
-# Restart kdump.service after reboot and modification.
-service kdump restart
-if [ $? -ne 0 ]
-then
-	LogMsg "FAIL: Could not restart kdump service with new parameters after reboot."
-	UpdateSummary "FAIL: Could not restart kdump service with new parameters after reboot."
-	exit 1
-else
-	LogMsg "PASS: Could restart kdump service well with new parameters after reboot."
-	UpdateSummary "PASS: Could restart kdump service well with new parameters after reboot."
-fi
-
-# Ensure kdump service status.
+# Ensure kdump service status after reboot and parameters modification
 Check_Kdump_Running
 
-LogMsg "Preparing for kernel panic......."
-UpdateSummary "Preparing for kernel panic......."
+# Setup kdump_trigger service under /etc/init.d
+cp /root/kdump_trigger_service.sh /etc/init.d/
+# chkconfig --add service
+chkconfig --add kdump_trigger_service.sh
+# chkconfig service on
+chkconfig kdump_trigger_service.sh on
+if [ $? -ne 0 ]
+then
+	LogMsg "FAIL: Could not setup kdump_trigger_service.sh."
+	UpdateSummary "FAIL: Could not setup kdump_trigger_service.sh."
+	exit 1
+else
+	LogMsg "PASS: Setup kdump_trigger_service.sh well."
+	UpdateSummary "PASS: Setup kdump_trigger_service.sh well."
+fi
+
+# Prepare for trigger kdump
+LogMsg "Prepare for kernel panic......."
+UpdateSummary "Prepare for kernel panic......."
 if [ -f $proc_sys_kernel_sysrq ]
 then	
 	LogMsg "PASS: $proc_sys_kernel_sysrq esxits."

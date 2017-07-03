@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Push and execute kdump_config.sh, kdump_service.sh in VM
+##  Push and execute kdump_config.sh, kdump_execute.sh in VM
 ##  Trigger kdump successfully and get vmcore
 ##
 ###############################################################################
@@ -15,7 +15,7 @@
 ## V1.5 - boyang - 02/03-2017 - Call WaitForVMSSHReady and Remove V1.4
 ## V1.6 - boyang - 03/07/2017 - Remove push files, framework will do it
 ## V1.7 - boyang - 03/22/2017 - Execute kdump_execute.sh in while again
-## V1.8 - boyang - 06/29/2017 - Remove kdump_execute.sh and trigger kdump as a service with booting
+## V1.8 - boyang - 06/29/2017 - Trigger kdump as a service with booting
 ##
 ###############################################################################
 
@@ -161,23 +161,24 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 #
-# SendCommandToVM: push kdump_trigger_service.sh to vm. it will be executed after kdump_config.sh
-# As if framework to trigger the kdump, framework will not connect the target vm and timeout
-# kdump_trigger_service.sh as a service with booting, will off and del itself to voide trigger kdump forever, later trigger kdump
+# SendCommandToVM: Just push kdump_trigger_service.sh Service to vm. Will be executed after kdump_execute.sh
+# kdump_trigger_service.sh: As a service with booting, will off and del itself firstly to voide trigger forever. then trigger kdump
+# If framework triggers kdump, mostly times, framework will not connect the target vm and timeout
 #
-Write-Output "Start to execute kdump_trigger_service.sh in VM."
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_trigger_service.sh && chmod u+x kdump_trigger_service.sh"
+Write-Output "Start to chmod kdump_trigger_service.sh in VM."
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_trigger_service.sh && chmod a+x kdump_trigger_service.sh"
 if (-not $result)
 {
-	Write-Output "FAIL: Failed to execute kdump_trigger_service.sh in VM."
+	Write-Output "FAIL: Failed to chmod kdump_trigger_service.sh in VM."
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 #
 # SendCommandToVM: push and execute kdump_config.sh
-# After configure kdump config and will set kdump_trigger_service.sh a service 
+# kdump_config.sh: configures kdump.config / grub
 #
+Write-Output "Start to execute kdump_config.sh in VM."
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
@@ -193,6 +194,44 @@ Write-Output "Start to reboot VM after kdump and grub changed."
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
 #
+# SendCommandToVM: Push and execute kdump_prepare.sh in while, in case kdump_prepare.sh fail after reboot
+# kdump_prepare.sh: Confirms all configurations works and setup kdump_trigger_service.sh as a service with next booting
+#
+$timeout = 180
+while ($timeout -gt 0)
+{
+	Write-Host -F Yellow "kdump.ps1: Start to execute kdump_prepare.sh in VM, timeout leaves $timeout."
+	Write-Output "Start to execute kdump_prepare.sh in VM, timeout leaves $timeout."
+	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_prepare.sh && chmod u+x kdump_prepare.sh && ./kdump_prepare.sh"
+	if ($result)
+	{
+		Write-Host -F Green "kdump.ps1: PASS: Execute kdump_prepare.sh to VM......."
+		Write-Output "PASS: Execute kdump_prepare.sh to VM."
+		break
+	}
+	else
+	{
+		Write-Output "WARNING: Failed to execute kdump_prepare.sh in VM, try again."
+		Write-Host -F Yellow "kdump.ps1: WARNING: Failed to execute kdump_prepare.sh in VM, try again........"
+		Start-Sleep -S 6
+		$timeout = $timeout - 6
+		if ($timeout -eq 0)
+		{
+			Write-Output "FAIL: Failed to execute kdump_prepare.sh in VM."
+			Write-Host -F Red "kdump.ps1: FAIL: Failed to execute kdump_prepare.sh in VM......."
+			DisconnectWithVIServer			
+			return $Aborted
+		}
+	}
+}
+
+#
+# Rebooting VM in order to apply the kdump settings
+#
+Write-Output "Reboot, kdump_trigger_service will be executed and trigger kdump."
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
+#
 # Check vmcore after get VM IP
 #
 $timeout = 180
@@ -200,11 +239,13 @@ while ($timeout -gt 0)
 {
 	Write-Host -F Yellow "kdump.ps1: Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout......."
 	Write-Output "Start to check vmcore, but maybe FS or vmcore is not ready, timeout leaves $timeout"
-	$result = SendCommandToVM $ipv4 $sshKey "find /var/crash/ -name vmcore -type f -size +10M"
-	if ($result)
+	#$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_result.sh && chmod u+x kdump_result.sh && ./kdump_result.sh"
+	#if ($result)
+	$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /var/crash/ -name vmcore -type f -size +10M"
+	if ($result -ne $null)
 	{
 		Write-Output "PASS: Generates vmcore in VM."
-		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM......."
+		Write-Host -F Green "kdump.ps1: PASS: Generates vmcore in VM, resutl is $result......."
 		$retVal = $Passed
 		break	
 	}

@@ -11,7 +11,6 @@
 ## Revision:
 ## v1.0 - boyang - 01/18/2017 - Build script
 ## v1.1 - boyang - 02/23/2017 - Remove kdump restart after configuration
-## v1.2 - boyang - 06/29/2017 - Setup kdump_trigger_service under /etc/init.d
 ##
 ###############################################################################
 
@@ -182,11 +181,6 @@ case $DISTRO in
 		exit 1
 	;;
 esac
-
-# Setup kdump_trigger service under /etc/init.d
-cp /root/kdump_trigger_service.sh /etc/init.d/
-chkconfig --add kdump_trigger_service.sh
-chkconfig kdump_trigger_service.sh on
 
 # Cleaning up any previous crash dump files
 if [ -d $dump_path ]
