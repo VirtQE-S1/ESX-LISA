@@ -142,26 +142,28 @@ $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e
 # Check $eth Ring current RX, TX parameters
 # For target RX, TX value = current RX TX value / 2
 #
-$rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
-$rx_current_temp2 = $rx_current_temp1 -split "RX:"
-$rx_current = $rx_current_temp2.Trim()[1]
-write-host -f red "rx_current is $rx_current"
+#$rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
+#$rx_current_temp2 = $rx_current_temp1 -split "RX:"
+#$rx_current = $rx_current_temp2.Trim()[1]
+$rx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "rx_current is $rx_current"
 $rx_other = $rx_current / 2
-write-host -f red "rx_other is $rx_other"
+write-host -F Red "rx_other is $rx_other"
 
-$tx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
-$tx_current_temp2 = $tx_current_temp1 -split "TX:"
-$tx_current = $tx_current_temp2.Trim()[1]
-write-host -f red "tx_current is $tx_current"
+#$tx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
+#$tx_current_temp2 = $tx_current_temp1 -split "TX:"
+#$tx_current = $tx_current_temp2.Trim()[1]
+$tx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "tx_current is $tx_current"
 $tx_other = $tx_current / 2
-write-host -f red "tx_other is $tx_other"
+write-host -F Red "tx_other is $tx_other"
 
 #
 # Resize rx, tx to other value
 #
 $result = SendCommandToVM $ipv4 $sshKey "ethtool -G $eth rx $rx_other tx $tx_other"
 if (-not $result)
-{	write-host -f red "ethtool -G failed"
+{	write-host -F Red "ethtool -G failed"
 	Write-Output "FAIL: Resize rx, tx failed."
 	DisconnectWithVIServer
 	return $Aborted
@@ -170,10 +172,11 @@ if (-not $result)
 #
 # Confirm RX, TX other value is done
 #
-$rx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
-$rx_new_temp2 = $rx_new_temp1 -split "RX:"
-$rx_new = $rx_new_temp2.Trim()[1]
-write-host -f red "rx_new is $rx_new"
+#$rx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
+#$rx_new_temp2 = $rx_new_temp1 -split "RX:"
+#$rx_new = $rx_new_temp2.Trim()[1]
+$rx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "rx_new is $rx_new"
 
 if ($rx_new -eq $rx_other)
 {
@@ -181,10 +184,11 @@ if ($rx_new -eq $rx_other)
 	$retVal = $Passed
 }
 
-$tx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
-$tx_new_temp2 = $tx_new_temp1 -split "TX:"
-$tx_new = $tx_new_temp2.Trim()[1]
-write-host -f red "tx_new is $tx_new"
+#$tx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
+#$tx_new_temp2 = $tx_new_temp1 -split "TX:"
+#$tx_new = $tx_new_temp2.Trim()[1]
+$tx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "tx_new is $tx_new"
 
 if ($tx_new -eq $tx_other)
 {

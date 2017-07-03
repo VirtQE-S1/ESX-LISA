@@ -142,28 +142,32 @@ $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e
 # Check $eth current Ring RX, TX parameters. 
 # Defalut value isn't equal to MAX
 #
-$rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
-$rx_current_temp2 = $rx_current_temp1 -split "RX:"
-$rx_current = $rx_current_temp2.Trim()[1]
-write-host -f red "rx_current is $rx_current"
+#$rx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
+#$rx_current_temp2 = $rx_current_temp1 -split "RX:"
+#$rx_current = $rx_current_temp2.Trim()[1]
+$rx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "rx_current is $rx_current"
 
-$tx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
-$tx_current_temp2 = $tx_current_temp1 -split "TX:"
-$tx_current = $tx_current_temp2.Trim()[1]
-write-host -f red "tx_current is $tx_current"
+#$tx_current_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
+#$tx_current_temp2 = $tx_current_temp1 -split "TX:"
+#$tx_current = $tx_current_temp2.Trim()[1]
+$tx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "tx_current is $tx_current"
 
 #
 # Get $eth RX, TX MAX value
 #
-$rx_max_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==1{print $2}'"
-$rx_max_temp2 = $rx_max_temp1 -split "RX:"
-$rx_max = $rx_max_temp2.Trim()[1]
-write-host -f red "rx_max is $rx_max"
+#$rx_max_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==1{print $2}'"
+#$rx_max_temp2 = $rx_max_temp1 -split "RX:"
+#$rx_max = $rx_max_temp2.Trim()[1]
+$rx_max = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==1{print `$2`}'"
+write-host -F Red "rx_max is $rx_max"
 
-$tx_max_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==1{print $2}'"
-$tx_max_temp2 = $tx_max_temp1 -split "TX:" 
-$tx_max = $tx_max_temp2.Trim()[1]
-write-host -f red "tx_max is $tx_max"
+#$tx_max_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==1{print $2}'"
+#$tx_max_temp2 = $tx_max_temp1 -split "TX:" 
+#$tx_max = $tx_max_temp2.Trim()[1]
+$tx_max = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==1{print `$2`}'"
+write-host -F Red "tx_max is $tx_max"
 
 #
 # Resize rx, tx to MAX value
@@ -179,10 +183,11 @@ if (-not $result)
 #
 # Confirm RX, TX MAX value is done
 #
-$rx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
-$rx_new_temp2 = $rx_new_temp1 -split "RX:"
-$rx_new = $rx_new_temp2.Trim()[1]
-write-host -f red "rx_new is $rx_new"
+#$rx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print $2}'"
+#$rx_new_temp2 = $rx_new_temp1 -split "RX:"
+#$rx_new = $rx_new_temp2.Trim()[1]
+$rx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "rx_new is $rx_new"
 
 if ($rx_new -eq $rx_max)
 {
@@ -190,10 +195,11 @@ if ($rx_new -eq $rx_max)
 	$retVal = $Passed
 }
 
-$tx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
-$tx_new_temp2 = $tx_new_temp1 -split "TX:"
-$tx_new = $tx_new_temp2.Trim()[1]
-write-host -f red "tx_new is $tx_new"
+#$tx_new_temp1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print $2}'"
+#$tx_new_temp2 = $tx_new_temp1 -split "TX:"
+#$tx_new = $tx_new_temp2.Trim()[1]
+$tx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
+write-host -F Red "tx_new is $tx_new"
 
 if ($tx_new -eq $tx_max)	
 {
