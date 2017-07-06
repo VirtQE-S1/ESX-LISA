@@ -10,7 +10,7 @@
 ##
 ## Revision:
 ## v1.0 - boyang - 18/01/2017 - Build script.
-## v1.1 - boyang - 06/29/2017 - Setup kdump_trigger_service under /etc/init.d
+## v1.1 - boyang - 06/29/2017 - Setup kdump_trigger_service as a service
 ##
 ###############################################################################
 
@@ -90,17 +90,25 @@ ConfigureNMI()
 #
 #######################################################################
 
-# As NMI, can't triggered in Linux ENV. Will put it here firstly
+#
+# Can't trigger kdump with NMI in Linux ENV. Put it here firstly
 # ConfigureNMI
+#
 
+#
 # Ensure kdump service status after reboot and parameters modification
+# Maybe Check_Kdump_Running fails several times after booting, as kdump service is not ready 
+# So Check_Kdump_Running will be executed by serveral times in while loop
+#
 Check_Kdump_Running
 
-# Setup kdump_trigger service under /etc/init.d
-cp /root/kdump_trigger_service.sh /etc/init.d/
+#
+# Setup kdump_trigger_service as a service
 # chkconfig --add service
-chkconfig --add kdump_trigger_service.sh
 # chkconfig service on
+#
+cp /root/kdump_trigger_service.sh /etc/init.d/
+chkconfig --add kdump_trigger_service.sh
 chkconfig kdump_trigger_service.sh on
 if [ $? -ne 0 ]
 then
@@ -117,11 +125,11 @@ LogMsg "Prepare for kernel panic......."
 UpdateSummary "Prepare for kernel panic......."
 if [ -f $proc_sys_kernel_sysrq ]
 then	
-	LogMsg "PASS: $proc_sys_kernel_sysrq esxits."
-	UpdateSummary "PASS: $proc_sys_kernel_sysrq esxits."
 	echo 1 > $proc_sys_kernel_sysrq
+	LogMsg "PASS: Now reboot VM to trigger kdump."
+	UpdateSummary "PASS: Now reboot VM to trigger kdump."
 else
-	LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit."
-	UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit."
+	LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit, try again."
+	UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit, try again."
 	exit 1
 fi

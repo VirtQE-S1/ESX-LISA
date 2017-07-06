@@ -38,12 +38,16 @@ UtilsInit
 kdump_conf="/etc/kdump.conf"
 dump_path="/var/crash"
 
+#
 # Re-write /etc/grub.conf, or cant' update $crashkernel
 # RHEL6 BIOS, re-write /boot/grub/grub.conf to update $crashkernel
 # RHEL6 EFI, re-write /boot/efi/EFI/redhat/grub.conf to update $crashkernel
+#
 rhel6_grub_conf=`find /boot/ -name "grub.conf"`
 
+#
 # RHEL7 BIOS and EFI, they have the same grub
+#
 rhel7_grub="/etc/default/grub"
 rhel7_grub_cfg=`find /boot/ -name "grub.cfg"`
 
@@ -54,10 +58,9 @@ crashkernel=$1
 ###############################################################################
 ##
 ## Config_Kdump()
-##  No matter VM is RHEL6 or RHEL7, will set the same rules for kdump.conf
+## No matter VM is RHEL6 or RHEL7, will set the same rules for kdump.conf
 ##
 ###############################################################################
-
 Config_Kdump(){
 	if [ -f $kdump_conf ]
 	then
@@ -117,10 +120,9 @@ Config_Kdump(){
 ###############################################################################
 ##
 ## Config_Grub()
-##  Based on $DISTRO, will confirm $grub_conf value to modify $crashkernel
+## Based on $DISTRO, will confirm $grub_conf value to modify $crashkernel
 ##
 ###############################################################################
-
 Config_Grub(){
 		LogMsg "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
 		UpdateSummary "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
@@ -152,10 +154,14 @@ Config_Grub(){
 		fi
 }
 
+#
 # Both RHEL6 and RHEL7 set kdump.conf as the same rules
+#
 Config_Kdump
 
-# Based on DISTRO to modify grub.conf or grub
+#
+# Based on DISTRO to modify grub configuration
+#
 case $DISTRO in
 	redhat_6)
 		grub_conf=$rhel6_grub_conf
@@ -182,7 +188,9 @@ case $DISTRO in
 	;;
 esac
 
-# Cleaning up any previous crash dump files
+#
+# Cleaning up any previous vmcore files
+#
 if [ -d $dump_path ]
 then
 	LogMsg "SUCCESS: $dump_path esxits, will clean up any vmcores."

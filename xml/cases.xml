@@ -83,12 +83,13 @@
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
+                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
+				<suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
@@ -378,7 +379,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
 			<testParams>
-				<param>crashkernel=196M</param>
+				<param>crashkernel=128M</param>
 				<param>VCPU=2</param>
 				<param>VMMemory=4GB</param>
 				<param>TName=kdump_crash_smp</param>
@@ -424,9 +425,9 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-				<param>crashkernel=256M</param>
+				<param>crashkernel=196M</param>
 				<param>VCPU=8</param>
-				<param>VMMemory=12GB</param>
+				<param>VMMemory=16GB</param>
 				<param>TName=kdump_crash_diff_size</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
