@@ -40,6 +40,8 @@
 ##                               SetRunningTime function.
 ## v2.2 - xiaofwan - 3/17/2017 - Change case result timer from TotalMinutes to
 ##                               TotalSeconds to satisfy Jenkins and Polarion
+## v2.3 - xiaofwan - 7/18/2017 - Add a property in case result to save
+##                               TC_COVERED info into result XML.
 ##
 ###############################################################################
 
@@ -211,6 +213,9 @@ function GetJUnitXML()
 <testcase id="" name="" time="">
     <skipped/>
     <failure type=""></failure>
+    <properties>
+        <property name="TC_COVERED" value="" />
+    </properties>
 </testcase>
 </testsuite>
 '@
@@ -360,7 +365,7 @@ function SetTimeStamp([String] $testTimeStamp)
 # SetTestResult
 #
 #####################################################################
-function SetTestResult([String] $testName, [String] $testID, [String] $completionCode)
+function SetTestResult([String] $testName, [Object] $testID, [String] $completionCode)
 {
     <#
     .Synopsis
@@ -375,7 +380,7 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
 
     .Parameter testID
         The ID of the test
-        Type : [String]
+        Type : [Object]
 
     .Parameter completionCode
         The test result, such as Passed, Failed, Skipped, and Aborted
@@ -389,7 +394,7 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
     $newTestCaseTemplate = (@($testResult.testsuite.testcase)[0]).Clone()
     $newTestCase = $newTestCaseTemplate.clone()
     $newTestCase.name = $testName
-    $newTestCase.id = $testID
+    $newTestCase.id = $testID.test
     switch ($completionCode)
     {
         "Passed" {
@@ -408,6 +413,14 @@ function SetTestResult([String] $testName, [String] $testID, [String] $completio
             $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
             $newTestCase.failure.type = "Aborted"
             $newTestCase.failure.InnerText = "Test $testName Aborted."
+        }
+    }
+    foreach ($property in $newTestCase.properties.property)
+    {
+        if ($property.name -eq "TC_COVERED")
+        {
+            $property.value = $testID.tc
+            break
         }
     }
     $testResult.testsuite.AppendChild($newTestCase) > $null
@@ -719,26 +732,34 @@ function GetTestID([String] $testName, [xml] $xmlData)
         Type : [String]
 
     .ReturnValue
-        testID
-        Type: [String]
+        An ID object with test and tc properties.
+        Type: [Object]
 
     .Example
         GetTestData "MyTest"
     #>
     LogMsg 6 ("Info :    GetTestID($($testName))")
 
-    $testID = $null
+    $idObj = "" | Select-Object -Property test,tc
 
     foreach ($test in $xmlData.config.testCases.test)
     {
         if ($test.testName -eq $testName)
         {
-            $testID = $test.testID
+            $idObj.test = $test.testID
+            foreach ($param in $test.testParams.param)
+            {
+                if ($param.contains("TC_COVERED="))
+                {
+                    $idObj.tc = $param.split("=")[1]
+                    break
+                }
+            }
             break
         }
     }
 
-    return $testID
+    return $idObj
 }
 
 #####################################################################

@@ -29,6 +29,9 @@
             <testID>ESX-DEMO-001</testID>
             <testScript>testscripts\debug_demo.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=DEMO-01</param>
+            </testParams>
             <timeout>120</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
