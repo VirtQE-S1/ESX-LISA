@@ -110,6 +110,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>stanversion=open-vm-tools-10.1.5-3.el7.x86_64</param>
+				<param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -122,6 +123,9 @@
             <testScript>ovt_check_vmtoolsd_status.sh</testScript>
             <files>remote-scripts/ovt_check_vmtoolsd_status.sh</files>
             <files>remote-scripts/utils.sh</files>
+            <testParams>
+				<param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
+            </testParams>			
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -133,6 +137,9 @@
             <testScript>ovt_uninstall_ovt.sh</testScript>
             <files>remote-scripts/ovt_uninstall_ovt.sh</files>
             <files>remote-scripts/utils.sh</files>
+            <testParams>
+				<param>TC_COVERED=RHEL6-34900,RHEL7-50883</param>
+            </testParams>				
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -144,6 +151,9 @@
             <testScript>ovt_check_pam_unix2.sh</testScript>
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
+            <testParams>
+				<param>TC_COVERED=RHEL6-35403,RHEL7-79913</param>
+            </testParams>	
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -155,6 +165,9 @@
                 <testScript>ovt_yum_install_ovt.sh</testScript>
                 <files>remote-scripts/ovt_yum_install_ovt.sh</files>
                 <files>remote-scripts/utils.sh</files>
+				<testParams>
+				<param>TC_COVERED=RHEL6-34910,RHEL7-50892</param>
+				</testParams>		
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>240</timeout>
                 <onError>Continue</onError>
@@ -166,6 +179,9 @@
                 <testScript>ovt_check_mount_vmhgfs.sh</testScript>
                 <files>remote-scripts/ovt_check_mount_vmhgfs.sh</files>
                 <files>remote-scripts/utils.sh</files>
+				<testParams>
+				<param>TC_COVERED=RHEL6-34895,RHEL7-51913</param>
+				</testParams>	
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>240</timeout>
                 <onError>Continue</onError>
@@ -177,6 +193,9 @@
                 <testScript>ovt_check_libmspack_installed.sh</testScript>
                 <files>remote-scripts/ovt_check_libmspack_installed.sh</files>
                 <files>remote-scripts/utils.sh</files>
+				<testParams>
+				<param>TC_COVERED=RHEL6-34897,RHEL7-50880</param>
+				</testParams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>
@@ -188,6 +207,9 @@
                 <testScript>ovt_check_deploypkg.sh</testScript>
                 <files>remote-scripts/ovt_check_deploypkg.sh</files>
                 <files>remote-scripts/utils.sh</files>
+				<testParams>
+				<param>TC_COVERED=RHEL6-34898,RHEL7-50881</param>
+				</testParams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>
@@ -199,6 +221,9 @@
                 <testScript>ovt_check_vm-support.sh</testScript>
                 <files>remote-scripts/ovt_check_vm-support.sh</files>
                 <files>remote-scripts/utils.sh</files>
+				<testParams>
+				<param>TC_COVERED=RHEL6-34903,RHEL7-50886</param>
+				</testParams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>120</timeout>
                 <onError>Continue</onError>
@@ -214,6 +239,7 @@
                 <param>nic_type=Vmxnet3</param>
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
+				<param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -227,6 +253,7 @@
             <testScript>testscripts\go_check_cpu.ps1</testScript>
             <testParams>
                 <param>VCPU=4</param>
+				<param>TC_COVERED=RHEL6-34873,RHEL7-50859</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -241,6 +268,7 @@
             <testParams>
                 <param>VMMemory=1GB</param>
                 <param>standard_diff=0.1</param>
+				<param>TC_COVERED=RHEL6-34878,RHEL7-50864</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -251,6 +279,9 @@
             <testName>go_check_reboot</testName>
             <testID>ESX-GO-004</testID>
             <testScript>testscripts\go_check_reboot.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34875,RHEL7-50861</param>
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
             <onError>Continue</onError>
@@ -260,6 +291,9 @@
             <testName>go_vm_install_by_iso</testName>
             <testID>ESX-GO-005</testID>
             <testScript>testscripts\go_vm_install_by_iso.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34872,RHEL7-50858</param>
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -269,6 +303,9 @@
             <testName>go_vm_shutdown</testName>
             <testID>ESX-GO-006</testID>
             <testScript>testscripts\go_vm_shutdown.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34876,RHEL7-50862</param>
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -290,6 +327,7 @@
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=3</param>
                 <param>fileSystems=(ext4 ext3 xfs btrfs)</param>
+				<param>TC_COVERED=RHEL6-34927,RHEL7-50907</param>
             </testparams>
             <onError>Continue</onError>
         </test>
@@ -310,6 +348,7 @@
                 <!-- <param>fileSystems=(ext4 ext3 xfs btrfs)</param> -->
                 <param>fileSystems=(ext4 xfs)</param>
                 <param>diskFormatType=parted</param>
+				<param>TC_COVERED=RHEL6-38510,RHEL7-80183</param>
             </testparams>
             <onError>Continue</onError>
         </test>
@@ -321,7 +360,10 @@
             <files>remote-scripts/utils.sh,
             remote-scripts/stor_utils.sh </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+			<timeout>1800</timeout>
+			<testparams>
+				<param>TC_COVERED=RHEL6-34925,RHEL7-50903</param>
+            </testparams>
             <onError>Continue</onError>
         </test>
         <test>
@@ -340,9 +382,9 @@
                  <param>CapacityGB=2</param>
                  <param>NewCapacityGB=3</param>
                  <param>fileSystems=(ext4)</param>
+				<param>TC_COVERED=RHEL6-38498,RHEL7-80175</param>
            </testparams>
-       </test>
-		
+       </test>	
 		<test>
 			<testName>kdump_crash_single_core</testName>
 			<testID>ESX-KDUMP-001</testID>
@@ -360,6 +402,7 @@
 				<param>VCPU=1</param>
 				<param>VMMemory=2GB</param>
 				<param>TName=kdump_crash_single_core</param>
+				<param>TC_COVERED=RHEL6-34890,RHEL7-50874</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>480</timeout>
@@ -383,6 +426,7 @@
 				<param>VCPU=2</param>
 				<param>VMMemory=4GB</param>
 				<param>TName=kdump_crash_smp</param>
+				<param>TC_COVERED=RHEL6-34883,RHEL7-50867</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>480</timeout>
@@ -406,6 +450,7 @@
 				<param>VCPU=4</param>
 				<param>VMMemory=8GB</param>
 				<param>TName=kdump_crash_auto_size</param>
+				<param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>480</timeout>
@@ -429,6 +474,7 @@
 				<param>VCPU=8</param>
 				<param>VMMemory=16GB</param>
 				<param>TName=kdump_crash_diff_size</param>
+				<param>TC_COVERED=RHEL6-34888,RHEL7-50872</param>
 			</testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 			<timeout>480</timeout>
@@ -442,6 +488,9 @@
             <testScript>testscripts\nw_ping.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+            <testParams>
+				<param>TC_COVERED=RHEL6-34945,RHEL7-50926</param>
+			</testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -451,6 +500,9 @@
             <testScript>testscripts\nw_resize_rx_tx_max.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34935,RHEL7-50915</param>
+			</testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -460,6 +512,9 @@
             <testScript>testscripts\nw_resize_rx_tx.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34936,RHEL7-50916</param>
+			</testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -469,6 +524,9 @@
             <testScript>testscripts\nw_arping.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34946,RHEL7-50927</param>
+			</testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
