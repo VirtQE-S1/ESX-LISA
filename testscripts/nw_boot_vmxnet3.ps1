@@ -133,12 +133,6 @@ $retVal = $Failed
 $nic_driver = "vmxnet3"
 
 #
-# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
-# After snapshot, defalut, NIC works and MTU is 1500
-#
-$eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
-
-#
 # Tool ethtool checks NIC type
 #
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -148,6 +142,12 @@ if (-not $vmOut)
 }
 else
 {
+    #
+    # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
+    # After snapshot, defalut, NIC works and MTU is 1500
+    #
+    $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
+
 	Write-Output "Start to check VM's $nic_driver driver."
 	$result = SendCommandToVM $ipv4 $sshKey "ethtool -i $eth | grep $nic_driver"
 	if ($result)
