@@ -151,8 +151,7 @@ bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'init 6'
 $result = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
 if ( $result -ne $true )
 {
-    Write-Host -F red "Debug: result is $result"
-    Write-Error "WARNING: Boot VM failed. Please check it manualy"
+    Write-Error "ERROR: Boot VM failed. Please check it manualy"
 	return $Aborted
 }
 
@@ -168,17 +167,6 @@ if ($result)
 {
     Write-Output "PASS: Check VM's $nic_driver passed"
     $retVal = $Passed
-}
-
-#
-# Confirm NIC works after boot
-#
-$result = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
-if (-not $result)
-{
-	Write-Output "FAIL: $nic_driver - $eth ping failed."
-	DisconnectWithVIServer
-	return $Aborted
 }
 
 DisconnectWithVIServer
