@@ -27,6 +27,9 @@
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
+                <suiteTest>ovt_check_libdnet</suiteTest>
+                <suiteTest>ovt_check_privatetmp</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -125,7 +128,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
 				<param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
-            </testParams>			
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -139,7 +142,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
 				<param>TC_COVERED=RHEL6-34900,RHEL7-50883</param>
-            </testParams>				
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -153,7 +156,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
 				<param>TC_COVERED=RHEL6-35403,RHEL7-79913</param>
-            </testParams>	
+            </testParams>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -167,7 +170,7 @@
                 <files>remote-scripts/utils.sh</files>
 				<testParams>
 				<param>TC_COVERED=RHEL6-34910,RHEL7-50892</param>
-				</testParams>		
+				</testParams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>240</timeout>
                 <onError>Continue</onError>
@@ -181,7 +184,7 @@
                 <files>remote-scripts/utils.sh</files>
 				<testParams>
 				<param>TC_COVERED=RHEL6-34895,RHEL7-51913</param>
-				</testParams>	
+				</testParams>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
                 <timeout>240</timeout>
                 <onError>Continue</onError>
@@ -229,7 +232,47 @@
                 <onError>Continue</onError>
                 <noReboot>False</noReboot>
         </test>
-
+        <test>
+            <testName>ovt_check_libdnet</testName>
+            <testID>ESX-OVT-010</testID>
+            <testScript>ovt_check_libdnet.sh</testScript>
+            <files>remote-scripts/ovt_check_libdnet.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+              <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+            </testParams>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_privatetmp</testName>
+            <testID>ESX-OVT-011</testID>
+            <testScript>ovt_check_privatetmp.sh</testScript>
+            <files>remote-scripts/ovt_check_privatetmp.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+              <param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_reboot_vmtoolsd</testName>
+            <testID>ESX-OVT-012</testID>
+            <testScript>testscripts/ovt_check_reboot_vmtoolsd.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+              <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -384,7 +427,7 @@
                  <param>fileSystems=(ext4)</param>
 				<param>TC_COVERED=RHEL6-38498,RHEL7-80175</param>
            </testparams>
-       </test>	
+       </test>
 		<test>
 			<testName>kdump_crash_single_core</testName>
 			<testID>ESX-KDUMP-001</testID>
@@ -481,7 +524,7 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>
-		
+
         <test>
             <testName>nw_ping</testName>
             <testID>ESX-NW-001</testID>
