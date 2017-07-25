@@ -99,6 +99,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 $retVal = $Failed
+
+#
+# OVT is skipped in RHEL6
+#
+$OS = GetLinuxDistro  $ipv4 $sshKey
+if ($OS -ne "RedHat7")
+{
+    DisconnectWithVIServer
+    return $Skipped
+}
+
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
