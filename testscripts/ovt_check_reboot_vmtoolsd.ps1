@@ -119,13 +119,11 @@ else
         if ($ret -ne $null)
         {
             Write-Output "PASS: vm status is running."
-            Write-Host -F Green "PASS: resutl is $ret......."
             $retVal = $Passed
         }
         else
         {
-            Write-Output "WARNING: Failed to get vmtoolsd status from VM, try again."
-            Write-Host -F Yellow "try again......."
+            Write-Output "Failed: Failed to get vmtoolsd status from VM."
         }
     }
 
