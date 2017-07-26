@@ -82,6 +82,9 @@
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
+                <suiteTest>ovt_check_libdnet</suiteTest>
+                <suiteTest>ovt_check_privatetmp</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
