@@ -128,13 +128,8 @@
             <files>remote-scripts/ovt_check_vmtoolsd_status.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-<<<<<<< HEAD
-				<param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
-            </testParams>
-=======
                 <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
-            </testParams>			
->>>>>>> upstream/master
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -147,13 +142,8 @@
             <files>remote-scripts/ovt_uninstall_ovt.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-<<<<<<< HEAD
-				<param>TC_COVERED=RHEL6-34900,RHEL7-50883</param>
-            </testParams>
-=======
                 <param>TC_COVERED=RHEL6-34900,RHEL7-50883</param>
-            </testParams>				
->>>>>>> upstream/master
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -166,48 +156,14 @@
             <files>remote-scripts/ovt_check_pam_unix2.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-<<<<<<< HEAD
-				<param>TC_COVERED=RHEL6-35403,RHEL7-79913</param>
-            </testParams>
-			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-=======
                 <param>TC_COVERED=RHEL6-35403,RHEL7-79913</param>
-            </testParams>	
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
->>>>>>> upstream/master
             <timeout>120</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
         <test>
-<<<<<<< HEAD
-                <testName>ovt_yum_install_ovt</testName>
-                <testID>ESX-OVT-005</testID>
-                <testScript>ovt_yum_install_ovt.sh</testScript>
-                <files>remote-scripts/ovt_yum_install_ovt.sh</files>
-                <files>remote-scripts/utils.sh</files>
-				<testParams>
-				<param>TC_COVERED=RHEL6-34910,RHEL7-50892</param>
-				</testParams>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>240</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
-        </test>
-        <test>
-                <testName>ovt_check_mount_vmhgfs</testName>
-                <testID>ESX-OVT-006</testID>
-                <testScript>ovt_check_mount_vmhgfs.sh</testScript>
-                <files>remote-scripts/ovt_check_mount_vmhgfs.sh</files>
-                <files>remote-scripts/utils.sh</files>
-				<testParams>
-				<param>TC_COVERED=RHEL6-34895,RHEL7-51913</param>
-				</testParams>
-                <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-                <timeout>240</timeout>
-                <onError>Continue</onError>
-                <noReboot>False</noReboot>
-=======
             <testName>ovt_yum_install_ovt</testName>
             <testID>ESX-OVT-005</testID>
             <testScript>ovt_yum_install_ovt.sh</testScript>
@@ -215,7 +171,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-34910,RHEL7-50892</param>
-            </testParams>		
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
             <onError>Continue</onError>
@@ -229,12 +185,11 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-34895,RHEL7-51913</param>
-            </testParams>	
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
->>>>>>> upstream/master
         </test>
         <test>
             <testName>ovt_check_libmspack_installed</testName>
@@ -473,18 +428,6 @@
                  <param>fileSystems=(ext4)</param>
                 <param>TC_COVERED=RHEL6-38498,RHEL7-80175</param>
            </testparams>
-<<<<<<< HEAD
-       </test>
-		<test>
-			<testName>kdump_crash_single_core</testName>
-			<testID>ESX-KDUMP-001</testID>
-			<setupScript>
-				<file>setupscripts\change_cpu.ps1</file>
-				<file>setupScripts\change_memory.ps1</file>
-			</setupScript>
-			<testScript>testscripts\kdump.ps1</testScript>
-			<files>remote-scripts/utils.sh</files>
-=======
         </test>
 
         <test>
@@ -496,7 +439,6 @@
             </setupScript>
             <testScript>testscripts\kdump.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
->>>>>>> upstream/master
             <files>remote-scripts/kdump_trigger_service.sh</files>
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
@@ -573,19 +515,6 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-<<<<<<< HEAD
-				<param>crashkernel=196M</param>
-				<param>VCPU=8</param>
-				<param>VMMemory=16GB</param>
-				<param>TName=kdump_crash_diff_size</param>
-				<param>TC_COVERED=RHEL6-34888,RHEL7-50872</param>
-			</testParams>
-			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-			<timeout>480</timeout>
-			<onError>Continue</onError>
-			<noReboot>False</noReboot>
-		</test>
-=======
                 <param>crashkernel=196M</param>
                 <param>VCPU=8</param>
                 <param>VMMemory=16GB</param>
@@ -597,7 +526,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
->>>>>>> upstream/master
 
         <test>
             <testName>nw_ping</testName>
