@@ -300,7 +300,7 @@
             <testScript>testscripts\go_check_cpu.ps1</testScript>
             <testParams>
                 <param>VCPU=4</param>
-                <param>TC_COVERED=RHEL6-34873,RHEL7-50859</param>
+                <param>TC_COVERED=RHEL6-34905,RHEL7-50887</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
