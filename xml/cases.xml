@@ -68,6 +68,8 @@
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
+                <suiteTest>nw_boot_vmxnet3</suiteTest>
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -104,6 +106,7 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -586,6 +589,18 @@
             <timeout>240</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34940,RHEL7-50920</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_remove_vmxnet3</testName>
+            <testID>ESX-NW-006</testID>
+            <testScript>testscripts\nw_remove_vmxnet3.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34944,RHEL7-50924</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
