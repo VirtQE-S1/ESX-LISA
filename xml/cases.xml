@@ -70,6 +70,7 @@
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <suiteTest>nw_hot_plug_unplug</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -107,6 +108,7 @@
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <suiteTest>nw_hot_plug_unplug</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -604,6 +606,18 @@
             <timeout>240</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34944,RHEL7-50924</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_hot_plug_unplug</testName>
+            <testID>ESX-NW-007</testID>
+            <testScript>testscripts\nw_hot_plug_unplug.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34943,RHEL7-50923</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
