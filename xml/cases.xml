@@ -596,6 +596,9 @@
         <test>
             <testName>nw_remove_vmxnet3</testName>
             <testID>ESX-NW-006</testID>
+            <setupScript>
+                <file>setupscripts\remove_vmxnet3.ps1</file>
+            </setupScript>
             <testScript>testscripts\nw_remove_vmxnet3.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>

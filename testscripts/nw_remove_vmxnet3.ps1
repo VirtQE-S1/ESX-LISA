@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-## Remove the vmxnet3 network adapter
+## Remove the vmxnet3 network adapter and reboot well
 ##
 ###############################################################################
 ##
@@ -12,7 +12,7 @@
 
 <#
 .Synopsis
-    Remove the vmxnet3 network adapter
+    Remove the vmxnet3 network adapter and reboot well
 
 .Description
     When VM alives, remove vmxent3, no crash
@@ -128,7 +128,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
 $retVal = $Failed
 $nic = "vmxnet3"
 
@@ -143,47 +142,14 @@ if (-not $vmOut)
 }
 
 #
-# Get VM NIC adapter before remove it
-#
-$adapter = Get-NetworkAdapter -VM $vmOut
-if (-not $adapter)
-{
-    Write-Error -Message "nw_remove_vmxnet3.ps1: Unable to get VM NIC adapter" -Category ObjectNotFound -ErrorAction SilentlyContinue
-	return $Aborted
-}
-Write-Output "VM NIC adapter is $adapter."
-
-#
-# Confirm NIC adapter type
-#
-$vmxnet3 = $adapter.type
-if ($vmxnet3 -ne $nic)
-{
-    Write-Error -Message "nw_remove_vmxnet3.ps1: NIC adapter type is not $nic" -Category ObjectNotFound -ErrorAction SilentlyContinue
-	return $Aborted
-}
-Write-Output "VM NIC adapter type is $vmxnet3."
-
-#
-# As CLI can't Remove-NetworkAdapter in poweredon state
-# So, Change its operation firstly and reconfig VM later
-#
-$spec = New-Object VMware.Vim.VirtualMachineConfigSpec
-$devSpec = New-Object VMware.Vim.VirtualDeviceConfigSpec
-$devSpec.operation = "remove"
-$devSpec.device += $adapter.ExtensionData
-$spec.deviceChange += $devSpec
-$vmOut.ExtensionData.ReconfigVM_Task($spec)
-
-Start-Sleep -S 6
-
-#
 # Get VM NIC adapter after remove it
 #
-$adapter2 = Get-NetworkAdapter -VM $vmOut
-if ($adapter2 -eq $null)
+$adapter_count = (Get-NetworkAdapter -VM $vmOut).Count
+$adapter_type = (Get-NetworkAdapter -VM $vmOut).Type
+Write-Host -F red "count is $adapter_count and type is $adapter_type"
+if ($adapter_count -eq 1 -and $adapter_type -ne "Vmxnet3")
 {
-    Write-Out "PASS: Remove adapter successfully."
+    Write-Out "PASS: Remove adapter and reboot successfully."
 	$retVal = $Passed
 }
 
