@@ -173,6 +173,7 @@ if ($all_nic_count -eq ($total_nics + 1))
 else
 {
     Write-Error -Message "FAIL: Unknow issue after hot plug adapter, check it manually" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    return $Aborted
 }
 
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
@@ -186,9 +187,6 @@ else
 {
     $retVal = $Passed
 }
-
-
-
 
 DisconnectWithVIServer
 
