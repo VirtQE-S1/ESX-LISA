@@ -36,7 +36,8 @@ UtilsInit
 # Get all NICs interfaces
 nics=`ls /sys/class/net | grep ^e[tn][hosp]`
 network_scripts="/etc/sysconfig/network-scripts"
-ifcfg_orignal = "/root/ifcfg-orignal"
+ifcfg_orignal="/root/ifcfg-orignal"
+
 #
 # Copy the orignal ifcfg file under $network_scripts to /root
 #
@@ -81,7 +82,8 @@ do
         # Firstly, close selinux
         #
         setenforce 0
-        
+        LogMsg "Now, test ifdown function"
+        UpdateSummary "Now, test ifdown function" 
         ifdown $i
         if [ $? -eq 0 ]
         then
@@ -90,6 +92,8 @@ do
             #
             # Test new NIC ifup / ifdown
             #
+            LogMsg "Now, test ifup function"
+            UpdateSummary "Now, test ifup function" 
             ifup $i
             if [ $? -eq 0 ]
             then
