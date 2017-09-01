@@ -51,6 +51,8 @@ done
 
 #
 # Confirm which nics are added newly
+# Setup their ifcfg files
+# Test their ifup / fidown functions
 #
 for i in $nics
 do
@@ -58,30 +60,65 @@ do
 	UpdateSummary "Now, checking $i......."
     if [ ! -f $network_scripts/ifcfg-$i ]
     then
-        #
         # New NIC needs to create its ifcfg scripts based on orignal nic's script
-        #
         LogMsg "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
         UpdateSummary "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
         cp $ifcfg_orignal $network_scripts/ifcfg-$i
+        
         # Comment UUID
         LogMsg "Now, commenting UUID"
         UpdateSummary "Now, commenting UUID"
         sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$i
+        
         # Comment original DEVICE
         LogMsg "Now, commenting DEVICE"
         UpdateSummary "Now, commenting DEVICE"
         sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$i
-        # Add new NIC name to script
-        LogMsg "Now, adding new DEVICE"
-        UpdateSummary "Now, add new DEVICE"      
-        echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i
+        # Add a new DEVICE to script
+        LogMsg "Now, adding a new DEVICE"
+        UpdateSummary "Now, add a new DEVICE"      
+        echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i    
         
+        # Comment original NAME
+        LogMsg "Now, commenting NAME"
+        UpdateSummary "Now, commenting NAME"
+        sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$i
+        # Add a new NAME to script
+        LogMsg "Now, adding a new NAME"
+        UpdateSummary "Now, add a new NAME"      
+        echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$i
+  
         #
-        # Test new NIC ifup, if ifup passed, will go on test ifdown
-        # Firstly, close selinux
+        # Test new NIC ifup / ifdown. No ping function to test
+        # Firstly, stop SELINUX, NetworkManager, and restart network
         #
         setenforce 0
+        systemctl stop NetworkManager
+        if [ $? -eq 0 ]
+        then
+            systemctl restart network
+            if [ $? -ne 0 ]
+            then
+                SetTestStateAborted
+                exit 1
+            fi
+        else
+            service NetworkManager stop
+            if [ $? -eq 0 ]
+            then
+                service network restart
+                if [ $? -ne 0 ]
+                then
+                    SetTestStateAborted
+                    exit 1
+                fi
+            else
+                SetTestStateAborted
+                exit 1
+            fi
+        fi
+        
+        # Test ifdown function for new NICs
         LogMsg "Now, test ifdown function"
         UpdateSummary "Now, test ifdown function" 
         ifdown $i
@@ -89,9 +126,7 @@ do
         then
             LogMsg "DONE. $i ifdown works well"
             UpdateSummary "DONE. $i ifdown works well"
-            #
-            # Test new NIC ifup / ifdown
-            #
+            # Test ifup function for new NICs
             LogMsg "Now, test ifup function"
             UpdateSummary "Now, test ifup function" 
             ifup $i
@@ -99,7 +134,6 @@ do
             then
                 LogMsg "PASS. $i both ifup and ifdown work well"
                 UpdateSummary "PASS. $i both ifup and ifdown work well"
-                SetTestStateCompleted
             else
             {
                 LogMsg "FAIL. $i ifup failed"
@@ -118,3 +152,7 @@ do
         fi
     fi
 done
+
+SetTestStateCompleted
+
+exit 0
