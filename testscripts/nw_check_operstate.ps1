@@ -168,7 +168,6 @@ if (-not $result)
 {
 	Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM."
 	DisconnectWithVIServer
-	return $Aborted
 }
 else
 {

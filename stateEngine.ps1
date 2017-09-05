@@ -470,7 +470,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
     if ($vmObj.PowerState -ne "PoweredOff")
     {
         LogMsg 3 "Info : $($vm.vmName) is not in a stopped state - stopping VM"
-        $outStopVm = Stop-VM -VM $vmObj -Confirm:$false
+        $outStopVm = Stop-VM -VM $vmObj -Confirm:$false -Kill
         if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff")
         {
             LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -544,7 +544,7 @@ function ResetVM([System.Xml.XmlElement] $vm, [XML] $xmlData)
             if ($vmObj.PowerState -eq "Suspended")
             {
                 LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
+                $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false -Kill
                 if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                 {
                     LogMsg 0 "Error : ResetVM is unable to stop VM $($vm.vmName). VM has been disabled"
@@ -994,7 +994,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     if ($vmObj.PowerState -eq "Suspended")
                     {
                         LogMsg 3 "Info : $($vm.vmName) - resetting to a stopped state after restoring a snapshot"
-                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false
+                        $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false -Kill
                         if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff")
                         {
                             LogMsg 0 "Error : ApplyCheckpoint is unable to stop VM $($vm.vmName). VM has been disabled"

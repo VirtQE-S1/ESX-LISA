@@ -132,8 +132,8 @@ do
             operstate=`cat /sys/class/net/$i/operstate`
             if [ "$operstate" == "down" ]
             then
-                LogMsg "DONE: Operstate status under ifdown is correct"
-                UpdateSummary "DONE: Operstate status under ifdown is correct"
+                LogMsg "DONE: Operstate status $operstate under ifdown is correct"
+                UpdateSummary "DONE: Operstate status $operstate under ifdown is correct"
                 
                 # Check operstate under ifup 
                 LogMsg "Now, check operstate under ifup"
@@ -147,8 +147,10 @@ do
                     operstate=`cat /sys/class/net/$i/operstate`
                     if [ "$operstate" == "up" ]
                     then
-                        LogMsg "PASS: Operstate status under ifup is correct"
-                        UpdateSummary "PASS: Operstate status under ifup is correct" 
+                        LogMsg "PASS: Operstate status $operstate under ifup is correct"
+                        UpdateSummary "PASS: Operstate status $operstate under ifup is correct"
+                        SetTestStateCompleted
+                        exit 0
                     else
                         LogMsg "FAIL: operstate status is incorrect"
                         UpdateSummary "FAIL: operstate status is incorrect"         
@@ -179,7 +181,3 @@ do
         fi
     fi
 done
-
-SetTestStateCompleted
-
-exit 0

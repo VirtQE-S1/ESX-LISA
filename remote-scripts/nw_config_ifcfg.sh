@@ -134,6 +134,8 @@ do
             then
                 LogMsg "PASS. $i both ifup and ifdown work well"
                 UpdateSummary "PASS. $i both ifup and ifdown work well"
+                SetTestStateCompleted
+                exit 0
             else
             {
                 LogMsg "FAIL. $i ifup failed"
@@ -152,7 +154,3 @@ do
         fi
     fi
 done
-
-SetTestStateCompleted
-
-exit 0

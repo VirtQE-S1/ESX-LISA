@@ -148,7 +148,7 @@ if (-not $vmOut)
 # Hot unplug this new adapter named $new_nic_name, adapter count will be 1(original one)
 #
 $new_nic = New-NetworkAdapter -VM $vmOut -NetworkName $new_nic_name -WakeOnLan -StartConnected -Confirm:$false
-Write-Out "Get new NIC: $new_nic."
+Write-Output "Get new NIC: $new_nic."
 
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
 if ($all_nic_count -eq 2)
@@ -167,12 +167,12 @@ if ($all_nic_count -eq 2)
     $spec.deviceChange += $devSpec
     $vmOut.ExtensionData.ReconfigVM_Task($spec)
 
-    Start-Sleep -S 6
+    Start-Sleep -S 12
 
     $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
     if ($all_nic_count -eq 1)
     {
-        Write-Out "PASS: Hot unplug this adapter successfully"
+        Write-Output "PASS: Hot unplug this adapter successfully"
         $retVal = $Passed
     }
 }
