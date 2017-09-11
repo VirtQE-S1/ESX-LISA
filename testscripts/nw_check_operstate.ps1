@@ -163,8 +163,11 @@ else
 #
 # Send nw_config_ifcfg.sh to VM which setup new NIC ifcfg file, ifdown / ifup to check operstate
 #
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh"
-if (-not $result)
+#$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh"
+$process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh" -WindowStyle Hidden -Wait -PassThru
+$exit_code = $process.ExitCode
+Write-Host -F red "Debug: $exit_code"
+if ($exit_code -ne 0)
 {
 	Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM."
 	DisconnectWithVIServer

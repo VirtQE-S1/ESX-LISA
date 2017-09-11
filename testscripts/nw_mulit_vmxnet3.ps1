@@ -176,8 +176,14 @@ else
     return $Aborted
 }
 
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
-if (-not $result)
+#$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
+#if (-not $result)
+#$exit = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh" -NoNewWindow -Wait -PassThru
+#$exit = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ls /root/" -NoNewWindow -Wait -PassThru
+$process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ls /root/" -Wait -PassThru -WindowStyle Hidden
+$state = $process.ExitCode
+Write-Host -F red "Debug: $state"
+if ($state -ne 0)
 {
 	Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM."
 	DisconnectWithVIServer

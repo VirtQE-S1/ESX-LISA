@@ -130,7 +130,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 
 $retVal = $Failed
-$nic_driver = "vmxnet3"
+$nic_driver = "Vmxnet3"
 
 #
 # Tool ethtool checks NIC type
@@ -140,33 +140,29 @@ if (-not $vmOut)
 {
     Write-Error -Message "nw_boot_vmxnet3.ps1: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 	return $Aborted
-
 }
 
-#
-# Reboot VM with "init 6"
-#
-bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'init 6'
+$nic_type = (Get-NetworkAdapter -VM $vmOut).Type
 
-$result = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
-if ( $result -ne $true )
+if ($nic_type -eq $nic_driver)
 {
-    Write-Error "ERROR: Boot VM failed. Please check it manualy"
-	return $Aborted
+    $error_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+    if ($null -eq $error_check)
+    {
+        Write-Host -F red "PASS: VM's NIC is $nic_type, and NO call trace FOUND after boot"
+        Write-Output "PASS: VM's NIC is $nic_type, and NO call trace FOUND after boot"
+        $retVal = $Passed
+    }
+    else
+    {
+        Write-Output "FAIL: VM's NIC is $nic_type, and call trace FOUND after boot"
+        $retVal = $Failed
+    }
 }
-
-#
-# Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:" "eno167832:"
-# After snapshot, defalut, NIC works and MTU is 1500
-#
-$eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
-
-Write-Output "Start to check VM's $nic_driver driver."
-$result = SendCommandToVM $ipv4 $sshKey "ethtool -i $eth | grep $nic_driver"
-if ($result)
+else
 {
-    Write-Output "PASS: Check VM's $nic_driver passed"
-    $retVal = $Passed
+    Write-Output "FAIL: VM's NIC is $nic_type, WON'T be covered in test scope"
+    $retVal = $Failed
 }
 
 DisconnectWithVIServer

@@ -92,32 +92,34 @@ do
         # Test new NIC ifup / ifdown. No ping function to test
         # Firstly, stop SELINUX, NetworkManager, and restart network
         #
-        setenforce 0
-        systemctl stop NetworkManager
-        if [ $? -eq 0 ]
-        then
-            systemctl restart network
-            if [ $? -ne 0 ]
-            then
-                SetTestStateAborted
-                exit 1
-            fi
-        else
-            service NetworkManager stop
+        RestartNetwork()
+        {
+            setenforce 0
+            systemctl stop NetworkManager
             if [ $? -eq 0 ]
             then
-                service network restart
+                systemctl restart network
                 if [ $? -ne 0 ]
                 then
                     SetTestStateAborted
                     exit 1
                 fi
             else
-                SetTestStateAborted
-                exit 1
+                service NetworkManager stop
+                if [ $? -eq 0 ]
+                then
+                    service network restart
+                    if [ $? -ne 0 ]
+                    then
+                        SetTestStateAborted
+                        exit 1
+                    fi
+                else
+                    SetTestStateAborted
+                    exit 1
+                fi
             fi
-        fi
-        
+        }
         #
         # Test checking operstate under ifup / ifdown
         # 
@@ -149,13 +151,23 @@ do
                     then
                         LogMsg "PASS: Operstate status $operstate under ifup is correct"
                         UpdateSummary "PASS: Operstate status $operstate under ifup is correct"
-                        SetTestStateCompleted
+                        SetTestStateCompleted                   
+                        #
+                        # Ifdown and move its scirpt
+                        #
+                        LogMsg "Now, CLOSE $i"
+                        UpdateSummary "Now, Now, CLOSE $i" 
+                        ifdown $i
+                        mv $network_scripts/ifcfg-$i /root/
+                        RestartNetwork
+                        LogMsg "Now, exit 0"
+                        UpdateSummary "Now, Now, exit 0" 
                         exit 0
                     else
                         LogMsg "FAIL: operstate status is incorrect"
                         UpdateSummary "FAIL: operstate status is incorrect"         
                         SetTestStateFailed
-                        exit 1      
+                        exit 1
                     fi
                 else
                 {
