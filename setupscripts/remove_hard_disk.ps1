@@ -79,46 +79,54 @@ if ($testParams -eq $null -or $testParams.Length -lt 3)
     return $False
 }
 #
-# when there are multiple disks, after remove one, the name of disk will changed
-# automatically, e.g. after remove "Hard disk 2", original hard disk name"Hard disk 3"
-# will change to "Hard disk 2"
+# VM system disk is named "Hard disk 1", NO changed anymore
 #
-
+$retVal = $Failed
+$sysDisk = "Hard disk 1"
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
 while ($True)
 {
+    # How many disks in VM
     $diskList =  Get-HardDisk -VM $vmObj
+    $diskLength = $diskList.Length
 
-    # exists more disk except system disk
+    # If disks counts great than 1, will delete them
     if ($diskList.Length -gt 1)
     {
         foreach ($disk in $diskList)
         {
             $diskName= $disk.Name
-            # keep the vm system disk not removed
-            if ($diskName -ne "Hard disk 1")
+            if ($diskName -ne $sysDisk)
             {
                 Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
-
-                if ( -not $?)
+                # Get new counts of disks
+                $diskNewLength = (Get-HardDisk -VM $vmObj).Length
+                
+                if (($diskLength - $diskNewLength) -eq 1)
                 {
-                    Throw "Error : Cannot remove hard disk of the VM $vmName"
-                    return $False
+                    Write-Output "DONE: remove $diskName"
+                    break
                 }
-                else
-                {
-                    write-output " Done: remove disk"
-                }
-                # exit this loop and get the new disk list
-                break;
             }
         }
     }
     else
     {
-        write-output "Only one system disk left"
+        Write-Output "DONE: Only system disk is left"
         break
     }
 }
 
-return $True
+$diskLastList =  Get-HardDisk -VM $vmObj
+if ($diskLastList.Length -eq 1)
+{
+    Write-Output "PASS: Clean disk new added successfully"
+    $retVal = $Passed
+}
+else
+{
+    Write-Output "FAIL: Clean disk new added unsuccessfully"
+}
+write-host -f red "$retVal"
+return $retVal
