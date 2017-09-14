@@ -1141,9 +1141,16 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     $numItems = $sts.length
     LogMsg 6 "Debug: $vmName - Invoke-Expression returned array with $($sts.length) elements"
 
-    if ($sts[-1] -eq "True")
+    if (("True" -eq $sts[-1]) -or ("Passed" -eq $sts[-1]))
     {
+        Write-Host -F red "$sts[-1]"
         $retVal = $true
+    }
+    
+    if ("False" -eq ($sts[-1]) -or ("Failed" -eq $sts[-1]))
+    {
+        Write-Host -F red "$sts[-1]"
+        $retVal = $false
     }
 
     #
@@ -1153,7 +1160,6 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     {
         logMsg 3 ("Info :    $vmName - $i")
     }
-
     return $retVal
 }
 
