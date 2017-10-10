@@ -133,59 +133,25 @@ $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$state = $vmObj.PowerState
-if ($state -ne "PoweredOn")
+$vmObj_restart = Restart-VMGuest -VM $vmObj -Confirm:$False
+$ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+if ( $ret -ne $true )
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Output "Failed: Failed to start VM."
     return $Aborted
+}
+Shutdown-VMGuest -VM $vmObj -Confirm:$False
+Start-sleep 30
+$vmObjShutdown = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+$state = $vmObjShutdown.PowerState
+if ($state -ne "PoweredOff")
+{
+    Write-Error -Message "The vm status is not powered off, status is $state" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
 else
 {
-    Write-Output "DONE. VM Power state is $state"
-
-    Write-Output "Now, will restart the VM......."
-    $vmObj_restart = Restart-VMGuest -VM $vmObj -Confirm:$False
-    Start-sleep 120
-    $state = $vmObj_restart.PowerState
-
-    if ($state -ne "PoweredOn")
-    {
-        Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $Aborted
-    }
-    else
-    {
-        Write-Output "DONE. VM Power state is $state"
-
-        Write-Output "Now, will Power On the VM......."
-        $vmObj_shutdown = Shutdown-VMGuest -VM $vmObj -Confirm:$False
-        Start-sleep 120
-        $state = $vmObj_shutdown.PowerState
-
-        if ($state -ne "PoweredOff")
-        {
-            Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
-            return $Aborted
-        }
-        else
-        {
-
-            Write-Output "Now, will Power On the VM......."
-            $vmObj_on = Start-VM -VM $vmObj -Confirm:$False
-            Start-sleep 120
-            $error_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-            if ($null -eq $error_check)
-            {
-                Write-Output "PASS: After resume, NO call trace found"
-                $retVal = $Passed
-            }
-            else
-            {
-                Write-Output "FAIL: After resume, FOUND call trace, PLEASE check it manually"
-                return $Aborted
-            }
-        }
-    }
+    Write-Output "passed, the vm shutdown successfully"
+    $retVal = $Passed
 }
 
 DisconnectWithVIServer
