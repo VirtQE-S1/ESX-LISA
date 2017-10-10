@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 16 -->
+            <!-- OVT Total Cases: 19 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -35,6 +35,9 @@
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
+                <suiteTest>ovt_check_suspend_timesync</suiteTest>
+                <suiteTest>ovt_install_by_iso</suiteTest>
+                <suiteTest>ovt_shutdown_restart_vm</suiteTest>                
             </suiteTests>
         </suite>
         <suite>
@@ -85,7 +88,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 39 -->
+            <!-- Acceptance Total Cases: 42 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -104,6 +107,9 @@
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
+                <suiteTest>ovt_check_suspend_timesync</suiteTest>
+                <suiteTest>ovt_install_by_iso</suiteTest>
+                <suiteTest>ovt_shutdown_restart_vm</suiteTest>    
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -353,6 +359,46 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_suspend_timesync</testName>
+            <testID>ESX-OVT-017</testID>
+            <testScript>testscripts/ovt_check_suspend_timesync.ps1</testScript>
+            <files>remote-scripts/ovt_check_suspend_timesync.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34915,RHEL7-57927</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+         <test>
+            <testName>ovt_install_by_iso</testName>
+            <testID>ESX-OVT-018</testID>
+            <testScript>ovt_install_by_iso.sh</testScript>
+            <files>remote-scripts/ovt_install_by_iso.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_shutdown_restart_vm</testName>
+            <testID>ESX-OVT-019</testID>
+            <testScript>testscripts/ovt_shutdown_restart_vm.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+            </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
