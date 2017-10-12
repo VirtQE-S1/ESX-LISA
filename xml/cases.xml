@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 19 -->
+            <!-- OVT Total Cases: 21 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -37,7 +37,9 @@
                 <suiteTest>ovt_check_period_timesync</suiteTest>
                 <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
-                <suiteTest>ovt_shutdown_restart_vm</suiteTest>                
+                <suiteTest>ovt_shutdown_restart_vm</suiteTest>
+                <suiteTest>ovt_check_timesync</suiteTest>  
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                  
             </suiteTests>
         </suite>
         <suite>
@@ -88,7 +90,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 42 -->
+            <!-- Acceptance Total Cases: 44 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -109,7 +111,9 @@
                 <suiteTest>ovt_check_period_timesync</suiteTest>
                 <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
-                <suiteTest>ovt_shutdown_restart_vm</suiteTest>    
+                <suiteTest>ovt_shutdown_restart_vm</suiteTest>
+                <suiteTest>ovt_check_timesync</suiteTest>  
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -401,8 +405,34 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
+        </test> 
+         <test>
+            <testName>ovt_check_timesync</testName>
+            <testID>ESX-OVT-020</testID>
+            <testScript>ovt_check_timesync.sh</testScript>
+            <files>remote-scripts/ovt_check_timesync.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34914,RHEL7-57926</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
-        
+        <test>
+            <testName>ovt_take_quiesce_snapshot</testName>
+            <testID>ESX-OVT-021</testID>
+            <testScript>testscripts/ovt_take_quiesce_snapshot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34896,RHEL7-5087</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>        
+  
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
