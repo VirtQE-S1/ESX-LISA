@@ -57,5 +57,5 @@ else
         LogMsg "offset: $offset"
         UpdateSummary "offset: $offset,Test Successfully. The guest time is sync with host successfully."
         SetTestStateCompleted
-        exit 1
+        exit 0
 fi

@@ -38,7 +38,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully. There's libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
     UpdateSummary "Test successfully. There's libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test Failed. There's NO libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."
     UpdateSummary "Test failed. There's NO libdeployPkgPlugin.so file under /usr/lib64/open-vm-tools/plugins/vmsvc/."

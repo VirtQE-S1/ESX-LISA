@@ -38,7 +38,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully, libmspack installed."
     UpdateSummary "Test successfully, libmspack installed."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test failed, libmspack is not installed."
     UpdateSummary "Test failed, libmspack is not installed."

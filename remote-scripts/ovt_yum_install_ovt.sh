@@ -51,7 +51,7 @@ else
                 LogMsg "open-vm-tools installed successfully."
                 UpdateSummary " open-vm-tools installed successfully."
                 SetTestStateCompleted
-                exit
+                exit 0
         else
                 LogMsg "open-vm-tools installed Failed."
                 UpdateSummary " open-vm-tools installed Failed."

@@ -38,7 +38,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully. There's libdnet."
     UpdateSummary "Test successfully. There's libdnet."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test Failed. There's NO libdnet."
     UpdateSummary "Test failed. There's NO libdnet."

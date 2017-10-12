@@ -39,7 +39,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully. The open-vm-tools installed."
     UpdateSummary "Test successfully. The open-vm-tools installed."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test Failed. The open-vm-tools not installed."
     UpdateSummary "Test failed. The open-vm-tools not installed."

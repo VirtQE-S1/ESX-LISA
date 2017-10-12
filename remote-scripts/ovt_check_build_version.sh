@@ -55,6 +55,7 @@ if [ "$version" = "$stanversion" ]; then
         LogMsg "$version"
         UpdateSummary "Test Successfully. The open-vm-tools version is right."
         SetTestStateCompleted
+        exit 0
 else
         LogMsg "Info : The build info not right'"
         UpdateSummary "Test Failed,open-vm-tools build info not right ."

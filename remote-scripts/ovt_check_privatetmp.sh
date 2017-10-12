@@ -38,7 +38,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully. PrivateTmp=true in vmtoolsd.service files."
     UpdateSummary "Test successfully. PrivateTmp=true in vmtoolsd.service files."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test Failed. PrivateTmp=true not in vmtoolsd.service files."
     UpdateSummary "Test failed. PrivateTmp=true not in vmtoolsd.service files."

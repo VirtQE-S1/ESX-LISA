@@ -40,7 +40,7 @@ if [[ $? == 0 ]]; then
         LogMsg "Test successfully. There's vmware-vguath-cmd and VGAuthService."
         UpdateSummary "Test successfully. There's VGAuthService and vmware-vguath-cmd."
         SetTestStateCompleted
-        exit
+        exit 0
     else
         LogMsg "Test Failed. There's NO  vmware-vguath-cmd."
         UpdateSummary "Test failed. There's NO  vmware-vguath-cmd."

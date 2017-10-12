@@ -43,5 +43,5 @@ else
     LogMsg "Test Successfully. There's NO mount.vmhgfs file under /usr/sbin/."
     UpdateSummary "Test Successfully. There's NO mount.vmhgfs file under /usr/sbin/."
     SetTestStateCompleted
-    exit
+    exit 0
 fi

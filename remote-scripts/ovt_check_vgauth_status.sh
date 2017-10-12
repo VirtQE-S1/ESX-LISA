@@ -39,7 +39,7 @@ if [ "$service" = "1" ]; then
   LogMsg $service
   UpdateSummary "Test Successfully. service vgauthd is running."
   SetTestStateCompleted
-  exit
+  exit 0
 else
   LogMsg "Info : The service vgauthd is not running'"
   UpdateSummary "Test Successfully. The service vgauthd is not running."

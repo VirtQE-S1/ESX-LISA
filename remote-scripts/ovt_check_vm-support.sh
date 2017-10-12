@@ -38,7 +38,7 @@ if [[ $? == 0 ]]; then
     LogMsg "Test successfully. There's vm-support file under /usr/bin/."
     UpdateSummary "Test successfully. There's vm-support file under /usr/bin/."
     SetTestStateCompleted
-    exit
+    exit 0
 else
     LogMsg "Test Failed. There's NO vm-support file under /usr/bin/."
     UpdateSummary "Test failed. There's NO vm-support file under /usr/bin/."
