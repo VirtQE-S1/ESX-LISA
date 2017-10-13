@@ -64,23 +64,23 @@ crashkernel=$1
 Config_Kdump(){
 	if [ -f $kdump_conf ]
 	then
-		LogMsg "PASS. Find out $kdump_conf file in VM."
-		UpdateSummary "PASS. Find out $kdump_conf file in VM."
+		LogMsg "PASS. Find out $kdump_conf file in VM"
+		UpdateSummary "PASS. Find out $kdump_conf file in VM"
 
 		# Modify path to /var/crash
-		LogMsg "Start to modify $kdump_conf......."
-		UpdateSummary "Start to modify $kdump_conf......."
+		LogMsg "Start to modify $kdump_conf"
+		UpdateSummary "Start to modify $kdump_conf"
 		sed -i '/^path/ s/path/#path/g' $kdump_conf
 		grep -iq "^#path" $kdump_conf
 		if [ $? -ne 0 ]
 		then
-			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
-			UpdateSummary "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed."
+			LogMsg "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed"
+			UpdateSummary "ERROR: Failed to comment path in /etc/kdump.conf. Probably kdump is not installed"
 			exit 1
 		else
 			echo "path $dump_path" >> $kdump_conf
-			LogMsg "SUCCESS: Updated the path to $dump_path."
-			UpdateSummary "SUCCESS: Updated the path to $dump_path."
+			LogMsg "SUCCESS: Updated the path to $dump_path"
+			UpdateSummary "SUCCESS: Updated the path to $dump_path"
 		fi
 
 		# Modify default action as reboot after crash
@@ -88,13 +88,13 @@ Config_Kdump(){
 		grep -iq "^#default" $kdump_conf
 		if [ $? -ne 0 ]
 		then
-			LogMsg "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
-			UpdateSummary "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed."
+			LogMsg "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed"
+			UpdateSummary "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed"
 			exit 1
 		else
 			echo "default reboot" >> $kdump_conf
-			LogMsg "SUCCESS: Updated the default action reboot after kdump."
-			UpdateSummary "SUCCESS: Updated the default action reboot after kdump."
+			LogMsg "SUCCESS: Updated the default action reboot after kdump"
+			UpdateSummary "SUCCESS: Updated the default action reboot after kdump"
 		fi
 
 		# Modify vmcore collection method and level
@@ -102,17 +102,17 @@ Config_Kdump(){
 		grep -iq "^#core_collector" $kdump_conf
 		if [ $? -ne 0 ]
 		then
-			LogMsg "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed."
-			UpdateSummary "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed."
+			LogMsg "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed"
+			UpdateSummary "ERROR: Failed to comment vmcore collection method in $kdump_conf. Probably kdump is not installed"
 			exit 1
 		else
 			echo "core_collector makedumpfile -c --message-level 1 -d 31" >> $kdump_conf
-			LogMsg "SUCCESS: Updated vmcore collection method to makedumpfile."
-			UpdateSummary "SUCCESS: Updated vmcore collection method to makedumpfile."
+			LogMsg "SUCCESS: Updated vmcore collection method to makedumpfile"
+			UpdateSummary "SUCCESS: Updated vmcore collection method to makedumpfile"
 		fi
 	else
-		LogMsg "Failed. Can't find out $kdump_conf file or not a file."
-		UpdateSummary "Failed. Can't find out $kdump_conf file in VM."
+		LogMsg "Failed. Can't find out $kdump_conf file or not a file"
+		UpdateSummary "Failed. Can't find out $kdump_conf file in VM"
 		exit 1
 	fi
 }
@@ -124,13 +124,13 @@ Config_Kdump(){
 ##
 ###############################################################################
 Config_Grub(){
-		LogMsg "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
-		UpdateSummary "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1."
+		LogMsg "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1"
+		UpdateSummary "DISTRO is $DISTRO, both BIOS and EFI mode will modify $1"
 		#grub_conf=$1
 		if [ -f $1 ]
 		then
-			LogMsg "PASS. Find out $1 file in VM."
-			UpdateSummary "PASS. Find out $1 file in VM."
+			LogMsg "PASS. Find out $1 file in VM"
+			UpdateSummary "PASS. Find out $1 file in VM"
 
 			# Modify crashkernel as $crashkernel
 			if grep -iq "crashkernel=" $1
@@ -141,16 +141,16 @@ Config_Grub(){
 			grep -iq "crashkernel=$crashkernel" $1
 			if [ $? -ne 0 ]
 			then
-				LogMsg "FAIL: Could not set the new crashkernel value in $1."
-				UpdateSummary "FAIL: Could not set the new crashkernel value in $1."
+				LogMsg "FAIL: Could not set the new crashkernel value in $1"
+				UpdateSummary "FAIL: Could not set the new crashkernel value in $1"
 				exit 1
 			else
-				LogMsg "SUCCESS: updated the crashkernel value to: $crashkernel."
-				UpdateSummary "SUCCESS: updated the crashkernel value to: $crashkernel."
+				LogMsg "SUCCESS: updated the crashkernel value to: $crashkernel"
+				UpdateSummary "SUCCESS: updated the crashkernel value to: $crashkernel"
 			fi
 		else
-			LogMsg "Failed. Can't find out grub file or not a file."
-			UpdateSummary "Failed. Can't find out grub file in VM."
+			LogMsg "Failed. Can't find out grub file or not a file"
+			UpdateSummary "Failed. Can't find out grub file in VM"
 		fi
 }
 
@@ -173,17 +173,17 @@ case $DISTRO in
 		grub2-mkconfig -o $rhel7_grub_cfg
 		if [ $? -ne 0 ]
 		then
-			LogMsg "FAIL: Could not execute grub2-mkconfig."
-			UpdateSummary "FAIL: Could not grub2-mkconfig."
+			LogMsg "FAIL: Could not execute grub2-mkconfig"
+			UpdateSummary "FAIL: Could not grub2-mkconfig"
 			exit 1
 		else
-			LogMsg "SUCCESS: Execute grub2-mkconfig well."
-			UpdateSummary "SUCCESS: Execute grub2-mkconfig well."
+			LogMsg "SUCCESS: Execute grub2-mkconfig well"
+			UpdateSummary "SUCCESS: Execute grub2-mkconfig well"
 		fi
 	;;
 	*)
-		LogMsg "FAIL: Unknow OS."
-		UpdateSummary "FAIL: Unknow OS."
+		LogMsg "FAIL: Unknow OS"
+		UpdateSummary "FAIL: Unknow OS"
 		exit 1
 	;;
 esac
@@ -193,20 +193,20 @@ esac
 #
 if [ -d $dump_path ]
 then
-	LogMsg "SUCCESS: $dump_path esxits, will clean up any vmcores."
-	UpdateSummary "SUCCESS: $dump_path esxits, will clean up any vmcores."
+	LogMsg "SUCCESS: $dump_path esxits, will clean up any vmcores"
+	UpdateSummary "SUCCESS: $dump_path esxits, will clean up any vmcores"
 	rm -rf $dump_path/*
 else
-	LogMsg "WARNING: $dump_path doesn't esxit, will create it."
-	UpdateSummary "WARNING: $dump_path doesn't esxit, will create it."
+	LogMsg "WARNING: $dump_path doesn't esxit, will create it"
+	UpdateSummary "WARNING: $dump_path doesn't esxit, will create it"
 	mkdir -p $dump_path
 	if [ $? -ne 0 ]
 	then
-		LogMsg "FAIL: Could not mkdir $dump_path."
-		UpdateSummary "FAIL: Could not mkdir $dump_path."
+		LogMsg "FAIL: Could not mkdir $dump_path"
+		UpdateSummary "FAIL: Could not mkdir $dump_path"
 		exit 1
 	else
-		LogMsg "PASS: Make $dump_path well."
-		UpdateSummary "PASS: Make $dump_path well."
+		LogMsg "PASS: Make $dump_path well"
+		UpdateSummary "PASS: Make $dump_path well"
 	fi
 fi

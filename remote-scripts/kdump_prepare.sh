@@ -10,7 +10,8 @@
 ##
 ## Revision:
 ## v1.0 - boyang - 18/01/2017 - Build script.
-## v1.1 - boyang - 06/29/2017 - Setup kdump_trigger_service as a service
+## v1.1 - boyang - 29/06/2017 - Setup kdump_trigger_service as a service
+## v1.2 - boyang - 13/10/2017 - Remove kdump_trigger_service as a service
 ##
 ###############################################################################
 
@@ -43,29 +44,29 @@ Check_Kdump_Running(){
 		service kdump status | grep "not operational"
 		if  [ $? -eq 0 ]
 		then
-			LogMsg "FAIL: Kdump isn't active after reboot."
-			UpdateSummary "FAIL: kdump service isn't active after reboot."
+			LogMsg "FAIL: Kdump isn't active after reboot"
+			UpdateSummary "FAIL: kdump service isn't active after reboot"
 			exit 1
 		else
-			LogMsg "PASS: kdump service is active after reboot!"
-			UpdateSummary "PASS: kdump service is active after reboot!"
+			LogMsg "PASS: kdump service is active after reboot"
+			UpdateSummary "PASS: kdump service is active after reboot"
 		fi
 		;;
 	redhat_7)
 		service kdump status | grep "Active: active (exited)"
 		if  [ $? -eq 0 ]
 		then
-			LogMsg "PASS: kdump service is active after reboot!"
-			UpdateSummary "PASS: kdump service is active after reboot!"
+			LogMsg "PASS: kdump service is active after reboot"
+			UpdateSummary "PASS: kdump service is active after reboot"
 		else
-			LogMsg "FAIL: Kdump isn't active after reboot."
-			UpdateSummary "FAIL: kdump service isn't active after reboot."
+			LogMsg "FAIL: Kdump isn't active after reboot"
+			UpdateSummary "FAIL: kdump service isn't active after reboot"
 			exit 1
 		fi
 		;;
         *)
-			LogMsg "FAIL: Unknown OS!"
-			UpdateSummary "FAIL: Unknown OS!"
+			LogMsg "FAIL: Unknown OS"
+			UpdateSummary "FAIL: Unknown OS"
 			exit 1
 		;;
 	esac
@@ -75,12 +76,12 @@ ConfigureNMI()
 {
 	sysctl -w kernel.unknown_nmi_panic=1
 	if [ $? -ne 0 ]; then
-		LogMsg "FAIL: Fail to enable kernel to call panic when it receives a NMI."
-		UpdateSummary "FAIL: Fail to enable kernel to call panic when it receives a NMI."
+		LogMsg "FAIL: Fail to enable kernel to call panic when it receives a NMI"
+		UpdateSummary "FAIL: Fail to enable kernel to call panic when it receives a NMI"
 		exit 1
     else
-		LogMsg "PASS: Enabling kernel to call panic when it receives a NMI."
-		UpdateSummary "PASS: Enabling kernel to call panic when it receives a NMI."
+		LogMsg "PASS: Enabling kernel to call panic when it receives a NMI"
+		UpdateSummary "PASS: Enabling kernel to call panic when it receives a NMI"
     fi
 }
 
@@ -96,40 +97,22 @@ ConfigureNMI()
 #
 
 #
-# Ensure kdump service status after reboot and parameters modification
+# Ensure kdump service status after parameters modification and reboot
 # Maybe Check_Kdump_Running fails several times after booting, as kdump service is not ready 
 # So Check_Kdump_Running will be executed by serveral times in while loop
 #
 Check_Kdump_Running
 
-#
-# Setup kdump_trigger_service as a service
-# chkconfig --add service
-# chkconfig service on
-#
-cp /root/kdump_trigger_service.sh /etc/init.d/
-chkconfig --add kdump_trigger_service.sh
-chkconfig kdump_trigger_service.sh on
-if [ $? -ne 0 ]
-then
-	LogMsg "FAIL: Could not setup kdump_trigger_service.sh."
-	UpdateSummary "FAIL: Could not setup kdump_trigger_service.sh."
-	exit 1
-else
-	LogMsg "PASS: Setup kdump_trigger_service.sh well."
-	UpdateSummary "PASS: Setup kdump_trigger_service.sh well."
-fi
-
 # Prepare for trigger kdump
-LogMsg "Prepare for kernel panic......."
-UpdateSummary "Prepare for kernel panic......."
+LogMsg "Prepare for kernel panic"
+UpdateSummary "Prepare for kernel panic"
 if [ -f $proc_sys_kernel_sysrq ]
 then	
 	echo 1 > $proc_sys_kernel_sysrq
-	LogMsg "PASS: Now reboot VM to trigger kdump."
-	UpdateSummary "PASS: Now reboot VM to trigger kdump."
+	LogMsg "PASS: Now reboot VM to trigger kdump"
+	UpdateSummary "PASS: Now reboot VM to trigger kdump"
 else
 	LogMsg "FAIL: $proc_sys_kernel_sysrq doesn't esxit, try again."
-	UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit, try again."
+	UpdateSummary "FAIL: $proc_sys_kernel_sysrq doesn't esxit, try again"
 	exit 1
 fi
