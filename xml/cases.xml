@@ -43,7 +43,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 6 -->
+            <!-- GO Total Cases: 8 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -52,6 +52,8 @@
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_kvm_clock_adjusting</suiteTest>  
             </suiteTests>
         </suite>
         <suite>
@@ -90,7 +92,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 44 -->
+            <!-- Acceptance Total Cases: 46 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -120,6 +122,8 @@
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_kvm_clock_adjusting</suiteTest>  
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
@@ -514,7 +518,31 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
+        <test>
+            <testName>go_suspend_vm</testName>
+            <testID>ESX-GO-007</testID>
+            <testScript>testscripts\go_suspend_vm.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-38513,RHEL7-80222</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_kvm_clock_adjusting</testName>
+            <testID>ESX-GO-008</testID>
+            <testScript>testscripts\go_kvm_clock_adjusting.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34999,RHEL7-79796</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>   
+        
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
