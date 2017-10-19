@@ -641,7 +641,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>crash_smp</testName>
+            <testName>kdump_crash_smp</testName>
             <testID>ESX-KDUMP-002</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -664,7 +664,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>crash_auto_size</testName>
+            <testName>kdump_crash_auto_size</testName>
             <testID>ESX-KDUMP-003</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -687,7 +687,7 @@
             <noReboot>False</noReboot>
         </test>       
         <test>
-            <testName>crash_diff_size</testName>
+            <testName>kdump_crash_diff_size</testName>
             <testID>ESX-KDUMP-004</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
