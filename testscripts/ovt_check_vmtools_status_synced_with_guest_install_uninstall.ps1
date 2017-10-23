@@ -138,6 +138,6 @@ else
         } 
     }
 }
-"Info : ovt_check_vmtools_status_synced_with_guest.ps1 script completed"
+"Info : ovt_check_vmtools_status_synced_with_guest_install_uninstall.ps1 script completed"
 DisconnectWithVIServer
 return $Result
