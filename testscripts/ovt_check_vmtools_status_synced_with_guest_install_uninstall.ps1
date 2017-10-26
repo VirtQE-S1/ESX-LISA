@@ -101,43 +101,60 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $Result = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj)
-{
+if (-not $vmObj){
     Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    DisconnectWithVIServer
+    Exit
 }
-else
-{ 
+
+#
+# main script code
+#
 
 # Get guest version
-    $DISTRO = ""
-    $modules_array = ""
-    $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-    if ( $DISTRO -eq "RedHat7" )
-    {
-        $modules_array = $rhel7_modules.split(",")
-
-        $vmtoolsStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName Get-View | Select Name,@{Name="toolstatus";Expression={$_.summary.guest.toolsRunningStatus}}
-        $vmtoolsInHost = $null
-        if ($vmtoolsStatusInHost.Name -eq $vmName){
-            $vmtoolsInHost=$vmtoolsStatusInHost.toolstatus
-        }  
-        if ($vmtoolsInHost -eq $guestToolsNotRunning){
-            $vmtoolsStart = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl start vmtoolsd"
-        }
-    
-        $vmtoolsEraseStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName Get-View | Select Name,@{Name="toolstatus";Expression={$_.summary.guest.toolsRunningStatus}}
-        $vmtoolsDeadInHost = $null
-        if ($vmtoolsEraseStatusInHost.Name -eq $vmName){
-            $vmtoolsEraseInHost=$vmtoolsEraseStatusInHost.toolstatus
-        }    
-        if ($vmtoolsInHost -eq $guestToolsNotRunning){
-            $Result=$Passed
-        }
-        else{
-            $Result=$Failed
-        } 
-    }
+$DISTRO = ""
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+if ( $DISTRO -eq "RedHat6" ){
+    $Result=$Skipped
+    DisconnectWithVIServer
+    return $Result
+    Exit
 }
+
+$vmtoolsStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.guest.toolsRunningStatus}}
+$vmtoolsInHost = $null
+
+if ($vmtoolsStatusInHost.Name -eq $vmName){
+    $vmtoolsInHost=$vmtoolsStatusInHost.toolstatus
+}
+
+if ($vmtoolsInHost -eq $null){
+   $Result =$Aborted
+   DisconnectWithVIServer
+   return $Result
+   Exit
+}
+
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum erase open-vm-tools -y"
+
+
+$vmtoolsEraseStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsStatus}}
+$vmtoolsEraseInHost = $null
+
+if ($vmtoolsEraseStatusInHost.Name -eq $vmName){
+    $vmtoolsEraseInHost=$vmtoolsEraseStatusInHost.toolstatus
+}
+
+if ($vmtoolsEraseInHost -eq "toolsNotInstalled"){
+    Write-Output "Pass :after uninstall,vmtools status in host is uninstalled"
+    $Result=$Passed
+}
+else{
+    Write-Output "Error :after uninstall,vmtools status in host is not uninstalled"
+    $Result=$Failed
+}
+
+
 "Info : ovt_check_vmtools_status_synced_with_guest_install_uninstall.ps1 script completed"
 DisconnectWithVIServer
 return $Result
