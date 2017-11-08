@@ -3,13 +3,34 @@
 ###############################################################################
 ##
 ## Description:
-##   This script checks open-vm-tools upgrade and downgrade.
-##   The vmtoolsd status should be running after downgrade and upgrade.
+##   This script checks open-vm-tools-debuginfo upgrade and downgrade.
+##
+
+##<test>
+#     <testName>ovt_upgrade_downgrade_debuginfo</testName>
+#     <testID>ESX-OVT-022</testID>
+#     <testScript>ovt_upgrade_downgrade_debuginfo.sh</testScript>
+#     <files>remote-scripts/ovt_upgrade_downgrade_debuginfo.sh</files>
+#     <files>remote-scripts/utils.sh</files>
+#     <testParams>
+#         <param>url1=10.1.5/3.el7/x86_64/</param>
+#         <param>url2=10.1.10/3.el7/x86_64/</param>
+#         <param>version1=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64.rpm</param>
+#         <param>version2=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64.rpm</param>
+#         <param>defaultVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
+#         <param>newVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
+#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
+#     </testParams>
+#     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+#     <timeout>300</timeout>
+#     <onError>Continue</onError>
+#     <noReboot>False</noReboot>
+# </test>
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - ldu - 10/13/2017 - Draft script for case ESX-OVT-023.
+## v1.0 - ldu - 10/19/2017 - Draft script for case ESX-OVT-023.
 ## RHEL7-71602
 ##
 ###############################################################################
@@ -29,7 +50,7 @@ UtilsInit
 # Start the testing
 #
 
-if [[ $DISTRO != "redhat_7" ]]; then
+if [[ $DISTRO = "redhat_6" ]]; then
     SetTestStateSkipped
     exit
 fi
@@ -54,14 +75,13 @@ url=http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/
 
 wget -P /root/ $url$url1$version1
 wget -P /root/ $url$url2$version2
-sleep 12
+
 yum install -y /root/$version1
-sleep 30
+
 #yum downgrade $version2 -y
 yum upgrade /root/$version2 -y
-sleep 30
 
-#check the open-vm-tools version after downgrade.
+#check the open-vm-tools version after upgrade.
 version=$(rpm -qa open-vm-tools-debuginfo)
 UpdateSummary "print the upgrade version $version"
 if [ "$version" = "$newVersion" ]; then
@@ -75,7 +95,7 @@ else
 fi
 #yum upgrade open-vm-tools-debuginfo -y
 yum downgrade /root/$version1 -y
-sleep 30
+#check the open-vm-tools version after downgrade.
 version=$(rpm -qa open-vm-tools-debuginfo)
 UpdateSummary "print the downgrade version $version"
 if [ "$version" = "$defaultVersion" ]; then

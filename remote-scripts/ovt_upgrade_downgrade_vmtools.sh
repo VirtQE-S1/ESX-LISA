@@ -6,10 +6,30 @@
 ##   This script checks open-vm-tools upgrade and downgrade.
 ##   The vmtoolsd status should be running after downgrade and upgrade.
 ##
+
+# <test>
+#     <testName>ovt_upgrade_downgrade_vmtools</testName>
+#     <testID>ESX-OVT-022</testID>
+#     <testScript>ovt_upgrade_downgrade_vmtools.sh</testScript>
+#     <files>remote-scripts/ovt_upgrade_downgrade_vmtools.sh</files>
+#     <files>remote-scripts/utils.sh</files>
+#     <testParams>
+#         <param>newVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
+#         <param>defaultVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
+#         <param>version1=10.1.10/3.el7/x86_64/open-vm-tools-10.1.10-3.el7.x86_64.rpm</param>
+#         <param>version2=10.1.10/3.el7/x86_64/open-vm-tools-desktop-10.1.10-3.el7.x86_64.rpm</param>
+#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
+#     </testParams>
+#     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+#     <timeout>300</timeout>
+#     <onError>Continue</onError>
+#     <noReboot>False</noReboot>
+# </test>
 ###############################################################################
 ##
 ## Revision:
 ## v1.0 - ldu - 10/13/2017 - Draft script for case ESX-OVT-022.
+## RHEL7-50890
 ##
 ###############################################################################
 
@@ -28,17 +48,17 @@ UtilsInit
 # Start the testing
 #
 
-if [[ $DISTRO != "redhat_7" ]]; then
+if [[ $DISTRO = "redhat_6" ]]; then
     SetTestStateSkipped
     exit
 fi
 
 #Make sure the os installed open-vm-tools and open-vm-tools-desktop.
 
-yum erase -y open-vm-tools
+
 yum install -y open-vm-tools-desktop
 systemctl restart vmtoolsd
-sleep 6
+
 service=$(systemctl status vmtoolsd |grep running -c)
 
 if [ "$service" = "1" ]; then
@@ -54,41 +74,39 @@ fi
 #Download the open-vm-tools older version
 
 url=http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/
-#url=http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/10.1.10/3.el7/x86_64/open-vm-tools-10.1.10-3.el7.x86_64.rpm
-# get1=$url$version1
-# get2=$url$version2
+
 wget -P /root/ $url$version1
 
 wget -P /root/ $url$version2
-sleep 12
-yum downgrade /root/*.rpm -y
-sleep 30
 
-#check the open-vm-tools version after downgrade.
+yum upgrade /root/*.rpm -y
+#yum downgrade /root/*.rpm -y
+
+#check the open-vm-tools version after upgrade.
 version=$(rpm -qa open-vm-tools)
 UpdateSummary "print the upgrade version $version"
 if [ "$version" = "$newVersion" ]; then
         LogMsg "$version"
         UpdateSummary "Test Successfully. The open-vm-tools version is right."
 else
-        LogMsg "Info : The downgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools downgrade build info not right ."
+        LogMsg "Info : The upgrade build info not right'"
+        UpdateSummary "Test Failed,open-vm-tools upgrade build info not right ."
         SetTestStateFailed
         exit 1
 fi
-
-yum upgrade open-vm-tools-desktop open-vm-tools -y
-sleep 30
+yum downgrade open-vm-tools-desktop open-vm-tools -y
+# yum upgrade open-vm-tools-desktop open-vm-tools -y
+#check the open-vm-tools version after downgrade.
 version=$(rpm -qa open-vm-tools)
 UpdateSummary "print the upgrade version $version"
 if [ "$version" = "$defaultVersion" ]; then
         LogMsg "$version"
-        UpdateSummary "Test Successfully. The open-vm-tools upgrade version is right."
+        UpdateSummary "Test Successfully. The open-vm-tools downgrade version is right."
         SetTestStateCompleted
         exit 0
 else
         LogMsg "Info : The downgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools upgrade build info not right ."
+        UpdateSummary "Test Failed,open-vm-tools downgrade build info not right ."
         SetTestStateFailed
         exit 1
 fi
