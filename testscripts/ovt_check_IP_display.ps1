@@ -25,7 +25,7 @@
     <files>remote-scripts/utils.sh</files>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
     <testParams>
-      <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+      <param>TC_COVERED=RHEL6-34917,RHEL7-57929</param>
     </testParams>
     <timeout>600</timeout>
     <onError>Continue</onError>

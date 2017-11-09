@@ -17,12 +17,12 @@
 .Description
 <test>
     <testName>stor_take_restore_snapshot</testName>
-    <testID>ESX-OVT-018</testID>
+    <testID>ESX-Stor-004</testID>
     <testScript>testscripts/stor_take_restore_snapshot.ps1</testScript>
     <files>remote-scripts/utils.sh</files>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
     <testParams>
-      <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+      <param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
     </testParams>
     <timeout>600</timeout>
     <onError>Continue</onError>

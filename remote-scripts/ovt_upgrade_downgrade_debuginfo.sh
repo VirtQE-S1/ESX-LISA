@@ -19,7 +19,7 @@
 #         <param>version2=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64.rpm</param>
 #         <param>defaultVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
 #         <param>newVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
-#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
+#         <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
 #     </testParams>
 #     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #     <timeout>300</timeout>

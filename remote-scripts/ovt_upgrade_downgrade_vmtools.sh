@@ -18,7 +18,7 @@
 #         <param>defaultVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
 #         <param>version1=10.1.10/3.el7/x86_64/open-vm-tools-10.1.10-3.el7.x86_64.rpm</param>
 #         <param>version2=10.1.10/3.el7/x86_64/open-vm-tools-desktop-10.1.10-3.el7.x86_64.rpm</param>
-#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
+#         <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
 #     </testParams>
 #     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #     <timeout>300</timeout>
