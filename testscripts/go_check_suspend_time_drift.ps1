@@ -15,6 +15,20 @@
     Check Guest time drift after suspend
 .Description
     Check Guest time drift after suspend
+    
+    <test>
+    <testName>go_check_suspend_time_drift</testName>
+    <testID>ESX-GO-010</testID>                   
+    <testScript>testscripts\go_check_suspend_time_drift.ps1</testScript>
+    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+    <timeout>480</timeout>
+    <testParams>                           
+        <param>TC_COVERED=RHEL6-38514,RHEL7-80223</param>
+    </testParams>
+    <onError>Continue</onError>
+    <noReboot>False</noReboot>
+    </test>
+    
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
