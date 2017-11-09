@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 21 -->
+            <!-- OVT Total Cases: 26 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -39,11 +39,15 @@
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>  
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                  
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                
+                <suiteTest>ovt_check_vmtools_status_synced_with_guest_stop_start</suiteTest>  
+                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>        <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>  
+                <suiteTest>ovt_check_IP_display</suiteTest>                     
             </suiteTests>
         </suite>
         <suite>
-            <!-- GO Total Cases: 8 -->
+            <!-- GO Total Cases: 10 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -53,17 +57,20 @@
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
                 <suiteTest>go_suspend_vm</suiteTest>
-                <suiteTest>go_kvm_clock_adjusting</suiteTest>  
+                <suiteTest>go_kvm_clock_adjusting</suiteTest>
+                <suiteTest>go_verify_hot_cpu_works</suiteTest>
+                <suiteTest>go_check_suspend_time_drift</suiteTest>                  
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 4 -->
+            <!-- Storage Total Cases: 5 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>stor_take_restore_snapshot</suiteTest>                          
             </suiteTests>
         </suite>
         <suite>
@@ -77,7 +84,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 9 -->
+            <!-- Network Total Cases: 11 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -88,11 +95,13 @@
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
-                <suiteTest>nw_check_operstate</suiteTest>  
+                <suiteTest>nw_check_operstate</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>                
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 46 -->
+            <!-- Acceptance Total Cases: 56 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -115,7 +124,13 @@
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>  
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_check_vmtools_status_synced_with_guest_stop_start</suiteTest>  
+                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>  
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -123,15 +138,22 @@
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
                 <suiteTest>go_suspend_vm</suiteTest>
-                <suiteTest>go_kvm_clock_adjusting</suiteTest>  
-                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>go_kvm_clock_adjusting</suiteTest>
+                <suiteTest>go_verify_hot_cpu_works</suiteTest>
+                <suiteTest>go_check_suspend_time_drift</suiteTest>
+                
+                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>                
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>stor_take_restore_snapshot</suiteTest>                          
+                
+                
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
+                
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -140,7 +162,9 @@
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
-                <suiteTest>nw_check_operstate</suiteTest>   
+                <suiteTest>nw_check_operstate</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>                  
             </suiteTests>
         </suite>
     </testSuites>
@@ -435,8 +459,81 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>        
-  
+        </test>
+        <test>
+            <testName>ovt_upgrade_downgrade_vmtools</testName>
+            <testID>ESX-OVT-022</testID>
+            <testScript>ovt_upgrade_downgrade_vmtools.sh</testScript>
+            <files>remote-scripts/ovt_upgrade_downgrade_vmtools.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>newVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
+                <param>defaultVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
+                <param>version1=10.1.10/3.el7/x86_64/open-vm-tools-10.1.10-3.el7.x86_64.rpm</param>
+                <param>version2=10.1.10/3.el7/x86_64/open-vm-tools-desktop-10.1.10-3.el7.x86_64.rpm</param>
+                <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+             <testName>ovt_upgrade_downgrade_debuginfo</testName>
+             <testID>ESX-OVT-023</testID>
+             <testScript>ovt_upgrade_downgrade_debuginfo.sh</testScript>
+             <files>remote-scripts/ovt_upgrade_downgrade_debuginfo.sh</files>
+             <files>remote-scripts/utils.sh</files>
+             <testParams>
+                 <param>url1=10.1.5/3.el7/x86_64/</param>
+                 <param>url2=10.1.10/3.el7/x86_64/</param>
+                 <param>version1=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64.rpm</param>
+                 <param>version2=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64.rpm</param>
+                 <param>defaultVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
+                 <param>newVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
+                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
+             </testParams>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>300</timeout>
+             <onError>Continue</onError>
+             <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_IP_display</testName>
+            <testID>ESX-OVT-024</testID>
+            <testScript>testscripts/ovt_check_IP_display.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34917,RHEL7-57929</param>
+            </testParams>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+             <testName>ovt_check_vmtools_status_synced_with_guest_stop_start</testName>      
+             <testID>ESX-OVT-025</testID>
+             <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_stop_start.ps1</testScript>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>200</timeout>
+             <testparams>
+                    <param>TC_COVERED=RHEL6-34907,RHEL7-50889</param>
+             </testparams>
+             <onError>Continue</onError>
+         </test>           
+        <test>
+            <testName>ovt_check_vmtools_status_synced_with_guest_install_uninstall</testName>      
+            <testID>ESX-OVT-026</testID>
+            <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_install_uninstall.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>200</timeout>
+            <testparams>
+                <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
+         </testparams>
+            <onError>Continue</onError>
+        </test>
+
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -542,6 +639,36 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>   
+        <test>
+            <testName>go_verify_hot_cpu_works</testName>
+            <testID>ESX-GO-009</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\enable_hot_cpu.ps1</file>
+            </setupScript>                       
+            <testScript>testscripts\go_verify_hot_cpu_works.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>
+                <param>VCPU=1</param>
+                <param>VCPU_After=8</param>                            
+                <param>TC_COVERED=RHEL6-38517,RHEL7-80226</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_suspend_time_drift</testName>
+            <testID>ESX-GO-010</testID>                   
+            <testScript>testscripts\go_check_suspend_time_drift.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>                           
+                <param>TC_COVERED=RHEL6-38514,RHEL7-80223</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
@@ -616,6 +743,19 @@
                 <param>TC_COVERED=RHEL6-38498,RHEL7-80175</param>
            </testparams>
         </test>
+        <test>
+            <testName>stor_take_restore_snapshot</testName>
+            <testID>ESX-Stor-005</testID>
+            <testScript>testscripts/stor_take_restore_snapshot.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+              <param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
+            </testParams>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>        
         
         <test>
             <testName>kdump_crash_single_core</testName>
@@ -641,7 +781,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>kdump_crash_smp</testName>
+            <testName>crash_smp</testName>
             <testID>ESX-KDUMP-002</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -664,7 +804,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>kdump_crash_auto_size</testName>
+            <testName>crash_auto_size</testName>
             <testID>ESX-KDUMP-003</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -687,7 +827,7 @@
             <noReboot>False</noReboot>
         </test>       
         <test>
-            <testName>kdump_crash_diff_size</testName>
+            <testName>crash_diff_size</testName>
             <testID>ESX-KDUMP-004</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -825,6 +965,32 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_scp_mtu_9000</testName>
+            <testID>ESX-NW-010</testID>
+            <testScript>testscripts\nw_scp_mtu_9000.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/nw_scp_mtu_9000.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_rx_tx_after_reboot</testName>
+            <testID>ESX-NW-011</testID>
+            <testScript>testscripts\nw_check_rx_tx_after_reboot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>480</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34983,RHEL7-50918</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>        
     </testCases>
 
     <VMs>
