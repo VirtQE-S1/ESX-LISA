@@ -18,7 +18,19 @@
 
 .Description
     check vmtools status synced with guest.
-
+    
+<test>
+     <testName>ovt_check_vmtools_status_synced_with_guest_stop_start</testName>      
+     <testID>ESX-OVT-25</testID>
+     <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_stop_start.ps1</testScript>
+     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+     <timeout>200</timeout>
+     <testparams>
+            <param>TC_COVERED=RHEL6-34907,RHEL7-50889</param>
+     </testparams>
+     <onError>Continue</onError>
+ </test> 
+ 
 .Parameter vmName
     Name of the test VM.
 
