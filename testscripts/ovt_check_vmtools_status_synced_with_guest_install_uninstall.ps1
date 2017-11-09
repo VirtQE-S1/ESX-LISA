@@ -18,6 +18,18 @@
 
 .Description
     check vmtools status in vCenter.
+    
+    <test>
+     <testName>ovt_check_vmtools_status_synced_with_guest_install_uninstall</testName>      
+     <testID>ESX-OVT-24</testID>
+     <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_install_uninstall.ps1</testScript>
+     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+     <timeout>200</timeout>
+     <testparams>
+            <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
+     </testparams>
+     <onError>Continue</onError>
+ </test> 
 
 .Parameter vmName
     Name of the test VM.
