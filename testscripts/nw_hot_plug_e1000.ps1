@@ -12,7 +12,7 @@
 
 <#
 .Synopsis
-    Hot plug and unplug the vmxnet3 network adapter
+    Hot plug and unplug the e1000 network adapter
 
 .Description
     When VM alives, Hot plug and unplug vmxnet3, no crash
