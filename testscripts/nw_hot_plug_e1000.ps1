@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-## Hot plug and unplug the e1000 network adapter
+## Hot plug the e1000 network adapter
 ##
 ###############################################################################
 ##
@@ -12,16 +12,16 @@
 
 <#
 .Synopsis
-    Hot plug and unplug the e1000 network adapter
+    Hot plug the e1000 network adapter
 
 .Description
-    When VM alives, Hot plug and unplug vmxnet3, no crash
+    When VM alives, Hot plug, no crash
     <test>
         <testName>nw_hot_plug_unplug_e1000</testName>
         <testID>ESX-NW-012</testID>
         <testScript>testscripts\nw_hot_plug_unplug_e1000.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>360</timeout>
+        <timeout>360</timeout>nw_hot_plug_e1000
         <testParams>
             <param>TC_COVERED=RHEL6-34954,RHEL7-50936</param>
         </testParams>
