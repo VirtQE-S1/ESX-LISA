@@ -15,13 +15,13 @@
     Hot plug the e1000 network adapter
 
 .Description
-    When VM alives, Hot plug, no crash
+    When the VM alives, Hot plug a e1000, no crash found
     <test>
-        <testName>nw_hot_plug_unplug_e1000</testName>
+        <testName>nw_hot_plug_e1000</testName>
         <testID>ESX-NW-012</testID>
-        <testScript>testscripts\nw_hot_plug_unplug_e1000.ps1</testScript>
+        <testScript>testscripts\nw_hot_plug_e1000.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>360</timeout>nw_hot_plug_e1000
+        <timeout>360</timeout>
         <testParams>
             <param>TC_COVERED=RHEL6-34954,RHEL7-50936</param>
         </testParams>
@@ -151,25 +151,29 @@ $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
     Write-Error -Message "Unable to get-vm with $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    DisconnectWithVIServer
 	return $Aborted
 }
 
 #
-# Hot plug one new adapter named $new_nic_name, DON'T test on original adapter, adapter count will be 2
-# Hot unplug this new adapter named $new_nic_name, adapter count will be 1(original one)
+# Hot plug one new adapter named $new_nic_name, the adapter count will be 2
 #
 $new_nic = New-NetworkAdapter -VM $vmOut -NetworkName $new_nic_name -Type e1000 -WakeOnLan -StartConnected -Confirm:$false
-Write-Output "Get new NIC: $new_nic."
+Write-Host -F Red "Get the new NIC: $new_nic"
+Write-Output "Get the new NIC: $new_nic"
 
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
 if ($all_nic_count -eq 2)
 {
+    Write-Host -F Red "PASS: Hot plug e1000 well"
     Write-Output "PASS: Hot plug e1000 well"
+    # No need to check crash, as if bug is found, the vm will be crashed
     $retVal = $Passed
 }
 else
 {
-    Write-Error -Message "FAIL: Unknow issue after hot plug adapter, check it manually" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "FAIL: Unknow issue after hot plug e1000, check it manually"
+    Write-Output "FAIL: Unknow issue after hot plug e1000, check it manually"
 }
 
 DisconnectWithVIServer
