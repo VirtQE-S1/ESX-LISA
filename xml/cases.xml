@@ -41,7 +41,8 @@
                 <suiteTest>ovt_check_timesync</suiteTest>  
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                
                 <suiteTest>ovt_check_vmtools_status_synced_with_guest_stop_start</suiteTest>  
-                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>        <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>        
+                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>  
                 <suiteTest>ovt_check_IP_display</suiteTest>                     
             </suiteTests>
@@ -781,7 +782,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>crash_smp</testName>
+            <testName>kdump_crash_smp</testName>
             <testID>ESX-KDUMP-002</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -804,7 +805,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>crash_auto_size</testName>
+            <testName>kdump_crash_auto_size</testName>
             <testID>ESX-KDUMP-003</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -827,7 +828,7 @@
             <noReboot>False</noReboot>
         </test>       
         <test>
-            <testName>crash_diff_size</testName>
+            <testName>kdump_crash_diff_size</testName>
             <testID>ESX-KDUMP-004</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
