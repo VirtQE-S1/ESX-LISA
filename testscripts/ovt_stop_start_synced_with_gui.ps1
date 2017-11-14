@@ -112,9 +112,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+###############################################################################
 #
 # main script code
 #
+###############################################################################
 
 $Result = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
