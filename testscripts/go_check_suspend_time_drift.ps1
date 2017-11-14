@@ -239,28 +239,34 @@ Write-Output "DONE. VM Power state is $suspendState"
 #
 # Power the VM, and confirm the power state
 #
-write-host -F Red "Now, will Power On the VM......."
+Write-Host -F Red "Now, will Power On the VM......."
 Write-Output "Now, will Power On the VM"
 $on = Start-VM -VM $vmObj -Confirm:$False
-# Debug below function
+# Debug WaitForVMSSHReady function
 $timeBefore = Get-Date
-Write-Host -F Red "$timeBefore"
+Write-Host -F Red "timeBefore: $timeBefore"
+Write-Output "timeBefore: $timeBefore"
 $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ( $ret -eq $True )
+if ($ret -eq $True)
 {
     $timeAfter = Get-Date
-    Write-Host -F Red "$timeAfter"
+    Write-Host -F Red "timeAfter: $timeAfter"
+    Write-Output "timeAfter: $timeAfter"
+    
     $debug = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     $debugState = $debug.PowerState
-    write-host -F Red "vm status starts up, state is $debugState"
+    Write-Host -F Red "Wait for ssh ready well, state is $debugState"    
+    Write-Output "Wait for ssh ready well, state is $debugState"
 }
 else
 {
     $timeAfter = Get-Date
-    Write-Host -F Red "$timeAfter"
+    Write-Host -F Red "timeAfter: $timeAfter"
+    Write-Output "timeAfter: $timeAfter"
     $debug = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     $debugState = $debug.PowerState
-    write-host -F Red "vm status starts up, state is $debugState"
+    Write-Host -F Red "Wait for ssh ready NOT well, state is $debugState"    
+    Write-Output "Wait for ssh ready NOT well, state is $debugState"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -279,12 +285,12 @@ if ($onState -ne "PoweredOn")
 # After power on, check offset which should be less than $minOffset
 #
 $offset_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ntpdate -q clock.redhat.com | awk 'NR == 5 {print `$10`}'"
-Write-Host -F Red "Before suspend offset_temp is $offset_temp"
-Write-Output "Before suspend offset_temp is $offset_temp"
+Write-Host -F Red "After suspend offset_temp is $offset_temp"
+Write-Output "After suspend offset_temp is $offset_temp"
 # Get offset_temp abs
 $offset = [Math]::Abs($offset_temp)
-Write-Host -F Red "Before suspend offset is $offset"
-Write-Output "Before suspend offset is $offset"
+Write-Host -F Red "After suspend offset is $offset"
+Write-Output "After suspend offset is $offset"
 if ($offset -gt $minOffset)
 {
     Write-Error -Message "offset is wrong before suspend" -Category ObjectNotFound -ErrorAction SilentlyContinue

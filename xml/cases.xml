@@ -40,8 +40,8 @@
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>  
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>                
-                <suiteTest>ovt_check_vmtools_status_synced_with_guest_stop_start</suiteTest>  
-                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>        
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>  
+                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>        
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>  
                 <suiteTest>ovt_check_IP_display</suiteTest>                     
@@ -98,11 +98,12 @@
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
-                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>                
+                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>   
+                <suiteTest>nw_hot_plug_e1000</suiteTest>                                
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 56 -->
+            <!-- Acceptance Total Cases: 57 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -126,8 +127,8 @@
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>  
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_check_vmtools_status_synced_with_guest_stop_start</suiteTest>  
-                <suiteTest>ovt_check_vmtools_status_synced_with_guest_install_uninstall</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>  
+                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest> 
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>  
                 <suiteTest>ovt_check_IP_display</suiteTest>
@@ -165,7 +166,8 @@
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
-                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>                  
+                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>   
+                <suiteTest>nw_hot_plug_e1000</suiteTest>                
             </suiteTests>
         </suite>
     </testSuites>
@@ -513,9 +515,9 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-             <testName>ovt_check_vmtools_status_synced_with_guest_stop_start</testName>      
+             <testName>ovt_stop_start_synced_with_gui</testName>      
              <testID>ESX-OVT-025</testID>
-             <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_stop_start.ps1</testScript>
+             <testScript>testScripts\ovt_stop_start_synced_with_gui.ps1</testScript>
              <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
              <timeout>200</timeout>
              <testparams>
@@ -524,9 +526,9 @@
              <onError>Continue</onError>
          </test>           
         <test>
-            <testName>ovt_check_vmtools_status_synced_with_guest_install_uninstall</testName>      
+            <testName>ovt_install_uninstall_synced_with_gui</testName>      
             <testID>ESX-OVT-026</testID>
-            <testScript>testScripts\ovt_check_vmtools_status_synced_with_guest_install_uninstall.ps1</testScript>
+            <testScript>testScripts\ovt_install_uninstall_synced_with_gui.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>200</timeout>
             <testparams>
@@ -973,7 +975,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_scp_mtu_9000.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>960</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
             </testParams>
@@ -991,7 +993,19 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>        
+        </test>      
+        <test>
+            <testName>nw_hot_plug_e1000</testName>
+            <testID>ESX-NW-012</testID>
+            <testScript>testscripts\nw_hot_plug_e1000.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34954,RHEL7-50936</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>          
     </testCases>
 
     <VMs>

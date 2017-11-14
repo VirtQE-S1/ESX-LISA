@@ -131,6 +131,7 @@ if ($OS -eq "RedHat6")
 #
 # Get ip from vSphere UI
 #
+Start-Sleep -S 30
 $get_IP = Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Get-View | Select Name,@{Name="ip";Expression={$_.guest.ipAddress}}
 $ipaddress=$get_IP.ip
 write-host -F Red "IP address from UI is $ipaddress"
