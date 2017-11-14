@@ -219,6 +219,6 @@ else{
     Write-Output "Error :after stop,vmtools status in vm not the dead"
     $retVal=$Aborted
 }
-"Info : ovt_check_vmtools_status_synced_with_guest_stop_start.ps1 script completed"
+"Info : ovt_stop_start_synced_with_gui.ps1 script completed"
 DisconnectWithVIServer
 return $retVal
