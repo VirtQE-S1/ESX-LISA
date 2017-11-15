@@ -147,12 +147,12 @@ if ( $DISTRO -eq "RedHat6" ){
 # Check OVT status in vCenter
 #
 
-$vmtoolsStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsStatus}}
+$vmtoolsStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsVersionStatus}}
 $vmtoolsInHost = $null
 if ($vmtoolsStatusInHost.Name -eq $vmName){
     $vmtoolsInHost=$vmtoolsStatusInHost.toolstatus
 }
-if ($vmtoolsInHost -eq $null){
+if ($vmtoolsInHost -eq "guestToolsNotInstalled"){
    DisconnectWithVIServer
    return $Aborted
    Exit
@@ -171,12 +171,12 @@ bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum erase open-vm-tools -y"
 $timeout = 60
 while ($timeout -gt 0)
 {   
-    $vmtoolsEraseStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsStatus}}
+    $vmtoolsEraseStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsVersionStatus}}
     $vmtoolsEraseInHost = $null
     if ($vmtoolsEraseStatusInHost.Name -eq $vmName){
         $vmtoolsEraseInHost=$vmtoolsEraseStatusInHost.toolstatus
     }  
-    if ($vmtoolsEraseInHost -eq "ToolsNotInstalled" ){
+    if ($vmtoolsEraseInHost -eq "guestToolsNotInstalled" ){
         break
     }
     Start-Sleep -S 1
@@ -193,7 +193,7 @@ while ($timeout -gt 0)
 # check OVT status after uninstall OVT
 #
 
-if ($vmtoolsEraseInHost -eq "toolsNotInstalled"){
+if ($vmtoolsEraseInHost -eq "guestToolsNotInstalled"){
     Write-Output "Pass :after uninstall,vmtools status in host is uninstalled"
     $retVal=$Passed
 }
