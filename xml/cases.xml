@@ -85,7 +85,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 11 -->
+            <!-- Network Total Cases: 12 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -623,7 +623,7 @@
             <testID>ESX-GO-007</testID>
             <testScript>testscripts\go_suspend_vm.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38513,RHEL7-80222</param>
             </testParams>
@@ -635,7 +635,7 @@
             <testID>ESX-GO-008</testID>
             <testScript>testscripts\go_kvm_clock_adjusting.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34999,RHEL7-79796</param>
             </testParams>
@@ -651,7 +651,7 @@
             </setupScript>                       
             <testScript>testscripts\go_verify_hot_cpu_works.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>VCPU=1</param>
                 <param>VCPU_After=8</param>                            
@@ -665,7 +665,7 @@
             <testID>ESX-GO-010</testID>                   
             <testScript>testscripts\go_check_suspend_time_drift.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <testParams>                           
                 <param>TC_COVERED=RHEL6-38514,RHEL7-80223</param>
             </testParams>
@@ -779,7 +779,7 @@
                 <param>TC_COVERED=RHEL6-34890,RHEL7-50874</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -802,7 +802,7 @@
                 <param>TC_COVERED=RHEL6-34883,RHEL7-50867</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -825,7 +825,7 @@
                 <param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>       
@@ -848,7 +848,7 @@
                 <param>TC_COVERED=RHEL6-34888,RHEL7-50872</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>  
@@ -858,7 +858,7 @@
             <testID>ESX-NW-001</testID>
             <testScript>testscripts\nw_ping.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34945,RHEL7-50926</param>
             </testParams>
@@ -870,7 +870,7 @@
             <testID>ESX-NW-002</testID>
             <testScript>testscripts\nw_resize_rx_tx_max.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34935,RHEL7-50915</param>
             </testParams>
@@ -882,7 +882,7 @@
             <testID>ESX-NW-003</testID>
             <testScript>testscripts\nw_resize_rx_tx.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34936,RHEL7-50916</param>
             </testParams>
@@ -894,7 +894,7 @@
             <testID>ESX-NW-004</testID>
             <testScript>testscripts\nw_arping.ps1</testScript>
                 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34946,RHEL7-50927</param>
             </testParams>
@@ -906,7 +906,7 @@
             <testID>ESX-NW-005</testID>
             <testScript>testscripts\nw_boot_vmxnet3.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34940,RHEL7-50920</param>
             </testParams>
@@ -921,7 +921,7 @@
             </setupScript>
             <testScript>testscripts\nw_remove_vmxnet3.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34944,RHEL7-50924</param>
             </testParams>
@@ -933,7 +933,7 @@
             <testID>ESX-NW-007</testID>
             <testScript>testscripts\nw_hot_plug_unplug.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34943,RHEL7-50923</param>
             </testParams>
@@ -947,7 +947,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_config_ifcfg.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38520,RHEL7-80532</param>
             </testParams>
@@ -961,7 +961,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_check_operstate.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34937,RHEL7-50917</param>
             </testParams>
@@ -975,7 +975,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_scp_mtu_9000.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>960</timeout>
+            <timeout>1200</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
             </testParams>
@@ -987,7 +987,7 @@
             <testID>ESX-NW-011</testID>
             <testScript>testscripts\nw_check_rx_tx_after_reboot.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>480</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34983,RHEL7-50918</param>
             </testParams>
