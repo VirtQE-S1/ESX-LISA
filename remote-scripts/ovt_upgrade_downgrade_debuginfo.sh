@@ -5,8 +5,8 @@
 ## Description:
 ##   This script checks open-vm-tools-debuginfo upgrade and downgrade.
 ##
-
-##<test>
+#
+# <test>
 #     <testName>ovt_upgrade_downgrade_debuginfo</testName>
 #     <testID>ESX-OVT-022</testID>
 #     <testScript>ovt_upgrade_downgrade_debuginfo.sh</testScript>
@@ -17,9 +17,9 @@
 #         <param>url2=10.1.10/3.el7/x86_64/</param>
 #         <param>version1=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64.rpm</param>
 #         <param>version2=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64.rpm</param>
-#         <param>defaultVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
-#         <param>newVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
-#         <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
+#         <param>ChangeVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
+#         <param>defaultVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
+#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
 #     </testParams>
 #     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #     <timeout>300</timeout>

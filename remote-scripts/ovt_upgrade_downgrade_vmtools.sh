@@ -6,7 +6,6 @@
 ##   This script checks open-vm-tools upgrade and downgrade.
 ##   The vmtoolsd status should be running after downgrade and upgrade.
 ##
-
 # <test>
 #     <testName>ovt_upgrade_downgrade_vmtools</testName>
 #     <testID>ESX-OVT-022</testID>
@@ -14,17 +13,18 @@
 #     <files>remote-scripts/ovt_upgrade_downgrade_vmtools.sh</files>
 #     <files>remote-scripts/utils.sh</files>
 #     <testParams>
-#         <param>newVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
-#         <param>defaultVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
-#         <param>version1=10.1.10/3.el7/x86_64/open-vm-tools-10.1.10-3.el7.x86_64.rpm</param>
-#         <param>version2=10.1.10/3.el7/x86_64/open-vm-tools-desktop-10.1.10-3.el7.x86_64.rpm</param>
-#         <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
+#         <param>defaultVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
+#         <param>version1=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
+#         <param>version2=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
+#         <param>ChangeVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
+#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
 #     </testParams>
 #     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #     <timeout>300</timeout>
 #     <onError>Continue</onError>
 #     <noReboot>False</noReboot>
 # </test>
+##
 ###############################################################################
 ##
 ## Revision:
