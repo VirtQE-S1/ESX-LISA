@@ -79,34 +79,34 @@ wget -P /root/ $url$version1
 
 wget -P /root/ $url$version2
 
-yum upgrade /root/*.rpm -y
-#yum downgrade /root/*.rpm -y
+#Downgrade the open-vm-tools to a older version.
+yum downgrade /root/*.rpm -y
 
 #check the open-vm-tools version after upgrade.
 version=$(rpm -qa open-vm-tools)
-UpdateSummary "print the upgrade version $version"
-if [ "$version" = "$newVersion" ]; then
+UpdateSummary "print the downgrade version $version"
+if [ "$version" = "$ChangeVersion" ]; then
         LogMsg "$version"
         UpdateSummary "Test Successfully. The open-vm-tools version is right."
 else
-        LogMsg "Info : The upgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools upgrade build info not right ."
+        LogMsg "Info : The downgrade build info not right'"
+        UpdateSummary "Test Failed,open-vm-tools downgrade build info not right ."
         SetTestStateFailed
         exit 1
 fi
-yum downgrade open-vm-tools-desktop open-vm-tools -y
-# yum upgrade open-vm-tools-desktop open-vm-tools -y
+#Upgrage the open-vm-tools to defaultVersion.
+yum upgrade open-vm-tools-desktop open-vm-tools -y
 #check the open-vm-tools version after downgrade.
 version=$(rpm -qa open-vm-tools)
 UpdateSummary "print the upgrade version $version"
 if [ "$version" = "$defaultVersion" ]; then
         LogMsg "$version"
-        UpdateSummary "Test Successfully. The open-vm-tools downgrade version is right."
+        UpdateSummary "Test Successfully. The open-vm-tools upgrade version is right."
         SetTestStateCompleted
         exit 0
 else
-        LogMsg "Info : The downgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools downgrade build info not right ."
+        LogMsg "Info : The upgrade build info not right'"
+        UpdateSummary "Test Failed,open-vm-tools upgrade build info not right ."
         SetTestStateFailed
         exit 1
 fi

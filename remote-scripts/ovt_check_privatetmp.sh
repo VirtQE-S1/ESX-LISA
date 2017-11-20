@@ -28,20 +28,20 @@ UtilsInit
 # Start the testing
 #
 
-if [[ $DISTRO != "redhat_7" ]]; then
+if [[ $DISTRO = "redhat_6" ]]; then
     SetTestStateSkipped
     exit
 fi
 
 cat /usr/lib/systemd/system/vmtoolsd.service |grep "PrivateTmp=true"
 if [[ $? == 0 ]]; then
-    LogMsg "Test successfully. PrivateTmp=true in vmtoolsd.service files."
-    UpdateSummary "Test successfully. PrivateTmp=true in vmtoolsd.service files."
-    SetTestStateCompleted
-    exit 0
-else
-    LogMsg "Test Failed. PrivateTmp=true not in vmtoolsd.service files."
-    UpdateSummary "Test failed. PrivateTmp=true not in vmtoolsd.service files."
+    LogMsg "Test Failed. PrivateTmp=true in vmtoolsd.service files."
+    UpdateSummary "Test failed. PrivateTmp=true in vmtoolsd.service files."
     SetTestStateFailed
     exit 1
+else
+    LogMsg "Test successfully. PrivateTmp=true not in vmtoolsd.service files."
+    UpdateSummary "Test successfully. PrivateTmp=true is not in vmtoolsd.service files."
+    SetTestStateCompleted
+    exit 0
 fi
