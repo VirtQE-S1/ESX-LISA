@@ -76,14 +76,14 @@ url=http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/
 wget -P /root/ $url$url1$version1
 wget -P /root/ $url$url2$version2
 
-yum install -y /root/$version1
+yum install -y /root/$version2
 #Downgrade the open-vm-tools-debuginfo
-yum downgrade $version2 -y
+yum downgrade $version1 -y
 
 #check the open-vm-tools version after upgrade.
 version=$(rpm -qa open-vm-tools-debuginfo)
 UpdateSummary "print the downgrade version $version"
-if [ "$version" = "$changeVersion" ]; then
+if [ "$version" = "$ChangeVersion" ]; then
         LogMsg "$version"
         UpdateSummary "Test Successfully. The open-vm-tools-debuginfo downgrade build version is right."
 else
@@ -92,7 +92,7 @@ else
         SetTestStateFailed
         exit 1
 fi
-yum upgrade open-vm-tools-debuginfo -y
+yum upgrade $version2 -y
 
 #check the open-vm-tools version after downgrade.
 version=$(rpm -qa open-vm-tools-debuginfo)
