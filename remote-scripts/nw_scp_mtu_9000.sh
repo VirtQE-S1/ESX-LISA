@@ -9,6 +9,7 @@
 ##
 ## Revision:
 ## v1.0 - boyang - 10/19/2017 - Build script
+## v1.1 - boyang - 10/20/2017 - Install net-tools
 ##
 ###############################################################################
 
@@ -41,6 +42,12 @@ sys_class="/sys/class/net"
 nics=`ls $sys_class | grep ^e[tn][hosp]`
 
 #
+# Maybe RHEL havn't net-tools including ifconfig
+# Installtion result is put in "ifconfig $nics mtu 90000"
+#
+yum install -y net-tools
+
+#
 # Default VM MTU = 1500
 # Change MTU to 9000
 #
@@ -51,7 +58,7 @@ then
     UpdateSummary "PASS: $nics mtu value setting passed"
 else
     LogMsg "WARNING: $nics mtu value setting failed"
-    UpdateSummary "WARNING: $nics mtu value setting failed"
+    UpdateSummary "WARNING: $nics mtu value setting failed, maybe no net-tools including ifconfig"
     SetTestStateAborted
     exit 1    
 fi
