@@ -139,25 +139,30 @@ $new_nic_name = "VM Network"
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
-    Write-Error -Message "nw_remove_vmxnet3.ps1: Unable to get-vm with $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Yellow "ABORT: Unable to get-vm with $vmName"
+    Write-Output "ABORT: Unable to get-vm with $vmName"
+    DisconnectWithVIServer
 	return $Aborted
 }
 
 #
-# Hot plug one new adapter named $new_nic_name, DON'T test on original adapter, adapter count will be 2
-# Hot unplug this new adapter named $new_nic_name, adapter count will be 1(original one)
+# Hot plug a new nic named $new_nic_name, DON'T test on original nic, nics counts will be 2
+# Hot unplug this new nic named $new_nic_name, adapter count will be 1(original one)
 #
 $new_nic = New-NetworkAdapter -VM $vmOut -NetworkName $new_nic_name -WakeOnLan -StartConnected -Confirm:$false
-Write-Output "Get new NIC: $new_nic."
+Write-Host -F Gray "DONE. Get new NIC: $new_nic"
+Write-Output "DONE. Get new NIC: $new_nice"
 
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
 if ($all_nic_count -eq 2)
 {
-    Write-Output "PASS: Hot plug vmxnet3 well"
+    Write-Host -F Gray "DONE. Hot plug the new vmxnet3 well"
+    Write-Output "DONE: Hot plug the new vmxnet3 well"
 
-    Write-Output "NOW: Will hot unplug this adapter"
+    Write-Host -F Gray "NOW: Will hot unplug this NIC"
+    Write-Output "NOW: Will hot unplug this NIC"
     #
-    # As CLI can't Remove-NetworkAdapter in poweredon state
+    # As Powercli can't Remove-NetworkAdapter in poweredon state
     # So, Change its operation firstly and reconfig VM later
     #
     $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
@@ -165,20 +170,23 @@ if ($all_nic_count -eq 2)
     $devSpec.operation = "remove"
     $devSpec.device += $new_nic.ExtensionData
     $spec.deviceChange += $devSpec
+    Start-Sleep -S 6    
     $vmOut.ExtensionData.ReconfigVM_Task($spec)
 
-    Start-Sleep -S 12
+    Start-Sleep -S 6
 
     $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
     if ($all_nic_count -eq 1)
     {
+        Write-Host -F Green "PASS: Hot unplug this adapter successfully"
         Write-Output "PASS: Hot unplug this adapter successfully"
         $retVal = $Passed
     }
 }
 else
 {
-    Write-Error -Message "FAIL: Unknow issue after hot plug adapter, check it manually" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Green "FAIL: Unknow issue after hot plug NIC, check it manually"
+    Write-Output "AFAIL: Unknow issue after hot plug NIC, check it manually"  
 }
 
 DisconnectWithVIServer
