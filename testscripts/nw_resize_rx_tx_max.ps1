@@ -8,6 +8,7 @@
 ##
 ## Revision:
 ## V1.0 - boyang - 03/22/2017 - Build script
+## V1.1 - boyang - 11/22/2017 - Update logical check
 ##
 ###############################################################################
 
@@ -133,8 +134,20 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 #
+# Confirm VM
+#
+$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmOut)
+{
+    Write-Host -F Yellow "ABORT: Unable to get-vm with $vmName"
+    Write-Output "ABORT: Unable to get-vm with $vmName"        
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+#
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
-# After snapshot, defalut, NIC works and MTU is 1500
+# After snapshot, defalut, vmxnet3 NIC works and MTU is 1500
 #
 $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 
@@ -143,20 +156,23 @@ $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e
 # Defalut value isn't equal to MAX
 #
 $rx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
-write-host -F Red "rx_current is $rx_current"
+Write-Host -F Gray "rx_current size is $rx_current"
+Write-Output "rx_current szie is $rx_current"
 
 $tx_current = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
-write-host -F Red "tx_current is $tx_current"
+Write-Host -F Gray "tx_current size is $tx_current"
+Write-Output "tx_current szie is $tx_current"
 
 #
 # Get $eth RX, TX MAX value
 #
 $rx_max = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==1{print `$2`}'"
-write-host -F Red "rx_max is $rx_max"
+Write-Host -F Gray "rx_max size is $rx_max"
+Write-Output "rx_max szie is $rx_max"
 
 $tx_max = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==1{print `$2`}'"
-write-host -F Red "tx_max is $tx_max"
-
+Write-Host -F Gray "tx_max size is $tx_max"
+Write-Output "tx_max szie is $tx_max"
 
 #
 # Resize rx, tx to MAX value
@@ -164,41 +180,48 @@ write-host -F Red "tx_max is $tx_max"
 $result = SendCommandToVM $ipv4 $sshKey "ethtool -G $eth rx $rx_max tx $tx_max"
 if (-not $result)
 {
-	Write-Output "FAIL: Resize rx, tx failed."
-	DisconnectWithVIServer
-	return $Aborted
+    Write-Host -F Red "FAIL: Resize rx, tx failed"
+    Write-Output "FAIL: Resize rx, tx failed"    
 }
-
-#
-# Confirm RX, TX MAX value is done
-#
-$rx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
-write-host -F Red "rx_new is $rx_new"
-
-if ($rx_new -eq $rx_max)
+else
 {
-	Write-Output "PASS: Resize rx passed."
-	$retVal = $Passed
-}
+    Write-Host -F Gray "DONE. Resize rx, tx well"
+    Write-Output "DONE. Resize rx, tx well"    
+    
+    Start-Sleep 6
+    
+    #
+    # Confirm RX, TX MAX value after done
+    #
+    $rx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^RX: | awk 'NR==2{print `$2`}'"
+    Write-Host -F Gray "rx_new is $rx_new"
+    Write-Output "rx_new is $rx_new"
 
-$tx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
-write-host -F Red "tx_new is $tx_new"
+    if ($rx_new -eq $rx_max)
+    {
+        Write-Host -F Gray "DONE. New rx value is correct"
+        Write-Output "DONE. New rx value is correct"        
 
-if ($tx_new -eq $tx_max)	
-{
-	Write-Output "PASS: Resize tx passed."
-	$retVal = $Passed
-}
-
-#
-# Confirm NIC which RX, TX are MAX works
-#
-$result = SendCommandToVM $ipv4 $sshKey "ping $hvServer -I $eth -c 4"
-if (-not $result)
-{
-	Write-Output "FAIL: $eth with new MTU doesn't work."
-	DisconnectWithVIServer
-	return $Aborted
+        $tx_new = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ethtool -g $eth | grep ^TX: | awk 'NR==2{print `$2`}'"
+        Write-Host -F Gray "tx_new is $tx_new"
+        Write-Output "tx_new is $tx_new"
+        if ($tx_new -eq $tx_max)	
+        {
+            Write-Host -F Green "PASS: New rx / tx values are correct"
+            Write-Output "PASS: New rx / tx values are correct"               
+            $retVal = $Passed
+        }
+        else
+        {
+            Write-Host -F Red "FAIL: New tx is incorrect"
+            Write-Output "FAIL: New tx is incorrect"    
+        }
+    }
+    else
+    {
+        Write-Host -F Red "FAIL: New rx is incorrect"
+        Write-Output "FAIL: New rx is incorrect"    
+    }
 }
 
 DisconnectWithVIServer
