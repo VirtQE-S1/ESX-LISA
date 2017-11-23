@@ -153,7 +153,11 @@ $new_nic = New-NetworkAdapter -VM $vmOut -NetworkName $new_nic_name -WakeOnLan -
 Write-Host -F Gray "DONE. Get new NIC: $new_nic"
 Write-Output "DONE. Get new NIC: $new_nice"
 
+Start-Sleep -S 6    
+
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
+Write-Host -F Gray "all_nic_count is $all_nic_count"
+Write-Output "all_nic_count is $all_nic_count"
 if ($all_nic_count -eq 2)
 {
     Write-Host -F Gray "DONE. Hot plug the new vmxnet3 well"
@@ -170,12 +174,13 @@ if ($all_nic_count -eq 2)
     $devSpec.operation = "remove"
     $devSpec.device += $new_nic.ExtensionData
     $spec.deviceChange += $devSpec
-    Start-Sleep -S 6    
     $vmOut.ExtensionData.ReconfigVM_Task($spec)
 
-    Start-Sleep -S 6
+    Start-Sleep -S 18
 
     $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
+    Write-Host -F Gray "all_nic_count is $all_nic_count"
+    Write-Output "all_nic_count is $all_nic_count"
     if ($all_nic_count -eq 1)
     {
         Write-Host -F Green "PASS: Hot unplug this adapter successfully"
