@@ -142,7 +142,7 @@
                 <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
-                <suiteTest>go_check_suspend_time_drift</suiteTest>
+                <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>

@@ -117,7 +117,8 @@ if (-not $vmObj)
 }
 
 #
-# Check cpu number in the vm before hot add new cpu number
+# $cpuNum is from xml(it is 1) which mustn't be -eq VM's default cpu number(2)
+# So, this will void default cpu number(2) is -eq $cpuAfter, that verify hot cpu
 #
 $vmCPUNum = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
 if ($vmCPUNum -ne $cpuNum)
@@ -126,6 +127,11 @@ if ($vmCPUNum -ne $cpuNum)
     Write-Output "WARNING: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase"    
     return $Aborted
 }
+else
+{
+    Write-Host -F Green "VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase......."
+    Write-Output "VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"    
+}
 
 #
 # Set the VM cpu number to VCPU_After
@@ -133,8 +139,8 @@ if ($vmCPUNum -ne $cpuNum)
 $retSet = Set-VM -VM $vmObj -NumCpu $cpuAfter -Confirm:$False
 if ($? -ne $True)
 {
-    Write-Host -F Yellow "WARNING: Can't set the VM's CPU number to $cpuAfter......."
-    Write-Output "WARNING: Can't set the VM's CPU number to $cpuAfter" 
+    Write-Host -F Yellow "WARNING: Can't set the VM's CPU number to $cpuAfter under hot-add cpu feature......."
+    Write-Output "WARNING: Can't set the VM's CPU number to $cpuAfter under hot-add cpu feature" 
     return $Aborted
 }
 
@@ -148,7 +154,11 @@ if ($vmCPUNum -ne $cpuAfter)
 }
 else
 {
-    Write-Host -F Yellow "Check these cpus hot-add online......."
+
+    Write-Host -F Green "VM's cpu number $vmCPUNum -eq $cpuAfter in setup phrase......."
+    Write-Output "VM's cpu number $vmCPUNum -eq $cpuAfter in setup phrase"   
+	
+    Write-Host -F Gray "Check these cpus hot-add online......."
     Write-Output "Check these cpus hot-add online"
     $online = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/devices/system/cpu/online"
     if ( ($online.Split("-"))[1] -ne ($cpuAfter - 1))
@@ -158,8 +168,8 @@ else
     }
     else
     {
-        Write-Host -F Green "PASS: VM's cpu hot-add number and online is correct......."
-        Write-Output "PASS: VM's cpu hot-add number and online is correct"
+        Write-Host -F Green "PASS: VM's cpu hot-add number and online are correct......."
+        Write-Output "PASS: VM's cpu hot-add number and online are correct"
         $retVal = $Passed
     }
 }
