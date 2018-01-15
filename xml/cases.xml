@@ -120,9 +120,9 @@
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <!-- suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
-                <suiteTest>ovt_check_suspend_timesync</suiteTest>
+                <suiteTest>ovt_check_suspend_timesync</suiteTest -->
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>
@@ -145,23 +145,23 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
-                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
 
 
-                <suiteTest>kdump_crash_single_core</suiteTest>
+                <!-- suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
-                <suiteTest>kdump_crash_diff_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest -->
 
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
