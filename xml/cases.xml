@@ -45,6 +45,9 @@
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_vgauth_add_alias</suiteTest>
+                <suiteTest>ovt_vgauth_list_alias</suiteTest>
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>				
             </suiteTests>
         </suite>
         <suite>
@@ -72,6 +75,7 @@
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
+                <suiteTest>stor_vm_install_by_scsi</suiteTest>								
             </suiteTests>
         </suite>
         <suite>
@@ -132,6 +136,9 @@
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_vgauth_add_alias</suiteTest>
+                <suiteTest>ovt_vgauth_list_alias</suiteTest>
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>					
 
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -149,6 +156,7 @@
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
+                <suiteTest>stor_vm_install_by_scsi</suiteTest>				
 
 
                 <!-- suiteTest>kdump_crash_single_core</suiteTest>
@@ -536,7 +544,53 @@
          </testparams>
             <onError>Continue</onError>
         </test>
+        <test>
+            <testName>ovt_vgauth_add_alias</testName>
+            <testID>ESX-OVT-027</testID>
+            <testScript>ovt_vgauth_add_alias.sh</testScript>
+            <files>remote-scripts/ovt_vgauth_add_alias.sh</files>			
+			<files>remote-scripts/utils.sh</files>
+            <files>bin/ovt_cert.pem</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47885,RHEL7-93440</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>		
+        <test>
+            <testName>ovt_vgauth_list_alias</testName>
+            <testID>ESX-OVT-028</testID>
+            <testScript>ovt_vgauth_list_alias.sh</testScript>
+            <files>remote-scripts/ovt_vgauth_list_alias.sh</files>			
+			<files>remote-scripts/utils.sh</files>
+            <files>bin/ovt_cert.pem</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47879,RHEL7-93450</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
+        <test>
+            <testName>ovt_vgauth_del_alias</testName>
+            <testID>ESX-OVT-029</testID>
+            <testScript>ovt_vgauth_del_alias.sh</testScript>
+            <files>remote-scripts/ovt_vgauth_del_alias.sh</files>			
+			<files>remote-scripts/utils.sh</files>
+            <files>bin/ovt_cert.pem</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47880,RHEL7-93453</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>120</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>			
+		
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -759,7 +813,19 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
+        <test>
+            <testName>stor_vm_install_by_scsi</testName>
+            <testID>ESX-STOR-008</testID>
+            <testScript>testscripts/stor_vm_install_by_scsi.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <testparams>
+                <param>TC_COVERED=RHEL6-34911,RHEL7-50893</param>
+			</testparams>
+			<onError>Continue</onError>
+        </test>
+		
         <test>
             <testName>kdump_crash_single_core</testName>
             <testID>ESX-KDUMP-001</testID>
