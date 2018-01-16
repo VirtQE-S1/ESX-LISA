@@ -129,6 +129,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
+$DISTRO = ""
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+if ( $DISTRO -eq "RedHat6" ){
+    DisconnectWithVIServer
+    return $Skipped
+    Exit
+}
+
 $retVal = $Failed
 
 
