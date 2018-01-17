@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 26 -->
+            <!-- OVT Total Cases: 29 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -67,7 +67,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 5 -->
+            <!-- Storage Total Cases: 6 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -107,7 +107,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 57 -->
+            <!-- Acceptance Total Cases: 61 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -148,8 +148,8 @@
                 <suiteTest>go_vm_shutdown</suiteTest>
                 <!-- suiteTest>go_suspend_vm</suiteTest -->
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
-                <!-- suiteTest>go_verify_hot_cpu_works</suiteTest>
-                <suiteTest>go_check_suspend_time_drift</suiteTest -->
+                <suiteTest>go_verify_hot_cpu_works</suiteTest>
+                <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
@@ -173,7 +173,7 @@
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
-                <!--suiteTest>nw_scp_mtu_9000</suiteTest -->
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
             </suiteTests>
@@ -574,7 +574,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>ovt_vgauth_del_alias</testName>
             <testID>ESX-OVT-029</testID>
@@ -1041,7 +1040,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_scp_mtu_9000.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1800</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
             </testParams>
