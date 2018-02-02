@@ -1133,3 +1133,40 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
     }
 
 }
+
+########################################################################
+#
+# ConvertStringToDecimal()
+#
+########################################################################
+function ConvertStringToDecimal([string] $str)
+{
+    $uint64Size = $null
+
+    #
+    # Make sure we received a string to convert
+    #
+    if (-not $str)
+    {
+        Write-Error -Message "ConvertStringToDecimal() - input string is null" -Category InvalidArgument -ErrorAction SilentlyContinue
+        return $null
+    }
+
+    if ($str.EndsWith("GB"))
+    {
+        $num = $str.Replace("GB","")
+        $uint64Size = ([Convert]::ToDecimal($num))
+    }
+    elseif ($str.EndsWith("TB"))
+    {
+        $num = $str.Replace("TB","")
+        $uint64Size = ([Convert]::ToDecimal($num)) * 1024
+    }
+    else
+    {
+        Write-Error -Message "Invalid newSize parameter: ${str}" -Category InvalidArgument -ErrorAction SilentlyContinue
+        return $null
+    }
+
+    return $uint64Size
+}
