@@ -1,35 +1,35 @@
 ###############################################################################
 ##
 ## Description:
-## Hot remove one scsi disk.
+## Reboot guest wiht memory more then 12G many times.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 01/31/2018 - Hot unplug scsi disk in guest.
+## V1.0 - ldu - 01/31/2018 - Reboot guest with memory more then 12G 4 times.
 ##
-## ESX-Stor-004
+## ESX-GO-012
+##
 ###############################################################################
 
 <#
 .Synopsis
-    Hot remove one scsi disk.
+    Reboot guest with memory more then 12G 4 times.
 .Description
 <test>
-    <testName>stor_hot_unplug_scsi</testName>
-    <testID>ESX-STOR-008</testID>
-    <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
-    <testScript>testscripts/stor_hot_unplug_scsi.ps1</testScript>
-    <files>remote-scripts/stor_utils.sh </files>
+    <testName>go_reboot_12G_memory</testName>
+    <testID>ESX-GO-012</testID>
+    <setupScript>setupscripts\change_memory.ps1</setupScript>
+    <testScript>testscripts\go_reboot_12G_memory.ps1</testScript>
+    <testParams>
+        <param>VMMemory=16GB</param>
+        <param>standard_diff=1</param>
+        <param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
+    </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>300</timeout>
-    <testparams>
-        <param>DiskType=SCSI</param>
-        <param>StorageFormat=Thin</param>
-        <param>CapacityGB=3</param>
-        <param>TC_COVERED=RHEL6-34926,RHEL7-50906</param>
-    </testparams>
+    <timeout>600</timeout>
     <onError>Continue</onError>
+    <noReboot>False</noReboot>
 </test>
 
 .Parameter vmName

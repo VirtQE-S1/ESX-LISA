@@ -1,35 +1,31 @@
 ###############################################################################
 ##
 ## Description:
-## Hot remove one scsi disk.
+## Reboot guet 100 times then check system status.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 01/31/2018 - Hot unplug scsi disk in guest.
+## V1.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
 ##
 ## 
 ###############################################################################
 
 <#
 .Synopsis
-    Hot remove one scsi disk.
+    Reboot guest 100 times.
 .Description
 <test>
-    <testName>stor_hot_unplug_scsi</testName>
-    <testID>ESX-STOR-008</testID>
-    <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
-    <testScript>testscripts/stor_hot_unplug_scsi.ps1</testScript>
-    <files>remote-scripts/stor_utils.sh </files>
+    <testName>go_reboot_100_times</testName>
+    <testID>ESX-GO-013</testID>
+    <testScript>testscripts\go_reboot_100_times.ps1</testScript>
+    <testParams>
+        <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
+    </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>300</timeout>
-    <testparams>
-        <param>DiskType=SCSI</param>
-        <param>StorageFormat=Thin</param>
-        <param>CapacityGB=3</param>
-        <param>TC_COVERED=RHEL6-34926,RHEL7-50906</param>
-    </testparams>
+    <timeout>6000</timeout>
     <onError>Continue</onError>
+    <noReboot>False</noReboot>
 </test>
 
 .Parameter vmName
@@ -85,6 +81,8 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
+        "VMMemory"     { $mem = $fields[1].Trim() }
+        "standard_diff"{ $standard_diff = $fields[1].Trim() }
 		default			{}
     }
 }
@@ -144,72 +142,45 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
-# Get the VM
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-#The system disk
-$sysDisk = "Hard disk 1"
-
 #
-# Check the disk number of the guest.
+#Reboot the guest 100 times.
 #
-$diskList =  Get-HardDisk -VM $vmObj
-$diskLength = $diskList.Length
-
-if ($diskLength -gt 1)
+$round=0
+while ($round -lt 100)
 {
-    write-host -F Red "The disk count is $diskLength "
-    Write-Output "Add disk successfully"
-}
-else
-{
-    write-host -F Red "The disk count is $diskLength "
-    Write-Output "Add disk during setupScript Failed, only $diskLength disk in guest."
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-while ($True)
-{
-    # How many disks in VM
-    $diskList =  Get-HardDisk -VM $vmObj
-    $diskLength = $diskList.Length
-
-    # If disks counts great than 1, will delete them
-    if ($diskList.Length -gt 1)
+    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+    Start-Sleep -seconds 3
+    # wait for vm to Start
+    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+    if ( $ssh -ne $true )
     {
-        foreach ($disk in $diskList)
-        {
-            $diskName= $disk.Name
-            if ($diskName -ne $sysDisk)
-            {
-                Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
-                # Get new counts of disks
-                $diskNewLength = (Get-HardDisk -VM $vmObj).Length
+        Write-Output "Failed: Failed to start VM."
+        Write-host -F Red "the round is $round "
+        return $Aborted
+    }
+    $round=$round+1
+    Write-host -F Red "the round is $round "
+}
 
-                if (($diskLength - $diskNewLength) -eq 1)
-                {
-                    Write-Output "DONE: remove $diskName"
-                    break
-                }
-            }
-        }
+if ($round -eq 100)
+{
+    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
+    Write-Host -F red "$calltrace_check"
+    if ($null -eq $kerneldebug_check)
+    {
+        $retVal = $Passed
+        Write-host -F Red "the round is $round, the guest could reboot 100 times with no crash, no Call Trace "
+        Write-Output "PASS: After 100 booting, NO $calltrace_check found"
     }
     else
     {
-        Write-Output "DONE: Only system disk is left"
-        break
+        Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
     }
-}
-
-$diskLastList =  Get-HardDisk -VM $vmObj
-if ($diskLastList.Length -eq 1)
-{
-    Write-Output "PASS: Hot remove disk new added successfully"
-    $retVal = $Passed
 }
 else
 {
-    Write-Output "FAIL: Hot remove disk new added Failed"
+    Write-host -F Red "the round is $round "
+    Write-Output "FAIL: The guest not boot 100 times, only $round times"
 }
 
 DisconnectWithVIServer
