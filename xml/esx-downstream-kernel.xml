@@ -111,8 +111,6 @@
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
-                <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
 
                 <suiteTest>go_check_cpu</suiteTest>
@@ -120,9 +118,7 @@
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
 
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
-                <suiteTest>stor_vm_install_by_scsi</suiteTest>				
 
-                <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
             </suiteTests>
