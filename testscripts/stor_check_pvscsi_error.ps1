@@ -1,29 +1,29 @@
 ###############################################################################
 ##
 ## Description:
-## Reboot guet with debugkernel installed  more then 10 times.
+## Reboot guest with debugkernel and check pvscsi error in log.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 03/02/2018 - Reboot guest more then 10 times with debugkernel installed.
+## V1.0 - ldu - 03/06/2018 - Reboot guest with debugkernel and check pvscsi error in log.
 ##
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Reboot guet with debugkernel installed  more then 10 times.
+    Reboot guest with debugkernel and check pvscsi error in log.
 .Description
 <test>
-    <testName>go_reboot_debugkernel_10_times</testName>
-    <testID>ESX-GO-014</testID>
-    <testScript>testscripts\go_reboot_debugkernel_10_times.ps1</testScript>
+    <testName>stor_check_pvscsi_error</testName>
+    <testID>ESX-STOR-009</testID>
+    <testScript>testscripts\stor_check_pvscsi_error.ps1</testScript>
     <testParams>
-        <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
+        <param>TC_COVERED=RHEL6-34930,RHEL7-54890</param>
     </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>3000</timeout>
+    <timeout>300</timeout>
     <onError>Continue</onError>
     <noReboot>False</noReboot>
 </test>
@@ -145,7 +145,7 @@ $retVal = $Failed
 # Install kerel-debug package in guest.
 $kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
 
-#check the kernel-debug installed successfully or not.
+#check the kernel-debug installed successfully.
 $kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
 Write-Host -F red "$kerneldebug_check"
 if ($null -eq $kerneldebug_check)
@@ -155,51 +155,37 @@ if ($null -eq $kerneldebug_check)
 }
 else
 {
-    Write-Output " The kernel debug $kerneldebug_check isntalled successfully."
+    Write-Output " The kernel debug $kerneldebug_check installed successfully."
+
 }
 
 # Change the boot sequence to debug krenl
 $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
 
-#
-#Reboot the guest 10 times.
-#
-$round=0
-while ($round -lt 10)
+#Reboot guest with debug kernel.
+$reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
+$ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+if ( $ssh -ne $true )
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-    Start-Sleep -seconds 3
-    # wait for vm to Start
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ( $ssh -ne $true )
-    {
-        Write-Output "Failed: Failed to start VM."
-        Write-host -F Red "the round is $round "
-        return $Aborted
-    }
-    $round=$round+1
+    Write-Output "Failed: Failed to start VM."
     Write-host -F Red "the round is $round "
+    return $Aborted
 }
-if ($round -eq 10)
+
+$pvscsi_log_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep pvscsi |grep -E 'fail|error'"
+Write-Host -F red "$pvscsi_log_check"
+if ($null -eq $pvscsi_log_check)
 {
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-    Write-Host -F red "$calltrace_check"
-    if ($null -eq $kerneldebug_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "the round is $round, the guest could reboot 10 times with no crash, no Call Trace "
-        Write-Output "PASS: After 100 booting, NO $calltrace_check found"
-    }
-    else
-    {
-        Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
-    }
+    $retVal = $Passed
+    Write-host -F Red "The guest could reboot with debug kernel, no error or failed message related pvscsi "
+    Write-Output "PASS: The guest could reboot with debug kernel, no error or failed message related pvscsi"
 }
 else
 {
-    Write-host -F Red "the round is $round "
-    Write-Output "FAIL: the guest not reboot 10 times, only reboot $round times "
+    Write-Output "FAIL: After booting with debug kernel, FOUND $calltrace_check in demsg"
 }
+
 
 DisconnectWithVIServer
 

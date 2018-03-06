@@ -1,29 +1,29 @@
 ###############################################################################
 ##
 ## Description:
-## Reboot guet with debugkernel installed  more then 10 times.
+## Check the scsi timeout value is 180.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 03/02/2018 - Reboot guest more then 10 times with debugkernel installed.
+## V1.0 - ldu - 03/05/2018 - Check the scsi timeout value is 180.
 ##
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Reboot guet with debugkernel installed  more then 10 times.
+    Check the scsi timeout value is 180.
 .Description
 <test>
-    <testName>go_reboot_debugkernel_10_times</testName>
-    <testID>ESX-GO-014</testID>
-    <testScript>testscripts\go_reboot_debugkernel_10_times.ps1</testScript>
+    <testName>ovt_scsi_timeout</testName>
+    <testID>ESX-STOR-009</testID>
+    <testScript>testscripts\ovt_scsi_timeout.ps1</testScript>
     <testParams>
-        <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
+        <param>TC_COVERED=RHEL6-47887,RHEL7-94310</param>
     </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>3000</timeout>
+    <timeout>300</timeout>
     <onError>Continue</onError>
     <noReboot>False</noReboot>
 </test>
@@ -141,65 +141,35 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 
 $retVal = $Failed
-
-# Install kerel-debug package in guest.
-$kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
-
-#check the kernel-debug installed successfully or not.
-$kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
-Write-Host -F red "$kerneldebug_check"
-if ($null -eq $kerneldebug_check)
-{
-    Write-Output "The kernel-debug installed failed in guest."
-    return $Aborted
-}
-else
-{
-    Write-Output " The kernel debug $kerneldebug_check isntalled successfully."
-}
-
-# Change the boot sequence to debug krenl
-$change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
-
 #
-#Reboot the guest 10 times.
+# OVT is skipped in RHEL6
 #
-$round=0
-while ($round -lt 10)
+$OS = GetLinuxDistro  $ipv4 $sshKey
+if ($OS -eq "RedHat6")
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-    Start-Sleep -seconds 3
-    # wait for vm to Start
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ( $ssh -ne $true )
-    {
-        Write-Output "Failed: Failed to start VM."
-        Write-host -F Red "the round is $round "
-        return $Aborted
-    }
-    $round=$round+1
-    Write-host -F Red "the round is $round "
+    DisconnectWithVIServer
+    return $Skipped
 }
-if ($round -eq 10)
+
+# Check the scsi timeout value in two files.
+$scsi_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/block/sda/device/timeout |grep 180"
+Write-Host -F red "/sys/block/sda/device/timeout is $scsi_timeout"
+
+$udev_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180"
+Write-Host -F red "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180 is $udev_timeout"
+
+if ($udev_timeout -and $scsi_timeout)
 {
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-    Write-Host -F red "$calltrace_check"
-    if ($null -eq $kerneldebug_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "the round is $round, the guest could reboot 10 times with no crash, no Call Trace "
-        Write-Output "PASS: After 100 booting, NO $calltrace_check found"
-    }
-    else
-    {
-        Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
-    }
+    Write-Output "The scsi timeout vale is $scsi_timeout and $udev_timeout."
+    $retVal = $Passed
 }
-else
+else123qweP
+
 {
-    Write-host -F Red "the round is $round "
-    Write-Output "FAIL: the guest not reboot 10 times, only reboot $round times "
+    Write-Output "The scsi timeout vale is not 180,The actual vale is $scsi_timeout and $udev_timeout."
+
 }
+
 
 DisconnectWithVIServer
 
