@@ -8,7 +8,7 @@
 ## Revision:
 ## V1.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
 ##
-## 
+##
 ###############################################################################
 
 <#
@@ -166,22 +166,16 @@ if ($round -eq 100)
 {
     $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
     Write-Host -F red "$calltrace_check"
-    if ($null -eq $kerneldebug_check)
+    if ($null -eq $calltrace_check)
     {
         $retVal = $Passed
         Write-host -F Red "the round is $round, the guest could reboot 100 times with no crash, no Call Trace "
         Write-Output "PASS: After 100 booting, NO $calltrace_check found"
     }
-    else
-    {
         Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
-    }
 }
-else
-{
     Write-host -F Red "the round is $round "
     Write-Output "FAIL: The guest not boot 100 times, only $round times"
-}
 
 DisconnectWithVIServer
 

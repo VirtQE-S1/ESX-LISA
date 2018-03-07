@@ -163,13 +163,7 @@ if ($udev_timeout -and $scsi_timeout)
     Write-Output "The scsi timeout vale is $scsi_timeout and $udev_timeout."
     $retVal = $Passed
 }
-else123qweP
-
-{
     Write-Output "The scsi timeout vale is not 180,The actual vale is $scsi_timeout and $udev_timeout."
-
-}
-
 
 DisconnectWithVIServer
 

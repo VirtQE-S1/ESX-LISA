@@ -181,10 +181,7 @@ if ($null -eq $pvscsi_log_check)
     Write-host -F Red "The guest could reboot with debug kernel, no error or failed message related pvscsi "
     Write-Output "PASS: The guest could reboot with debug kernel, no error or failed message related pvscsi"
 }
-else
-{
     Write-Output "FAIL: After booting with debug kernel, FOUND $calltrace_check in demsg"
-}
 
 
 DisconnectWithVIServer

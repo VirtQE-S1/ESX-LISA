@@ -184,22 +184,17 @@ if ($round -eq 10)
 {
     $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
     Write-Host -F red "$calltrace_check"
-    if ($null -eq $kerneldebug_check)
+    if ($null -eq $calltrace_check)
     {
         $retVal = $Passed
         Write-host -F Red "the round is $round, the guest could reboot 10 times with no crash, no Call Trace "
         Write-Output "PASS: After 100 booting, NO $calltrace_check found"
     }
-    else
-    {
         Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
-    }
 }
-else
-{
-    Write-host -F Red "the round is $round "
+    Write-host -F Red "The actual round is $round "
     Write-Output "FAIL: the guest not reboot 10 times, only reboot $round times "
-}
+
 
 DisconnectWithVIServer
 
