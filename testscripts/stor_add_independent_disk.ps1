@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description: 
-##  This scripts add a indepandent disk and take snapshot, after touch a file
+##  This scripts add a independent disk and take snapshot, after touch a file
 ##  in the new disk restore snapshot,file should still in the disk  
 ##  
 ###############################################################################
@@ -13,13 +13,13 @@
 
 <#
 .Synopsis
-    This scripts add a indepandent disk and take snapshot, after touch a file
+    This scripts add a independent disk and take snapshot, after touch a file
     in the new disk restore snapshot,file should still in the disk
 .Description
  <test>
-     <testName>stor_add_indepandent_disk</testName>      
+     <testName>stor_add_independent_disk</testName>      
      <testID>ESX-STOR-006</testID>
-     <testScript>testScripts\stor_add_indepandent_disk.ps1</testScript>
+     <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
      <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
      <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
      <timeout>200</timeout>
@@ -132,12 +132,12 @@ write-host -F Red "$takeSnapshot"
 $guest_script = "fdisk.sh"
 $sts =  RunRemoteScript $guest_script
 #touch file
-$touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mount /dev/sdb1 /mnt&&cd /mnt&&touch testindepandent"
+$touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mount /dev/sdb1 /mnt&&cd /mnt&&touch testindependent"
 #restore snapshot
 $restoreSnapshot = Set-VM -VM $vmObj -Snapshot $newSPName -Confirm:$false
 #check file in added disk
 $mountDisk=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mount /dev/sdb1 /mnt"
-$checkFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /mnt -name testindepandent"
+$checkFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /mnt -name testindependent"
 #remove snapshot
 $remove = Remove-Snapshot -Snapshot $takeSnapshot  -RemoveChildren -Confirm:$false
 if($checkFile -ne $null){
