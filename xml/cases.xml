@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 29 -->
+            <!-- OVT Total Cases: 30 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -47,11 +47,12 @@
                 <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
-                <suiteTest>ovt_vgauth_del_alias</suiteTest>				
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>	
+                <suiteTest>ovt_scsi_timeout</suiteTest>								
             </suiteTests>
         </suite>
         <suite>
-            <!-- GO Total Cases: 10 -->
+            <!-- GO Total Cases: 14 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -64,10 +65,14 @@
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
+                <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
+                <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 6 -->
+            <!-- Storage Total Cases: 8 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -75,7 +80,9 @@
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
-                <suiteTest>stor_vm_install_by_scsi</suiteTest>								
+                <suiteTest>stor_vm_install_by_scsi</suiteTest>
+                <suiteTest>stor_hot_unplug_scsi</suiteTest>
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
             </suiteTests>
         </suite>
         <suite>
