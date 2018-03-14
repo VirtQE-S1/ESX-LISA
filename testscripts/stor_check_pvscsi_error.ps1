@@ -168,11 +168,12 @@ $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
 if ( $ssh -ne $true )
 {
-    Write-Output "Failed: Failed to start VM."
+    Write-Output "Failed: Failed to start VM,the round is $round."
     Write-host -F Red "the round is $round "
     return $Aborted
 }
 
+#Check the dmesg log relate to pvscsi fail or error.
 $pvscsi_log_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep pvscsi |grep -E 'fail|error'"
 Write-Host -F red "$pvscsi_log_check"
 if ($null -eq $pvscsi_log_check)
@@ -181,8 +182,9 @@ if ($null -eq $pvscsi_log_check)
     Write-host -F Red "The guest could reboot with debug kernel, no error or failed message related pvscsi "
     Write-Output "PASS: The guest could reboot with debug kernel, no error or failed message related pvscsi"
 }
+else{
     Write-Output "FAIL: After booting with debug kernel, FOUND $calltrace_check in demsg"
-
+}
 
 DisconnectWithVIServer
 

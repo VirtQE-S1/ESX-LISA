@@ -219,7 +219,7 @@ while ($round -lt 4)
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
     if ( $ssh -ne $true )
     {
-        Write-Output "Failed: Failed to start VM."
+        Write-Output "Failed: Failed to start VM.The round is $round"
         Write-host -F Red "the round is $round "
         return $Aborted
     }
@@ -229,7 +229,8 @@ while ($round -lt 4)
 if ($round -eq 4)
 {
     $retVal = $Passed
-    Write-host -F Red "the round is $round, the guest could reboot 3 times with no crash "
+    Write-Output "The guest could reboot 3 times with no crash.The round is $round"
+    Write-host -F Red "The round is $round, the guest could reboot 3 times with no crash "
 }
 else
 {

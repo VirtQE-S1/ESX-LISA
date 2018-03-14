@@ -149,12 +149,12 @@ $round=0
 while ($round -lt 100)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-    Start-Sleep -seconds 3
+    Start-Sleep -seconds 6
     # wait for vm to Start
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
     if ( $ssh -ne $true )
     {
-        Write-Output "Failed: Failed to start VM."
+        Write-Output "Failed: Failed to start VM,the round is $round."
         Write-host -F Red "the round is $round "
         return $Aborted
     }
@@ -169,13 +169,19 @@ if ($round -eq 100)
     if ($null -eq $calltrace_check)
     {
         $retVal = $Passed
-        Write-host -F Red "the round is $round, the guest could reboot 100 times with no crash, no Call Trace "
-        Write-Output "PASS: After 100 booting, NO $calltrace_check found"
+        Write-host -F Red "The guest could reboot $round times with no crash, no Call Trace "
+        Write-Output "PASS: After $round times booting, NO $calltrace_check found"
     }
+    else{
         Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
+    }
+
 }
+else{
     Write-host -F Red "the round is $round "
     Write-Output "FAIL: The guest not boot 100 times, only $round times"
+}
+
 
 DisconnectWithVIServer
 

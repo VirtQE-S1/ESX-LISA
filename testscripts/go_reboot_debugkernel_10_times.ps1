@@ -168,7 +168,7 @@ $round=0
 while ($round -lt 10)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-    Start-Sleep -seconds 3
+    Start-Sleep -seconds 6
     # wait for vm to Start
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
     if ( $ssh -ne $true )
@@ -190,10 +190,16 @@ if ($round -eq 10)
         Write-host -F Red "the round is $round, the guest could reboot 10 times with no crash, no Call Trace "
         Write-Output "PASS: After 100 booting, NO $calltrace_check found"
     }
+    else{
         Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
+    }
+
 }
+else{
     Write-host -F Red "The actual round is $round "
     Write-Output "FAIL: the guest not reboot 10 times, only reboot $round times "
+}
+
 
 
 DisconnectWithVIServer

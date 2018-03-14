@@ -160,10 +160,13 @@ Write-Host -F red "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180
 
 if ($udev_timeout -and $scsi_timeout)
 {
-    Write-Output "The scsi timeout vale is $scsi_timeout and $udev_timeout."
+    Write-Output "Passed:The scsi timeout vale is $scsi_timeout and $udev_timeout."
     $retVal = $Passed
 }
-    Write-Output "The scsi timeout vale is not 180,The actual vale is $scsi_timeout and $udev_timeout."
+else{
+    Write-Output "Failed:The scsi timeout vale is not 180,The actual vale is $scsi_timeout and $udev_timeout."
+}
+
 
 DisconnectWithVIServer
 
