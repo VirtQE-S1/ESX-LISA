@@ -76,8 +76,8 @@
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>				
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
@@ -96,7 +96,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 12 -->
+            <!-- Network Total Cases: 13 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -111,10 +111,12 @@
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
+                <suiteTest>nw_pktgen</suiteTest>
+				 
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 61 -->
+            <!-- Acceptance Total Cases: 69 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -145,7 +147,8 @@
                 <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
-                <suiteTest>ovt_vgauth_del_alias</suiteTest>					
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>
+                <suiteTest>ovt_scsi_timeout</suiteTest>												
 
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -157,17 +160,23 @@
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
+                <suiteTest>go_install_ide_disk</suiteTest>
+                <!--suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
+                <suiteTest>go_reboot_debugkernel_10_times</suiteTest-->				
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
-                <suiteTest>stor_vm_install_by_scsi</suiteTest>				
+                <suiteTest>stor_vm_install_by_scsi</suiteTest>
+                <suiteTest>stor_hot_unplug_scsi</suiteTest>
+                <suiteTest>stor_check_pvscsi_error</suiteTest>				
 
 
-                <!-- suiteTest>kdump_crash_single_core</suiteTest>
-                <suiteTest>kdump_crash_smp</suiteTest -->
+                <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <!-- suiteTest>kdump_crash_diff_size</suiteTest -->
 
@@ -183,6 +192,8 @@
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <!-- suiteTest>nw_hot_plug_e1000</suiteTest -->
+                <suiteTest>nw_pktgen</suiteTest>
+				
             </suiteTests>
         </suite>
     </testSuites>
@@ -323,7 +334,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <testParams>
-              <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+				<param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -336,7 +347,7 @@
             <files>remote-scripts/ovt_check_privatetmp.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-              <param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
+				<param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -349,7 +360,7 @@
             <testScript>testscripts/ovt_check_reboot_vmtoolsd.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-              <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
+				<param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -364,7 +375,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <testParams>
-              <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
+				<param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
             <timeout>120</timeout>
             <onError>Continue</onError>
@@ -377,7 +388,7 @@
             <files>remote-scripts/ovt_check_vgauth_status.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-              <param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
+				<param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -391,7 +402,7 @@
             <files>remote-scripts/ovt_check_oneshot_timesync.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-              <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
+				<param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -405,7 +416,7 @@
             <files>remote-scripts/ovt_check_period_timesync.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-              <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
+				<param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>120</timeout>
@@ -498,7 +509,7 @@
         </test>
         <test>
             <testName>ovt_upgrade_downgrade_debuginfo</testName>
-            <testID>ESX-OVT-022</testID>
+            <testID>ESX-OVT-023</testID>
             <testScript>ovt_upgrade_downgrade_debuginfo.sh</testScript>
             <files>remote-scripts/ovt_upgrade_downgrade_debuginfo.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -509,12 +520,12 @@
                 <param>version2=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64.rpm</param>
                 <param>ChangeVersion=open-vm-tools-debuginfo-10.1.5-3.el7.x86_64</param>
                 <param>defaultVersion=open-vm-tools-debuginfo-10.1.10-3.el7.x86_64</param>
-                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
-             </testParams>
-             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-             <timeout>300</timeout>
-             <onError>Continue</onError>
-             <noReboot>False</noReboot>
+                <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
         <test>
             <testName>ovt_check_IP_display</testName>
@@ -530,25 +541,25 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-             <testName>ovt_stop_start_synced_with_gui</testName>
-             <testID>ESX-OVT-025</testID>
-             <testScript>testScripts\ovt_stop_start_synced_with_gui.ps1</testScript>
-             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-             <timeout>200</timeout>
-             <testparams>
-                    <param>TC_COVERED=RHEL6-34907,RHEL7-50889</param>
-             </testparams>
-             <onError>Continue</onError>
+            <testName>ovt_stop_start_synced_with_gui</testName>
+			<testID>ESX-OVT-025</testID>
+			<testScript>testScripts\ovt_stop_start_synced_with_gui.ps1</testScript>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>200</timeout>
+            <testparams>
+                <param>TC_COVERED=RHEL6-34907,RHEL7-50889</param>
+            </testparams>
+            <onError>Continue</onError>
          </test>
         <test>
-            <testName>ovt_install_uninstall_synced_with_gui</testName>
+			<testName>ovt_install_uninstall_synced_with_gui</testName>
             <testID>ESX-OVT-026</testID>
             <testScript>testScripts\ovt_install_uninstall_synced_with_gui.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>200</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
-         </testparams>
+			</testparams>
             <onError>Continue</onError>
         </test>
         <test>
@@ -595,7 +606,19 @@
             <timeout>120</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>			
+        </test>
+		<test>
+			<testName>ovt_scsi_timeout</testName>
+			<testID>ESX-STOR-030</testID>
+			<testScript>testscripts\ovt_scsi_timeout.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-47887,RHEL7-94310</param>
+			</testParams>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>300</timeout>
+			<onError>Continue</onError>
+			<noReboot>False</noReboot>
+		</test>		
 		
         <test>
             <testName>go_check_modules</testName>
@@ -614,7 +637,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>go_check_cpu</testName>
+			<testName>go_check_cpu</testName>
             <testID>ESX-GO-002</testID>
             <setupScript>setupscripts\change_cpu.ps1</setupScript>
             <testScript>testscripts\go_check_cpu.ps1</testScript>
@@ -732,7 +755,58 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
+		<test>
+			<testName>go_install_ide_disk</testName>
+			<testID>ESX-GO-011</testID>
+			<testScript>testscripts/go_install_ide_disk.ps1</testScript>
+			<files>remote-scripts/utils.sh</files>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>600</timeout>
+			<testparams>
+				<param>TC_COVERED=RHEL6-34880,RHEL7-79776</param>
+			</testparams>
+			<onError>Continue</onError>
+		</test>
+		<test>
+			<testName>go_reboot_12G_memory</testName>
+			<testID>ESX-GO-012</testID>
+			<setupScript>setupscripts\change_memory.ps1</setupScript>
+			<testScript>testscripts\go_reboot_12G_memory.ps1</testScript>
+			<testParams>
+				<param>VMMemory=16GB</param>
+				<param>standard_diff=1</param>
+				<param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
+			</testParams>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>600</timeout>
+			<onError>Continue</onError>
+			<noReboot>False</noReboot>
+		 </test>
+		<test>
+			<testName>go_reboot_100_times</testName>
+			<testID>ESX-GO-013</testID>
+			<testScript>testscripts\go_reboot_100_times.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
+			</testParams>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>6000</timeout>
+			<onError>Continue</onError>
+			<noReboot>False</noReboot>
+		</test>
+		<test>
+			<testName>go_reboot_debugkernel_10_times</testName>
+			<testID>ESX-GO-014</testID>
+			<testScript>testscripts\go_reboot_debugkernel_10_times.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
+			</testParams>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>3000</timeout>
+			<onError>Continue</onError>
+			<noReboot>False</noReboot>
+		</test>
+		
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
@@ -749,6 +823,20 @@
                 <param>CapacityGB=3</param>
                 <param>fileSystems=(ext4 ext3 xfs btrfs)</param>
                 <param>TC_COVERED=RHEL6-34927,RHEL7-50907</param>
+            </testparams>
+            <onError>Continue</onError>
+        </test>
+        <test>
+            <testName>stor_vhdx_mount_nfs_server</testName>
+            <testID>ESX-STOR-002</testID>
+            <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
+            <testScript>testscripts\stor_nfs_client.ps1</testScript>
+            <files>remote-scripts/utils.sh,
+            remote-scripts/stor_utils.sh </files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testparams>
+                <param>TC_COVERED=RHEL6-34925,RHEL7-50903</param>
             </testparams>
             <onError>Continue</onError>
         </test>
@@ -772,39 +860,25 @@
                 <param>TC_COVERED=RHEL6-38510,RHEL7-80183</param>
             </testparams>
             <onError>Continue</onError>
-        </test>
+        </test>		
         <test>
-            <testName>stor_vhdx_mount_nfs_server</testName>
-            <testID>ESX-STOR-002</testID>
-            <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
-            <testScript>testscripts\stor_nfs_client.ps1</testScript>
-            <files>remote-scripts/utils.sh,
-            remote-scripts/stor_utils.sh </files>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
-            <testparams>
-                <param>TC_COVERED=RHEL6-34925,RHEL7-50903</param>
-            </testparams>
-            <onError>Continue</onError>
-        </test>
-        <test>
-           <testName>stor_hdx_resize_to_bigger</testName>
-           <testID>ESX-STOR-004</testID>
-           <testScript>testscripts\stor_resize_disk.ps1</testScript>
-           <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
-           <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-           <files>remote-scripts/utils.sh,remote-scripts/stor_utils.sh </files>
-           <timeout>600</timeout>
-           <onError>Continue</onError>
-           <testparams>
-                 <param>DiskType=SCSI</param>
-                 <param>StorageFormat=Thin</param>
-                 <param>CapacityGB=2</param>
-                 <param>NewCapacityGB=3</param>
-                 <param>fileSystems=(ext4)</param>
+			<testName>stor_hdx_resize_to_bigger</testName>
+			<testID>ESX-STOR-004</testID>
+			<testScript>testscripts\stor_resize_disk.ps1</testScript>
+			<setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+			<cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<files>remote-scripts/utils.sh,remote-scripts/stor_utils.sh </files>
+			<timeout>600</timeout>
+			<onError>Continue</onError>
+			<testparams>
+				<param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=2</param>
+                <param>NewCapacityGB=3</param>
+                <param>fileSystems=(ext4)</param>
                 <param>TC_COVERED=RHEL6-38498,RHEL7-80175</param>
-           </testparams>
+			</testparams>
         </test>
         <test>
             <testName>stor_take_restore_snapshot</testName>
@@ -813,7 +887,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <testParams>
-              <param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
+				<param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
             </testParams>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -821,7 +895,7 @@
         </test>
         <test>
             <testName>stor_vm_install_by_scsi</testName>
-            <testID>ESX-STOR-008</testID>
+            <testID>ESX-STOR-006</testID>
             <testScript>testscripts/stor_vm_install_by_scsi.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -831,6 +905,35 @@
 			</testparams>
 			<onError>Continue</onError>
         </test>
+		<test>
+			<testName>stor_hot_unplug_scsi</testName>
+			<testID>ESX-STOR-007</testID>
+			<setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+			<testScript>testscripts/stor_hot_unplug_scsi.ps1</testScript>
+			<files>remote-scripts/stor_utils.sh </files>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>300</timeout>
+			<testparams>
+				<param>DiskType=SCSI</param>
+				<param>StorageFormat=Thin</param>
+				<param>CapacityGB=3</param>
+				<param>TC_COVERED=RHEL6-34926,RHEL7-50906</param>
+			</testparams>
+			<onError>Continue</onError>
+		</test>		
+		 <test>
+			<testName>stor_check_pvscsi_error</testName>
+			<testID>ESX-STOR-008</testID>
+			<testScript>testscripts\stor_check_pvscsi_error.ps1</testScript>
+			<testParams>
+				<param>TC_COVERED=RHEL6-34930,RHEL7-54890</param>
+			</testParams>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>300</timeout>
+			<onError>Continue</onError>
+			<noReboot>False</noReboot>
+		</test>
+
 		
         <test>
             <testName>kdump_crash_single_core</testName>
@@ -1078,6 +1181,20 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_pktgen</testName>
+            <testID>ESX-NW-013</testID>
+            <testScript>nw_pktgen.sh</testScript>
+            <files>remote-scripts/nw_pktgen.sh</files>			
+			<files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34947,RHEL7-50928</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>		
     </testCases>
 
     <VMs>
