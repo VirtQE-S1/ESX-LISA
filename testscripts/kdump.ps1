@@ -160,7 +160,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
+
 $retVal = $Failed
+
 
 #
 # SendCommandToVM: Push and execute kdump_config.sh
@@ -168,13 +170,14 @@ $retVal = $Failed
 #
 Write-Host -F Gray "Start to execute kdump_config.sh in VM......."
 Write-Output "Start to execute kdump_config.sh in VM"
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_config.sh && chmod u+x kdump_config.sh && ./kdump_config.sh $crashkernel"
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && sleep 1 && dos2unix kdump_config.sh && sleep 1 && chmod u+x kdump_config.sh && sleep 1 && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
 	Write-Output "FAIL: Failed to execute kdump_config.sh in VM."
 	DisconnectWithVIServer
 	return $Aborted
 }
+
 
 #
 # Rebooting VM to apply the kdump settings
@@ -183,11 +186,13 @@ Write-Host -F Gray "Start to reboot VM after kdump and grub changed......."
 Write-Output "Start to reboot VM after kdump and grub changed"
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
+
 #
 # SendCommandToVM: Push / execute kdump_prepare.sh in while, in case kdump_prepare.sh fail
 # kdump_prepare.sh: Confirms all configurations works
 #
-$timeout = 240
+$timeout = 360
+$timeout = 360
 while ($timeout -gt 0)
 {
 	Write-Host -F Gray "Start to execute kdump_prepare.sh in VM, timeout leaves $timeout......."
@@ -215,6 +220,7 @@ while ($timeout -gt 0)
 	}
 }
 
+
 #
 # Trigger the kernel panic
 #
@@ -223,10 +229,66 @@ Write-Output "Start a new process to triger kdump"
 $tmpCmd = "echo c > /proc/sysrq-trigger 2>/dev/null &"
 Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" -WindowStyle Hidden
 
+
+#
+# ISSUE: 
+# 	After kdump trigger, even though, vmcore is generated, and VM boots well after reboot.
+# 	But script can't 'find' this VM, so try to disconnect / connect VIServer again as a workround
+#	With this mehod, under stress test, it seems very stable
+#
+
+# DisconnectWithVIServer
+Write-Host -F Gray "After trigger kdump, disconnect with viserver"        
+Write-Output "After trigger kdump, disconnect with viserver"
+DisconnectWithVIServer
+
+Start-Sleep -S 6
+
+# ConnectToVIServer
+Write-Host -F Gray "Connect with viserver"        
+Write-Output "Connect with viserver"
+ConnectToVIServer $env:ENVVISIPADDR `
+                  $env:ENVVISUSERNAME `
+                  $env:ENVVISPASSWORD `
+                  $env:ENVVISPROTOCOL
+
+				  
+#				  
+# After trigger kdump and re-connect viserver, 
+# confirm VM's IP again so that confirm communication well to find the VM		  
+#
+$timeout = 360
+while ($timeout -gt 0)
+{
+	$vmTemp = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+	$vmTempPowerState = $vmTemp.PowerState
+	Write-Host -F Gray "The VM power state is $vmTempPowerState"        
+	Write-Output "The VM power state is $vmTempPowerState"
+	if ($vmTempPowerState -eq "PoweredOn")
+	{
+		$ipv4 = GetIPv4 $vmName $hvServer
+		Write-Host -F Gray "The VM ipv4 is $ipv4"            
+		Write-Output "The VM ipv4 is $ipv4"            
+		if ($ipv4 -ne $null)
+		{
+			break
+		}
+	}
+	Start-Sleep -S 6
+	$timeout = $timeout - 6
+	if ($timeout -eq 0)
+	{
+		Write-Host -F Yellow "WARNING: Timeout, and power off the VM"
+		Write-Output "WARNING: After trigger kdump, disconnect / connect viserver, still can't find VM"
+		return $Aborted
+	}
+}
+
+
 #
 # Check vmcore after get VM IP
 #
-$timeout = 240
+$timeout = 360
 while ($timeout -gt 0)
 {
 	Write-Host -F Gray "Start to check vmcore, maybe vmcore is not ready, timeout leaves $timeout......."
@@ -254,6 +316,7 @@ while ($timeout -gt 0)
 		}
 	}
 }
+
 
 DisconnectWithVIServer
 
