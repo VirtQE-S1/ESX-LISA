@@ -232,17 +232,21 @@ Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" 
 
 #
 # ISSUE: 
-# 	After kdump trigger, even though, vmcore is generated, and VM boots well after reboot.
-# 	But script can't 'find' this VM, so try to disconnect / connect VIServer again as a workround
-#	With this mehod, under stress test, it seems very stable
+# 	After kdump trigger, even though, sometimes, vmcore is generated, reboot well, VM powerstate is on, IP is correct
+# 	But can't find the vmcore, manual to check vmocre, it is here!
+# WORKAROUND:
+#   So try to disconnect / connect VIServer again as a workround
+#	Add more debuginfo to debug issue can't find vmcore:
+#		$ipv4 -ne $null              -> Process of kdump is finsihed and reboot well
+#		ls /root                     -> Confirm script can find VM, communication works in /root
+#		touch /var/crash/kdump.txt   -> Confirm /var/crash folder is prepared well
+#		ls /var/crash                -> No above two issues, vmcore should be generated, if not, confirm vmcore isn't generated
 #
 
 # DisconnectWithVIServer
 Write-Host -F Gray "After trigger kdump, disconnect with viserver"        
 Write-Output "After trigger kdump, disconnect with viserver"
 DisconnectWithVIServer
-
-Start-Sleep -S 6
 
 # ConnectToVIServer
 Write-Host -F Gray "Connect with viserver"        
@@ -252,25 +256,36 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-				  
 #				  
-# After trigger kdump and re-connect viserver, 
-# confirm VM's IP again so that confirm communication well to find the VM		  
+# Based on WORKAROUND to confirm vmcore	  
 #
-$timeout = 360
+$timeout = 180
 while ($timeout -gt 0)
 {
 	$vmTemp = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 	$vmTempPowerState = $vmTemp.PowerState
-	Write-Host -F Gray "The VM power state is $vmTempPowerState"        
+	Write-Host -F Green "The VM power state is $vmTempPowerState"        
 	Write-Output "The VM power state is $vmTempPowerState"
 	if ($vmTempPowerState -eq "PoweredOn")
 	{
 		$ipv4 = GetIPv4 $vmName $hvServer
-		Write-Host -F Gray "The VM ipv4 is $ipv4"            
+		Write-Host -F Green "The VM ipv4 is $ipv4"            
 		Write-Output "The VM ipv4 is $ipv4"            
 		if ($ipv4 -ne $null)
 		{
+			Start-Sleep -S 30
+			$debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /root/"
+			Write-Host -F Green "Debug: debug is $debug"         
+			Write-Output "Debug: debug is $debug"	
+
+			$debug2 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /var/crash"
+			Write-Host -F Green "Debug: debug2 is $debug2"            
+			Write-Output "Debug: debug2 is $debug2" 
+			
+			$debug3 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /var/crash/kdump.txt && ls /var/crash/"
+			Write-Host -F Green "Debug: debug3 is $debug3"  	
+			Write-Output "Debug debug3 is $debug3"			
+
 			break
 		}
 	}
@@ -286,13 +301,14 @@ while ($timeout -gt 0)
 
 
 #
-# Check vmcore after get VM IP
+# Check vmcore size after it is generated
 #
-$timeout = 360
+$timeout = 180
 while ($timeout -gt 0)
 {
 	Write-Host -F Gray "Start to check vmcore, maybe vmcore is not ready, timeout leaves $timeout......."
 	Write-Output "Start to check vmcore, maybe vmcore is not ready, timeout leaves $timeout"
+	
 	$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /var/crash/ -name vmcore -type f -size +10M"
 	if ($result -ne $null)
 	{
