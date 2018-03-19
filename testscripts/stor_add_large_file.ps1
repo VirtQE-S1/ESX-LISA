@@ -160,8 +160,8 @@ if ($OS -eq "RedHat6")
         $retVal=$Aborted
     }
     else{
-    #creat file
-    $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.ext4 /dev/sdb1 -f&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=11 bs=1024M"
+      #creat file
+      $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.ext4 /dev/sdb1 -f&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=11 bs=1024M"
       if(-not $touchFile){
         write-output "Error: Error while dd"
         $retVal=$Failed
