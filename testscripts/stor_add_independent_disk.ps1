@@ -131,6 +131,9 @@ write-host -F Red "$takeSnapshot"
 #do partition and formation
 $guest_script = "fdisk.sh"
 $sts =  RunRemoteScript $guest_script
+if( -not $sts[-1] ){
+    "Error: Error while running $guest_script"
+}
 #touch file
 $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mount /dev/sdb1 /mnt&&cd /mnt&&touch testindependent"
 #restore snapshot
