@@ -18,7 +18,7 @@
 .Description
  <test>
      <testName>stor_add_independent_disk</testName>      
-     <testID>ESX-STOR-006</testID>
+     <testID>ESX-STOR-009/testID>
      <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
      <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
      <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
