@@ -125,8 +125,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj){
     Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
-    Write-Host -F Red "0"
-    exit
+    exit 1
 }
 #add disk
 $addDisk=New-HardDisk -VM $vmObj -CapacityGB 12 -StorageFormat Thin -Persistence IndependentPersistent
@@ -145,7 +144,6 @@ if ($OS -eq "RedHat7")
     $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.xfs /dev/sdb1 -f&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=11 bs=1024M" 
       if(-not $touchFile){
         write-output "Error: Error while dd"
-        Write-Host -F Red "2"
         $retVal=$Failed
       } 
       else{
