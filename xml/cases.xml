@@ -72,7 +72,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 8 -->
+            <!-- Storage Total Cases: 10 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -83,6 +83,8 @@
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_add_independent_disk</suiteTest>
+                <suiteTest>stor_add_large_file</suiteTest>					
             </suiteTests>
         </suite>
         <suite>
@@ -116,7 +118,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 69 -->
+            <!-- Acceptance Total Cases: 71 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -172,8 +174,9 @@
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
-                <suiteTest>stor_check_pvscsi_error</suiteTest>				
-
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_add_independent_disk</suiteTest>
+                <suiteTest>stor_add_large_file</suiteTest>				
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -609,7 +612,7 @@
         </test>
 		<test>
 			<testName>ovt_scsi_timeout</testName>
-			<testID>ESX-STOR-030</testID>
+			<testID>ESX-OVT-030</testID>
 			<testScript>testscripts\ovt_scsi_timeout.ps1</testScript>
 			<testParams>
 				<param>TC_COVERED=RHEL6-47887,RHEL7-94310</param>
@@ -933,8 +936,32 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>
+		 <test>
+			 <testName>stor_add_independent_disk</testName>      
+			 <testID>ESX-STOR-009/testID>
+			 <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
+			 <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
+			 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			 <timeout>200</timeout>
+			 <testparams>
+				<param>TC_COVERED=RHEL6-38502,RHEL7-80230</param>
+			 </testparams>
+			 <onError>Continue</onError>
+		 </test> 		
+		<test>
+			<testName>stor_add_large_file</testName>      
+			<testID>ESX-STOR-010</testID>
+			<testScript>testScripts\stor_add_large_file.ps1</testScript>
+			<files>remote-scripts/utils.sh,remote-scripts/fdisk.sh</files>
+			<cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+			<timeout>1800</timeout>
+			<testparams>
+				<param>TC_COVERED=RHEL6-38508,RHEL7-80181</param>
+			</testparams>
+			<onError>Continue</onError>        
+		</test>
 
-		
         <test>
             <testName>kdump_crash_single_core</testName>
             <testID>ESX-KDUMP-001</testID>
