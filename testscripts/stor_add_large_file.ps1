@@ -141,7 +141,7 @@ if ($OS -eq "RedHat7")
     }
     else{
     #creat file
-    $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.xfs /dev/sdb1 -f&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M" 
+    $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.xfs -F /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M" 
       if(-not $touchFile){
         write-output "Error: Error while dd"
         $retVal=$Failed
@@ -161,7 +161,7 @@ if ($OS -eq "RedHat6")
     }
     else{
       #creat file
-      $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.ext4 /dev/sdb1 -f&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
+      $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.ext4 -F /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
       if(-not $touchFile){
         write-output "Error: Error while dd"
         $retVal=$Failed
