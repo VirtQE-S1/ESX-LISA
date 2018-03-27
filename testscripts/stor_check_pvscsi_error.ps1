@@ -156,12 +156,23 @@ if ($null -eq $kerneldebug_check)
 else
 {
     Write-Output " The kernel debug $kerneldebug_check installed successfully."
-
 }
 
-# Change the boot sequence to debug krenl
-$change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
-
+#Check the OS distro.Then change the grub file to change boot order.
+$OS = GetLinuxDistro  $ipv4 $sshKey
+Write-host -F Red "The current OS is $OS."
+write-Output "The current os is $OS."
+if ($OS -eq "RedHat6")
+{
+    # Change the boot sequence to debug kernel
+    $change_EFI = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/efi/EFI/redhat/grub.conf"
+    $change_bois = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/grub/grub.conf"
+}
+else
+{
+    # Change the boot sequence to debug kernel
+    $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
+}
 #Reboot guest with debug kernel.
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
@@ -173,9 +184,22 @@ if ( $ssh -ne $true )
     return $Aborted
 }
 
+#Check the current kernel is debugkernel.
+$current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r |grep debug"
+Write-Host -F red "After reboot the current kernel is $current_kernel"
+if ($null -eq $current_kernel)
+{
+    Write-Output "The kernel-debug switch failed in guest."
+    return $Aborted
+}
+else
+{
+    Write-Output " The kernel debug $current_kernel switch successfully."
+}
+
 #Check the dmesg log relate to pvscsi fail or error.
 $pvscsi_log_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep pvscsi |grep -E 'fail|error'"
-Write-Host -F red "$pvscsi_log_check"
+Write-Host -F red "The dmesg log related to pvscsi error is $pvscsi_log_check"
 if ($null -eq $pvscsi_log_check)
 {
     $retVal = $Passed
@@ -183,7 +207,7 @@ if ($null -eq $pvscsi_log_check)
     Write-Output "PASS: The guest could reboot with debug kernel, no error or failed message related pvscsi"
 }
 else{
-    Write-Output "FAIL: After booting with debug kernel, FOUND $calltrace_check in demsg"
+    Write-Output "FAIL: After booting with debug kernel, FOUND $pvscsi_log_check in demsg"
 }
 
 DisconnectWithVIServer

@@ -155,11 +155,24 @@ if ($null -eq $kerneldebug_check)
 }
 else
 {
-    Write-Output " The kernel debug $kerneldebug_check isntalled successfully."
+    Write-Output " The kernel debug $kerneldebug_check installed successfully."
 }
 
-# Change the boot sequence to debug krenl
-$change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
+#Check the OS distro.Then change the grub file to change boot order.
+$OS = GetLinuxDistro  $ipv4 $sshKey
+Write-host -F Red "The current OS is $OS."
+write-Output "The current os is $OS."
+if ($OS -eq "RedHat6")
+{
+    # Change the boot sequence to debug kernel
+    $change_EFI = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/efi/EFI/redhat/grub.conf"
+    $change_bois = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/grub/grub.conf"
+}
+else
+{
+    # Change the boot sequence to debug kernel
+    $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
+}
 
 #
 #Reboot the guest 10 times.
@@ -177,30 +190,40 @@ while ($round -lt 10)
         Write-host -F Red "the round is $round "
         return $Aborted
     }
+    else
+    {
+        $current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r |grep debug"
+        Write-Host -F red "After reboot the current kernel is $current_kernel"
+        if ($null -eq $current_kernel)
+        {
+            Write-Output "The kernel-debug switch failed in guest."
+            return $Aborted
+        }
+    }
     $round=$round+1
     Write-host -F Red "the round is $round "
 }
 if ($round -eq 10)
 {
     $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-    Write-Host -F red "$calltrace_check"
+    Write-Host -F red "The call trace check result is $calltrace_check"
     if ($null -eq $calltrace_check)
     {
         $retVal = $Passed
         Write-host -F Red "the round is $round, the guest could reboot 10 times with no crash, no Call Trace "
-        Write-Output "PASS: After 100 booting, NO $calltrace_check found"
+        Write-Output "PASS: After $round round booting, NO call trace $calltrace_check found"
     }
-    else{
-        Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
+    else
+    {
+        Write-Output "FAIL: After booting, FOUND call trace $calltrace_check in demsg"
     }
 
 }
-else{
+else
+{
     Write-host -F Red "The actual round is $round "
     Write-Output "FAIL: the guest not reboot 10 times, only reboot $round times "
 }
-
-
 
 DisconnectWithVIServer
 
