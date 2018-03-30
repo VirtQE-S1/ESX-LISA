@@ -52,7 +52,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- GO Total Cases: 14 -->
+            <!-- GO Total Cases: 16 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -69,6 +69,8 @@
                 <suiteTest>go_reboot_12G_memory</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
+                <suiteTest>go_upgrade_kernel</suiteTest>
+                <suiteTest>go_upgrade_guest</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -118,7 +120,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 71 -->
+            <!-- Acceptance Total Cases: 73 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -166,6 +168,8 @@
                 <!--suiteTest>go_reboot_12G_memory</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest-->				
+                <!-- suiteTest>go_upgrade_kernel</suiteTest -->
+                <suiteTest>go_upgrade_guest</suiteTest>
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
@@ -809,6 +813,32 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>
+        <test>
+            <testName>go_upgrade_kernel</testName>
+            <testID>ESX-GO-015</testID>
+            <testScript>testscripts\go_upgrade_kernel.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-38512,RHEL7-80221</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_upgrade_guest</testName>
+            <testID>ESX-GO-016</testID>
+            <testScript>testscripts\go_upgrade_guest.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34996,RHEL7-71601</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 		
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
