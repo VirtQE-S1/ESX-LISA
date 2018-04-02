@@ -1,15 +1,18 @@
 #!/bin/bash
 
+
 ###############################################################################
-##
-## Description:
-##   Config new NICs ifcfg scripts
-##
-###############################################################################
-##
-## Revision:
-## v1.0 - boyang - 18/01/2017 - Build script.
-##
+#
+# Description:
+#	Config new NICs ifcfg scripts
+#  
+# Notice:
+#	Multi NICs, can't ping well, if restart network well, it means geting IP well
+#
+# Revision:
+# v1.0.0 - boyang - 01/18/2017 - Build script
+# v1.0.1 - boyang - 04/02/2018 - Comment in Notice
+#
 ###############################################################################
 
 dos2unix utils.sh
@@ -27,11 +30,13 @@ dos2unix utils.sh
 #
 UtilsInit
 
+
 #######################################################################
 #
 # Main script body
 #
 #######################################################################
+
 
 # Get all NICs interfaces
 nics=`ls /sys/class/net | grep ^e[tn][hosp]`
@@ -69,6 +74,11 @@ do
         LogMsg "Now, commenting UUID"
         UpdateSummary "Now, commenting UUID"
         sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$i
+		
+		# Comment HWADDR
+        LogMsg "Now, commenting HWADDR"
+        UpdateSummary "Now, commenting HWADDR"
+        sed -i '/^HWADDR/ s/HWADDR/#HWADDR/g' $network_scripts/ifcfg-$i
         
         # Comment original DEVICE
         LogMsg "Now, commenting DEVICE"
@@ -121,46 +131,43 @@ do
             fi
         }
         
-        # Test ifdown function for new NICs
-        LogMsg "Now, test ifdown function"
-        UpdateSummary "Now, test ifdown function" 
-        ifdown $i
+        # Test ifup function for new NICs
+        LogMsg "Now, test ifup function"
+        UpdateSummary "Now, test ifup function" 
+        ifup $i
         if [ $? -eq 0 ]
         then
-            LogMsg "DONE. $i ifdown works well"
-            UpdateSummary "DONE. $i ifdown works well"
-            # Test ifup function for new NICs
-            LogMsg "Now, test ifup function"
-            UpdateSummary "Now, test ifup function" 
-            ifup $i
+            LogMsg "DONE: $i ifup works well"
+            UpdateSummary "DONE: $i ifup works well"
+            # Test ifdown function for new NICs
+            LogMsg "Now, test ifdown function"
+            UpdateSummary "Now, test ifdown function" 
+            ifdown $i
             if [ $? -eq 0 ]
             then
-                LogMsg "PASS. $i both ifup and ifdown work well"
-                UpdateSummary "PASS. $i both ifup and ifdown work well"
+                LogMsg "PASS: $i both ifdown and ifup work well"
+                UpdateSummary "PASS: $i both ifdown and ifup work well"
                 SetTestStateCompleted
-                #
-                # Ifdown and move its scirpt
-                #
-                LogMsg "Now, CLOSE $i"
-                UpdateSummary "Now, Now, CLOSE $i" 
-                ifdown $i
+				
                 mv $network_scripts/ifcfg-$i /root/
-                RestartNetwork
+				
+				service network restart
+               
                 LogMsg "Now, exit 0"
-                UpdateSummary "Now, Now, exit 0" 
+                UpdateSummary "Now, exit 0" 
                 exit 0
             else
             {
-                LogMsg "FAIL. $i ifup failed"
-                UpdateSummary "FAIL. $i ifup failed"
+                LogMsg "FAIL: $i ifup failed"
+                UpdateSummary "FAIL: $i ifup failed"
                 SetTestStateFailed
                 exit 1
             }
             fi
         else
         {
-            LogMsg "FAIL. $i ifdown failed"
-            UpdateSummary "FAIL. $i ifdown failed"
+            LogMsg "FAIL: $i ifup failed"
+            UpdateSummary "FAIL: $i ifup failed"
             SetTestStateFailed
             exit 1
         }
