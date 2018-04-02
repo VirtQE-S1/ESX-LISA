@@ -52,7 +52,7 @@ yum install yum-utils* -y
 yumdownloader open-vm-tools
 #Check the directories in the open-vm-tools RPM.
 direc_count=`rpm -qlp open-vm-tools*.rpm |grep "/etc/vmware-tools" |wc -l`
-if [[ $direc_count == 23 ]]; then
+if [[ $direc_count -gt 22 ]]; then
     LogMsg "Test successfully. There's $direc_count directories under /etc/vmware-tools."
     UpdateSummary "Test successfully. There's $direc_count directories under /etc/vmware-tools."
     SetTestStateCompleted

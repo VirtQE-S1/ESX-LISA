@@ -44,38 +44,55 @@ UtilsInit
 #
 
 #unload the driver vmw_balloon for an hour.
-current_time=`date +%H%M`
+current_time=`date +%s`
 UpdateSummary "the start time is $current_time."
-end_time=$[current_time+60]
+end_time=$[current_time+3600]
+#check the OS Version.
 if [[ $DISTRO = "redhat_6" ]];
 then
     UpdateSummary "the current OS is $DISTRO."
     while [ $current_time -lt $end_time ]
     do
         modprobe -r vmware_balloon
+         remove=$?
+        call_trace=`dmesg |grep "CallTrace"|wc -l`
+        if [ $remove -eq 1 -o $call_trace -ne 0 ]
+        then
+            SetTestStateFailed
+            exit 1
+        fi
         modprobe vmware_balloon
-        current_time=`date +%H%M`
-
+        add=$?
+        call_trace=`dmesg |grep "CallTrace" |wc -l`
+        if [ $add -eq 1 -o $call_trace -ne 0 ]
+        then
+            SetTestStateFailed
+            exit 1
+        fi
+        current_time=`date +%s`
     done
 else
     UpdateSummary "the current OS is $DISTRO."
     while [ $current_time -lt $end_time ]
     do
         modprobe -r vmw_balloon
+        remove=$?
+        call_trace=`dmesg |grep "CallTrace" |wc -l`
+        if [ $remove -eq 1 -o $call_trace -ne 0 ]
+        then
+            SetTestStateFailed
+            exit 1
+        fi
         modprobe vmw_balloon
-        current_time=`date +%H%M`
+        add=$?
+        call_trace=`dmesg |grep "CallTrace"|wc -l`
+        if [ $add -eq 1 -o $call_trace -ne 0 ]
+        then
+            SetTestStateFailed
+            exit 1
+        fi
+        current_time=`date +%s`
     done
 
 fi
-#Check the times.
-if [ $current_time -eq $end_time ]; then
-    LogMsg "Test successfully. The current time $current_time equal with end time $end_time."
-    UpdateSummary "Test successfully.The current time $current_time equal with end time $end_time."
     SetTestStateCompleted
-    exit 0
-else
-    LogMsg "Test Failed.The current time $current_time not equal with end time $end_time."
-    UpdateSummary "Test failed. The current time $current_time not equal with end time $end_time."
-    SetTestStateFailed
-    exit 1
-fi
