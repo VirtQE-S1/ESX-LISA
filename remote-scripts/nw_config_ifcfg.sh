@@ -7,23 +7,28 @@
 #	Config new NICs ifcfg scripts
 #  
 # Notice:
-#	Multi NICs, can't ping well, if restart network well, it means geting IP well
+#	Multi NICs, can't ping, if restart network well, it means geting IP well
 #
 # Revision:
 # v1.0.0 - boyang - 01/18/2017 - Build script
 # v1.0.1 - boyang - 04/02/2018 - Comment in Notice
+# v1.0.2 - boyang - 04/03/2018 - Use $DISTRO to identify different operations
 #
 ###############################################################################
 
+
 dos2unix utils.sh
+
 
 #
 # Source utils.sh
 #
 . utils.sh || {
-	echo "Error: unable to source utils.sh!"
+    LogMsg "ERROR: Unable to source utils.sh!"
+	UpdateSummary "ERROR: Unable to source utils.sh!"	
 	exit 1
 }
+
 
 #
 # Source constants file and initialize most common variables
@@ -41,7 +46,8 @@ UtilsInit
 # Get all NICs interfaces
 nics=`ls /sys/class/net | grep ^e[tn][hosp]`
 network_scripts="/etc/sysconfig/network-scripts"
-ifcfg_orignal="/root/ifcfg-orignal"
+ifcfg_bk="/root/ifcfg-orignal"
+
 
 #
 # Copy the orignal ifcfg file under $network_scripts to /root
@@ -50,116 +56,125 @@ for i in $nics
 do
     if [ -f $network_scripts/ifcfg-$i ]
     then
-    cp $network_scripts/ifcfg-$i $ifcfg_orignal
+		LogMsg "INFO: Copy original NIC ifcfg file to /root"
+		UpdateSummary "INFO: Copy original NIC ifcfg file to /root"	
+		cp $network_scripts/ifcfg-$i $ifcfg_bk
+		if [ $? -ne 0 ]
+		then
+			LogMsg "ERROR: Copy original NIC ifcfg file failed"
+			UpdateSummary "ERROR: Copy original NIC ifcfg file failed"            
+			exit 1
+		fi
     fi
 done
 
+
 #
-# Confirm which nics are added newly
+# Confirm which nics are new
 # Setup their ifcfg files
 # Test their ifup / fidown functions
 #
 for i in $nics
 do
-    LogMsg "Now, checking $i......."
-	UpdateSummary "Now, checking $i......."
     if [ ! -f $network_scripts/ifcfg-$i ]
     then
-        # New NIC needs to create its ifcfg scripts based on orignal nic's script
-        LogMsg "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
-        UpdateSummary "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
-        cp $ifcfg_orignal $network_scripts/ifcfg-$i
+        # New NIC needs to create its ifcfg file based on orignal nic's script
+        LogMsg "INFO: $i is a new NIC, will create ifcfg-$i"
+        UpdateSummary "INFO: $i is a new NIC, will create ifcfg-$i"
+        cp $ifcfg_bk $network_scripts/ifcfg-$i
         
         # Comment UUID
-        LogMsg "Now, commenting UUID"
-        UpdateSummary "Now, commenting UUID"
+        LogMsg "INFO: Commenting UUID"
+        UpdateSummary "INFO: Commenting UUID"
         sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$i
 		
 		# Comment HWADDR
-        LogMsg "Now, commenting HWADDR"
-        UpdateSummary "Now, commenting HWADDR"
+        LogMsg "INFO: Commenting HWADDR"
+        UpdateSummary "INFO: Commenting HWADDR"
         sed -i '/^HWADDR/ s/HWADDR/#HWADDR/g' $network_scripts/ifcfg-$i
         
         # Comment original DEVICE
-        LogMsg "Now, commenting DEVICE"
-        UpdateSummary "Now, commenting DEVICE"
+        LogMsg "INFO: Commenting DEVICE"
+        UpdateSummary "INFO: Commenting DEVICE"
         sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$i
-        # Add a new DEVICE to script
-        LogMsg "Now, adding a new DEVICE"
-        UpdateSummary "Now, add a new DEVICE"      
+		
+        # Add a new DEVICE
+        LogMsg "INFO: New a line for DEVICE"
+        UpdateSummary "INFO: New a line for DEVICE"      
         echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i    
         
         # Comment original NAME
-        LogMsg "Now, commenting NAME"
-        UpdateSummary "Now, commenting NAME"
+        LogMsg "INFO: Commenting NAME"
+        UpdateSummary "INFO: Commenting NAME"
         sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$i
-        # Add a new NAME to script
-        LogMsg "Now, adding a new NAME"
-        UpdateSummary "Now, add a new NAME"      
+		
+        # Add a new NAME
+        LogMsg "INFO: New a line for NAME"
+        UpdateSummary "INFO: New a line for NAME"      
         echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$i
+  
   
         #
         # Test new NIC ifup / ifdown. No ping function to test
         # Firstly, stop SELINUX, NetworkManager, and restart network
         #
         RestartNetwork()
-        {
-            setenforce 0
-            systemctl stop NetworkManager
-            if [ $? -eq 0 ]
-            then
-                systemctl restart network
-                if [ $? -ne 0 ]
-                then
-                    SetTestStateAborted
-                    exit 1
-                fi
-            else
-                service NetworkManager stop
-                if [ $? -eq 0 ]
-                then
-                    service network restart
-                    if [ $? -ne 0 ]
-                    then
-                        SetTestStateAborted
-                        exit 1
-                    fi
-                else
-                    SetTestStateAborted
-                    exit 1
-                fi
-            fi
+        {	
+			if [[ $DISTRO -eq "redhat_7" ]]
+			then
+				systemctl stop NetworkManager
+				systemctl restart network
+			fi
+			
+			if [[ $DISTRO -eq "redhat_6" ]]
+			then
+				service NetworkManager stop
+				service network restart
+			fi
+			
+			if [[ $DISTRO -eq "redhat_8" ]]
+			then
+				LogMsg "DEBUG: Use RHEL7 mehtods to RHEL8"
+				UpdateSummary "DEBUG: Use RHEL7 mehtods to RHEL8"				
+				systemctl stop NetworkManager
+				systemctl restart network
+			fi			
         }
         
+		
         # Test ifup function for new NICs
-        LogMsg "Now, test ifup function"
-        UpdateSummary "Now, test ifup function" 
-        ifup $i
+        LogMsg "INFO: Testing ifup function"
+        UpdateSummary "INFO: Testing ifup function" 
+        
+		setenforce 0
+		
+		ifup $i
         if [ $? -eq 0 ]
         then
             LogMsg "DONE: $i ifup works well"
             UpdateSummary "DONE: $i ifup works well"
+			
+			
             # Test ifdown function for new NICs
-            LogMsg "Now, test ifdown function"
-            UpdateSummary "Now, test ifdown function" 
+            LogMsg "INFO: Testing ifdown function"
+            UpdateSummary "INFO: Testing ifdown function" 
             ifdown $i
             if [ $? -eq 0 ]
             then
-                LogMsg "PASS: $i both ifdown and ifup work well"
-                UpdateSummary "PASS: $i both ifdown and ifup work well"
+                LogMsg "PASS: Both ifdown and ifup work well"
+                UpdateSummary "PASS: Both ifdown and ifup work well"
                 SetTestStateCompleted
 				
                 mv $network_scripts/ifcfg-$i /root/
 				
-				service network restart
-               
-                LogMsg "Now, exit 0"
-                UpdateSummary "Now, exit 0" 
+				# If no restart network, original NIC also can't be used
+				RestartNetwork               
+
                 exit 0
             else
             {
-                LogMsg "FAIL: $i ifup failed"
-                UpdateSummary "FAIL: $i ifup failed"
+                LogMsg "FAIL: $i ifdown failed"
+                UpdateSummary "FAIL: $i ifdown failed"
                 SetTestStateFailed
                 exit 1
             }

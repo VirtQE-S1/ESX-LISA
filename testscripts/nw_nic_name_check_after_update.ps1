@@ -10,6 +10,7 @@
 #
 ###############################################################################
 
+
 <#
 .Synopsis
 
@@ -36,7 +37,9 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
 
 #
 # Checking the input arguments
@@ -58,10 +61,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
+
 #
 # Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse test parameters
@@ -86,6 +91,7 @@ foreach ($p in $params)
 		default			{}
     }
 }
+
 
 #
 # Check all parameters are valid
@@ -124,6 +130,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
+
 #
 # Source tcutils.ps1
 #
@@ -134,6 +141,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
@@ -143,110 +151,121 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
+
 #
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
 #
 $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 
+
 #
 # The latest repo for rhel.X
 # If need update the link, please contact developer
+# Also, $repo_base can be defined in xml
 #
-$rhel6_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-6.*/compose/Server/x86_64/os/"
-$rhel7_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-7.*/compose/Server/x86_64/os/"
-$rhel8_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-8.*/compose/Server/x86_64/os/"
+$repo_base = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng"
+$repo_last = "/compose/Server/x86_64/os/"
+$rhel6_repo = $repo_base + "/latest-RHEL-6.*" + $repo_last
+$rhel7_repo = $repo_base + "/latest-RHEL-7.*" + $repo_last
+$rhel8_repo = $repo_base + "/latest-RHEL-8.*" + $repo_last
 
 
-#Check the guest os big version.
-$DISTRO = ""
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" )
 {
     $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel6_repo' /etc/yum.repos.d/rhel_new.repo"
-    write-host -F red "The guest os is rhel6"
-    write-output "The guest os is rhel6"
-
+    Write-Host -F red "The Guest OS is $DISTRO"
+    Write-Output "The Guest OS is $DISTRO"
 }
 else
 {
     if ( $DISTRO -eq "RedHat7" )
     {
         $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel7_repo' /etc/yum.repos.d/rhel_new.repo"
-        write-host -F red "The guest os is rhel7"
-        write-output "The guest os is rhel7"
+        Write-Host -F red "The Guest OS is $DISTRO"
+        Write-Output "The Guest OS is $DISTRO"
     }
     else
     {
         $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel8_repo' /etc/yum.repos.d/rhel_new.repo"
-        write-host -F red "The guest os is rhel8"
-        write-output "The guest os is rhel8"
+        Write-Host -F red "The Guest OS is $DISTRO"
+        Write-Output "The Guest OS is $DISTRO"
     }
 }
 
 
-#Update the whole guest to new version with yum command.
+# pdate the Guest
 $update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y"
 
 
-#Check the new kernel installed or not.
+# Check kernels counts to identify 'yum update' passed or not
 $kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel |wc -l"
-write-host -F red "The kernel number is $kernel_num"
+Write-Host -F red "DEBUG: kernel_num: $kernel_num"
+Write-Output "DEBUG: kernel_num: $kernel_num"
 if ($kernel_num -eq "1")
 {
-    write-Output "no new kernel installed,no new compose for update."
-}
-else
-{
-    write-Output "Installed a new kernel,The guest updated successfully."
+    Write-Host -F red "ERROR: Guest yum update failed"
+    Write-Output "ERROR: Guest yum update failed"
+	Return $Aborted
 }
 
 
-#check the default kernel version.
+# Check the default kernel version
 $default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-write-host -F red "The default kernel is $default_kernel. "
-write-Output "The default kernel is $default_kernel. "
+Write-Host -F red "INFO: The default kernel is $default_kernel"
+Write-Output "INFO: The default kernel is $default_kernel"
 
-#Reboot the guest
+
+# CReboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 Start-Sleep -seconds 6
-# wait for vm to Start
-$ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+
+
+# Wait for the VM
+$ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
 if ( $ssh -ne $true )
 {
-    Write-Output "Failed: Failed to start VM."
+	Write-Host -F Red "ERROR: Failed to start VM"
+    Write-Output "ERROR: Failed to start VM"
     return $Aborted
+}
+
+
+# Check the new kernel version
+$new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F red "INFO: New kernel is $new_kernel"
+Write-Output "INFO: New kernel is $new_kernel"
+
+
+if ($default_kernel -eq $new_kernel)
+{
+	Write-Host -F Red "ERROR: The new kernel booting failed"
+	Write-Output "ERROR: The new kernel booting failed"
+	return $Aborted
+}
+
+
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
+Write-Host -F red "INFO: The call trace is $calltrace_check"
+Write-Output "INFO: The call trace is $calltrace_check"
+
+
+$new_eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
+
+
+if ($null -eq $calltrace_check -and $eth -eq $new_eth)
+{
+	Write-Host -F Red "PASS: No call trace and NIC name no chage after update"
+	Write-Output "PASS: No call trace and NIC name no change after update"
+	$retVal = $Passed
 }
 else
 {
-    #Check the kernel after reboot.
-    $new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-    Write-Host -F red "After reboot the current kernel is $new_kernel."
-    write-Output "After reboot the current kernel is $new_kernel."
-    #compaire the new kernel whether boot in guest.
-    if ($default_kernel -eq $new_kernel)
-    {
-        Write-Output "The new kernel boot failed in guest."
-        return $Aborted
-    }
-    else
-    {
-        $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-        Write-Host -F red "The call trace check result is $calltrace_check"
-		$new_eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
-        Write-Host -F red "DEBUG: new_eth: $new_eth"		
-        if ($null -eq $calltrace_check -and $eth -eq $new_eth)
-        {
-            $retVal = $Passed
-            Write-host -F Red "After update to new version, guest could reboot with new kernel with no crash, no Call Trace."
-            Write-Output "PASS: After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
-        }
-        else
-        {
-            Write-Output "FAIL: After booting, FOUND call trace $calltrace_check in demsg."
-        }
-    }
+	Write-Output "FAIL: Have call trace or NIC name has been chagned"
 }
 
+
 DisconnectWithVIServer
+
 
 return $retVal
