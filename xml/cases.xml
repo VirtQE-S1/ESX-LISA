@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 30 -->
+            <!-- OVT Total Cases: 31 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -49,10 +49,11 @@
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>	
                 <suiteTest>ovt_scsi_timeout</suiteTest>								
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>												
             </suiteTests>
         </suite>
         <suite>
-            <!-- GO Total Cases: 16 -->
+            <!-- GO Total Cases: 17 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -71,6 +72,7 @@
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>go_unload_vmw_modules</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -100,7 +102,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 13 -->
+            <!-- Network Total Cases: 15 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -116,19 +118,18 @@
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
                 <suiteTest>nw_pktgen</suiteTest>
-				 
+                <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
+                <suiteTest>nw_nic_name_check_after_update</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 73 -->
+            <!-- Acceptance Total Cases: 77 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_pam_unix2</suiteTest>
-                <suiteTest>ovt_yum_install_ovt</suiteTest>
-                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest> <suiteTest>ovt_yum_install_ovt</suiteTest> <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
@@ -153,6 +154,7 @@
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_scsi_timeout</suiteTest>												
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>												
 
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -170,6 +172,7 @@
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest-->				
                 <!-- suiteTest>go_upgrade_kernel</suiteTest -->
                 <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>go_unload_vmw_modules</suiteTest>
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
@@ -200,7 +203,8 @@
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <!-- suiteTest>nw_hot_plug_e1000</suiteTest -->
                 <suiteTest>nw_pktgen</suiteTest>
-				
+                <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
+                <suiteTest>nw_nic_name_check_after_update</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -626,7 +630,21 @@
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
 		</test>		
-		
+        <test>
+            <testName>ovt_check_vmwaretool_directory</testName>
+            <testID>ESX-OVT-031</testID>
+            <testScript>ovt_check_vmwaretool_directory.sh</testScript>
+            <files>remote-scripts/ovt_check_vmwaretool_directory.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34904,RHEL7-52263</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -839,7 +857,22 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-		
+        <test>
+            <testName>go_unload_vmw_modules</testName>
+            <testID>ESX-OVT-017</testID>
+            <testScript>go_unload_vmw_modules.sh</testScript>
+            <files>remote-scripts/go_unload_vmw_modules.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>6200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
@@ -1251,6 +1284,35 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
+        </test>		
+        <test>
+        	<testName>nw_new_vmxnet3_dynamic_ip</testName>
+        	<testID>ESX-NW-014</testID>			
+            <setupscript>setupscripts\add_vmxnet3.ps1</setupscript>
+        	<testScript>nw_config_ifcfg.sh</testScript>
+        	<files>remote-scripts/nw_config_ifcfg.sh</files>			
+        	<files>remote-scripts/utils.sh</files>
+        	<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        	<timeout>600</timeout>
+        	<testParams>
+        		<param>TC_COVERED=RHEL6-34942,RHEL7-50922</param>
+        	</testParams>
+        	<onError>Continue</onError>
+        	<noReboot>False</noReboot>
+        </test>		
+        <test>
+        	<testName>nw_nic_name_check_after_update</testName>
+        	<testID>ESX-NW-015</testID>			
+        	<testScript>nw_nic_name_check_after_update.ps1</testScript>
+        	<files>testscripts/nw_nic_name_check_after_update.ps1</files>			
+        	<files>remote-scripts/utils.sh</files>
+        	<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        	<timeout>2400</timeout>
+        	<testParams>
+        		<param>TC_COVERED=RHEL6-38522,RHEL7-80534</param>
+        	</testParams>
+        	<onError>Continue</onError>
+        	<noReboot>False</noReboot>
         </test>		
     </testCases>
 
