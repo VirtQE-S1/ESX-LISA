@@ -96,3 +96,4 @@ else
 
 fi
     SetTestStateCompleted
+    exit 0
