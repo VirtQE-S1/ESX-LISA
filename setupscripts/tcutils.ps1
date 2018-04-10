@@ -264,6 +264,9 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         "*Red Hat Enterprise Linux Server release 6.*" {  $linuxDistro = "RedHat6"
                        break
                     }
+        "*Red Hat Enterprise Linux Server release 8.*" {  $linuxDistro = "RedHat8"
+                       break
+                    }					
         "*Oracle*" {  $linuxDistro = "Oracle"
                        break
                     }

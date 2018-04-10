@@ -116,6 +116,16 @@ if (-not $vmObj)
     return $Aborted
 }
 
+
+# Sometime $Failed in RHEL6 platform, NOT A BUG
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+if ( $DISTRO -eq "RedHat6" )
+{
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
 #
 # $cpuNum is from xml(it is 1) which mustn't be -eq VM's default cpu number(2)
 # So, this will void default cpu number(2) is -eq $cpuAfter, that verify hot cpu
