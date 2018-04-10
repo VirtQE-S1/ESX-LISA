@@ -195,18 +195,25 @@ else
 
 
 # pdate the Guest
-$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y"
+$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
+# Maybe yum update failed, kernel count also is one. Need check $update_guest
+if ($update_guest[-1] -ne "True")
+{
+    Write-Host -F red "ERROR: Yum update failed"
+    Write-Output "ERROR: Yum update failed"
+    return $Aborted
+}
 
 
 # Check kernels counts to identify 'yum update' passed or not
-$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel |wc -l"
+$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 Write-Host -F red "DEBUG: kernel_num: $kernel_num"
 Write-Output "DEBUG: kernel_num: $kernel_num"
 if ($kernel_num -eq "1")
 {
-    Write-Host -F red "ERROR: Guest yum update failed"
-    Write-Output "ERROR: Guest yum update failed"
-	Return $Aborted
+    Write-Host -F red "WARNING: Current Guest is latest"
+    Write-Output "WARNING: Current Guest is latest"
+	Return $Skipped
 }
 
 
