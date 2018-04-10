@@ -129,7 +129,9 @@
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_pam_unix2</suiteTest> <suiteTest>ovt_yum_install_ovt</suiteTest> <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest> 
+                <suiteTest>ovt_yum_install_ovt</suiteTest> 
+                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
@@ -1303,8 +1305,7 @@
         <test>
         	<testName>nw_nic_name_check_after_update</testName>
         	<testID>ESX-NW-015</testID>			
-        	<testScript>nw_nic_name_check_after_update.ps1</testScript>
-        	<files>testscripts/nw_nic_name_check_after_update.ps1</files>			
+            <testScript>testscripts/nw_nic_name_check_after_update.ps1</testScript>
         	<files>remote-scripts/utils.sh</files>
         	<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         	<timeout>2400</timeout>
