@@ -173,13 +173,26 @@ else
     }
 }
 
+
+# Before update, how many kernels
+$orginal_kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
+
+
 #Update the whole guest to new version with yum command.
-$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y"
+$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
+# Maybe yum update failed, kernel count also is one. Need check $update_guest
+if ($update_guest[-1] -ne "True")
+{
+    Write-Host -F red "ERROR: Yum update failed"
+    Write-Output "ERROR: Yum update failed"
+    return $Aborted
+}
+
 
 #Check the new kernel installed or not.
 $kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel |wc -l"
 write-host -F red "The kernel number is $kernel_num"
-if ($kernel_num -eq "1")
+if ($kernel_num -eq $orginal_kernel_num)
 {
     write-Output "no new kernel installed,no new compose for update."
     return $Skipped
@@ -198,7 +211,7 @@ $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 Start-Sleep -seconds 6
 # wait for vm to Start
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ( $ssh -ne $true )
+if ($ssh -ne $true)
 {
     Write-Output "Failed: Failed to start VM."
     return $Aborted
@@ -232,6 +245,9 @@ else
     }
 }
 
+
 DisconnectWithVIServer
 
+
 return $retVal
+
