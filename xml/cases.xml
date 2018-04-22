@@ -558,7 +558,7 @@
 			<testID>ESX-OVT-025</testID>
 			<testScript>testScripts\ovt_stop_start_synced_with_gui.ps1</testScript>
 			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-			<timeout>200</timeout>
+			<timeout>300</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-34907,RHEL7-50889</param>
             </testparams>
@@ -569,7 +569,7 @@
             <testID>ESX-OVT-026</testID>
             <testScript>testScripts\ovt_install_uninstall_synced_with_gui.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>200</timeout>
+            <timeout>300</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
 			</testparams>
@@ -869,7 +869,7 @@
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6200</timeout>
+            <timeout>6000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1007,7 +1007,7 @@
 			 <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
 			 <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
 			 <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-			 <timeout>200</timeout>
+			 <timeout>300</timeout>
 			 <testparams>
 				<param>TC_COVERED=RHEL6-38502,RHEL7-80230</param>
 			 </testparams>
