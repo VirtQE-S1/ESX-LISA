@@ -29,7 +29,7 @@ UtilsInit
 #
 # Start the testing
 #
-if [[ $DISTRO != "redhat_7" ]]; then
+if [[ $DISTRO == "redhat_6" ]]; then
     SetTestStateSkipped
     exit
 fi
