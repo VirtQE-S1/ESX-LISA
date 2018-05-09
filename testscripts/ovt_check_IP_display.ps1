@@ -121,7 +121,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 # OVT is skipped in RHEL6
-$OS = GetLinuxDistro  $ipv4 $sshKey
+$OS = GetLinuxDistro $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
     DisconnectWithVIServer
@@ -150,3 +150,4 @@ else
 
 DisconnectWithVIServer
 return $retVal
+

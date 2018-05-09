@@ -167,6 +167,7 @@ Write-Host -F Red "Now, will Suspend the VM......."
 Write-Output "Now, will Suspend the VM......."
 $suspend = Suspend-VM -VM $vmObj -Confirm:$False
 Start-Sleep -S 60
+
 # Get the new VM
 $vmObjSuspend = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $suspendState = $vmObjSuspend.PowerState
@@ -188,6 +189,7 @@ Write-Output "DONE. VM Power state is $suspendState"
 write-host -F Red "Now, will Power On the VM......."
 Write-Output "Now, will Power On the VM"
 $on = Start-VM -VM $vmObj -Confirm:$False
+
 # Debug below function
 $timeBefore = Get-Date
 Write-Host -F Red "$timeBefore"
@@ -235,3 +237,4 @@ else
 DisconnectWithVIServer
 
 return $retVal
+

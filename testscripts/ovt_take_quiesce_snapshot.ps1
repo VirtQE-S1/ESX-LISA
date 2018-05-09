@@ -172,3 +172,4 @@ else
 DisconnectWithVIServer
 
 return $retVal
+

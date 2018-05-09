@@ -292,6 +292,9 @@ GetDistro()
 		*Red*7*)
 			DISTRO=redhat_7
 			;;
+		*Red*8*)
+			DISTRO=redhat_8
+			;;
 		*Red*)
 			DISTRO=redhat_x
 			;;

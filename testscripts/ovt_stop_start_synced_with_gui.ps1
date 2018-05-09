@@ -125,19 +125,20 @@ if (-not $vmObj){
     DisconnectWithVIServer
     exit
 }
+
 # Get guest version
-$DISTRO = ""
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" ){
     DisconnectWithVIServer
     return $Skipped
-    Exit
 }
+
 #
 #  Stop OVt and Check OVT status in VM
 #
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl stop vmtoolsd"       
 $vmtoolsDeadInVm = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl status vmtoolsd |grep dead"
+
 #
 # Wait OVT status change in host
 #
@@ -162,11 +163,13 @@ while ($timeout1 -gt 0)
         break
     }
 }
+
 #
 #  Start OVt and Check OVT status in VM
 #             
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl start vmtoolsd"
 $vmtoolsRunningInVm = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl status vmtoolsd |grep running"
+
 #
 # Wait OVT status change in host
 #
@@ -219,6 +222,8 @@ else{
     Write-Output "Error :after stop,vmtools status in vm not the dead"
     $retVal=$Aborted
 }
+
 "Info : ovt_stop_start_synced_with_gui.ps1 script completed"
 DisconnectWithVIServer
 return $retVal
+

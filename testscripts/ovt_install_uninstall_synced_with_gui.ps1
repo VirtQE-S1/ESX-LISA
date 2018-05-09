@@ -127,26 +127,21 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj){
     Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
-    Exit
 }
 
 
 #
 # Get guest version
 #
-
-$DISTRO = ""
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" ){
     DisconnectWithVIServer
     return $Skipped
-    Exit
 }
 
 #
 # Check OVT status in vCenter
 #
-
 $vmtoolsStatusInHost =  Get-VMHost -Name $hvServer | Get-VM -Name $vmName | Select-Object Name,@{Name="toolstatus";Expression={$_.ExtensionData.summary.guest.toolsVersionStatus}}
 $vmtoolsInHost = $null
 if ($vmtoolsStatusInHost.Name -eq $vmName){
@@ -155,7 +150,6 @@ if ($vmtoolsStatusInHost.Name -eq $vmName){
 if ($vmtoolsInHost -eq "guestToolsNotInstalled"){
    DisconnectWithVIServer
    return $Aborted
-   Exit
 }
 
 #
@@ -192,16 +186,15 @@ while ($timeout -gt 0)
 #
 # check OVT status after uninstall OVT
 #
-
 if ($vmtoolsEraseInHost -eq "guestToolsNotInstalled"){
     Write-Output "Pass :after uninstall,vmtools status in host is uninstalled"
     $retVal=$Passed
 }
 else{
     Write-Output "Error :after uninstall,vmtools status in host is not uninstalled"
-    $retVal=$Failed
 }
 
 "Info : ovt_install_uninstall_synced_with_gui.ps1 script completed"
 DisconnectWithVIServer
 return $retVal
+

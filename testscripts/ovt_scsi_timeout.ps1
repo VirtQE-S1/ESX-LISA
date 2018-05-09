@@ -141,6 +141,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 
 $retVal = $Failed
+
 #
 # OVT is skipped in RHEL6
 #
@@ -153,10 +154,10 @@ if ($OS -eq "RedHat6")
 
 # Check the scsi timeout value in two files.
 $scsi_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/block/sda/device/timeout |grep 180"
-Write-Host -F red "/sys/block/sda/device/timeout is $scsi_timeout"
+Write-Host -F Red "/sys/block/sda/device/timeout is $scsi_timeout"
 
 $udev_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180"
-Write-Host -F red "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180 is $udev_timeout"
+Write-Host -F Red "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180 is $udev_timeout"
 
 if ($udev_timeout -and $scsi_timeout)
 {
@@ -171,3 +172,4 @@ else{
 DisconnectWithVIServer
 
 return $retVal
+

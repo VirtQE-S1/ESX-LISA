@@ -104,7 +104,7 @@ $retVal = $Failed
 # OVT is skipped in RHEL6
 #
 $OS = GetLinuxDistro  $ipv4 $sshKey
-if ($OS -ne "RedHat7")
+if ($OS -eq "RedHat6")
 {
     DisconnectWithVIServer
     return $Skipped
@@ -120,7 +120,7 @@ else
     bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'init 6'
 
     # Note: start sleep for few seconds to wait for vm to stop first
-    Start-Sleep -seconds 5
+    Start-Sleep -seconds 6
 
     # wait for vm to Start
     $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
@@ -137,8 +137,8 @@ else
             Write-Output "Failed: Failed to get vmtoolsd status from VM."
         }
     }
-
 }
 
 DisconnectWithVIServer
 return $retVal
+
