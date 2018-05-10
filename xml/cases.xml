@@ -47,9 +47,9 @@
                 <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
-                <suiteTest>ovt_vgauth_del_alias</suiteTest>	
-                <suiteTest>ovt_scsi_timeout</suiteTest>								
-                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>												
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>
+                <suiteTest>ovt_scsi_timeout</suiteTest>
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -81,14 +81,14 @@
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>				
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
-                <suiteTest>stor_add_large_file</suiteTest>					
+                <suiteTest>stor_add_large_file</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -129,8 +129,8 @@
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_pam_unix2</suiteTest> 
-                <suiteTest>ovt_yum_install_ovt</suiteTest> 
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
+                <suiteTest>ovt_yum_install_ovt</suiteTest>
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
@@ -140,9 +140,12 @@
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <!-- suiteTest>ovt_check_oneshot_timesync</suiteTest>
-                <suiteTest>ovt_check_period_timesync</suiteTest>
-                <suiteTest>ovt_check_suspend_timesync</suiteTest -->
+                <!-- Unstable Case -->
+                <!-- suiteTest>ovt_check_oneshot_timesync</suiteTest -->
+                <!-- Unstable Case -->
+                <!-- suiteTest>ovt_check_period_timesync</suiteTest -->
+                <!-- Unstable Case -->
+                <!-- suiteTest>ovt_check_suspend_timesync</suiteTest -->
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>
@@ -155,8 +158,8 @@
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
-                <suiteTest>ovt_scsi_timeout</suiteTest>												
-                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>												
+                <suiteTest>ovt_scsi_timeout</suiteTest>
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
 
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -164,32 +167,40 @@
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
+                <!-- Unstable Case -->
                 <!-- suiteTest>go_suspend_vm</suiteTest -->
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
+                <!-- Unstable Case -->
                 <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
                 <suiteTest>go_install_ide_disk</suiteTest>
-                <!--suiteTest>go_reboot_12G_memory</suiteTest>
+                <!-- Stress Case -->
+                <!--suiteTest>go_reboot_12G_memory</suiteTest -->
                 <suiteTest>go_reboot_100_times</suiteTest>
-                <suiteTest>go_reboot_debugkernel_10_times</suiteTest-->				
-                <!-- suiteTest>go_upgrade_kernel</suiteTest -->
+                <!-- Stress Case -->
+                <!-- suiteTest>go_reboot_debugkernel_10_times</suiteTest-->
+                <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
-                <suiteTest>go_unload_vmw_modules</suiteTest>
+                <!-- Stress Case -->
+                <!-- suiteTest>go_unload_vmw_modules</suiteTest -->
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
-                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
+                <!-- Unstable Case -->
+                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
+                <!-- Unstable Case -->
+                <!-- suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
-                <suiteTest>stor_add_large_file</suiteTest>				
+                <suiteTest>stor_add_large_file</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
+                <!-- Unstable Case -->
                 <!-- suiteTest>kdump_crash_diff_size</suiteTest -->
 
                 <suiteTest>nw_ping</suiteTest>
@@ -197,12 +208,14 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
+                <!-- Unstable Case -->
                 <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
+                <!-- Unstable Case -->
                 <!-- suiteTest>nw_hot_plug_e1000</suiteTest -->
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
@@ -579,7 +592,7 @@
             <testName>ovt_vgauth_add_alias</testName>
             <testID>ESX-OVT-027</testID>
             <testScript>ovt_vgauth_add_alias.sh</testScript>
-            <files>remote-scripts/ovt_vgauth_add_alias.sh</files>			
+            <files>remote-scripts/ovt_vgauth_add_alias.sh</files>
 			<files>remote-scripts/utils.sh</files>
             <files>bin/ovt_cert.pem</files>
             <testParams>
@@ -589,12 +602,12 @@
             <timeout>120</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>		
+        </test>
         <test>
             <testName>ovt_vgauth_list_alias</testName>
             <testID>ESX-OVT-028</testID>
             <testScript>ovt_vgauth_list_alias.sh</testScript>
-            <files>remote-scripts/ovt_vgauth_list_alias.sh</files>			
+            <files>remote-scripts/ovt_vgauth_list_alias.sh</files>
 			<files>remote-scripts/utils.sh</files>
             <files>bin/ovt_cert.pem</files>
             <testParams>
@@ -609,7 +622,7 @@
             <testName>ovt_vgauth_del_alias</testName>
             <testID>ESX-OVT-029</testID>
             <testScript>ovt_vgauth_del_alias.sh</testScript>
-            <files>remote-scripts/ovt_vgauth_del_alias.sh</files>			
+            <files>remote-scripts/ovt_vgauth_del_alias.sh</files>
 			<files>remote-scripts/utils.sh</files>
             <files>bin/ovt_cert.pem</files>
             <testParams>
@@ -631,7 +644,7 @@
 			<timeout>300</timeout>
 			<onError>Continue</onError>
 			<noReboot>False</noReboot>
-		</test>		
+		</test>
         <test>
             <testName>ovt_check_vmwaretool_directory</testName>
             <testID>ESX-OVT-031</testID>
@@ -928,7 +941,7 @@
                 <param>TC_COVERED=RHEL6-38510,RHEL7-80183</param>
             </testparams>
             <onError>Continue</onError>
-        </test>		
+        </test>
         <test>
 			<testName>stor_hdx_resize_to_bigger</testName>
 			<testID>ESX-STOR-004</testID>
@@ -988,7 +1001,7 @@
 				<param>TC_COVERED=RHEL6-34926,RHEL7-50906</param>
 			</testparams>
 			<onError>Continue</onError>
-		</test>		
+		</test>
 		 <test>
 			<testName>stor_check_pvscsi_error</testName>
 			<testID>ESX-STOR-008</testID>
@@ -1002,7 +1015,7 @@
 			<noReboot>False</noReboot>
 		</test>
 		 <test>
-			 <testName>stor_add_independent_disk</testName>      
+			 <testName>stor_add_independent_disk</testName>
 			 <testID>ESX-STOR-009</testID>
 			 <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
 			 <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
@@ -1012,9 +1025,9 @@
 				<param>TC_COVERED=RHEL6-38502,RHEL7-80230</param>
 			 </testparams>
 			 <onError>Continue</onError>
-		 </test> 		
+		 </test>
 		<test>
-			<testName>stor_add_large_file</testName>      
+			<testName>stor_add_large_file</testName>
 			<testID>ESX-STOR-010</testID>
 			<testScript>testScripts\stor_add_large_file.ps1</testScript>
 			<files>remote-scripts/utils.sh,remote-scripts/fdisk.sh</files>
@@ -1024,7 +1037,7 @@
 			<testparams>
 				<param>TC_COVERED=RHEL6-38508,RHEL7-80181</param>
 			</testparams>
-			<onError>Continue</onError>        
+			<onError>Continue</onError>
 		</test>
 
         <test>
@@ -1277,7 +1290,7 @@
             <testName>nw_pktgen</testName>
             <testID>ESX-NW-013</testID>
             <testScript>nw_pktgen.sh</testScript>
-            <files>remote-scripts/nw_pktgen.sh</files>			
+            <files>remote-scripts/nw_pktgen.sh</files>
 			<files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>360</timeout>
@@ -1286,13 +1299,13 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>		
+        </test>
         <test>
         	<testName>nw_new_vmxnet3_dynamic_ip</testName>
-        	<testID>ESX-NW-014</testID>			
+        	<testID>ESX-NW-014</testID>
             <setupscript>setupscripts\add_vmxnet3.ps1</setupscript>
         	<testScript>nw_config_ifcfg.sh</testScript>
-        	<files>remote-scripts/nw_config_ifcfg.sh</files>			
+        	<files>remote-scripts/nw_config_ifcfg.sh</files>
         	<files>remote-scripts/utils.sh</files>
         	<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         	<timeout>600</timeout>
@@ -1301,10 +1314,10 @@
         	</testParams>
         	<onError>Continue</onError>
         	<noReboot>False</noReboot>
-        </test>		
+        </test>
         <test>
         	<testName>nw_nic_name_check_after_update</testName>
-        	<testID>ESX-NW-015</testID>			
+        	<testID>ESX-NW-015</testID>
             <testScript>testscripts/nw_nic_name_check_after_update.ps1</testScript>
         	<files>remote-scripts/utils.sh</files>
         	<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1314,7 +1327,7 @@
         	</testParams>
         	<onError>Continue</onError>
         	<noReboot>False</noReboot>
-        </test>		
+        </test>
     </testCases>
 
     <VMs>
