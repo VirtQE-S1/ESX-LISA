@@ -1,15 +1,15 @@
 ###############################################################################
 ##
 ## Description:
-##   Check reboot in vm
-##   Return passed, case is passed; return failed, case is failed
+##  Check reboot of the VM
 ##
-###############################################################################
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check reboot in vm.
+##  v1.0.0 - hhei - 1/6/2017 - Check reboot of the VM
+##  v1.0.1 - boyang - 05/11/2018 - Enhance the script and exit 100 if false
 ##
 ###############################################################################
+
 
 <#
 .Synopsis
@@ -25,20 +25,23 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -46,10 +49,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -71,6 +76,10 @@ foreach ($p in $params)
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -87,6 +96,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -98,27 +108,49 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$result = $Failed
-$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmOut)
+
+###############################################################################
+#
+# Main Body
+#
+###############################################################################
+
+
+$retVal = $Failed
+
+
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj)
 {
-    Write-Error -Message "go_check_reboot: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
+}
+
+
+# Execute 'reboot' commnad in the VM
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+
+
+# Sleep for seconds to wait for the VM stopping firstly
+Start-Sleep -seconds 6
+
+
+# Wait for the VM booting
+$ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+if ($ret -eq $true)
+{
+    Write-Host -F Red "PASS: Complete the booting"
+    Write-Output "PASS: Complete the booting"
+    $retVal = $Passed
 }
 else
 {
-    bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-
-    # Note: start sleep for few seconds to wait for vm to stop first
-    Start-Sleep -seconds 5
-
-    # wait for vm to Start
-    $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ( $ret -eq $true )
-    {
-        $result = $Passed
-    }
-
+    Write-Host -F Red "FAIL: The booting failed"
+    Write-Output "FAIL: The booting failed"
 }
+
 
 DisconnectWithVIServer
 return $result

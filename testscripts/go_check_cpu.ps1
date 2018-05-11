@@ -1,19 +1,17 @@
 ###############################################################################
 ##
 ## Description:
-##   Check cpu count in vm
-##   Return passed, case is passed; return failed, case is failed
-##
-###############################################################################
+##   Check CPU count in the VM
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check cpu count in vm.
-## v1.1 - hhei - 1/10/2017 - Update log info.
-## v1.2 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##                          true is changed to passed,
-##                          false is changed to failed.
+##  v1.0.0 - hhei - 01/6/2017 - Check cpu count in vm
+##  v1.0.1 - hhei - 01/10/2017 - Update log info
+##  v1.0.2 - hhei - 02/6/2017 - Remove TC_COVERED and update return value
+##  v1.0.3 - boyang - 05/10/2018 - Enhance the script and exit 100 if false
 ##
 ###############################################################################
+
+
 <#
 .Synopsis
     Demo script ONLY for test script.
@@ -28,20 +26,23 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -49,10 +50,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -75,6 +78,10 @@ foreach ($p in $params)
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -91,6 +98,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -102,28 +110,41 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $Failed
+
+###############################################################################
+#
+# Main Body
+#
+###############################################################################
+
+
+$retVal = $Failed
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
+}
+
+
+# Check CPU count in the VM
+$vm_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
+if ($vm_num -eq $numCPUs)
+{
+    Write-Host -F Red "PASS: CPU count in the VM is correct"
+    Write-Output "PASS: CPU count in the VM is correct"
+    $retVal = $Passed
 }
 else
 {
-    # check cpu number in vm
-    $vm_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
-    if ($vm_num -eq $numCPUs)
-    {
-        "Info : Set CPU count to $vm_num successfully"
-        $Result = $Passed
-    }
-    else
-    {
-        "Error : Set CPU count failed"
-    }
-
+    Write-Host -F Red "FAIL: CPU count in the VM is incorrect"
+    Write-Output "FAIL: CPU count in the VM is incorrect"
 }
 
-"Info : go_check_cpu.ps1 script completed"
+
 DisconnectWithVIServer
-return $Result
+return $retVal

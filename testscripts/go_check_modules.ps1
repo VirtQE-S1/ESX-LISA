@@ -1,18 +1,16 @@
 ###############################################################################
 ##
 ## Description:
-##   Check modules in vm
-##   Return passed, case is passed; return failed, case is failed
-##
-###############################################################################
+##  Check modules in the VM
 ##
 ## Revision:
-## v1.0 - hhei - 1/6/2017 - Check modules in vm.
-## v1.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##                          true is changed to passed,
-##                          false is changed to failed.
+##  v1.0.0 - hhei - 1/6/2017 - Check modules in the VM
+##  v1.0.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
+##  v1.0.2 - boyang - 05/10/2018 - Enhance the script and exit 100 if false
 ##
 ###############################################################################
+
+
 <#
 .Synopsis
     Demo script ONLY for test script.
@@ -27,20 +25,23 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -48,10 +49,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -71,10 +74,15 @@ foreach ($p in $params)
     "ipv4"         { $ipv4 = $fields[1].Trim() }
     "rhel6_modules" { $rhel6_modules = $fields[1].Trim()}
     "rhel7_modules" { $rhel7_modules = $fields[1].Trim()}
+    "rhel8_modules" { $rhel8_modules = $fields[1].Trim()}
     default        {}
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -91,6 +99,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -102,60 +111,81 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-$Result = $Failed
+
+###############################################################################
+#
+# Main Body
+#
+###############################################################################
+
+
+$retVal = $Failed
+$modules_array = ""
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
+}
+
+
+# Get the Guest version
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+if (-not $DISTRO)
+{
+    Write-Host -F Red "ERROR: Guest OS version is NULL"
+    Write-Output "ERROR: Guest OS version is NULL"
+    DisconnectWithVIServer
+	return $Aborted
+}
+Write-Host -F Red "INFO: Guest OS version is $DISTRO"
+Write-Output "INFO: Guest OS version is $DISTRO"
+
+
+# Different Guest DISTRO, different modules
+if ($DISTRO -eq "RedHat6")
+{
+    $modules_array = $rhel6_modules.split(",")
+}
+elseif ($DISTRO -eq "RedHat7")
+{
+    $modules_array = $rhel7_modules.split(",")
+}
+elseif ($DISTRO -eq "RedHat8")
+{
+    $modules_array = $rhel8_modules.split(",")
 }
 else
 {
-    # Get guest version
-    $DISTRO = ""
-    $modules_array = ""
-    $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-    if ( -not $DISTRO )
+    Write-Host -F Red "ERROR: Guest OS version isn't belong to test scope"
+    Write-Output "ERROR: Guest OS version isn't belong to test scope"
+    DisconnectWithVIServer
+	return $Aborted
+}
+
+
+# Check the modules in current Guest OS
+foreach ($m in $modules_array)
+{
+    $module = $m.Trim()
+    $ret = CheckModule $ipv4 $sshKey $module
+    if ($ret -eq $true)
     {
-        "Error : Guest OS version is NULL"
-        $Result = $Failed
-    }
-    elseif ( $DISTRO -eq "RedHat6" )
-    {
-        $modules_array = $rhel6_modules.split(",")
-        $Result = $Passed
-    }
-    elseif ( $DISTRO -eq "RedHat7" )
-    {
-        $modules_array = $rhel7_modules.split(",")
-        $Result = $Passed
+        Write-Host -F Red "PASS: Complete the check of $moudle"
+        Write-Output "PASS: Complete the check of $moudle"
+        $retVal = $Passed
     }
     else
     {
-        "Error : Guest OS version is $DISTRO"
-        $Result = $Failed
-    }
-
-    "Info : Guest OS version is $DISTRO"
-
-    if ( $Result -eq $Passed )
-    {
-        foreach ( $m in $modules_array )
-        {
-            $module = $m.Trim()
-            $r = CheckModule $ipv4 $sshKey $module
-            if ( $r -eq $true )
-            {
-                "Info : Check module '$module' successfully"
-            }
-            else
-            {
-                "Error : Check module '$module' failed"
-                $Result = $Failed
-            }
-        }
+        Write-Host -F Red "FAIL: The check of $moudle failed"
+        Write-Output "FAIL: The check of $moudle failed"
     }
 }
 
-"Info : go_check_modules.ps1 script completed"
+
 DisconnectWithVIServer
-return $Result
+return $retVal

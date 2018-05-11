@@ -1,14 +1,14 @@
 ###############################################################################
 ##
 ## Description:
-## Check NIC operstate when ifup / ifdown
-##
-###############################################################################
+##  Check NIC operstate when ifup / ifdown
 ##
 ## Revision:
-## v1.0 - boyang - 08/31/2017 - Build script
+##  v1.0.0 - boyang - 08/31/2017 - Build the script
+##  v1.0.1 - boyang - 05/10/2018 - Enhance the script in debug info
 ##
 ###############################################################################
+
 
 <#
 .Synopsis
@@ -27,7 +27,9 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
 
 #
 # Checking the input arguments
@@ -49,10 +51,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
+
 #
 # Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse test parameters
@@ -63,10 +67,10 @@ $ipv4 = $null
 $logdir = $null
 
 $params = $testParams.Split(";")
-foreach ($p in $params) 
+foreach ($p in $params)
 {
 	$fields = $p.Split("=")
-	switch ($fields[0].Trim()) 
+	switch ($fields[0].Trim())
 	{
 		"rootDir"		{ $rootDir = $fields[1].Trim() }
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
@@ -75,6 +79,7 @@ foreach ($p in $params)
 		default			{}
     }
 }
+
 
 #
 # Check all parameters are valid
@@ -95,13 +100,13 @@ else
 	}
 }
 
-if ($null -eq $sshKey) 
+if ($null -eq $sshKey)
 {
 	"FAIL: Test parameter sshKey was not specified"
 	return $False
 }
 
-if ($null -eq $ipv4) 
+if ($null -eq $ipv4)
 {
 	"FAIL: Test parameter ipv4 was not specified"
 	return $False
@@ -113,6 +118,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
+
 #
 # Source tcutils.ps1
 #
@@ -123,11 +129,13 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
+
 
 $retVal = $Failed
 $new_network_name = "VM Network"
@@ -138,27 +146,37 @@ $new_network_name = "VM Network"
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
-    Write-Error -Message "nw_remove_vmxnet3.ps1: Unable to get-vm with $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
 	return $Aborted
 }
 
-#
-# Hot plug a new NICs
-#
-$new_nic_obj_x = New-NetworkAdapter -VM $vmOut -NetworkName $new_network_name -WakeOnLan -StartConnected -Confirm:$false
-Write-Host -F red "Get new NIC: $new_nic_obj_x"
 
+#
+# Hot plug a new NIC
+#
+Write-Host -F Red "INFO: Is adding a new NIC"
+Write-Output "INFO: Is adding a new NIC"
+$new_nic_obj_x = New-NetworkAdapter -VM $vmOut -NetworkName $new_network_name -WakeOnLan -StartConnected -Confirm:$false
+Write-Host -F Red "DEBUG: new_nic_obj_x: $new_nic_obj_x"
+Write-Output "DEBUG: new_nic_obj_x: $new_nic_obj_x"
+
+
+# Confirm NIC count
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
-Write-Host -F red "All NICs: $all_nic_count"
-if ($all_nic_count -eq 2)
+Write-Host -F Red "DEBUG: all_nic_count: $all_nic_count"
+Write-Output "DEBUG: all_nic_count: $all_nic_count"
+if ($all_nic_count -ne 2)
 {
-    Write-Output "PASS: Hot plug vmxnet3 well"
-}
-else
-{
-    Write-Error -Message "FAIL: Unknow issue after hot plug adapter, check it manually" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Hot plug vmxnet3 failed"
+    Write-Output "ERROR: Hot plug vmxnet3 failed"
+    DisconnectWithVIServer
     return $Aborted
 }
+Write-Host -F Red "INFO: Hot plug vmxnet3 done"
+Write-Output "INFO: Hot plug vmxnet3 done"
+
 
 #
 # Send nw_config_ifcfg.sh to VM which setup new NIC ifcfg file, ifdown / ifup to check operstate
@@ -166,17 +184,18 @@ else
 #$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh"
 $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh" -WindowStyle Hidden -Wait -PassThru
 $exit_code = $process.ExitCode
-Write-Host -F red "Debug: $exit_code"
-if ($exit_code -ne 0)
+if ($exit_code -eq 0)
 {
-	Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM."
-	DisconnectWithVIServer
+    Write-Host -F Red "PASS: Complete to execute nw_check_operstate.sh in VM"
+	Write-Output "PASS: Complete to execute nw_check_operstate.sh in VM"
+    $retVal = $Passed
 }
 else
 {
-    $retVal = $Passed
+    Write-Host -F Red "FAIL: Failed to execute nw_check_operstate.sh in VM"
+    Write-Output "FAIL: Failed to execute nw_check_operstate.sh in VM"
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

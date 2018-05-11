@@ -669,6 +669,7 @@
                 <param>nic_type=Vmxnet3</param>
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
+                <param>rhel8_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
                 <param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

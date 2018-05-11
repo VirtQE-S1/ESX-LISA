@@ -1,16 +1,12 @@
 ###############################################################################
 ##
 ## Description:
-##   Check memory in vm
-##   Return passed, case is passed; return failed, case is failed
-##
-###############################################################################
+##   Check memory in the VM
 ##
 ## Revision:
-## v1.0 - hhei - 1/9/2017 - Check memory in vm.
-## v1.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##                          true is changed to passed,
-##                          false is changed to failed.
+##  v1.0.0 - hhei - 1/9/2017 - Check memory in the VM
+##  v1.0.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
+##  v1.0.2 - boyang - 05/11/2018 - Enhance the script and exit 100 if false
 ##
 ###############################################################################
 <#
@@ -27,7 +23,10 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 ########################################################################
 #
 # ConvertStringToDecimal()
@@ -64,19 +63,21 @@ function ConvertStringToDecimal([string] $str)
 
     return $uint64Size
 }
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -84,10 +85,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -111,6 +114,10 @@ foreach ($p in $params)
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -127,6 +134,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -138,57 +146,80 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
+###############################################################################
+#
+# Main Body
+#
+###############################################################################
+
+
+$retVal = $Failed
+
+
 $staticMemory = ConvertStringToDecimal $mem.ToUpper()
 
-$Result = $Failed
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
 }
-else
+
+
+$expected_mem = ([Convert]::ToDecimal($staticMemory)) * 1024 * 1024
+Write-Host -F Red "DEBUG: Expected total memory is $expected_mem"
+Write-Output "DEBUG: Expected total memory is $expected_mem"
+
+
+$diff = 100
+# Check mem in the VM
+# MemTotal in /proc/meminfo is kB
+$meminfo_total = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "awk '/MemTotal/{print `$2}' /proc/meminfo"
+if (-not $meminfo_total)
 {
-    $expected_mem = ([Convert]::ToDecimal($staticMemory)) * 1024 * 1024
-    "Info : Expected total memory is $expected_mem"
-    $diff = 100
-    # check mem in vm
-    # MemTotal in /proc/meminfo is kB
-    $meminfo_total = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "awk '/MemTotal/{print `$2}' /proc/meminfo"
-    if ( -not $meminfo_total )
+    Write-Host -F Red "ERROR: Get MemTotal from /proc/meminfo failed"
+    Write-Output "ERROR: Get MemTotal from /proc/meminfo failed"
+    DisconnectWithVIServer
+    return $Aborted
+}
+Write-Host -F Red "INFO: meminfo_total: $meminfo_total"
+Write-Output "INFO: meminfo_total: $meminfo_total"
+
+
+# Kdump reserved memory size with B, need to devide 1024
+$kdump_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/kernel/kexec_crash_size"
+if ( $kdump_kernel -ge 0 )
+{
+    # Get the acutal total memory size
+    $meminfo_total = ([Convert]::ToDecimal($meminfo_total)) + (([Convert]::ToDecimal($kdump_kernel))/1024)
+    Write-Host -F Red "INFO: Acutal total memory: $meminfo_total"
+    Write-Output "INFO: Acutal total memory: $meminfo_total"
+
+    # Check diff, diff should < standard_diff
+    $diff = ($expected_mem - $meminfo_total)/$expected_mem
+    if ( $diff -lt $standard_diff -and $diff -gt 0 )
     {
-        "Error : Get MemTotal from /proc/meminfo failed"
-        $Result = $Failed
+        "Info : Check memory in vm passed, diff is $diff (standard is $standard_diff)"
+        Write-Host -F Red "PASS : Complete the memory check. And diff is $diff(standard is $standard_diff)"
+        Write-Output "PASS : Complete the memory check. And diff is $diff(standard is $standard_diff)"
+        $retVal = $Passed
     }
     else
     {
-        # kdump reserved memory size, in B,need to devide 1024
-        $kdump_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/kernel/kexec_crash_size"
-        if ( $kdump_kernel -ge 0 )
-        {
-
-            $meminfo_total = ([Convert]::ToDecimal($meminfo_total)) + (([Convert]::ToDecimal($kdump_kernel))/1024)
-            "Info : Acutal total memory in vm is $meminfo_total"
-
-            $diff = ($expected_mem - $meminfo_total)/$expected_mem
-            if ( $diff -lt $standard_diff -and $diff -gt 0 )
-            {
-                "Info : Check memory in vm passed, diff is $diff (standard is $standard_diff)"
-                $Result = $Passed
-            }
-            else
-            {
-                "Error : Check memory in vm failed, actual is: $diff (standard is $standard_diff)"
-                $Result = $Failed
-            }
-        }
-        else
-        {
-            "Error : Get kdump memory size from /sys/kernel/kexec_crash_size failed"
-            $Result = $Failed
-        }
+        Write-Host -F Red "FAIL : Memory check failed. And diff is $diff(standard is $standard_diff)"
+        Write-Output "FAIL : Memory check failed. And diff is $diff(standard is $standard_diff)"
     }
-
 }
-"Info : go_check_memory.ps1 script completed"
+else
+{
+    Write-Host -F Red "ERROR: Get kdump memory size from /sys/kernel/kexec_crash_size failed"
+    Write-Output "ERROR: Get kdump memory size from /sys/kernel/kexec_crash_size failed"
+}
+
+
 DisconnectWithVIServer
-return $Result
+return $retVal
