@@ -232,7 +232,8 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         return $null
     }
 
-    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -hs 'Ubuntu\|SUSE\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux Server release [0-9]\.[0-9]\|Oracle' /etc/{issue,*release,*version}"
+    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -Ehs 'Ubuntu|SUSE|Fedora|Debian|CentOS|Red Hat Enterprise Linux (Server |)release [0-9]{1,2}.[0-9]{1,2}|Oracle' /etc/{issue,*release,*version}"
+	Write-Host -F red "Debug: distro: $distro"
     if (-not $distro)
     {
         Write-Error -Message "Return value is null" -Category InvalidData -ErrorAction SilentlyContinue
@@ -264,7 +265,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         "*Red Hat Enterprise Linux Server release 6.*" {  $linuxDistro = "RedHat6"
                        break
                     }
-        "*Red Hat Enterprise Linux Server release 8.*" {  $linuxDistro = "RedHat8"
+        "*Red Hat Enterprise Linux release 8.*" {  $linuxDistro = "RedHat8"
                        break
                     }					
         "*Oracle*" {  $linuxDistro = "Oracle"

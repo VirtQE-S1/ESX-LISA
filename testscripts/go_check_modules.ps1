@@ -135,6 +135,7 @@ if (-not $vmObj)
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+Write-Host -F red "DEBUG: $DISTRO"
 if (-not $DISTRO)
 {
     Write-Host -F Red "ERROR: Guest OS version is NULL"
