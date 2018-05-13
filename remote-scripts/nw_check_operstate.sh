@@ -1,18 +1,20 @@
 #!/bin/bash
 
+
 ###############################################################################
 ##
 ## Description:
-## Check NIC operstate when ifup / ifdown
-##
-###############################################################################
+## 	Check NIC operstate when ifup / ifdown
 ##
 ## Revision:
-## v1.0 - boyang - 08/31/2017 - Build script
+## 	v1.0.0 - boyang - 08/31/2017 - Build the script
+## 	v1.0.1 - boyang - 05/14/2018 - Enhance the script
 ##
 ###############################################################################
 
+
 dos2unix utils.sh
+
 
 #
 # Source utils.sh
@@ -22,10 +24,12 @@ dos2unix utils.sh
 	exit 1
 }
 
+
 #
 # Source constants file and initialize most common variables
 #
 UtilsInit
+
 
 #######################################################################
 #
@@ -33,10 +37,12 @@ UtilsInit
 #
 #######################################################################
 
+
 # Get all NICs interfaces
 nics=`ls /sys/class/net | grep ^e[tn][hosp]`
 network_scripts="/etc/sysconfig/network-scripts"
 ifcfg_orignal="/root/ifcfg-orignal"
+
 
 #
 # Copy the orignal ifcfg file under $network_scripts to /root
@@ -49,6 +55,7 @@ do
     fi
 done
 
+
 #
 # Confirm which nics are added newly
 # Setup their ifcfg files
@@ -56,38 +63,39 @@ done
 #
 for i in $nics
 do
-    LogMsg "Now, checking $i......."
-	UpdateSummary "Now, checking $i......."
+    LogMsg "INFO: Is checking $i......."
+	UpdateSummary "INFO: Is checking $i......."
     if [ ! -f $network_scripts/ifcfg-$i ]
     then
         # New NIC needs to create its ifcfg scripts based on orignal nic's script
-        LogMsg "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
-        UpdateSummary "DONE. $i is a new one nic, will create ifcfg-$i fot $i"
+        LogMsg "INFO: $i is a new one nic, will create ifcfg-$i fot $i"
+        UpdateSummary "INFO: $i is a new one nic, will create ifcfg-$i fot $i"
         cp $ifcfg_orignal $network_scripts/ifcfg-$i
-        
+
         # Comment UUID
-        LogMsg "Now, commenting UUID"
-        UpdateSummary "Now, commenting UUID"
+        LogMsg "INFO: Commenting UUID"
+        UpdateSummary "INFO: Commenting UUID"
         sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$i
-        
+
         # Comment original DEVICE
-        LogMsg "Now, commenting DEVICE"
-        UpdateSummary "Now, commenting DEVICE"
+		LogMsg "INFO: Commenting DEVICE"
+        UpdateSummary "INFO: Commenting DEVICE"
         sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$i
         # Add a new DEVICE to script
-        LogMsg "Now, adding a new DEVICE"
-        UpdateSummary "Now, add a new DEVICE"      
-        echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i    
-        
+        LogMsg "INFO: Is adding a new DEVICE"
+        UpdateSummary "INFO: Is adding a new DEVICE"
+        echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i
+
         # Comment original NAME
-        LogMsg "Now, commenting NAME"
-        UpdateSummary "Now, commenting NAME"
+		LogMsg "INFO: Commenting NAME"
+        UpdateSummary "INFO: Commenting ENVVISUSERNAME"
         sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$i
         # Add a new NAME to script
-        LogMsg "Now, adding a new NAME"
-        UpdateSummary "Now, add a new NAME"      
+		LogMsg "INFO: Is adding a new NAME"
+        UpdateSummary "INFO: Is adding a new NAME"
         echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$i
-  
+
+
         #
         # Test new NIC ifup / ifdown. No ping function to test
         # Firstly, stop SELINUX, NetworkManager, and restart network
@@ -120,52 +128,52 @@ do
                 fi
             fi
         }
+
+
         #
         # Test checking operstate under ifup / ifdown
-        # 
-        LogMsg "Now, check operstate under ifdown"
-        UpdateSummary "Now, check operstate under ifdown" 
+        #
+        LogMsg "INFO: Is checking operstate under ifdown"
+		UpdateSummary "INFO: Is checking operstate under ifdown"
         ifdown $i
         if [ $? -eq 0 ]
         then
-            LogMsg "DONE: $i ifdown works well"
-            UpdateSummary "DONE: $i ifdown works well"
+            LogMsg "INFO: $i ifdown works well"
+            UpdateSummary "INFO: $i ifdown works well"
             # Check operstate under ifdown
             operstate=`cat /sys/class/net/$i/operstate`
             if [ "$operstate" == "down" ]
             then
-                LogMsg "DONE: Operstate status $operstate under ifdown is correct"
-                UpdateSummary "DONE: Operstate status $operstate under ifdown is correct"
-                
-                # Check operstate under ifup 
-                LogMsg "Now, check operstate under ifup"
-                UpdateSummary "Now, check operstate under ifup" 
+                LogMsg "INFO: Operstate status $operstate under ifdown is correct"
+                UpdateSummary "INFO: Operstate status $operstate under ifdown is correct"
+
+                # Check operstate under ifup
+                LogMsg "INFO: Is checking operstate under ifup"
+                UpdateSummary "INFO: checking operstate under ifup"
                 ifup $i
                 if [ $? -eq 0 ]
                 then
-                    LogMsg "DONE: $i ifup works well"
-                    UpdateSummary "DONE: $i ifup works well"
+                    LogMsg "INFO: $i ifup works well"
+                    UpdateSummary "INFO: $i ifup works well"
                     # Check operstate
                     operstate=`cat /sys/class/net/$i/operstate`
                     if [ "$operstate" == "up" ]
                     then
                         LogMsg "PASS: Operstate status $operstate under ifup is correct"
                         UpdateSummary "PASS: Operstate status $operstate under ifup is correct"
-                        SetTestStateCompleted                   
+                        SetTestStateCompleted
                         #
                         # Ifdown and move its scirpt
                         #
-                        LogMsg "Now, CLOSE $i"
-                        UpdateSummary "Now, Now, CLOSE $i" 
+                        LogMsg "INFO: CLOSE $i"
+                        UpdateSummary "INFO: CLOSE $i"
                         ifdown $i
                         mv $network_scripts/ifcfg-$i /root/
                         RestartNetwork
-                        LogMsg "Now, exit 0"
-                        UpdateSummary "Now, Now, exit 0" 
                         exit 0
                     else
                         LogMsg "FAIL: operstate status is incorrect"
-                        UpdateSummary "FAIL: operstate status is incorrect"         
+                        UpdateSummary "FAIL: operstate status is incorrect"
                         SetTestStateFailed
                         exit 1
                     fi
@@ -179,10 +187,10 @@ do
                 fi
             else
                 LogMsg "FAIL: operstate status is incorrect"
-                UpdateSummary "FAIL: operstate status is incorrect"         
+                UpdateSummary "FAIL: operstate status is incorrect"
                 SetTestStateFailed
-                exit 1                
-            fi   
+                exit 1
+            fi
         else
         {
             LogMsg "FAIL: $i ifdown failed"

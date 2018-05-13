@@ -184,8 +184,8 @@ if ($vmObjectBPowerState -ne "PoweredOn")
             }
             else
             {
-                Write-Host -F Red "WARNING: can't get VMB's ipv4, try again"
-                Write-Output "WARNING: can't get VMB's ipv4, try again"
+                Write-Host -F Red "WARNING: Can't get VMB's ipv4, try again"
+                Write-Output "WARNING: Can't get VMB's ipv4, try again"
             }
         }
 

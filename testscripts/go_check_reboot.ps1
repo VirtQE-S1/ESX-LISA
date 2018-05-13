@@ -153,4 +153,4 @@ else
 
 
 DisconnectWithVIServer
-return $result
+return $retVal

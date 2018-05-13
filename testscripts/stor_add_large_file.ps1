@@ -1,24 +1,23 @@
 ###############################################################################
 ##
 ## Description:
-##   add a disk,do partition and formtion(xfs in rhel7,ext4 in rhel6),
-##   then creat a 11g file
-##   
-###############################################################################
+##  Add a disk, do partition and formtion, then creat a 11g file
 ##
 ## Revision:
-## v1.0 - junfwang - 03/19/2018 -Build script
+##  v1.0.0 - junfwang - 03/19/2018 - Build script
+##  v1.0.1 - boyang - 05/14/2018 - Enhance the scripts
 ##
 ###############################################################################
+
 
 <#
 .Synopsis
    creat a 11g file in xfs or ext4
 
 .Description
-   
+
 <test>
-    <testName>stor_add_large_file</testName>      
+    <testName>stor_add_large_file</testName>
     <testID>ESX-STOR-010</testID>
     <testScript>testScripts\stor_add_large_file.ps1</testScript>
     <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh</files>
@@ -28,7 +27,7 @@
     <testparams>
        <param>TC_COVERED=RHEL6-38508,RHEL7-80181</param>
     </testparams>
-    <onError>Continue</onError>        
+    <onError>Continue</onError>
 </test>
 
 .Parameter vmName
@@ -38,20 +37,23 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -59,10 +61,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -84,6 +88,10 @@ foreach ($p in $params)
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -100,6 +108,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -111,65 +120,78 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
 
+
 $retVal = $Failed
-#
-# Confirm VM
-#
+$touch_file_commnad = ""
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj){
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
-    DisconnectWithVIServer
-    exit 1
-}
-#add disk
-$addDisk=New-HardDisk -VM $vmObj -CapacityGB 12 -StorageFormat Thin -Persistence IndependentPersistent
-#get linux version
-$OS = GetLinuxDistro  $ipv4 $sshKey
-if ($OS -eq "RedHat7")
+if (-not $vmObj)
 {
-    $guest_script = "fdisk.sh"
-    $sts =  RunRemoteScript $guest_script
-    if( -not $sts[-1] ){
-        write-output "Error: Error while running $guest_script"
-        $retVal=$Aborted
-    }
-    else{
-    #creat file
-    $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.xfs -f /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M" 
-      if(-not $touchFile){
-        write-output "Error: Error while dd"
-        $retVal=$Failed
-      } 
-      else{
-        $retVal=$Passed
-      }    
-    }
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
 }
+
+
+# Add a disk
+$addDisk = New-HardDisk -VM $vmObj -CapacityGB 12 -StorageFormat Thin -Persistence IndependentPersistent
+
+
+# Get the Guest version
+$OS = GetLinuxDistro $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
-    $guest_script = "fdisk.sh"
-    $sts =  RunRemoteScript $guest_script
-    if( -not $sts[-1] ){
-        write-output "Error: Error while running $guest_script"
-        $retVal=$Aborted
+    $touch_file_commnad = "mkfs.ext4 -F /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
+}
+elseif ($OS -eq "RedHat7")
+{
+    $touch_file_commnad = "mkfs.xfs -f /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
+}
+elseif ($OS -eq "RedHat8")
+{
+    $touch_file_commnad = "mkfs.xfs -f /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
+}
+else
+{
+    Write-Host -F Red "ERROR: Guest OS version isn't belong to test scope"
+    Write-Output "ERROR: Guest OS version isn't belong to test scope"
+    DisconnectWithVIServer
+	return $Aborted
+}
+
+
+# The script in the VM executes fdisk
+$guest_script = "fdisk.sh"
+$sts =  RunRemoteScript $guest_script
+if(-not $sts[-1]){
+    Write-Host -F Red "ERROR: Error while running $guest_script"
+    Write-Output "ERROR: Error while running $guest_script"
+    return $Aborted
+}
+else
+{
+    $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} $touch_file_commnad
+    if(-not $touchFile)
+    {
+        Write-Host -F Red "FAIL: Create the large file failed"
+        Write-Output "FAIL: Create the large file failed"
     }
-    else{
-      #creat file
-      $touchFile=bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mkfs.ext4 -F /dev/sdb1&&mount /dev/sdb1 /mnt&&cd /mnt&&dd if=/dev/zero of=11G.img count=1024 bs=11M"
-      if(-not $touchFile){
-        write-output "Error: Error while dd"
-        $retVal=$Failed
-      } 
-      else{
+    else
+    {
+        Write-Host -F Red "PASS: Complete the create of the large file"
+        Write-Output "PASS: Complete the create of the large file"
         $retVal=$Passed
-      }    
     }
 }
+
+
 DisconnectWithVIServer
 return $retVal
