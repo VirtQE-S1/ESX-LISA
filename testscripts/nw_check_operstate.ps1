@@ -162,8 +162,9 @@ $new_nic_obj_x = New-NetworkAdapter -VM $vmOut -NetworkName $new_network_name -W
 Write-Host -F Red "DEBUG: new_nic_obj_x: $new_nic_obj_x"
 Write-Output "DEBUG: new_nic_obj_x: $new_nic_obj_x"
 
-
+#
 # Confirm NIC count
+#
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
 Write-Host -F Red "DEBUG: all_nic_count: $all_nic_count"
 Write-Output "DEBUG: all_nic_count: $all_nic_count"
@@ -174,17 +175,17 @@ if ($all_nic_count -ne 2)
     DisconnectWithVIServer
     return $Aborted
 }
-Write-Host -F Red "INFO: Hot plug vmxnet3 done"
-Write-Output "INFO: Hot plug vmxnet3 done"
+Write-Host -F Red "INFO: Complete the hot plug of vmxnet3"
+Write-Output "INFO: Complete the hot plug of vmxnet3"
 
 
 #
 # Send nw_config_ifcfg.sh to VM which setup new NIC ifcfg file, ifdown / ifup to check operstate
 #
-#$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh"
-$process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh" -WindowStyle Hidden -Wait -PassThru
-$exit_code = $process.ExitCode
-if ($exit_code -eq 0)
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_check_operstate.sh && chmod u+x nw_check_operstate.sh && ./nw_check_operstate.sh"
+Write-Host -F Red "DEBUG: result: $result"
+Write-Output "DEBUG: result: $result"
+if($result)
 {
     Write-Host -F Red "PASS: Complete to execute nw_check_operstate.sh in VM"
 	Write-Output "PASS: Complete to execute nw_check_operstate.sh in VM"

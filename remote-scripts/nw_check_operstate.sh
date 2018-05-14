@@ -8,7 +8,7 @@
 ##
 ## Revision:
 ## 	v1.0.0 - boyang - 08/31/2017 - Build the script
-## 	v1.0.1 - boyang - 05/14/2018 - Enhance the script
+## 	v1.0.1 - boyang - 05/14/2018 - Remove network restart
 ##
 ###############################################################################
 
@@ -37,8 +37,9 @@ UtilsInit
 #
 #######################################################################
 
-
+#
 # Get all NICs interfaces
+#
 nics=`ls /sys/class/net | grep ^e[tn][hosp]`
 network_scripts="/etc/sysconfig/network-scripts"
 ifcfg_orignal="/root/ifcfg-orignal"
@@ -57,95 +58,99 @@ done
 
 
 #
-# Confirm which nics are added newly
-# Setup their ifcfg files
-# Test their ifup / fidown functions
+# Create the ifcfg file for the new NIC
+#
+CreateIfcfg()
+{
+	# New NIC needs to create its ifcfg scripts based on orignal NIC's script
+	LogMsg "INFO: $i is a new NIC, will create ifcfg-$i fot $i"
+	UpdateSummary "INFO: $i is a new NIC, will create ifcfg-$i fot $i"
+	cp $ifcfg_orignal $network_scripts/ifcfg-$1
+
+	# Comment UUID
+	LogMsg "INFO: Comment UUID"
+	UpdateSummary "INFO: Comment UUID"
+	sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$1
+
+	# Comment original DEVICE
+	LogMsg "INFO: Comment DEVICE"
+	UpdateSummary "INFO: Comment DEVICE"
+	sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$1
+	# Add a new DEVICE to script
+	LogMsg "INFO: Is adding a new DEVICE"
+	UpdateSummary "INFO: Is adding a new DEVICE"
+	echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$1
+
+	# Comment original NAME
+	LogMsg "INFO: Comment NAME"
+	UpdateSummary "INFO: Comment ENVVISUSERNAME"
+	sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$1
+	
+	# Add a new NAME to script
+	LogMsg "INFO: Is adding a new NAME"
+	UpdateSummary "INFO: Is adding a new NAME"
+	echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$1
+}
+
+#
+# Stop NetowrkManager, as it will impact network
+#
+StopNetworkManager()
+{
+	# If getenforce == 1, even ifdown / ifup work well, $? -ne 0, as warning output
+	setenforce 0
+	
+	# Different Guest DISTRO, different mehtods to stop NetworkManager
+	if [[ $DISTRO == "redhat_6" ]]
+	then
+		service NetworkManager stop
+		service NetowrkManager disable
+		status_networkmanager_stop=`service NetworkManager status`
+		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"			
+	fi
+	
+	if [[ $DISTRO == "redhat_7" ]]
+	then
+		systemctl stop NetworkManager
+		systemctl disable NetworkManager
+		status_networkmanager_stop=`systemctl status NetworkManager`
+		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"		
+	fi
+	
+	if [[ $DISTRO == "redhat_8" ]]
+	then
+		systemctl stop NetworkManager
+		systemctl disable NetworkManager
+		status_networkmanager_stop=`systemctl status NetworkManager`
+		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+	fi
+}
+
+#
+# Confirm which nics are added newly, and setup their ifcfg files, test their ifup / fidown functions
 #
 for i in $nics
 do
-    LogMsg "INFO: Is checking $i......."
-	UpdateSummary "INFO: Is checking $i......."
     if [ ! -f $network_scripts/ifcfg-$i ]
     then
-        # New NIC needs to create its ifcfg scripts based on orignal nic's script
-        LogMsg "INFO: $i is a new one nic, will create ifcfg-$i fot $i"
-        UpdateSummary "INFO: $i is a new one nic, will create ifcfg-$i fot $i"
-        cp $ifcfg_orignal $network_scripts/ifcfg-$i
-
-        # Comment UUID
-        LogMsg "INFO: Commenting UUID"
-        UpdateSummary "INFO: Commenting UUID"
-        sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$i
-
-        # Comment original DEVICE
-		LogMsg "INFO: Commenting DEVICE"
-        UpdateSummary "INFO: Commenting DEVICE"
-        sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$i
-        # Add a new DEVICE to script
-        LogMsg "INFO: Is adding a new DEVICE"
-        UpdateSummary "INFO: Is adding a new DEVICE"
-        echo "DEVICE=\"$i\"" >> $network_scripts/ifcfg-$i
-
-        # Comment original NAME
-		LogMsg "INFO: Commenting NAME"
-        UpdateSummary "INFO: Commenting ENVVISUSERNAME"
-        sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$i
-        # Add a new NAME to script
-		LogMsg "INFO: Is adding a new NAME"
-        UpdateSummary "INFO: Is adding a new NAME"
-        echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$i
-
-
-        #
-        # Test new NIC ifup / ifdown. No ping function to test
-        # Firstly, stop SELINUX, NetworkManager, and restart network
-        #
-        RestartNetwork()
-        {
-            setenforce 0
-            systemctl stop NetworkManager
-            if [ $? -eq 0 ]
-            then
-                systemctl restart network
-                if [ $? -ne 0 ]
-                then
-                    SetTestStateAborted
-                    exit 1
-                fi
-            else
-                service NetworkManager stop
-                if [ $? -eq 0 ]
-                then
-                    service network restart
-                    if [ $? -ne 0 ]
-                    then
-                        SetTestStateAborted
-                        exit 1
-                    fi
-                else
-                    SetTestStateAborted
-                    exit 1
-                fi
-            fi
-        }
-
-
-        #
-        # Test checking operstate under ifup / ifdown
-        #
+		CreateIfcfg $i
+		
+		StopNetworkManager
+		
         LogMsg "INFO: Is checking operstate under ifdown"
 		UpdateSummary "INFO: Is checking operstate under ifdown"
         ifdown $i
         if [ $? -eq 0 ]
         then
-            LogMsg "INFO: $i ifdown works well"
-            UpdateSummary "INFO: $i ifdown works well"
             # Check operstate under ifdown
             operstate=`cat /sys/class/net/$i/operstate`
             if [ "$operstate" == "down" ]
             then
-                LogMsg "INFO: Operstate status $operstate under ifdown is correct"
-                UpdateSummary "INFO: Operstate status $operstate under ifdown is correct"
+                LogMsg "INFO: ifdown works well and operstate status $operstate under ifdown is correct"
+                UpdateSummary "INFO: ifdown works well and operstate status $operstate under ifdown is correct"
 
                 # Check operstate under ifup
                 LogMsg "INFO: Is checking operstate under ifup"
@@ -153,24 +158,18 @@ do
                 ifup $i
                 if [ $? -eq 0 ]
                 then
-                    LogMsg "INFO: $i ifup works well"
-                    UpdateSummary "INFO: $i ifup works well"
                     # Check operstate
                     operstate=`cat /sys/class/net/$i/operstate`
                     if [ "$operstate" == "up" ]
                     then
-                        LogMsg "PASS: Operstate status $operstate under ifup is correct"
-                        UpdateSummary "PASS: Operstate status $operstate under ifup is correct"
+                        LogMsg "PASS: $i ifup works well and operstate status $operstate under ifup is correct"
+                        UpdateSummary "PASS: $i ifup works well and operstate status $operstate under ifup is correct"
                         SetTestStateCompleted
-                        #
-                        # Ifdown and move its scirpt
-                        #
-                        LogMsg "INFO: CLOSE $i"
-                        UpdateSummary "INFO: CLOSE $i"
+			
+                        LogMsg "INFO: Ifdown $i again to avoid mulit IP"
+                        UpdateSummary "INFO: Ifdown $i again to avoid mulit IP"
                         ifdown $i
-                        mv $network_scripts/ifcfg-$i /root/
-                        RestartNetwork
-                        exit 0
+						exit 0
                     else
                         LogMsg "FAIL: operstate status is incorrect"
                         UpdateSummary "FAIL: operstate status is incorrect"

@@ -96,33 +96,53 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+				  
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
-                  
+    
+	
 $retVal = $Failed
+
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
-    return $Aborted
+	return $Aborted
 }
-else
-{
-    Write-Host -F Gray "Start to enable hot-cpu feature......."
-    Write-Output "Start to enable hot-cpu feature"
-    $vmView = Get-vm $vmObj | Get-View 
-    $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
-    $extra = New-Object VMware.Vim.optionvalue
-    $extra.Key="vcpu.hotadd"
-    $extra.Value="true"
-    $vmConfigSpec.extraconfig += $extra
-    $vmView.ReconfigVM($vmConfigSpec)
-    $retVal = $Passed
-}
+
+
+Write-Host -F Red "INFO: Is starting to enable hot-cpu feature"
+Write-Output "INFO: Is starting to enable hot-cpu feature"
+$vmView = Get-vm $vmObj | Get-View
+Write-Host -F Red "DEBUG: vmView: $vmView"
+Write-Output "DEBUG: vmView: $vmView"
+
+$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
+Write-Host -F Red "DEBUG: vmConfigSpec: $vmConfigSpec"
+Write-Output "DEBUG: vmConfigSpec: $vmConfigSpec"
+
+$extra = New-Object VMware.Vim.optionvalue
+Write-Host -F Red "DEBUG: extra: $extra"
+Write-Output "DEBUG: extra: $extra"
+$extra.Key="vcpu.hotadd"
+$extra.Value="true"
+Write-Host -F Red "DEBUG: extra2: $extra"
+Write-Output "DEBUG: extra2: $extra"
+
+$vmConfigSpec.extraconfig += $extra
+Write-Host -F Red "DEBUG: vmConfigSpec2: $vmConfigSpec"
+Write-Output "DEBUG: vmConfigSpec2: $vmConfigSpec"
+
+$vmView.ReconfigVM($vmConfigSpec)
+Write-Host -F Red "DEBUG: vmView2: $vmView"
+Write-Output "DEBUG: vmView2: $vmView"
+
+$retVal = $Passed
 
 return $retVal

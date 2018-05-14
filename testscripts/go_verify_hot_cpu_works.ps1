@@ -1,14 +1,15 @@
 ###############################################################################
 ##
 ## Description:
-##   Enable Hot cpu and verify it works
-##
-###############################################################################
+## 	Enable Hot cpu and verify it works
 ##
 ## Revision:
-## V1.0 - boyang - 10/12/2017 - Build the script
+## 	v1.0.0 - boyang - 10/12/2017 - Build the script
+## 	v1.0.1 - boyang - 05/14/2018 - Enhance the script
 ##
 ###############################################################################
+
+
 <#
 .Synopsis
     Demo script ONLY for test script.
@@ -23,20 +24,23 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+
 #
 # Checking the input arguments
 #
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "Error: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -44,10 +48,12 @@ if (-not $testParams)
     Throw "Error: No test parameters specified"
 }
 
+
 #
-# Display the test parameters so they are captured in the log file
+# Checking the input arguments
 #
 "TestParams : '${testParams}'"
+
 
 #
 # Parse the test parameters
@@ -74,6 +80,10 @@ foreach ($p in $params)
     }
 }
 
+
+#
+# Check all parameters are valid
+#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -90,6 +100,7 @@ else
     }
 }
 
+
 #
 # Source the tcutils.ps1 file
 #
@@ -100,24 +111,29 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
-
+				  
+				  
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
    
+ 
 $retVal = $Failed
+
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
-    return $Aborted
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+	return $Aborted
 }
 
 
-# Sometime $Failed in RHEL6 platform, NOT A BUG
+# Sometimes $Failed in RHEL6 platform, NOT A BUG
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" )
 {
@@ -133,42 +149,37 @@ if ( $DISTRO -eq "RedHat6" )
 $vmCPUNum = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
 if ($vmCPUNum -ne $cpuNum)
 {
-    Write-Host -F Yellow "WARNING: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase......."
-    Write-Output "WARNING: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase"    
+    Write-Host -F Red "ERROR: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase"
+    Write-Output "ERROR: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase"    
     return $Aborted
 }
-else
-{
-    Write-Host -F Green "VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase......."
-    Write-Output "VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"    
-}
+Write-Host -F Red "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"
+Write-Output "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"
+
 
 #
-# Set the VM cpu number to VCPU_After
+# Hot CPU to set the VM cpu number to VCPU_After
 #
-$retSet = Set-VM -VM $vmObj -NumCpu $cpuAfter -Confirm:$False
-if ($? -ne $True)
-{
-    Write-Host -F Yellow "WARNING: Can't set the VM's CPU number to $cpuAfter under hot-add cpu feature......."
-    Write-Output "WARNING: Can't set the VM's CPU number to $cpuAfter under hot-add cpu feature" 
-    return $Aborted
-}
+$ret = Set-VM -VM $vmObj -NumCpu $cpuAfter -Confirm:$False
+Write-Host -F Red "DEBUG: ret: $ret"
+Write-Output "DEBUG: ret: $ret"
+
 
 # Confirm the new cpu number after hot add
 $vmCPUNum = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
 if ($vmCPUNum -ne $cpuAfter)
 {
-    Write-Host -F Yellow "WARNING: VM's cpu number $vmCPUNum -ne $cpuAfter......."
-    Write-Output "WARNING: VM's cpu number $vmCPUNum -ne $cpuAfter"    
+    Write-Host -F Red "ERROR: VM's cpu number $vmCPUNum -ne $cpuAfter"
+    Write-Output "ERROR: VM's cpu number $vmCPUNum -ne $cpuAfter"    
     return $Aborted
 }
 else
 {
 
-    Write-Host -F Green "VM's cpu number $vmCPUNum -eq $cpuAfter in setup phrase......."
+    Write-Host -F Green "VM's cpu number $vmCPUNum -eq $cpuAfter in setup phrase"
     Write-Output "VM's cpu number $vmCPUNum -eq $cpuAfter in setup phrase"   
 	
-    Write-Host -F Gray "Check these cpus hot-add online......."
+    Write-Host -F Gray "Check these cpus hot-add online"
     Write-Output "Check these cpus hot-add online"
     $online = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/devices/system/cpu/online"
     if ( ($online.Split("-"))[1] -ne ($cpuAfter - 1))
@@ -178,7 +189,7 @@ else
     }
     else
     {
-        Write-Host -F Green "PASS: VM's cpu hot-add number and online are correct......."
+        Write-Host -F Green "PASS: VM's cpu hot-add number and online are correct"
         Write-Output "PASS: VM's cpu hot-add number and online are correct"
         $retVal = $Passed
     }
