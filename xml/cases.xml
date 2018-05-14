@@ -175,8 +175,9 @@
                 <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <!-- Stress Case -->
-                <!--suiteTest>go_reboot_12G_memory</suiteTest -->
-                <suiteTest>go_reboot_100_times</suiteTest>
+                <!-- suiteTest>go_reboot_12G_memory</suiteTest -->
+                <!-- Stress Case -->
+                <!-- suiteTest>go_reboot_100_times</suiteTest -->
                 <!-- Stress Case -->
                 <!-- suiteTest>go_reboot_debugkernel_10_times</suiteTest-->
                 <suiteTest>go_upgrade_kernel</suiteTest>
