@@ -150,7 +150,7 @@
             <files>remote-scripts/ovt_check_build_version.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>redhat_6_stanversion=None</param>
+                <param>redhat_6_stanversion=NOOVT</param>
                 <param>redhat_7_stanversion=open-vm-tools-10.1.10-3.el7.x86_64</param>
                 <param>redhat_8_stanversion=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>

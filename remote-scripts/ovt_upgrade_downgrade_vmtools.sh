@@ -1,39 +1,21 @@
 #!/bin/bash
 
+
 ###############################################################################
 ##
 ## Description:
-##   This script checks open-vm-tools upgrade and downgrade.
-##   The vmtoolsd status should be running after downgrade and upgrade.
-##
-# <test>
-#     <testName>ovt_upgrade_downgrade_vmtools</testName>
-#     <testID>ESX-OVT-022</testID>
-#     <testScript>ovt_upgrade_downgrade_vmtools.sh</testScript>
-#     <files>remote-scripts/ovt_upgrade_downgrade_vmtools.sh</files>
-#     <files>remote-scripts/utils.sh</files>
-#     <testParams>
-#         <param>defaultVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
-#         <param>version1=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
-#         <param>version2=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
-#         <param>ChangeVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
-#         <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
-#     </testParams>
-#     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-#     <timeout>300</timeout>
-#     <onError>Continue</onError>
-#     <noReboot>False</noReboot>
-# </test>
-##
-###############################################################################
+##  Checks open-vm-tools upgrade and downgrade.
+##  The vmtoolsd status should be running after downgrade and upgrade.
 ##
 ## Revision:
-## v1.0 - ldu - 10/13/2017 - Draft script for case ESX-OVT-022.
-## RHEL7-50890
+##  v1.0.0 - ldu - 10/13/2017 - Draft script for case ESX-OVT-022
+##  v1.0.1 - boyang - 05/15/2018 - Supports rhel8
 ##
 ###############################################################################
 
+
 dos2unix utils.sh
+
 
 # Source utils.sh
 . utils.sh || {
@@ -41,72 +23,110 @@ dos2unix utils.sh
     exit 1
 }
 
+
+# Source constants.sh to get all paramters from XML <testParams>
+. constants.sh || {
+    echo "Error: unable to source constants.sh!"
+    exit 1
+}
+
 # Source constants file and initialize most common variables
 UtilsInit
 
-#
-# Start the testing
-#
 
-if [[ $DISTRO == "redhat_6" ]]; then
-    SetTestStateSkipped
-    exit
+#######################################################################
+#
+# Main script body
+#
+#######################################################################
+
+
+# If current Guest is supported in the XML <testParams>
+# "cat constant.sh | grep $DISTRO" will get the standard OVT version of $DISTRO
+distro_standard_version=`cat constants.sh | grep ${DISTRO}_standard | awk -F "=" '{print $2}'`
+LogMsg "DEBUG: distro_standard_version: $distro_standard_version"
+UpdateSummary "DEBUG: distro_standard_version: $distro_standard_version"
+if [ -z $distro_standard_version ]; then
+    LogMsg "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
+    UpdateSummary "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
+    SetTestStateAborted
+    exit 1
 fi
 
-#Make sure the os installed open-vm-tools and open-vm-tools-desktop.
+
+# Known: Red Hat Enterprise Linux Server Release 6.X / (5.X) doesn't have OVT, it is VT
+if [ $distro_standard_version == "NOOVT" ]; then
+    LogMsg "WARNING: Current Guest $DISTRO doesn't have OVT, will skip it"
+    UpdateSummary "WARNING: Current Guest $DISTRO doesn't have OVT, will skip it"
+    SetTestStateSkipped
+    exit 0
+fi
 
 
+#
+# Install open-vm-tools-desktop for current Guest WITHOUT relationship of DISTR
+#
 yum install -y open-vm-tools-desktop
 systemctl restart vmtoolsd
-
-service=$(systemctl status vmtoolsd |grep running -c)
-
-if [ "$service" = "1" ]; then
-  LogMsg $service
-  UpdateSummary "Test Successfully. service vmtoolsd is running."
+service_status=$(systemctl status vmtoolsd |grep running -c)
+if [ "$service_status" = "1" ]; then
+    LogMsg "INFO: Service vmtoolsd is running"
+    UpdateSummary "INFO: Service vmtoolsd is running"
 else
-  LogMsg "Info : The service vmtoolsd is not running'"
-  UpdateSummary "Test Successfully. The service vmtoolsd is not running."
-  SetTestStateAborted
-  exit 1
+    LogMsg "ERROR: The service vmtoolsd is not running"
+    UpdateSummary "ERROR: The service vmtoolsd is not running"
+    SetTestStateAborted
+    exit 1
 fi
 
-#Download the open-vm-tools older version
 
-url=http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/
+# Get OVT lower info
+url_prefix="http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/"
+lower_version=`cat constants.sh | grep ${DISTRO}_lower_version | awk -F "=" '{print $2}'`
+LogMsg "DEBUG: lower_version: $lower_version"
+UpdateSummary "DEBUG: lower_version: $lower_version"
+lower_rpm=`cat constants.sh | grep ${DISTRO}_lower_rpm | awk -F "=" '{print $2}'`
+LogMsg "DEBUG: lower_rpm: $lower_rpm"
+UpdateSummary "DEBUG: lower_rpm: $lower_rpm"
+lower_dsk_rpm`cat constants.sh | grep ${DISTRO}_lower_dsk_rpm | awk -F "=" '{print $2}'`
+LogMsg "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
+UpdateSummary "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
 
-wget -P /root/ $url$version1
 
-wget -P /root/ $url$version2
-
-#Downgrade the open-vm-tools to a older version.
+# Download lower version OVT
+wget -P /root/ $url_prefix$lower_rpm
+# Download lower version desktop OVT
+wget -P /root/ $url_prefix$lower_dsk_rpm
+# Downgrade the open-vm-tools to a older version
 yum downgrade /root/*.rpm -y
-
-#check the open-vm-tools version after upgrade.
-version=$(rpm -qa open-vm-tools)
-UpdateSummary "print the downgrade version $version"
-if [ "$version" = "$ChangeVersion" ]; then
-        LogMsg "$version"
-        UpdateSummary "Test Successfully. The open-vm-tools version is right."
+# Check the open-vm-tools version after downgrade
+ovt_ver_after_downgrade=$(rpm -qa open-vm-tools)
+LogMsg "DEBUG: ovt_ver_after_downgrade: $ovt_ver_after_downgrade"
+UpdateSummary "DEBUG: ovt_ver_after_downgrade: $ovt_ver_after_downgrade"
+if [ "$ovt_ver_after_downgrade" == "$lower_version" ]; then
+    LogMsg "INFO: After downgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is correct"
+    UpdateSummary "INFO: After downgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is correct"
 else
-        LogMsg "Info : The downgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools downgrade build info not right ."
-        SetTestStateFailed
-        exit 1
+    LogMsg "INFO: After downgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is incorrect"
+    UpdateSummary "INFO: After downgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is incorrect"
+    SetTestStateFailed
+    exit 1
 fi
-#Upgrage the open-vm-tools to defaultVersion.
+
+
+# Upgrage the open-vm-tools to distro_standard_version
 yum upgrade open-vm-tools-desktop open-vm-tools -y
-#check the open-vm-tools version after downgrade.
-version=$(rpm -qa open-vm-tools)
+# Check the open-vm-tools version after upgrade
+ovt_ver_after_upgrade=$(rpm -qa open-vm-tools)
 UpdateSummary "print the upgrade version $version"
-if [ "$version" = "$defaultVersion" ]; then
-        LogMsg "$version"
-        UpdateSummary "Test Successfully. The open-vm-tools upgrade version is right."
-        SetTestStateCompleted
-        exit 0
+if [ "$ovt_ver_after_upgrade" == "$distro_standard_version" ]; then
+    LogMsg "PASS: After upgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is correct"
+    UpdateSummary "PASS: After upgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is correct"
+    SetTestStateCompleted
+    exit 0
 else
-        LogMsg "Info : The upgrade build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools upgrade build info not right ."
-        SetTestStateFailed
-        exit 1
+    LogMsg "INFO: After upgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is incorrect"
+    UpdateSummary "INFO: After upgrade, the open-vm-tools version ($ovt_ver_after_downgrade) is incorrect"
+    SetTestStateFailed
+    exit 1
 fi

@@ -43,10 +43,10 @@ UtilsInit
 
 # If current Guest is supported in the XML <testParams>
 # "cat constant.sh | grep $DISTRO" will get the standard OVT version of $DISTRO
-distro_standard_version=`cat constant.sh | grep $DISTRO | awk -F "=" '{print $2}'`
+distro_standard_version=`cat constants.sh | grep $DISTRO | awk -F "=" '{print $2}'`
 LogMsg "DEBUG: distro_standard_version: $distro_standard_version"
 UpdateSummary "DEBUG: distro_standard_version: $distro_standard_version"
-if [ $distro_standard_version ]; then
+if [ -z $distro_standard_version ]; then
     LogMsg "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
     UpdateSummary "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
     SetTestStateAborted
