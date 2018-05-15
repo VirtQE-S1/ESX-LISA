@@ -88,7 +88,7 @@ UpdateSummary "DEBUG: lower_version: $lower_version"
 lower_rpm=`cat constants.sh | grep ${DISTRO}_lower_rpm | awk -F "=" '{print $2}'`
 LogMsg "DEBUG: lower_rpm: $lower_rpm"
 UpdateSummary "DEBUG: lower_rpm: $lower_rpm"
-lower_dsk_rpm`cat constants.sh | grep ${DISTRO}_lower_dsk_rpm | awk -F "=" '{print $2}'`
+lower_dsk_rpm=`cat constants.sh | grep ${DISTRO}_lower_dsk_rpm | awk -F "=" '{print $2}'`
 LogMsg "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
 UpdateSummary "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
 

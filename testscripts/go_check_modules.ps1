@@ -135,7 +135,8 @@ if (-not $vmObj)
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-Write-Host -F red "DEBUG: $DISTRO"
+Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
+Write-Output "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO)
 {
     Write-Host -F Red "ERROR: Guest OS version is NULL"
@@ -162,8 +163,8 @@ elseif ($DISTRO -eq "RedHat8")
 }
 else
 {
-    Write-Host -F Red "ERROR: Guest OS version isn't belong to test scope"
-    Write-Output "ERROR: Guest OS version isn't belong to test scope"
+    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
 	return $Aborted
 }

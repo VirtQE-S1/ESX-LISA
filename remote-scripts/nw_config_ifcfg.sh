@@ -60,7 +60,7 @@ do
     then
 		LogMsg "INFO: Copy original NIC ifcfg file to /root"
 		UpdateSummary "INFO: Copy original NIC ifcfg file to /root"
-		cp $network_scripts/ifcfg-$i $ifcfg_bk
+		cp $network_scripts/ifcfg-$i /root/$ifcfg_bk
 		if [ $? -ne 0 ]
 		then
 			LogMsg "ERROR: Copy original NIC ifcfg file failed"
