@@ -1,19 +1,20 @@
 #!/bin/bash
 
+
 ###############################################################################
 ##
 ## Description:
-##   This script checks file open-vm-tools version.
-##   The open-vm-tools version should be open-vm-tools-10.1.5.
-##
-###############################################################################
+##  Checks file open-vm-tools version
 ##
 ## Revision:
-## v1.0 - ldu - 03/07/2017 - Draft script for case ESX-OVT-001.
+##  v1.0.0 - ldu - 03/07/2017 - Draft script for case ESX-OVT-001
+##  V1.0.1 - boyang - 05/15/2017 - Supports all distros
 ##
 ###############################################################################
 
+
 dos2unix utils.sh
+
 
 # Source utils.sh
 . utils.sh || {
@@ -21,6 +22,8 @@ dos2unix utils.sh
     exit 1
 }
 
+
+# Source constants.sh to get all paramters from XML <testParams>
 . constants.sh || {
     echo "Error: unable to source constants.sh!"
     exit 1
@@ -30,35 +33,57 @@ dos2unix utils.sh
 # Source constants file and initialize most common variables
 UtilsInit
 
+
+#######################################################################
 #
-# Start the testing
+# Main script body
 #
-if [[ $DISTRO == "redhat_6" ]]; then
+#######################################################################
+
+
+# If current Guest is supported in the XML <testParams>
+# "cat constant.sh | grep $DISTRO" will get the standard OVT version of $DISTRO
+distro_standard_version=`cat constant.sh | grep $DISTRO | awk -F "=" '{print $2}'`
+LogMsg "DEBUG: distro_standard_version: $distro_standard_version"
+UpdateSummary "DEBUG: distro_standard_version: $distro_standard_version"
+if [ $distro_standard_version ]; then
+    LogMsg "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
+    UpdateSummary "ERROR: Current Guest DISTRO isn't supported, UPDATE XML for this DISTRO"
+    SetTestStateAborted
+    exit 1
+fi
+
+
+# Known: Red Hat Enterprise Linux Server Release 6.X doesn't have OVT, it is VT
+if [ $distro_standard_version == "NOOVT" ]; then
+    LogMsg "WARNING: Current Guest $DISTRO doesn't have OVT, will skip it"
+    UpdateSummary "WARNING: Current Guest $DISTRO doesn't have OVT, will skip it"
     SetTestStateSkipped
-    exit
+    exit 0
 fi
 
-#stanversion='open-vm-tools-10.1.5-2.el7.x86_64'
-version=$(rpm -qa open-vm-tools)
 
-if [ -n $version ]; then
-        LogMsg $version
-        UpdateSummary "open-vm-tools is installed ."
-else
-        LogMsg "Info : The open-vm-tools is not installed'"
-        UpdateSummary "Test Failed,open-vm-tools is not installed ."
-        SetTestStateAborted
-        exit 1
+# Get current Guest OVT version, it should == standard OVT version of $DISTRO
+ovt_ver=$(rpm -qa open-vm-tools)
+LogMsg "DEBUG: ovt_ver: $ovt_ver"
+UpdateSummary "DEBUG: ovt_ver: $ovt_ver"
+if [ -z $ovt_ver ]; then
+    LogMsg "ERROR: The open-vm-tools is not installed"
+    UpdateSummary "ERROR: Test Failed,open-vm-tools is not installed"
+    SetTestStateAborted
+    exit 1
 fi
 
-if [ "$version" = "$stanversion" ]; then
-        LogMsg "$version"
-        UpdateSummary "Test Successfully. The open-vm-tools version is right."
-        SetTestStateCompleted
-        exit 0
+
+# Checkpoint, current Guest OVT version should be equal to standard OVT version
+if [ "$ovt_ver" == "$distro_standard_version" ]; then
+    LogMsg "PASS: The open-vm-tools version is correct"
+    UpdateSummary "PASS: The open-vm-tools version is correct"
+    SetTestStateCompleted
+    exit 0
 else
-        LogMsg "Info : The build info not right'"
-        UpdateSummary "Test Failed,open-vm-tools build info not right ."
-        SetTestStateFailed
-        exit 1
+    LogMsg "FAIL: The open-vm-tools version is incorrect"
+    UpdateSummary "FAIL: The open-vm-tools version is incorrect"
+    SetTestStateFailed
+    exit 1
 fi

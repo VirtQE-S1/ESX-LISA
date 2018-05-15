@@ -25,6 +25,13 @@ dos2unix utils.sh
 }
 
 
+# Source constants.sh to get all paramters from XML <testParams>
+. constants.sh || {
+    echo "Error: unable to source constants.sh!"
+    exit 1
+}
+
+
 #
 # Source constants file and initialize most common variables
 #
@@ -36,6 +43,7 @@ UtilsInit
 # Main script body
 #
 #######################################################################
+
 
 #
 # Get all NICs interfaces
@@ -85,7 +93,7 @@ CreateIfcfg()
 	LogMsg "INFO: Comment NAME"
 	UpdateSummary "INFO: Comment ENVVISUSERNAME"
 	sed -i '/^NAME/ s/NAME/#NAME/g' $network_scripts/ifcfg-$1
-	
+
 	# Add a new NAME to script
 	LogMsg "INFO: Is adding a new NAME"
 	UpdateSummary "INFO: Is adding a new NAME"
@@ -99,7 +107,7 @@ StopNetworkManager()
 {
 	# If getenforce == 1, even ifdown / ifup work well, $? -ne 0, as warning output
 	setenforce 0
-	
+
 	# Different Guest DISTRO, different mehtods to stop NetworkManager
 	if [[ $DISTRO == "redhat_6" ]]
 	then
@@ -107,18 +115,18 @@ StopNetworkManager()
 		service NetowrkManager disable
 		status_networkmanager_stop=`service NetworkManager status`
 		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"			
+		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
 	fi
-	
+
 	if [[ $DISTRO == "redhat_7" ]]
 	then
 		systemctl stop NetworkManager
 		systemctl disable NetworkManager
 		status_networkmanager_stop=`systemctl status NetworkManager`
 		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"		
+		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
 	fi
-	
+
 	if [[ $DISTRO == "redhat_8" ]]
 	then
 		systemctl stop NetworkManager
@@ -137,9 +145,9 @@ do
     if [ ! -f $network_scripts/ifcfg-$i ]
     then
 		CreateIfcfg $i
-		
+
 		StopNetworkManager
-		
+
         LogMsg "INFO: Is checking operstate under ifdown"
 		UpdateSummary "INFO: Is checking operstate under ifdown"
         ifdown $i
@@ -165,7 +173,7 @@ do
                         LogMsg "PASS: $i ifup works well and operstate status $operstate under ifup is correct"
                         UpdateSummary "PASS: $i ifup works well and operstate status $operstate under ifup is correct"
                         SetTestStateCompleted
-			
+
                         LogMsg "INFO: Ifdown $i again to avoid mulit IP"
                         UpdateSummary "INFO: Ifdown $i again to avoid mulit IP"
                         ifdown $i
