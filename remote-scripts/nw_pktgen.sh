@@ -1,36 +1,17 @@
 #!/bin/bash
 
+
 ###############################################################################
 ##
 ## Description:
-## Test scrip test_pktgen.sh in VM
-##
-###############################################################################
+## 	Test scrip test_pktgen.sh in VM
 ##
 ## Revision:
-## v1.0.0 - boyang - 03/09/2018 - Build script
+## 	v1.0.0 - boyang - 03/09/2018 - Build script
 ##
 ###############################################################################
 
 
-###############################################################################
-##        <test>
-##            <testName>nw_pktgen</testName>
-##            <testID>ESX-NW-013</testID>
-##            <testScript>nw_pktgen.sh</testScript>
-##            <files>remote-scripts/nw_pktgen.sh</files>			
-##			<files>remote-scripts/utils.sh</files>
-##            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-##            <timeout>360</timeout>
-##            <testParams>
-##                <param>TC_COVERED=RHEL6-34947,RHEL7-50928</param>
-##            </testParams>
-##            <onError>Continue</onError>
-##            <noReboot>False</noReboot>
-##        </test>
-###############################################################################
-
-		
 dos2unix utils.sh
 
 

@@ -892,6 +892,11 @@
             <files>remote-scripts/go_unload_vmw_modules.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
+                <!-- Other modules can't be unload during using -->
+                <!-- Add a new module which can be unload during using with ',' -->
+                <param>redhat_6_modules=vmware_balloon</param>
+                <param>redhat_7_modules=vmw_balloon</param>
+                <param>redhat_8_modules=vmw_balloon</param>
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

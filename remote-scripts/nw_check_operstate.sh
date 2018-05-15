@@ -60,7 +60,15 @@ for i in $nics
 do
     if [ -f $network_scripts/ifcfg-$i ]
     then
-    cp $network_scripts/ifcfg-$i $ifcfg_orignal
+		LogMsg "INFO: Copy original NIC ifcfg file to /root"
+		UpdateSummary "INFO: Copy original NIC ifcfg file to /root"
+		cp $network_scripts/ifcfg-$i $ifcfg_bk
+		if [ $? -ne 0 ]
+		then
+			LogMsg "ERROR: Copy original NIC ifcfg file failed"
+			UpdateSummary "ERROR: Copy original NIC ifcfg file failed"
+			exit 1
+		fi
     fi
 done
 
@@ -80,10 +88,16 @@ CreateIfcfg()
 	UpdateSummary "INFO: Comment UUID"
 	sed -i '/^UUID/ s/UUID/#UUID/g' $network_scripts/ifcfg-$1
 
+	# Comment HWADDR
+	LogMsg "INFO: Comment HWADDR"
+	UpdateSummary "INFO: Comment HWADDR"
+	sed -i '/^HWADDR/ s/HWADDR/#HWADDR/g' $network_scripts/ifcfg-$1
+
 	# Comment original DEVICE
 	LogMsg "INFO: Comment DEVICE"
 	UpdateSummary "INFO: Comment DEVICE"
 	sed -i '/^DEVICE/ s/DEVICE/#DEVICE/g' $network_scripts/ifcfg-$1
+
 	# Add a new DEVICE to script
 	LogMsg "INFO: Is adding a new DEVICE"
 	UpdateSummary "INFO: Is adding a new DEVICE"
@@ -100,6 +114,7 @@ CreateIfcfg()
 	echo "NAME=\"$i\"" >> $network_scripts/ifcfg-$1
 }
 
+
 #
 # Stop NetowrkManager, as it will impact network
 #
@@ -109,6 +124,7 @@ StopNetworkManager()
 	setenforce 0
 
 	# Different Guest DISTRO, different mehtods to stop NetworkManager
+	# For RHEL6 or lower, use service
 	if [[ $DISTRO == "redhat_6" ]]
 	then
 		service NetworkManager stop
@@ -116,26 +132,17 @@ StopNetworkManager()
 		status_networkmanager_stop=`service NetworkManager status`
 		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
 		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-	fi
-
-	if [[ $DISTRO == "redhat_7" ]]
-	then
-		systemctl stop NetworkManager
-		systemctl disable NetworkManager
-		status_networkmanager_stop=`systemctl status NetworkManager`
-		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-	fi
-
-	if [[ $DISTRO == "redhat_8" ]]
-	then
-		systemctl stop NetworkManager
-		systemctl disable NetworkManager
-		status_networkmanager_stop=`systemctl status NetworkManager`
-		LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-		UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
-	fi
+	else
+		# For RHEL7 and higher use systemctl
+		# NOTICE: If Higher RHEL uses differnt method, please UPDATE here!
+        systemctl stop NetworkManager
+        systemctl disable NetworkManager
+        status_networkmanager_stop=`systemctl status NetworkManager`
+        LogMsg "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+        UpdateSummary "DEBUG: status_networkmanager_stop: $status_networkmanager_stop"
+    fi
 }
+
 
 #
 # Confirm which nics are added newly, and setup their ifcfg files, test their ifup / fidown functions
