@@ -6,6 +6,7 @@
 ## Revision:
 ## 	v1.0.0 - boyang - 10/12/2017 - Build the script
 ## 	v1.0.1 - boyang - 05/14/2018 - Enhance the script
+## 	v1.1.0 - boyang - 05/28/2018 - Not supported in ESXi6.7
 ##
 ###############################################################################
 
@@ -135,8 +136,24 @@ if (-not $vmObj)
 
 # Sometimes $Failed in RHEL6 platform, NOT A BUG
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-if ( $DISTRO -eq "RedHat6" )
+if ($DISTRO -eq "RedHat6")
 {
+    Write-Host -F Red "ERROR: CPU hot-plugin failed in $DISTRO in BZ is NOTABUG"
+    Write-Output "ERROR: CPU hot-plugin failed in $DISTRO in BZ is NOTABUG"    
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
+# As ESXi6.7 has been released, but cpu hot-plugin isn't supported
+$host_obj = Get-VMHost -Name $hvServer
+$host_ver = $host_obj.version
+Write-Host -F Red "DEBUG: host_ver: $host_ver"
+Write-Output "DEBUG: host_ver: $host_ver"
+if ($host_ver -ge "6.7.0")
+{
+    Write-Host -F Red "ERROR: CPU hot-plugin isn't supproted in $host_ver"
+    Write-Output "ERROR: CPU hot-plugin isn't supproted in $host_ver"    
     DisconnectWithVIServer
     return $Skipped
 }
@@ -195,5 +212,7 @@ else
     }
 }
 
+
 DisconnectWithVIServer
 return $retVal
+

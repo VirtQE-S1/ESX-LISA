@@ -485,7 +485,7 @@
             <testID>ESX-OVT-019</testID>
             <testScript>testscripts/ovt_shutdown_restart_vm.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
