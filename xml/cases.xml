@@ -234,7 +234,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
-                <param>redhat_7_standard_version=open-vm-tools-10.1.10-3.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
                 <param>redhat_8_standard_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
