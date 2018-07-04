@@ -1,2 +1,3 @@
 *.log
 TestResults/**/*.xml
+xml/debug_demo.xml

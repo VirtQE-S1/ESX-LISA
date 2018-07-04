@@ -92,7 +92,7 @@ else
 
 
 $nics = Get-NetworkAdapter -VM $vmOut
-if ($nics.length -eq 2 -and $new_vmxnet3.Type -eq "vmxnet3")
+if ($nics.length -gt 1 -and $new_vmxnet3.Type -eq "vmxnet3")
 {
 	Write-Host -F red "PASS: NIC counts and new VMXNET3 type: $new_vmxnet3 are correct"
     Write-Output "PASS: NIC counts: $nics.length and new VMXNET3 type: $new_vmxnet3 are correct"
