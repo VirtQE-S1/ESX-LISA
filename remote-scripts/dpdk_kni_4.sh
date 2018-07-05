@@ -26,7 +26,7 @@
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
-            <noReboot>True</noReboot>
+            <noReboot>False</noReboot>
         </test>
 
 '
