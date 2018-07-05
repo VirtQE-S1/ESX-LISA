@@ -38,8 +38,19 @@ UtilsInit
 ##    and SetTestStateRunning to mark test status.
 ##
 ##################################################
+SetTestStateFailed
 
-cd $RTE_SDK/examples/helloworld || exit
+GetDistro
+
+if [ "$DISTRO" == "redhat_6" ]
+then
+    SetTestStateAborted
+    LogMsg "Not support rhel6"
+    exit 1
+fi
+
+
+cd $RTE_SDK/examples/helloworld || exit 1
 make
 ./build/helloworld
 
@@ -47,6 +58,8 @@ if [ ! "$?" -eq 0 ]
 then
     LogMsg "Hello World Failed"
     SetTestStateFailed
+    exit 1
 else
     SetTestStateCompleted
+    exit 0
 fi

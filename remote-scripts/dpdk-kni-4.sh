@@ -39,17 +39,28 @@ UtilsInit
 ##
 ##################################################
 
-
+SetTestStateFailed
 # Prepare Start KNI
+
+GetDistro
+
+if [ "$DISTRO" == "redhat_6" ]
+then
+    SetTestStateAborted
+    LogMsg "Not support rhel6"
+    exit 1
+fi
+
 
 source /etc/profile.d/dpdk.sh
 insmod "$RTE_SDK/$RTE_TARGET/kmod/rte_kni.ko"
-cd "$RTE_SDK/examples/kni" || return
+cd "$RTE_SDK/examples/kni" || exit 1
 make
 if [ ! "$?" -eq 0 ]
 then
     LogMsg "KNI compile Failed"
     SetTestStateAborted
+    exit 1
 fi
 cd build || return
 
@@ -61,6 +72,7 @@ if [ ! "$?" -eq 0 ]
 then
     LogMsg "KNI start Failed"
     SetTestStateFailed
+    exit 1
 fi
 
 systemctl restart NetworkManager
@@ -70,6 +82,7 @@ if [ ! "$?" -eq 0 ]
 then
     LogMsg "KNI connection Failed"
     SetTestStateFailed
+    exit 1
 fi
 systemctl restart NetworkManager
 
@@ -80,7 +93,7 @@ ping -I vEth0 -c 3 10.73.196.97
 ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
 
 status=$?
- 
+
 # Close KNI
 if [ "$status" -eq 0 ]
 then
@@ -90,8 +103,10 @@ then
     LogMsg "Start to Close KNI"
     ps aux | grep "./kni -l 1-3 -n 4 -- -P -p 0x1" | grep -v grep | awk '{print $2}' | xargs kill
     SetTestStateCompleted
+    exit 0
 else
     LogMsg "KNI is not working"
     UpdateSummary "KNI is not working"
     SetTestStateFailed
+    exit 1
 fi

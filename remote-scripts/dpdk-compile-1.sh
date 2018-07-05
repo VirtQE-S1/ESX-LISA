@@ -1,15 +1,14 @@
 #!/bin/bash
 
 ###############################################################################
-## 
+##
 ## Description:
-##   What does this script?
-##   What's the result the case expected?
-## 
+##   compile DPDK and make sure it's working
+##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 1/6/2017 - Draft shell script as test script.
+## v1.0.0 - ruqin - 7/5/2018 - Build the script
 ##
 ###############################################################################
 
@@ -35,14 +34,85 @@ UtilsInit
 ## 1. Please use LogMsg to output log to terminal.
 ## 2. Please use UpdateSummary to output log to summary.log file.
 ## 3. Please use SetTestStateFailed, SetTestStateAborted, SetTestStateCompleted,
-##    and SetTestStateRunning to mark test status. 
+##    and SetTestStateRunning to mark test status.
 ##
 ###############################################################################
 
 
+: '
+        <test>
+            <testName>DPDK-Compile</testName>
+            <testID>ESX-DPDK-001</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupscripts\change_memory.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+            </setupScript>
+            <testScript>dpdk-compile-1.sh</testScript>
+            <files>remote-scripts/dpdk-compile-1.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+                <param>VCPU=8</param>
+                <param>VMMemory=8GB</param>
+                <param>TC_COVERED=DEMO-01</param>
+            </testParams>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+'
+
+SetTestStateFailed
+
 # Download compressed file from given url
 
-url=https://fast.dpdk.org/rel/dpdk-18.02.2.tar.xz
+GetDistro
+
+LogMsg $DISTRO
+
+if [ "$DISTRO" == "redhat_7" ]; then
+    LogMsg "RHEL7"
+    UpdateSummary "RHEL7"
+    url=https://fast.dpdk.org/rel/dpdk-18.02.2.tar.xz
+elif [ "$DISTRO" == "redhat_8" ]; then
+    LogMsg "RHEL8"
+    UpdateSummary "RHEL8"
+    url=https://fast.dpdk.org/rel/dpdk-18.02.1.tar.xz
+else
+    SetTestStateAborted
+    LogMsg "Not support rhel6"
+    exit 1
+fi
+
+
+# if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
+# then
+#     count=0
+#     for i in $(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
+#     |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
+#     do
+#         if [ "$i" != "$Server_Adapter" ];
+#         then
+#             LogMsg "Will Disconnect $i"
+#             nmcli device disconnect "$i"
+#             count=$((count + 1))
+
+#             if [ $count -eq 2 ]; then
+#                 break
+#             fi
+#         fi
+#     done
+# else
+#     LogMsg "Failed Not Enough Netowrk Adapter"
+#     SetTestStateAborted
+#     exit 1
+# fi
+
+
+
 LogMsg $url
 filename=$(curl -skIL $url | grep -o -E 'filename=.*$' | sed -e 's/filename=//')
 filename="$(echo -e "${filename}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
@@ -64,13 +134,13 @@ then
         LogMsg "Source Code Download Failed"
         SetTestStateAborted
     fi
-
+    
 fi
 
 # Install required packages
 
 yum install elfutils-libelf-devel  elfutils-devel \
-    make gcc glibc-devel kernel-devel numactl-devel numactl-libs python-devel -y
+make gcc glibc-devel kernel-devel numactl-devel numactl-libs python-devel -y
 
 
 # Enable Hugepages support
@@ -92,7 +162,7 @@ LogMsg $cpu_num
 UpdateSummary $cpu_num
 
 
-# Uncompressed file and compile 
+# Uncompressed file and compile
 
 folder=`tar -xvf $filename | awk 'NR==1{print}' | cut -d/ -f1`
 
@@ -116,7 +186,7 @@ else
     LogMsg "RTE_TARGET is $RTE_TARGET"
     echo "export RTE_SDK=$RTE_SDK" > /etc/profile.d/dpdk.sh
     echo "export RTE_TARGET=$RTE_TARGET" >> /etc/profile.d/dpdk.sh
-
+    
     source /etc/profile.d/dpdk.sh
     SetTestStateCompleted
 fi

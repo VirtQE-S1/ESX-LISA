@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ###############################################################################
-## 
+##
 ## Description:
 ##   What does this script?
 ##   What's the result the case expected?
-## 
+##
 ###############################################################################
 ##
 ## Revision:
@@ -35,25 +35,40 @@ UtilsInit
 ## 1. Please use LogMsg to output log to terminal.
 ## 2. Please use UpdateSummary to output log to summary.log file.
 ## 3. Please use SetTestStateFailed, SetTestStateAborted, SetTestStateCompleted,
-##    and SetTestStateRunning to mark test status. 
+##    and SetTestStateRunning to mark test status.
 ##
 ###############################################################################
 
+
+SetTestStateFailed
+
+GetDistro
+
+if [ "$DISTRO" == "redhat_6" ]
+then
+    SetTestStateAborted
+    LogMsg "Not support rhel6"
+    exit 1
+fi
 
 
 # This will bind second and thrid network adapter to DPDK
 source /etc/profile.d/dpdk.sh
 
-    if [ ! "$?" -eq 0 ]
-    then
-        LogMsg "Source Code Download Failed"
-        SetTestStateAborted
-    fi
+if [ ! "$?" -eq 0 ]
+then
+    LogMsg "Source Code Download Failed"
+    SetTestStateAborted
+    exit 1
+fi
 
 cd "$RTE_SDK" || exit 1
 $RTE_SDK/usertools/dpdk-devbind.py -s
 modprobe uio_pci_generic
 insmod "$RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko"
+
+systemctl restart NetworkManager
+
 
 Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
 
@@ -61,19 +76,18 @@ LogMsg "$Server_IP"
 
 Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 
-
 if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
 then
     count=0
     for i in $(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
-        |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
+    |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
     do
         if [ "$i" != "$Server_Adapter" ];
         then
             LogMsg "Will Disconnect $i"
             nmcli device disconnect "$i"
             count=$((count + 1))
-
+            
             LogMsg "Start Bind $i"
             ./usertools/dpdk-devbind.py -b igb_uio "$i"
             if [ $count -eq 2 ]; then
@@ -84,15 +98,18 @@ then
 else
     LogMsg "Failed Not Enough Netowrk Adapter"
     SetTestStateAborted
+    exit 1
 fi
 
 if [ "$(./usertools/dpdk-devbind.py -s | grep drv=igb_uio | wc -l)" -eq 2 ];
 then
     LogMsg "Successfully bind two network adapter to DPDK igb_uio"
-        UpdateSummary "Successfully bind two network adapter to DPDK igb_uio"
+    UpdateSummary "Successfully bind two network adapter to DPDK igb_uio"
     SetTestStateCompleted
+    exit 0
 else
     LogMsg "Failed to bind two network adapter to DPDK igb_uio"
-        UpdateSummary "Failed to bind two network adapter to DPDK igb_uio"
+    UpdateSummary "Failed to bind two network adapter to DPDK igb_uio"
     SetTestStateFailed
+    exit 1
 fi

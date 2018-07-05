@@ -46,7 +46,7 @@
                 <param>VMMemory=8GB</param>
                 <param>TC_COVERED=DEMO-01</param>
             </testParams>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
@@ -98,7 +98,7 @@
     <VMs>
         <vm>
             <hvServer>10.73.196.97</hvServer>
-            <vmName>ruqin_rhel7.6_auto_BIOS</vmName>
+            <vmName>ruqin_rhel8_auto_EFI</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
