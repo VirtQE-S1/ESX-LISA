@@ -1290,7 +1290,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
     #bin\pscp -q -i ssh\${sshKey} root@${hostname}:${remoteFile} $localFile
     #if ($?)
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} -scp root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
         $retVal = $true
