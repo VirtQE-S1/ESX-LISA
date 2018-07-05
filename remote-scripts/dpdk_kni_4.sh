@@ -13,6 +13,25 @@
 ##
 ###############################################################################
 
+: '
+        <test>
+            <testName>dpdk_kni</testName>
+            <testID>ESX-DPDK-004</testID>
+            <testScript>dpdk_kni_4.sh</testScript>
+            <files>remote-scripts/dpdk_kni_4.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL-136473</param>
+            </testParams>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+
+'
+
+
 dos2unix utils.sh
 
 #
@@ -39,14 +58,14 @@ UtilsInit
 ##
 ##################################################
 
-SetTestStateFailed
 # Prepare Start KNI
+
 
 GetDistro
 
 if [ "$DISTRO" == "redhat_6" ]
 then
-    SetTestStateAborted
+    SetTestStateSkipped
     LogMsg "Not support rhel6"
     exit 1
 fi

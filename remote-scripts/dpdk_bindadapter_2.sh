@@ -3,15 +3,33 @@
 ###############################################################################
 ##
 ## Description:
-##   What does this script?
-##   What's the result the case expected?
+##  Bind Network Adapter to DPDK driver
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 1/6/2017 - Draft shell script as test script.
+## v1.0 - Ruowen Qin - 7/5/2018 - Build the script.
 ##
 ###############################################################################
+
+: '
+        <test>
+            <testName>dpdk_bindadapter</testName>
+            <testID>ESX-DPDK-002</testID>
+            <testScript>dpdk_bindadapter_2.sh</testScript>
+            <files>remote-scripts/dpdk_bindadapter_2.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL-136145</param>
+            </testParams>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+
+'
+
 
 dos2unix utils.sh
 
@@ -40,13 +58,11 @@ UtilsInit
 ###############################################################################
 
 
-SetTestStateFailed
-
 GetDistro
 
 if [ "$DISTRO" == "redhat_6" ]
 then
-    SetTestStateAborted
+    SetTestStateSkipped
     LogMsg "Not support rhel6"
     exit 1
 fi
@@ -57,7 +73,7 @@ source /etc/profile.d/dpdk.sh
 
 if [ ! "$?" -eq 0 ]
 then
-    LogMsg "Source Code Download Failed"
+    LogMsg "Source Code Compile Failed"
     SetTestStateAborted
     exit 1
 fi

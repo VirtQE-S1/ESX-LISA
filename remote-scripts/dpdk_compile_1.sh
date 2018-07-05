@@ -12,6 +12,33 @@
 ##
 ###############################################################################
 
+: '
+        <test>
+            <testName>dpdk_compile</testName>
+            <testID>ESX-DPDK-001</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupscripts\change_memory.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+            </setupScript>
+            <testScript>dpdk_compile_1.sh</testScript>
+            <files>remote-scripts/dpdk_compile_1.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+                <param>VCPU=8</param>
+                <param>VMMemory=8GB</param>
+                <param>TC_COVERED=RHEL-136107</param>
+            </testParams>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+'
+
+
 dos2unix utils.sh
 
 #
@@ -39,33 +66,7 @@ UtilsInit
 ###############################################################################
 
 
-: '
-        <test>
-            <testName>DPDK-Compile</testName>
-            <testID>ESX-DPDK-001</testID>
-            <setupScript>
-                <file>setupscripts\change_cpu.ps1</file>
-                <file>setupscripts\change_memory.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-            </setupScript>
-            <testScript>dpdk-compile-1.sh</testScript>
-            <files>remote-scripts/dpdk-compile-1.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <testParams>
-                <param>VCPU=8</param>
-                <param>VMMemory=8GB</param>
-                <param>TC_COVERED=DEMO-01</param>
-            </testParams>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>True</noReboot>
-        </test>
-'
 
-SetTestStateFailed
 
 # Download compressed file from given url
 
@@ -82,36 +83,10 @@ elif [ "$DISTRO" == "redhat_8" ]; then
     UpdateSummary "RHEL8"
     url=https://fast.dpdk.org/rel/dpdk-18.02.1.tar.xz
 else
-    SetTestStateAborted
+    SetTestStateSkipped
     LogMsg "Not support rhel6"
     exit 1
 fi
-
-
-# if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
-# then
-#     count=0
-#     for i in $(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
-#     |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
-#     do
-#         if [ "$i" != "$Server_Adapter" ];
-#         then
-#             LogMsg "Will Disconnect $i"
-#             nmcli device disconnect "$i"
-#             count=$((count + 1))
-
-#             if [ $count -eq 2 ]; then
-#                 break
-#             fi
-#         fi
-#     done
-# else
-#     LogMsg "Failed Not Enough Netowrk Adapter"
-#     SetTestStateAborted
-#     exit 1
-# fi
-
-
 
 LogMsg $url
 filename=$(curl -skIL $url | grep -o -E 'filename=.*$' | sed -e 's/filename=//')
@@ -133,6 +108,7 @@ then
     then
         LogMsg "Source Code Download Failed"
         SetTestStateAborted
+        exit 1
     fi
     
 fi
@@ -154,6 +130,7 @@ if [ ! "$?" -eq 0 ]
 then
     LogMsg "Huge Pages Failed"
     SetTestStateAborted
+    exit 1
 fi
 
 cpu_num=`cat /proc/cpuinfo | grep "processor" | wc -l`
@@ -181,6 +158,7 @@ status=$?
 if [ ! "$status" -eq 0 ]
 then
     SetTestStateFailed
+    exit 1
 else
     LogMsg "RTE_SDK is $RTE_SDK"
     LogMsg "RTE_TARGET is $RTE_TARGET"
@@ -189,4 +167,5 @@ else
     
     source /etc/profile.d/dpdk.sh
     SetTestStateCompleted
+    exit 0
 fi

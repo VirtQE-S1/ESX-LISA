@@ -18,17 +18,17 @@
         <suite>
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
-                <suiteTest>DPDK-Compile</suiteTest>
-                <suiteTest>DPDK-Bindadapter</suiteTest>
-                <suiteTest>DPDK-Helloworld</suiteTest>
-                <suiteTest>DPDK-KNI</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>DPDK-Compile</testName>
+            <testName>dpdk_compile</testName>
             <testID>ESX-DPDK-001</testID>
             <setupScript>
                 <file>setupscripts\change_cpu.ps1</file>
@@ -37,56 +37,56 @@
                 <file>setupscripts\add_vmxnet3.ps1</file>
                 <file>setupscripts\add_vmxnet3.ps1</file>
             </setupScript>
-            <testScript>dpdk-compile-1.sh</testScript>
-            <files>remote-scripts/dpdk-compile-1.sh</files>
+            <testScript>dpdk_compile_1.sh</testScript>
+            <files>remote-scripts/dpdk_compile_1.sh</files>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <testParams>
                 <param>VCPU=8</param>
                 <param>VMMemory=8GB</param>
-                <param>TC_COVERED=DEMO-01</param>
+                <param>TC_COVERED=RHEL-136107</param>
             </testParams>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
         <test>
-            <testName>DPDK-Bindadapter</testName>
+            <testName>dpdk_bindadapter</testName>
             <testID>ESX-DPDK-002</testID>
-            <testScript>dpdk-bindadapter-2.sh</testScript>
-            <files>remote-scripts/dpdk-bindadapter-2.sh</files>
+            <testScript>dpdk_bindadapter_2.sh</testScript>
+            <files>remote-scripts/dpdk_bindadapter_2.sh</files>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=DEMO-02</param>
+                <param>TC_COVERED=RHEL-136145</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
         <test>
-            <testName>DPDK-Helloworld</testName>
+            <testName>dpdk_helloworld</testName>
             <testID>ESX-DPDK-003</testID>
-            <testScript>dpdk-helloworld-3.sh</testScript>
-            <files>remote-scripts/dpdk-helloworld-3.sh</files>
+            <testScript>dpdk_helloworld_3.sh</testScript>
+            <files>remote-scripts/dpdk_helloworld_3.sh</files>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=DEMO-03</param>
+                <param>TC_COVERED=RHEL-136158</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
         <test>
-            <testName>DPDK-KNI</testName>
+            <testName>dpdk_kni</testName>
             <testID>ESX-DPDK-004</testID>
-            <testScript>dpdk-kni-4.sh</testScript>
-            <files>remote-scripts/dpdk-kni-4.sh</files>
+            <testScript>dpdk_kni_4.sh</testScript>
+            <files>remote-scripts/dpdk_kni_4.sh</files>
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=DEMO-04</param>
+                <param>TC_COVERED=RHEL-136473</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
