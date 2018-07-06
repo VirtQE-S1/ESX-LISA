@@ -28,6 +28,8 @@
 ##                               test case result.
 ## v1.5 - xiaofwan - 2/28/2016 - Add WaitForVMSSHReady function.
 ##
+## v1.5.1 - ruqin  - 7/6/2018  - Add GetModuleVersion function
+##
 ###############################################################################
 
 <#
@@ -1082,6 +1084,57 @@ function RunRemoteScript($remoteScript)
 
     return $retValue
 }
+
+#######################################################################
+#
+# Check socket version in vm.
+#
+#######################################################################
+
+function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
+{
+    <#
+    .Synopsis
+        Use SSH to get module version in a Linux VM.
+    .Description
+        Use SSH to get module version in a Linux VM, must use CheckModule make sure requested Module exists.
+    .Parameter ipv4
+        IPv4 address of the VM the module which needs to get version.
+    .Parameter sshKey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\ssh
+    .Parameter module
+        Module name which needs to get version in linux VM.
+    .Example
+        GetModuleVersion "192.168.1.101" "lisa_id_rsa.ppk" "vmxnet3"
+    #>
+
+    if (-not $ipv4)
+    {
+        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $sshKey)
+    {
+        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+
+    if (-not $module)
+    {
+        Write-Error -Message "module name is null" -Category InvalidData -ErrorAction SilentlyContinue
+        return $False
+    }
+    
+    # get around plink questions
+    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+
+    $module_version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "modinfo $module | grep -w version: | awk '{print `$2}'"
+
+    return $module_version.Trim()
+}
+
 
 #######################################################################
 #
