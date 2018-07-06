@@ -18,79 +18,38 @@
         <suite>
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
-                <suiteTest>DPDK-Compile</suiteTest>
-                <suiteTest>DPDK-Bindadapter</suiteTest>
-                <suiteTest>DPDK-Helloworld</suiteTest>
-                <suiteTest>DPDK-KNI</suiteTest>
+                <suiteTest>set_mtu_multi_vmxnet3</suiteTest>
+                <!-- <suiteTest>go_check_modules</suiteTest> -->
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
-        <test>
-            <testName>DPDK-Compile</testName>
-            <testID>ESX-DPDK-001</testID>
-            <setupScript>
-                <file>setupscripts\change_cpu.ps1</file>
-                <file>setupscripts\change_memory.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-            </setupScript>
-            <testScript>dpdk-compile-1.sh</testScript>
-            <files>remote-scripts/dpdk-compile-1.sh</files>
-            <files>remote-scripts/utils.sh</files>
+        <!-- <test>
+            <testName>vsock_version</testName>
+            <testID>ESX-VSOCK-001</testID>
+            <testScript>testscripts\vsock_check_version.ps1</testScript>
+            <testParams>
+                <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>TC_COVERED=RHEL-111195</param>
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <testParams>
-                <param>VCPU=8</param>
-                <param>VMMemory=8GB</param>
-                <param>TC_COVERED=DEMO-01</param>
-            </testParams>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>True</noReboot>
-        </test>
-        <test>
-            <testName>DPDK-Bindadapter</testName>
-            <testID>ESX-DPDK-002</testID>
-            <testScript>dpdk-bindadapter-2.sh</testScript>
-            <files>remote-scripts/dpdk-bindadapter-2.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
-            <testParams>
-                <param>TC_COVERED=DEMO-02</param>
-            </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
-            <noReboot>True</noReboot>
-        </test>
+            <noReboot>False</noReboot>
+        </test> -->
         <test>
-            <testName>DPDK-Helloworld</testName>
-            <testID>ESX-DPDK-003</testID>
-            <testScript>dpdk-helloworld-3.sh</testScript>
-            <files>remote-scripts/dpdk-helloworld-3.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testName>set_mtu_multi_vmxnet3</testName>
+            <testID>ESX-NW-015</testID>
+            <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=DEMO-03</param>
+                <param>TC_COVERED=RHEL-111700</param>
             </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
             <onError>Continue</onError>
-            <noReboot>True</noReboot>
-        </test>
-        <test>
-            <testName>DPDK-KNI</testName>
-            <testID>ESX-DPDK-004</testID>
-            <testScript>dpdk-kni-4.sh</testScript>
-            <files>remote-scripts/dpdk-kni-4.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
-            <testParams>
-                <param>TC_COVERED=DEMO-04</param>
-            </testParams>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>True</noReboot>
+            <noReboot>False</noReboot>
         </test>
 
     </testCases>
@@ -98,7 +57,7 @@
     <VMs>
         <vm>
             <hvServer>10.73.196.97</hvServer>
-            <vmName>ruqin_rhel8_auto_EFI</vmName>
+            <vmName>ruqin_rhel7.6_auto_BIOS</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
