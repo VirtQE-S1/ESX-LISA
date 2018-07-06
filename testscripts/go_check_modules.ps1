@@ -7,6 +7,7 @@
 ##  v1.0.0 - hhei - 1/6/2017 - Check modules in the VM
 ##  v1.0.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
 ##  v1.0.2 - boyang - 05/10/2018 - Enhance the script and exit 100 if false
+##  v1.1.0 - ruqin - 7/6/2018 - 
 ##
 ###############################################################################
 
@@ -175,17 +176,19 @@ foreach ($m in $modules_array)
 {
     $module = $m.Trim()
     $ret = CheckModule $ipv4 $sshKey $module
-    if ($ret -eq $true)
-    {
-        Write-Host -F Red "PASS: Complete the check of $moudle"
-        Write-Output "PASS: Complete the check of $moudle"
-        $retVal = $Passed
-    }
-    else
+    if ($ret -ne $true)
     {
         Write-Host -F Red "FAIL: The check of $moudle failed"
         Write-Output "FAIL: The check of $moudle failed"
+        DisconnectWithVIServer
+        return $retVal
     }
+    else
+    {
+        Write-Host -F Red "PASS: Complete the check of $moudle"
+        Write-Output "PASS: Complete the check of $moudle"
+    }
+    $retVal = $Passed
 }
 
 
