@@ -147,6 +147,40 @@ if ($adapter[-1].Type -ne "vmxnet3") {
     return $retVal
 }
 
+# Get the Guest version
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
+Write-Output "DEBUG: DISTRO: $DISTRO"
+if (-not $DISTRO) {
+    Write-Host -F Red "ERROR: Guest OS version is NULL"
+    Write-Output "ERROR: Guest OS version is NULL"
+    DisconnectWithVIServer
+    return $Aborted
+}
+Write-Host -F Red "INFO: Guest OS version is $DISTRO"
+Write-Output "INFO: Guest OS version is $DISTRO"
+
+
+# Different Guest DISTRO, different modules
+if ($DISTRO -eq "RedHat6") {
+    Write-Host -F Red "INFO: RHEL6 is not supported"
+    Write-Output "INFO: RHEL6 is not supported"
+    DisconnectWithVIServer
+    return $Skipped
+}
+elseif ($DISTRO -eq "RedHat7") {
+    $modules_array = $rhel7_version.split(",")
+}
+elseif ($DISTRO -eq "RedHat8") {
+    $modules_array = $rhel8_version.split(",")
+}
+else {
+    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
 $MTU_list = 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000
 
 foreach ($Set_MTU in $MTU_list) {

@@ -19,13 +19,13 @@
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
                 <suiteTest>set_mtu_multi_vmxnet3</suiteTest>
-                <!-- <suiteTest>go_check_modules</suiteTest> -->
+                <suiteTest>vsock_version</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
-        <!-- <test>
+        <test>
             <testName>vsock_version</testName>
             <testID>ESX-VSOCK-001</testID>
             <testScript>testscripts\vsock_check_version.ps1</testScript>
@@ -38,7 +38,7 @@
             <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test> -->
+        </test>
         <test>
             <testName>set_mtu_multi_vmxnet3</testName>
             <testID>ESX-NW-015</testID>
@@ -57,7 +57,7 @@
     <VMs>
         <vm>
             <hvServer>10.73.196.97</hvServer>
-            <vmName>ruqin_rhel7.6_auto_BIOS</vmName>
+            <vmName>ruqin_rhel6.10_EFI</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
