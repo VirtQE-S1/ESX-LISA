@@ -925,6 +925,86 @@ function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout
     return $False
 }
 
+
+#######################################################################
+#
+# WaiForVMToStop()
+#
+#######################################################################
+function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacityGB) {
+    <#
+    .Synopsis
+        Add a new IDE hard disk.
+    .Description
+        Add a new IDE hard disk.
+    .Parameter vmName
+        Name of the VM that need to add disk.
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Parameter capacityGB
+        The Capacity of Disk.
+    .Example
+        AddIDEHardDisk "testVM" "localhost" 10
+    a#>
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-Error -Message "AddIDEHardDisk: Unable to Get-VM with $vmName" -Category OperationTimeout -ErrorAction SilentlyContinue
+        return $false
+    }
+    else {
+        $hdSize = $capacityGB * 1GB
+
+        $vm = $vmObj
+        $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+
+        # Check if there is an IDE COntroller present 
+        $ideCtrl = $vm.ExtensionData.Config.Hardware.Device | Where-Object {$_.GetType().Name -eq "VirtualIDEController"} | Select-Object -First 1 
+        if (!$ideCtrl) {
+            $ctrl = New-Object VMware.Vim.VirtualDeviceConfigSpec
+            $ctrl.Operation = "add"
+            $ctrl.Device = New-Object VMware.Vim.VirtualIDEController
+            $ideKey = -1
+            $ctrl.Device.ControllerKey = $ideKey
+            $spec.deviceChange += $ctrl
+        }
+        else {
+            $ideKey = $ideCtrl.Key
+        }
+
+        # Get next harddisk number 
+        $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
+
+        # Get datastore 
+        $dsName = $vm.ExtensionData.Config.Files.VmPathName.Split(']')[0].TrimStart('[')
+
+        # Add IDE hard disk 
+        $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec 
+        $dev.FileOperation = "create"
+        $dev.Operation = "add"
+        $dev.Device = New-Object VMware.Vim.VirtualDisk
+        $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingInfo
+        $dev.Device.backing.Datastore = (Get-Datastore -Name $dsName).Extensiondata.MoRef
+        $dev.Device.backing.DiskMode = "persistent"
+        $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
+
+        Write-Host -F Red $dev.Device.Backing.FileName
+        Write-Output $dev.Device.Backing.FileName
+
+        $dev.Device.backing.ThinProvisioned = $true
+        $dev.Device.CapacityInKb = $hdSize / 1KB
+        $dev.Device.ControllerKey = $ideKey
+        $dev.Device.UnitNumber = -1
+        $spec.deviceChange += $dev
+
+        $vm.ExtensionData.ReconfigVM($spec)
+
+        return $true
+    }
+
+}
+
+
 #######################################################################
 #
 # Runs a remote script on the VM and returns the log.

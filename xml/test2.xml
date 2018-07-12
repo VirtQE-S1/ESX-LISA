@@ -18,36 +18,28 @@
         <suite>
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
-                <suiteTest>set_mtu_multi_vmxnet3</suiteTest>
-                <suiteTest>vsock_version</suiteTest>
+                <suiteTest>stor_add_ide_disk</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>vsock_version</testName>
-            <testID>ESX-VSOCK-001</testID>
-            <testScript>testscripts\vsock_check_version.ps1</testScript>
+            <testName>stor_add_ide_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-011</testID>
+            <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
+            			 <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
+
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <testParams>
-                <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
-                <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
-                <param>TC_COVERED=RHEL-111195</param>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL7-80182</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>set_mtu_multi_vmxnet3</testName>
-            <testID>ESX-NW-015</testID>
-            <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-111700</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -57,7 +49,7 @@
     <VMs>
         <vm>
             <hvServer>10.73.196.97</hvServer>
-            <vmName>ruqin_rhel6.10_EFI</vmName>
+            <vmName>ruqin_rhel8_auto_EFI-A</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>

@@ -6,7 +6,8 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xuli - 01/16/2017 - Draft script for add hard disk.
+## v1.0.0 - xuli - 01/16/2017 - Draft script for add hard disk.
+## v1.0.1 - ruqin - 07/11/2018 - ADD IDE hard disk support
 ##
 ###############################################################################
 <#
@@ -24,7 +25,7 @@
    StorageFormat.
 
    Where
-        DiskType - IDE or SCSI, currently only supports SCSI
+        DiskType - IDE or SCSI
         StorageFormat - The format of new hard disk, can be (Thin, Thick,
         EagerZeroedThick)
         CapacityGB - Capacity of the new virtual disk in gigabytes
@@ -45,7 +46,6 @@
             <param>DiskType=SCSI</param>
             <param>StorageFormat=Thin</param>
             <param>CapacityGB=3</param>
-            <param>filesSystems=(ext4 ext3 xfs)</param>
         </testparams>
         <onError>Continue</onError>
     </test>
@@ -64,6 +64,13 @@
 #>
 param ([String] $vmName, [String] $hvServer, [String] $testParams)
 
+
+#
+# Source the tcutils.ps1 file
+#
+. .\setupscripts\tcutils.ps1
+
+
 ############################################################################
 #
 # Main entry point for script
@@ -72,14 +79,12 @@ param ([String] $vmName, [String] $hvServer, [String] $testParams)
 #
 # Check input arguments
 #
-if ($vmName -eq $null -or $vmName.Length -eq 0)
-{
+if ($vmName -eq $null -or $vmName.Length -eq 0) {
     "Error: VM name is null"
     return $False
 }
 
-if ($testParams -eq $null -or $testParams.Length -lt 3)
-{
+if ($testParams -eq $null -or $testParams.Length -lt 3) {
     "Error: No testParams provided"
     "       add_hard_disk.ps1 requires test params"
     return $False
@@ -99,58 +104,68 @@ $capacityGB = $null
 #
 [int]$max = 0
 $setIndex = $null
-foreach($p in $params){
+foreach ($p in $params) {
     $fields = $p.Split("=")
     $value = $fields[0].Trim()
-    switch -wildcard ($value)
-    {
-    "DiskType?"        { $setIndex = $value.substring(8) }
-    "StorageFormat?"    { $setIndex = $value.substring(13) }
-    default    {}  # unknown param - just ignore it
+    switch -wildcard ($value) {
+        "DiskType?" { $setIndex = $value.substring(8) }
+        "StorageFormat?" { $setIndex = $value.substring(13) }
+        default {}  # unknown param - just ignore it
     }
 
-    if ([int]$setIndex -gt $max -and $setIndex -ne $null){
+    if ([int]$setIndex -gt $max -and $null -ne $setIndex) {
         $max = [int]$setIndex
     }
 }
 
-for ($pair=0; $pair -le $max; $pair++) {
-    foreach ($p in $params)
-    {
+for ($pair = 0; $pair -le $max; $pair++) {
+    foreach ($p in $params) {
         $fields = $p.Split("=")
         $value = $fields[1].Trim()
-        switch  ( $fields[0].Trim() )
-        {
-          "DiskType$pair"        { $diskType = $value }
-          "StorageFormat$pair"    { $storageFormat  = $value }
-          "DiskType"        { $diskType = $value }
-          "StorageFormat"    { $storageFormat = $value }
-          "CapacityGB"    { $capacityGB = $value }
-          default    {}  # unknown param - just ignore it
+        switch ( $fields[0].Trim() ) {
+            "DiskType$pair" { $diskType = $value }
+            "StorageFormat$pair" { $storageFormat = $value }
+            "DiskType" { $diskType = $value }
+            "StorageFormat" { $storageFormat = $value }
+            "CapacityGB" { $capacityGB = $value }
+            default {}  # unknown param - just ignore it
         }
     }
 
-    if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat)
-    {
+    if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
         "Error: Unknown StorageFormat type: $storageFormat"
         return $False
     }
 
-    if (@("IDE", "SCSI") -notcontains $diskType)
-    {
+    if (@("IDE", "SCSI") -notcontains $diskType) {
         "Error: Unknown StorageFormat type: $diskType"
         return $False
     }
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue
-    if (-not $?)
-    {
-        Throw "Error : Cannot add new hard disk to the VM $vmName"
-        return $False
+
+    if ($diskType -eq "SCSI") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue    
+        if (-not $?) {
+            Throw "Error : Cannot add new hard disk to the VM $vmName"
+            return $False
+        }
+        else {
+            write-output "Add disk done."
+            return $True
+        }
     }
-    else
-    {
-        write-output "Add disk done."
-        return $True
+
+    if ($diskType -eq "IDE") {
+        AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB
+
+        if (-not $?) {
+            Throw "Error : Cannot add new hard disk to the VM $vmName"
+            return $False
+        }
+        else {
+            write-output "Add disk done."
+            return $True
+        }
     }
+
 }

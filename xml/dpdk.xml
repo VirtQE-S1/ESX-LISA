@@ -97,8 +97,8 @@
 
     <VMs>
         <vm>
-            <hvServer>10.73.196.97</hvServer>
-            <vmName>ruqin_rhel7.6_auto_BIOS</vmName>
+            <hvServer>10.73.196.95</hvServer>
+            <vmName>ruqin_rhel7.6_auto</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
