@@ -1,27 +1,28 @@
 ###############################################################################
 ##
 ## Description:
-##  Check vscock modules version in the VM
+##  Add and remove scsi disk multiple times in the VM
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 7/6/2018 - Build the script
+##  v1.0.0 - ruqin - 7/12/2018 - Build the script
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Demo script ONLY for test script.
+    Add and remove scsi disk mltiple times to make sure system doesn't have call trace.
 
 .Description
         <test>
-            <testName>set_mtu_multi_vmxnet3</testName>
-            <testID>ESX-NW-016</testID>
-            <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
+            <testName>stor_add_remove_multi_scsi</testName>
+            <testID>ESX-Stor-012</testID>
+            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <testParams>
-                <param>TC_COVERED=RHEL-111700</param>
+                <param>TC_COVERED=RHEL7-80195</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -75,7 +76,6 @@ foreach ($p in $params) {
         "sshKey" { $sshKey = $fields[1].Trim() }
         "rootDir" { $rootDir = $fields[1].Trim() }
         "ipv4" { $ipv4 = $fields[1].Trim() }
-        "TestLogDir"	{ $logdir = $fields[1].Trim()}
         default {}
     }
 }
@@ -89,23 +89,12 @@ if (-not $rootDir) {
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
-        cd $rootDir
+        Set-Location $rootDir
     }
     else {
         "Warn : rootdir '${rootDir}' does not exist"
     }
 }
-
-if ($null -eq $sshKey) {
-    "FAIL: Test parameter sshKey was not specified"
-    return $False
-}
-
-if ($null -eq $ipv4) {
-    "FAIL: Test parameter ipv4 was not specified"
-    return $False
-}
-
 
 
 #
@@ -119,12 +108,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
-
 
 
 $retVal = $Failed
@@ -138,14 +127,6 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-$adapter = Get-NetworkAdapter -VM $vmObj
-
-# Adapter Must be VMXNET3 
-if ($adapter[-1].Type -ne "vmxnet3") {
-    $retVal = $Aborted
-    DisconnectWithVIServer
-    return $retVal
-}
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
@@ -162,56 +143,51 @@ Write-Output "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO, different modules
-if ($DISTRO -eq "RedHat6") {
-    Write-Host -F Red "INFO: RHEL6 is not supported"
-    Write-Output "INFO: RHEL6 is not supported"
-    DisconnectWithVIServer
-    return $Skipped
-}
-elseif ($DISTRO -eq "RedHat7") {
-    $modules_array = $rhel7_version.split(",")
-}
-elseif ($DISTRO -eq "RedHat8") {
-    $modules_array = $rhel8_version.split(",")
-}
-else {
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
     Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
-    return $Aborted
+    return $Skipped
 }
 
-$MTU_list = 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000
-
-foreach ($Set_MTU in $MTU_list) {
-    $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
-    $Server_Adapter = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-
-    # Start NetworkManager
-    SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
-
-    # Set New MTU
-    SendCommandToVM $ipv4 $sshKey "nmcli connection modify `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') mtu $Set_MTU"
-    SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
-
-    # Get New MTU
-    $Command = "nmcli connection show `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') | grep -w mtu | awk '{print `$2}'"
-    $MTU = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-
-    if ($MTU -ne $Set_MTU) {
-        Write-Host -F Red "ERROR: Unable to Set MTU to $Set_MTU"
-        Write-Output "ERROR: Unable to Set MTU to $Set_MTU"
+# add multiple disks 10 times
+for ($i = 1; $i -le 10; $i++) {
+    $hd_num = Get-Random -Minimum 1 -Maximum 5
+    for ($j = 1; $j -le $hd_num; $j++) {
+        # Add Disk with size 5 to 10
+        $hd_size = Get-Random -Minimum 5 -Maximum 10
+        Write-Host -F Red "Info : Add $hd_nim disk(s) with size $hd_size GB to the VM $vmName"
+        Write-Output "Info : Add $hd_nim disk(s) with size $hd_size GB to the VM $vmName"
+        New-HardDisk -CapacityGB $hd_size -VM $vmObj -StorageFormat "Thin" -ErrorAction SilentlyContinue
+        if (-not $?) {
+            Write-Host -F Red "Error : Cannot add new hard disk to the VM $vmName"
+            Write-Output "Error : Cannot add new hard disk to the VM $vmName"
+            DisconnectWithVIServer
+            return $Failed
+        }
+        Start-Sleep -Seconds 1
+    }
+    # Check System dmesg
+    $Command = "dmesg | grep -i `"Call Trace`" | wc -l"
+    $Error_Num = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+    if ($Error_Num -ne 0) {
+        Write-Host -F Red "Error : New disks have error Call Trace in $vmName"
+        Write-Output "Error : New disks have error Call Trace in $vmName"
         DisconnectWithVIServer
         return $Failed
-    } else {
-        Write-Host -F Red "INFO: Success Set MTU to $Set_MTU"
-        Write-Output "INFO: Success Set MTU to $Set_MTU"
-
     }
-    $retVal = $Passed
+
+    #Clean up new added disk and ready for next round
+    Start-Sleep -Seconds 2
+    $sysDisk = "Hard disk 1"
+    if ( -not (CleanUpDisk -vmName $vmName -hvServer $hvServer -sysDisk $sysDisk)) {
+        Write-Host -F Red "Error : Clean up failed in $vmName"
+        Write-Output "Error : Clean up failed in $vmName"
+        DisconnectWithVIServer
+        return $Failed
+    }
 }
-
-
+$retVal = $Passed
 
 DisconnectWithVIServer
 return $retVal

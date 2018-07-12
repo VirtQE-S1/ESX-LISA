@@ -10,7 +10,7 @@
 
 <#
 .Synopsis
-    Demo script ONLY for test script.
+    Add IDE disk in the VM and try this new ide disk.
 
 .Description
         <test>
@@ -18,6 +18,7 @@
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testID>ESX-Stor-011</testID>
             <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh </files>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <testParams>
                 <param>DiskType=IDE</param>

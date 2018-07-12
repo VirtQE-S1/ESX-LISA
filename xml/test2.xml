@@ -19,6 +19,7 @@
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
                 <suiteTest>stor_add_ide_disk</suiteTest>
+                <suiteTest>stor_add_remove_multi_scsi</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -29,8 +30,7 @@
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testID>ESX-Stor-011</testID>
             <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
-            			 <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh </files>
-
+            <files>remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh </files>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <testParams>
                 <param>DiskType=IDE</param>
@@ -43,7 +43,19 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
+        <test>
+            <testName>stor_add_remove_multi_scsi</testName>
+            <testID>ESX-Stor-012</testID>
+            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-80195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
     </testCases>
 
     <VMs>

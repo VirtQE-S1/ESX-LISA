@@ -958,7 +958,7 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
         $vm = $vmObj
         $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
 
-        # Check if there is an IDE COntroller present 
+        # Check if there is an IDE COntroller present
         $ideCtrl = $vm.ExtensionData.Config.Hardware.Device | Where-Object {$_.GetType().Name -eq "VirtualIDEController"} | Select-Object -First 1 
         if (!$ideCtrl) {
             $ctrl = New-Object VMware.Vim.VirtualDeviceConfigSpec
@@ -972,13 +972,13 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
             $ideKey = $ideCtrl.Key
         }
 
-        # Get next harddisk number 
+        # Get next harddisk number
         $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
 
-        # Get datastore 
+        # Get datastore
         $dsName = $vm.ExtensionData.Config.Files.VmPathName.Split(']')[0].TrimStart('[')
 
-        # Add IDE hard disk 
+        # Add IDE hard disk
         $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec 
         $dev.FileOperation = "create"
         $dev.Operation = "add"
@@ -1003,6 +1003,76 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
     }
 
 }
+
+#######################################################################
+#
+# Clean all hard disk, only left system disk.
+#
+#######################################################################
+
+function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk) {
+    <#
+    .Synopsis
+        Clean all hard disk, only left system disk.
+    .Description
+        Clean all hard disk, only left system disk.
+    .Parameter vmName
+        Name of the VM that need to add disk.
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Parameter sysDisk
+        The name of system disk
+    .Example
+        CleanUpDisk "testVM" "localhost" "Hard disk 1"
+    a#>
+
+    # Check input arguments
+    #
+    if ($null -eq $vmName -or $vmName.Length -eq 0) {
+        "Error: VM name is null"
+        return $False
+    }
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    while ($True) {
+        # How many disks in VM
+        $diskList = Get-HardDisk -VM $vmObj
+        $diskLength = $diskList.Length
+
+        # If disks counts great than 1, will delete them
+        if ($diskList.Length -gt 1) {
+            foreach ($disk in $diskList) {
+                $diskName = $disk.Name
+                if ($diskName -ne $sysDisk) {
+                    Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
+                    # Get new counts of disks
+                    $diskNewLength = (Get-HardDisk -VM $vmObj).Length
+                    if (($diskLength - $diskNewLength) -eq 1) {
+                        Write-Output "DONE: remove $diskName"
+                        Write-Host -F Red "DONE: remove $diskName"
+                        break
+                    }
+                }
+            }
+        }
+        else {
+            Write-Output "DONE: Only system disk is left"
+            Write-Host -F Red "DONE: Only system disk is left"
+            break
+        }
+    }
+
+    $diskLastList = Get-HardDisk -VM $vmObj
+    if ($diskLastList.Length -eq 1) {
+        Write-Output "PASS: Clean disk new added successfully"
+        return $True
+    }
+    else {
+        Write-Output "FAIL: Clean disk new added unsuccessfully"
+        return $False
+    }
+    return $False
+}
+
 
 
 #######################################################################

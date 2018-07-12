@@ -102,7 +102,6 @@ while ($True)
                 Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
                 # Get new counts of disks
                 $diskNewLength = (Get-HardDisk -VM $vmObj).Length
-                
                 if (($diskLength - $diskNewLength) -eq 1)
                 {
                     Write-Output "DONE: remove $diskName"
@@ -128,5 +127,4 @@ else
 {
     Write-Output "FAIL: Clean disk new added unsuccessfully"
 }
-write-host -f red "$retVal"
 return $retVal
