@@ -6,7 +6,8 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 10/12/2017 - Build the script
+## V1.0.0 - boyang - 10/12/2017 - Build the script
+## v1.0.1 - ruqin - 7/16/2018 - Fix DisconnectWithVIServer Error
 ##
 ###############################################################################
 <#
@@ -95,7 +96,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
-                  
+
 ###############################################################################
 #
 # Main Body
@@ -115,7 +116,7 @@ else
 {
     Write-Host -F Gray "Start to enable hot-mem feature......."
     Write-Output "Start to enable hot-mem feature"
-    $vmView = Get-vm $vmObj | Get-View 
+    $vmView = Get-vm $vmObj | Get-View
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
     $extra = New-Object VMware.Vim.optionvalue
     $extra.Key="mem.hotadd"
@@ -125,5 +126,4 @@ else
     $retVal = $Passed
 }
 
-DisconnectWithVIServer
 return $retVal
