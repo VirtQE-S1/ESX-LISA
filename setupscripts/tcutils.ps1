@@ -884,7 +884,7 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [String] $sshKe
 
 #######################################################################
 #
-# WaiForVMToStop()
+# WaitForVMToStop()
 #
 #######################################################################
 function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout)
@@ -928,7 +928,7 @@ function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout
 
 #######################################################################
 #
-# WaiForVMToStop()
+# AddIDEHardDisk()
 #
 #######################################################################
 function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacityGB) {
