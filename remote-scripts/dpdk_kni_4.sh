@@ -111,8 +111,8 @@ sleep 6
 Client_IP=$(echo "$SSH_CONNECTION"| awk '{print $1}')
 
 # Test Network Connection
-ping -I vEth0 -c 3 Client_IP
-ping -I vEth0 -c 3 Client_IP | grep ttl > /dev/null
+ping -I vEth0 -c 3 $Client_IP
+ping -I vEth0 -c 3 $Client_IP | grep ttl > /dev/null
 
 status=$?
 
