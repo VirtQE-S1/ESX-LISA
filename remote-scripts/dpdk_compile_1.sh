@@ -74,6 +74,7 @@ GetDistro
 
 LogMsg $DISTRO
 
+# Different version need different DPDK
 if [ "$DISTRO" == "redhat_7" ]; then
     LogMsg "RHEL7"
     UpdateSummary "RHEL7"
@@ -88,6 +89,7 @@ else
     exit 1
 fi
 
+# Get filename of the required DPDK tar package
 LogMsg $url
 filename=$(curl -skIL $url | grep -o -E 'filename=.*$' | sed -e 's/filename=//')
 filename="$(echo -e "${filename}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
@@ -118,6 +120,13 @@ fi
 yum install elfutils-libelf-devel  elfutils-devel \
 make gcc glibc-devel kernel-devel numactl-devel numactl-libs python-devel -y
 
+if [ ! "$?" -eq 0 ]
+then
+    LogMsg "Yum install required packages Failed"
+    SetTestStateAborted
+    exit 1
+fi
+
 
 # Enable Hugepages support
 
@@ -132,12 +141,6 @@ then
     SetTestStateAborted
     exit 1
 fi
-
-cpu_num=`cat /proc/cpuinfo | grep "processor" | wc -l`
-
-LogMsg $cpu_num
-UpdateSummary $cpu_num
-
 
 # Uncompressed file and compile
 
@@ -160,6 +163,7 @@ then
     SetTestStateFailed
     exit 1
 else
+# Store environment variables into profile
     LogMsg "RTE_SDK is $RTE_SDK"
     LogMsg "RTE_TARGET is $RTE_TARGET"
     echo "export RTE_SDK=$RTE_SDK" > /etc/profile.d/dpdk.sh
