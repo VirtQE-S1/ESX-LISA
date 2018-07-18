@@ -80,21 +80,25 @@ fi
 
 cd "$RTE_SDK" || exit 1
 $RTE_SDK/usertools/dpdk-devbind.py -s
+
+# Load required DPDK modules
 modprobe uio_pci_generic
 insmod "$RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko"
 
 systemctl restart NetworkManager
 
-
+# Get SSH Client IP address
 Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
 
 LogMsg "$Server_IP"
 
 Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 
+# Make Sure we have more than 3 network adapter
 if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
 then
     count=0
+    # For each adapter, get device name, disconnect with kernel and bind with DPDK
     for i in $(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
     |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
     do
@@ -117,6 +121,7 @@ else
     exit 1
 fi
 
+# Make sure we have two bind DPDK network adapter
 if [ "$(./usertools/dpdk-devbind.py -s | grep drv=igb_uio | wc -l)" -eq 2 ];
 then
     LogMsg "Successfully bind two network adapter to DPDK igb_uio"
