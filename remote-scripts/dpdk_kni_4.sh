@@ -113,8 +113,8 @@ sleep 6
 
 # DPDK KNI device should be vEth0 at default
 # This ping is test ESX host IP connectivity with current VM, Host IP addr may change in the furture
-ping -I vEth0 -c 3 10.73.199.97
-ping -I vEth0 -c 3 10.73.199.97 | grep ttl > /dev/null
+ping -I vEth0 -c 3 10.73.196.97
+ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
 
 status=$?
 
