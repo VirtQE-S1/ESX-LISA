@@ -107,12 +107,14 @@ systemctl restart NetworkManager
 # Test New Network Adapter
 sleep 6
 
-# Get SSH client IP address
-Client_IP=$(echo "$SSH_CONNECTION"| awk '{print $1}')
 
+##################################################
 # Test Network Connection
-ping -I vEth0 -c 3 $Client_IP
-ping -I vEth0 -c 3 $Client_IP | grep ttl > /dev/null
+
+# DPDK KNI device should be vEth0 at default
+# This ping is test ESX host IP connectivity with current VM, Host IP addr may change in the furture
+ping -I vEth0 -c 3 10.73.199.97
+ping -I vEth0 -c 3 10.73.199.97 | grep ttl > /dev/null
 
 status=$?
 
@@ -127,8 +129,8 @@ then
     SetTestStateCompleted
     exit 0
 else
-    LogMsg "KNI is not working"
-    UpdateSummary "KNI is not working"
+    LogMsg "KNI is not working or ESXi Host server IP address is changed"
+    UpdateSummary "KNI is not working or ESXi Host server IP address is changed"
     SetTestStateFailed
     exit 1
 fi
