@@ -3,13 +3,12 @@
 ###############################################################################
 ##
 ## Description:
-##   What does this script?
-##   What's the result the case expected?
+##   Use DPDK KNI module to let DPDK adapter use kernel tools (ifconfig, ethtool)
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 1/6/2017 - Draft shell script as test script.
+## v1.0 - ruqin - 7/18/2017 - Building the script.
 ##
 ###############################################################################
 
@@ -106,10 +105,14 @@ fi
 systemctl restart NetworkManager
 
 # Test New Network Adapter
-sleep 5
+sleep 6
 
-ping -I vEth0 -c 3 10.73.196.97
-ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
+# Get SSH client IP address
+Client_IP=$(echo "$SSH_CONNECTION"| awk '{print $1}')
+
+# Test Network Connection
+ping -I vEth0 -c 3 Client_IP
+ping -I vEth0 -c 3 Client_IP | grep ttl > /dev/null
 
 status=$?
 
