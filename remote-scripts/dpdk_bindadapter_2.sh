@@ -87,7 +87,7 @@ insmod "$RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko"
 
 systemctl restart NetworkManager
 
-# Get SSH Client IP address
+# Get SSH Server IP address
 Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
 
 LogMsg "$Server_IP"
