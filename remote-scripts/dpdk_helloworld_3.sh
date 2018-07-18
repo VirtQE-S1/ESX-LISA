@@ -70,9 +70,9 @@ fi
 
 cd $RTE_SDK/examples/helloworld || exit 1
 make
-./build/helloworld
+output_lines=./build/helloworld | wc -l
 
-if [ ! "$?" -eq 0 ]
+if [ ! "$?" -eq 0 -a output_lines -ne 0 ]
 then
     LogMsg "Hello World Failed"
     SetTestStateFailed
