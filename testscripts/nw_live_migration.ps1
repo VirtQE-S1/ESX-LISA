@@ -239,8 +239,6 @@ $command = "ping $ipv4 -c 50  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
 $packetLoss = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
 Write-Host -F Red "Info: Packets Loss $packetLoss"
 Write-Output "Info: Packets Loss $packetLoss"
-# DisconnectWithVIServer
-# return $Aborted
 
 
 # Wait for finish migrate if ping finshed first
@@ -251,13 +249,13 @@ if (-not $vmObj) {
     Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
     Write-Output "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
 }
 
 
 Start-Sleep 1
-
-if ($packetLoss -ne "0%") {
+# Check packet Loss value
+if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" ) {
     Write-Host -F Red "ERROR : Packet Loss During Migration"
     Write-Output "ERROR : Packet Loss During Migration"
     $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
@@ -269,11 +267,14 @@ if ($packetLoss -ne "0%") {
     DisconnectWithVIServer
     return $Failed
 }
+else {
+    $retVal = $Passed
+}
 
-# Clean up step
+# Test Move back to old host
 
 # Move host to old host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false -RunAsync:$true
 
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move VM to required Host $dstHost"
@@ -281,6 +282,12 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Failed
 }
+
+# Test ping during migration again
+$command = "ping $ipv4 -c 50  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
+$packetLoss = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
+Write-Host -F Red "Info: Packets Loss $packetLoss"
+Write-Output "Info: Packets Loss $packetLoss"
 
 Start-Sleep 1
 
@@ -292,6 +299,27 @@ if (-not $vmObj) {
     DisconnectWithVIServer
     return $Failed
 }
+
+# Check packet Loss value
+if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" ) {
+    Write-Host -F Red "ERROR : Packet Loss During Migration"
+    Write-Output "ERROR : Packet Loss During Migration"
+    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    # Move Hard Disk back to old datastore
+    $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
+
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
+    $retVal = $Passed
+}
+
+$status = Wait-Task -Task $task
+
+Write-Host -F Red $status
 
 
 # Move Hard Disk back to old datastore
@@ -313,8 +341,6 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-
-$retVal = $Passed
 
 DisconnectWithVIServer
 return $retVal
