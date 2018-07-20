@@ -14,7 +14,7 @@
 
 .Description
         <test>
-            <testName>set_mtu_multi_vmxnet3</testName>
+            <testName>nw_set_mtu_multi_vmxnet3</testName>
             <testID>ESX-NW-016</testID>
             <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
             <testParams>
