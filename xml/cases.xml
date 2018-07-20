@@ -76,7 +76,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 10 -->
+            <!-- Storage Total Cases: 12 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -89,6 +89,8 @@
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
                 <suiteTest>stor_add_large_file</suiteTest>
+                <suiteTest>stor_add_ide_disk</suiteTest>
+                <suiteTest>stor_add_remove_multi_scsi</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -102,7 +104,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 15 -->
+            <!-- Network Total Cases: 17 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -120,10 +122,29 @@
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 77 -->
+            <!-- DPDK Total Cases: 4 -->
+            <suiteName>dpdk</suiteName>
+            <suiteTests>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- VSOCK Total Cases: 1 -->
+            <suiteName>vsock</suiteName>
+            <suiteTests>
+                <suiteTest>vsock_version</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Acceptance Total Cases: 86 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -197,6 +218,8 @@
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
                 <suiteTest>stor_add_large_file</suiteTest>
+                <suiteTest>stor_add_independent_disk</suiteTest>
+                <suiteTest>stor_add_large_file</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -221,6 +244,15 @@
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
+
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+
+                <suiteTest>vsock_version</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -1057,6 +1089,38 @@
 			</testparams>
 			<onError>Continue</onError>
 		</test>
+        <test>
+            <testName>stor_add_remove_multi_scsi</testName>
+            <testID>ESX-Stor-012</testID>
+            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-80195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_ide_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-011</testID>
+            <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh </files>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL7-80182</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
 
         <test>
             <testName>kdump_crash_single_core</testName>
@@ -1346,6 +1410,113 @@
         	<onError>Continue</onError>
         	<noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_set_mtu_multi_vmxnet3</testName>
+            <testID>ESX-NW-016</testID>
+            <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL-111700</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+           <testName>nw_live_migration</testName>
+           <testID>ESX-NW-017</testID>
+           <testScript>testscripts\nw_live_migration.ps1</testScript>
+           <testParams>
+               <param>dstHost=10.73.196.97</param>
+               <param>dstDatastore=freenas</param>
+               <param>TC_COVERED=RHEL7-50929</param>
+           </testParams>
+           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+           <timeout>1200</timeout>
+           <onError>Continue</onError>
+           <noReboot>False</noReboot>
+       </test>
+
+       <test>
+            <testName>vsock_version</testName>
+            <testID>ESX-VSOCK-001</testID>
+            <testScript>testscripts\vsock_check_version.ps1</testScript>
+            <testParams>
+                <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>TC_COVERED=RHEL-111195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+    </test>
+
+    <test>
+        <testName>dpdk_compile</testName>
+        <testID>ESX-DPDK-001</testID>
+        <setupScript>
+            <file>setupscripts\change_cpu.ps1</file>
+            <file>setupscripts\change_memory.ps1</file>
+            <file>setupscripts\add_vmxnet3.ps1</file>
+            <file>setupscripts\add_vmxnet3.ps1</file>
+            <file>setupscripts\add_vmxnet3.ps1</file>
+        </setupScript>
+        <testScript>dpdk_compile_1.sh</testScript>
+        <files>remote-scripts/dpdk_compile_1.sh</files>
+        <files>remote-scripts/utils.sh</files>
+        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        <testParams>
+            <param>VCPU=8</param>
+            <param>VMMemory=8GB</param>
+            <param>TC_COVERED=RHEL-136107</param>
+        </testParams>
+        <timeout>600</timeout>
+        <onError>Continue</onError>
+        <noReboot>True</noReboot>
+    </test>
+    <test>
+        <testName>dpdk_bindadapter</testName>
+        <testID>ESX-DPDK-002</testID>
+        <testScript>dpdk_bindadapter_2.sh</testScript>
+        <files>remote-scripts/dpdk_bindadapter_2.sh</files>
+        <files>remote-scripts/utils.sh</files>
+        <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+        <testParams>
+            <param>TC_COVERED=RHEL-136145</param>
+        </testParams>
+        <timeout>240</timeout>
+        <onError>Continue</onError>
+        <noReboot>True</noReboot>
+    </test>
+    <test>
+        <testName>dpdk_helloworld</testName>
+        <testID>ESX-DPDK-003</testID>
+        <testScript>dpdk_helloworld_3.sh</testScript>
+        <files>remote-scripts/dpdk_helloworld_3.sh</files>
+        <files>remote-scripts/utils.sh</files>
+        <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+        <testParams>
+            <param>TC_COVERED=RHEL-136158</param>
+        </testParams>
+        <timeout>240</timeout>
+        <onError>Continue</onError>
+        <noReboot>True</noReboot>
+    </test>
+    <test>
+        <testName>dpdk_kni</testName>
+        <testID>ESX-DPDK-004</testID>
+        <testScript>dpdk_kni_4.sh</testScript>
+        <files>remote-scripts/dpdk_kni_4.sh</files>
+        <files>remote-scripts/utils.sh</files>
+        <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+        <testParams>
+            <param>TC_COVERED=RHEL-136473</param>
+        </testParams>
+        <timeout>240</timeout>
+        <onError>Continue</onError>
+        <noReboot>True</noReboot>
+    </test>
     </testCases>
 
     <VMs>
