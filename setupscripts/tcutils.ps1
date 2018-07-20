@@ -1237,7 +1237,7 @@ function RunRemoteScript($remoteScript)
 
 #######################################################################
 #
-# Check socket version in vm.
+# Check module version in vm.
 #
 #######################################################################
 

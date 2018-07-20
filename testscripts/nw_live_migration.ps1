@@ -14,6 +14,7 @@
     During Migration need to test network doesn't lose packets
 
 .Description
+        Dst host should be different with hvServer
          <test>
             <testName>nw_live_migration</testName>
             <testID>ESX-NW-017</testID>
@@ -105,6 +106,7 @@ else {
 
 if (-not $dstHost) {
     "Warn : no dstHost was specified"
+    return $false
 }
 
 
@@ -241,8 +243,6 @@ Write-Host -F Red "Info: Packets Loss $packetLoss"
 Write-Output "Info: Packets Loss $packetLoss"
 
 
-# Wait for finish migrate if ping finshed first
-# Wait-Task -Task $task -ErrorAction SilentlyContinue
 
 $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
 if (-not $vmObj) {
@@ -271,7 +271,13 @@ else {
     $retVal = $Passed
 }
 
-# Test Move back to old host
+# Wait for finish migrate if ping finshed first
+# Wait-Task -Task $task -ErrorAction SilentlyContinue
+
+$status = Wait-Task -Task $task
+Write-Host -F Red $status
+
+# Clean up step: Move back to old host
 
 # Move host to old host
 $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false -RunAsync:$true
@@ -304,12 +310,6 @@ if (-not $vmObj) {
 if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" ) {
     Write-Host -F Red "ERROR : Packet Loss During Migration"
     Write-Output "ERROR : Packet Loss During Migration"
-    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    # Move Hard Disk back to old datastore
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
-
     DisconnectWithVIServer
     return $Failed
 }
@@ -318,7 +318,6 @@ else {
 }
 
 $status = Wait-Task -Task $task
-
 Write-Host -F Red $status
 
 

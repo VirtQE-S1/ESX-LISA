@@ -32,12 +32,12 @@ param([string] $vmName, [string] $hvServer, [string] $testParams)
 #
 if (-not $vmName) {
     "FAIL: VM name cannot be null!"
-    exit
+    exit 1
 }
 
 if (-not $hvServer) {
     "FAIL: hvServer cannot be null!"
-    exit
+    exit 1
 }
 
 if (-not $testParams) {

@@ -50,9 +50,13 @@ p
 w
 EOF
 
-# Format xfs
+# Get new partition
 
-mkfs.xfs /dev/sdb1
+partprobe
+
+# Format ext4
+
+mkfs.ext4 /dev/sdb1
 
 if [ ! "$?" -eq 0 ]
 then

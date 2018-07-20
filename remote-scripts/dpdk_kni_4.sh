@@ -80,18 +80,11 @@ then
     SetTestStateAborted
     exit 1
 fi
-cd build || return
+cd build || exit 1
 
 # Start Connect with kernel
 
 nohup ./kni -l 1-3 -n 4 -- -P -p 0x1 --config="(0,1,2)" &
-
-if [ ! "$?" -eq 0 ]
-then
-    LogMsg "KNI start Failed"
-    SetTestStateFailed
-    exit 1
-fi
 
 systemctl restart NetworkManager
 nmcli con add con-name vEth0 ifname vEth0 type Ethernet
