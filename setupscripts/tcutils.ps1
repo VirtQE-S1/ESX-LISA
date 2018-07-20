@@ -1377,3 +1377,26 @@ function ConvertStringToDecimal([string] $str)
 
     return $uint64Size
 }
+
+########################################################################
+#
+# LogPrint()
+#
+########################################################################
+
+function LogPrint([string] $msg) {
+
+    $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
+    $color = "white"
+    if ( $msg.StartsWith("Error")) {
+        $color = "red"
+    }
+    elseif ($msg.StartsWith("Warn")) {
+        $color = "Yellow"
+    }
+    else {
+        $color = "gray"
+    }
+    Write-Host -f $color ($now + $msg)
+    Write-Output ($now + $msg)
+}
