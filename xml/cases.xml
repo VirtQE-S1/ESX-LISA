@@ -92,7 +92,6 @@
                 <suiteTest>stor_add_ide_disk</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_add_remove_cd_dvd</suiteTest>
-
             </suiteTests>
         </suite>
         <suite>
@@ -201,12 +200,11 @@
                 <suiteTest>go_reboot_12G_memory</suiteTest>
                 <!-- Stress Case -->
                 <suiteTest>go_reboot_100_times</suiteTest>
-                <!-- Stress Case -->
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <!-- Stress Case -->
-                <!-- suiteTest>go_unload_vmw_modules</suiteTest -->
+                <suiteTest>go_unload_vmw_modules</suiteTest>
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- Unstable Case -->
@@ -224,12 +222,10 @@
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_add_remove_cd_dvd</suiteTest>
 
-
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
-                <!-- Unstable Case -->
-                <!-- suiteTest>kdump_crash_diff_size</suiteTest -->
+                <suiteTest>kdump_crash_diff_size</suiteTest>
 
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
@@ -879,7 +875,7 @@
                 <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6000</timeout>
+            <timeout>7200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -928,8 +924,8 @@
             <files>remote-scripts/go_unload_vmw_modules.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <!-- Other modules can't be unload during using -->
-                <!-- Add a new module which can be unload during using with ',' -->
+                <!-- Other modules can't be unload when using -->
+                <!-- Add a new module which can be unload when using with ',' -->
                 <param>redhat_6_modules=vmware_balloon</param>
                 <param>redhat_7_modules=vmw_balloon</param>
                 <param>redhat_8_modules=vmw_balloon</param>
@@ -1102,19 +1098,6 @@
             <onError>Continue</onError>
         </test>
         <test>
-            <testName>stor_add_remove_multi_scsi</testName>
-            <testID>ESX-Stor-012</testID>
-            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <testParams>
-                <param>TC_COVERED=RHEL7-80195</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
             <testName>stor_add_ide_disk</testName>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testID>ESX-Stor-011</testID>
@@ -1129,6 +1112,34 @@
                 <param>CapacityGB=10</param>
                 <param>TC_COVERED=RHEL7-80182</param>
             </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_remove_multi_scsi</testName>
+            <testID>ESX-Stor-012</testID>
+            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-80195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_remove_cd</testName>
+            <testID>ESX-Stor-013</testID>
+            <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
+            <testScript>testscripts\stor_add_remove_cd.ps1</testScript>
+            <testParams>
+                <param>cd_num=3</param>
+                <param>TC_COVERED=RHEL6-38505,RHEL7-80233</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
             <onError>Continue</onError>
