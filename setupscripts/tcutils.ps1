@@ -1247,7 +1247,7 @@ function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
     .Synopsis
         Use SSH to get module version in a Linux VM.
     .Description
-        Use SSH to get module version in a Linux VM, must use CheckModule make sure requested Module exists.
+        Use SSH to get module version in a Linux VM, must use CheckModuleVersion make sure requested Module exists.
     .Parameter ipv4
         IPv4 address of the VM the module which needs to get version.
     .Parameter sshKey

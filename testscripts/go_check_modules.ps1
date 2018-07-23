@@ -97,6 +97,7 @@ else
     else
     {
         "Warn : rootdir '${rootDir}' does not exist"
+        exit 100
     }
 }
 
@@ -178,15 +179,15 @@ foreach ($m in $modules_array)
     $ret = CheckModule $ipv4 $sshKey $module
     if ($ret -ne $true)
     {
-        Write-Host -F Red "FAIL: The check of $moudle failed"
-        Write-Output "FAIL: The check of $moudle failed"
+        Write-Host -F Red "FAIL: The check of $module failed"
+        Write-Output "FAIL: The check of $module failed"
         DisconnectWithVIServer
         return $retVal
     }
     else
     {
-        Write-Host -F Red "PASS: Complete the check of $moudle"
-        Write-Output "PASS: Complete the check of $moudle"
+        Write-Host -F Red "PASS: Complete the check of $module"
+        Write-Output "PASS: Complete the check of $module"
     }
     $retVal = $Passed
 }
