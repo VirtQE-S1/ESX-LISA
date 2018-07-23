@@ -34,13 +34,13 @@ param([string] $vmName, [string] $hvServer, [string] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "FAIL: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -78,49 +78,50 @@ foreach ($p in $params)
 # #
 # # Check all parameters are valid
 # #
-# if (-not $rootDir)
-# {
-# 	"Warn : no rootdir was specified"
-# }
-# else
-# {
-# 	if ( (Test-Path -Path "${rootDir}") )
-# 	{
-# 		cd $rootDir
-# 	}
-# 	else
-# 	{
-# 		"Warn : rootdir '${rootDir}' does not exist"
-# 	}
-# }
+if (-not $rootDir)
+{
+	"Warn : no rootdir was specified"
+     exit 100
+}
+else
+{
+	if ( (Test-Path -Path "${rootDir}") )
+	{
+		cd $rootDir
+	}
+	else
+	{
+		"Warn : rootdir '${rootDir}' does not exist"
+	}
+}
+
+if ($null -eq $sshKey)
+{
+	"FAIL: Test parameter sshKey was not specified"
+	return $False
+}
+
+if ($null -eq $ipv4)
+{
+	"FAIL: Test parameter ipv4 was not specified"
+	return $False
+}
+
+if ($null -eq $logdir)
+{
+	"FAIL: Test parameter logdir was not specified"
+	return $False
+}
+
 #
-# if ($null -eq $sshKey)
-# {
-# 	"FAIL: Test parameter sshKey was not specified"
-# 	return $False
-# }
+# Source tcutils.ps1
 #
-# if ($null -eq $ipv4)
-# {
-# 	"FAIL: Test parameter ipv4 was not specified"
-# 	return $False
-# }
-#
-# if ($null -eq $logdir)
-# {
-# 	"FAIL: Test parameter logdir was not specified"
-# 	return $False
-# }
-#
-# #
-# # Source tcutils.ps1
-# #
-# . .\setupscripts\tcutils.ps1
-# PowerCLIImport
-# ConnectToVIServer $env:ENVVISIPADDR `
-#                   $env:ENVVISUSERNAME `
-#                   $env:ENVVISPASSWORD `
-#                   $env:ENVVISPROTOCOL
+. .\setupscripts\tcutils.ps1
+PowerCLIImport
+ConnectToVIServer $env:ENVVISIPADDR `
+                  $env:ENVVISUSERNAME `
+                  $env:ENVVISPASSWORD `
+                  $env:ENVVISPROTOCOL
 
 ###############################################################################
 #

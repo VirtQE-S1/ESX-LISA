@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Suspend and Resume the VM
+##  reboot and shutdown the VM
 ##
 ###############################################################################
 ##
@@ -12,10 +12,10 @@
 
 <#
 .Synopsis
-    Suspend and Resume the VM
+    reboot and shutdown the VM
 
 .Description
-    Suspend and Resume the VM, NO call trace found
+    reboot and shutdowne the VM, NO call trace found
 
 .Parameter vmName
     Name of the test VM.
@@ -35,13 +35,13 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $hvServer)
 {
     "FAIL: hvServer cannot be null!"
-    exit
+    exit 100
 }
 
 if (-not $testParams)
@@ -82,6 +82,7 @@ foreach ($p in $params)
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
+    exit 100
 }
 else
 {
