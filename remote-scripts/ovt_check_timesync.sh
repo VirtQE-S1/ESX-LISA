@@ -39,7 +39,6 @@ if [[ $DISTRO == "redhat_6" ]]; then
     exit
 fi
 
-
 # set new time for guest
 date -s "2017-08-29 12:00:00"
 
@@ -50,16 +49,18 @@ UpdateSummary "timehost  after disable: $timehost"
 timeguest=`date +%s`
 UpdateSummary "timeguest  after disable: $timeguest"
 #compare the time difference between guest and host.
-offset=$[timehost-timeguest]
-UpdateSummary "offset: $offset."
-if [ "$offset" -eq 0 ]; then
+diff=$[timehost-timeguest]
+
+UpdateSummary "offset: $diff."
+
+if [ "$diff" -lt 1 ]; then
         LogMsg "Info :Set the guest time behand the host time failed"
-        UpdateSummary "offset: $offset,Set the guest time behand the host time failed ."
+        UpdateSummary "offset: $diff,Set the guest time behand the host time failed ."
         SetTestStateAborted
         exit 1
 else
-        LogMsg $offset
-        UpdateSummary "offset: $offset,Set the guest time behand the host time successfully."
+        LogMsg $diff
+        UpdateSummary "offset: $diff,Set the guest time behand the host time successfully."
 
         #Restart the vmtoolsd service, the guest time should be sync with host.
         systemctl restart vmtoolsd
@@ -72,18 +73,22 @@ else
         UpdateSummary "timeguest  after enable: $timeguest"
 
         #calculate the guest time and host time difference
-        offset=$[timehost-timeguest]
+        diff=$[timehost-timeguest]
+        if [ $diff -lt 0 ]; then
+          let diff=0-$diff
+        fi
 
-        if [ $offset -ne 0 ]; then
-                LogMsg "Info : The guest time is sync with host failed."
-                UpdateSummary "offset: $offset,offset Test Failed,The guest time is sync with host failed."
-                SetTestStateFailed
-                exit 1
+        UpdateSummary "offset: $diff."
+        if [ $diff -lt 1 ]; then
+            LogMsg "$diff"
+            UpdateSummary "offset: $diff,Test Successfully. The guest time is sync with host successfully."
+            SetTestStateCompleted
+            exit 0
         else
-                LogMsg "$offset"
-                UpdateSummary "offset: $offset,Test Successfully. The guest time is sync with host successfully."
-                SetTestStateCompleted
-                exit 0
+            LogMsg "Info : The guest time is sync with host failed."
+            UpdateSummary "offset: $diff,offset Test Failed,The guest time is sync with host failed."
+            SetTestStateFailed
+            exit 1
         fi
 
 fi
