@@ -50,6 +50,7 @@
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_scsi_timeout</suiteTest>
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
+                <suiteTest>ovt_deadlock_condition</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -182,6 +183,7 @@
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_scsi_timeout</suiteTest>
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
+                <suiteTest>ovt_deadlock_condition</suiteTest>
 
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -700,6 +702,21 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_deadlock_condition</testName>
+            <testID>ESX-OVT-032</testID>
+            <testScript>testscripts/ovt_deadlock_condition.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_check_deadlock.sh</files>
+            <files>remote-scripts/ovt_loop.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47886,RHEL7-94309</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
