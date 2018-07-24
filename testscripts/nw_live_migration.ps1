@@ -176,7 +176,10 @@ if (-not $?) {
     return $Failed
 }
 # Start another VM
-$testVMName = $vmObj.Name.Split('-')[0] + "-B"
+$testVMName = $vmObj.Name.Split('-')
+# Get another VM by change Name
+$testVMName[-1] = "B"
+$testVMName = $testVMName -join "-"
 $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
 
@@ -237,7 +240,7 @@ if (-not $?) {
     return $Aborted
 }
 
-$command = "ping $ipv4 -c 50  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
+$command = "ping $ipv4 -c 100  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
 $packetLoss = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
 Write-Host -F Red "Info: Packets Loss $packetLoss"
 Write-Output "Info: Packets Loss $packetLoss"
@@ -290,7 +293,7 @@ if (-not $?) {
 }
 
 # Test ping during migration again
-$command = "ping $ipv4 -c 50  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
+$command = "ping $ipv4 -c 100  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
 $packetLoss = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
 Write-Host -F Red "Info: Packets Loss $packetLoss"
 Write-Output "Info: Packets Loss $packetLoss"

@@ -14,17 +14,19 @@
 
 dos2unix utils.sh
 
-#
 # Source utils.sh
-#
 . utils.sh || {
     echo "Error: unable to source utils.sh!"
     exit 1
 }
 
-#
 # Source constants file and initialize most common variables
-#
+
+. constants.sh || {
+    echo "Error: unable to source constants.sh!"
+    exit 1
+}
+
 UtilsInit
 
 ###############################################################################
@@ -38,10 +40,19 @@ UtilsInit
 ##
 ###############################################################################
 
+GetDistro
+
+LogMsg $DISTRO
+
+if [ "$DISTRO" == "redhat_6" ]; then
+    disk_name="sda"
+else
+    disk_name="sdb"
+fi
 
 # Do Partition for /dev/sdb
 
-fdisk /dev/sdb <<EOF
+fdisk /dev/"$disk_name" <<EOF
 n
 p
 1
@@ -52,11 +63,15 @@ EOF
 
 # Get new partition
 
-partprobe
+kpartx /dev/"$disk_name"
+
+# Wait a while
+
+sleep 6
 
 # Format ext4
 
-mkfs.ext4 /dev/sdb1
+mkfs.ext4 /dev/"$disk_name"1
 
 if [ ! "$?" -eq 0 ]
 then

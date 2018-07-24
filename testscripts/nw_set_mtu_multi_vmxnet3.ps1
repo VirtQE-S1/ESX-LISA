@@ -75,7 +75,6 @@ foreach ($p in $params) {
         "sshKey" { $sshKey = $fields[1].Trim() }
         "rootDir" { $rootDir = $fields[1].Trim() }
         "ipv4" { $ipv4 = $fields[1].Trim() }
-        "TestLogDir"	{ $logdir = $fields[1].Trim()}
         default {}
     }
 }
@@ -89,7 +88,7 @@ if (-not $rootDir) {
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
-        cd $rootDir
+        Set-Location $rootDir
     }
     else {
         "Warn : rootdir '${rootDir}' does not exist"
@@ -154,6 +153,29 @@ Write-Output "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
+# Get the Guest version
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
+Write-Output "DEBUG: DISTRO: $DISTRO"
+if (-not $DISTRO) {
+    Write-Host -F Red "ERROR: Guest OS version is NULL"
+    Write-Output "ERROR: Guest OS version is NULL"
+    DisconnectWithVIServer
+    return $Aborted
+}
+Write-Host -F Red "INFO: Guest OS version is $DISTRO"
+Write-Output "INFO: Guest OS version is $DISTRO"
+
+
+# Different Guest DISTRO
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
     Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
@@ -165,28 +187,39 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
 $MTU_list = 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000
 
 foreach ($Set_MTU in $MTU_list) {
+    # Get current network adapter name
     $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
     $Server_Adapter = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
     # Start NetworkManager
-    SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
-
-    # Set New MTU
-    SendCommandToVM $ipv4 $sshKey "nmcli connection modify `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') mtu $Set_MTU"
-    SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
-
-    # Get New MTU
-    $Command = "nmcli connection show `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') | grep -w mtu | awk '{print `$2}'"
-    $MTU = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    if ($DISTRO -eq "RedHat6") {
+        SendCommandToVM $ipv4 $sshKey "service network restart"
+        # Set New MTU
+        SendCommandToVM $ipv4 $sshKey "ifconfig $Server_Adapter mtu $Set_MTU"
+        # Restart NetworkManager
+        SendCommandToVM $ipv4 $sshKey "service network restart"
+        # Get New MTU
+        $Command = "ifconfig $Server_Adapter | grep -i mtu | awk '{print `$(NF-1)}' | awk 'BEGIN{FS=\`":\`"}{print `$2}'"
+        $MTU = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    }
+    else {
+        SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
+        # Set New MTU
+        SendCommandToVM $ipv4 $sshKey "nmcli connection modify `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') mtu $Set_MTU"
+        # Restart NetworkManager
+        SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager"
+        # Get New MTU
+        $Command = "nmcli connection show `$(nmcli connection show | grep $Server_Adapter | awk '{print `$(NF-2)}') | grep -w mtu | awk '{print `$2}'"
+        $MTU = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    }
 
     if ($MTU -ne $Set_MTU) {
-        Write-Host -F Red "ERROR: Unable to Set MTU to $Set_MTU"
-        Write-Output "ERROR: Unable to Set MTU to $Set_MTU"
+        LogPrint "ERROR: Unable to Set MTU to $Set_MTU, Current MTU is $MTU"
         DisconnectWithVIServer
         return $Failed
-    } else {
-        Write-Host -F Red "INFO: Success Set MTU to $Set_MTU"
-        Write-Output "INFO: Success Set MTU to $Set_MTU"
+    }
+    else {
+        LogPrint "INFO: Success Set MTU to $Set_MTU"
 
     }
     $retVal = $Passed

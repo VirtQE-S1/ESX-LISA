@@ -1,8 +1,3 @@
-#!/bin/bash
-
-###############################################################################
-##
-## Description:
 ##   Use DPDK KNI module to let DPDK adapter use kernel tools (ifconfig, ethtool)
 ##
 ###############################################################################
@@ -100,9 +95,19 @@ systemctl restart NetworkManager
 # Test New Network Adapter
 sleep 6
 
+# Get SSH Server IP address
+Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
+
+LogMsg "$Server_IP"
+
+Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 
 ##################################################
 # Test Network Connection
+
+nmcli con down $Server_Adapter
+
+ip a
 
 # DPDK KNI device should be vEth0 at default
 # This ping is test ESX host IP connectivity with current VM, Host IP addr may change in the furture
@@ -110,6 +115,8 @@ ping -I vEth0 -c 3 10.73.196.97
 ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
 
 status=$?
+
+nmcli con up $Server_Adapter
 
 # Close KNI
 if [ "$status" -eq 0 ]
