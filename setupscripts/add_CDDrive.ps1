@@ -5,8 +5,8 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - ldu - 04/10/2018 - Draft script for add cd driver.
 ## v1.1 - ldu - 07/23/2018 - Draft script for add cd driver.
+##
 ###############################################################################
 <#
 .Synopsis
@@ -52,13 +52,10 @@ if (-not $testParams)
 # Output test parameters so they are captured in log file
 #
 "TestParams : '${testParams}'"
+
 #
 # Parse test parameters
 #
-$rootDir = $null
-$sshKey = $null
-$ipv4 = $null
-$logdir = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -66,51 +63,9 @@ foreach ($p in $params)
 	$fields = $p.Split("=")
 	switch ($fields[0].Trim())
 	{
-		# "rootDir"		{ $rootDir = $fields[1].Trim() }
-		# "sshKey"		{ $sshKey = $fields[1].Trim() }
-		# "ipv4"			{ $ipv4 = $fields[1].Trim() }
-		# "TestLogDir"	{ $logdir = $fields[1].Trim()}
         "cd_num"     { $cd_num = $fields[1].Trim() }
 		default			{}
     }
-}
-
-# #
-# # Check all parameters are valid
-# #
-if (-not $rootDir)
-{
-	"Warn : no rootdir was specified"
-     exit 100
-}
-else
-{
-	if ( (Test-Path -Path "${rootDir}") )
-	{
-		cd $rootDir
-	}
-	else
-	{
-		"Warn : rootdir '${rootDir}' does not exist"
-	}
-}
-
-if ($null -eq $sshKey)
-{
-	"FAIL: Test parameter sshKey was not specified"
-	return $False
-}
-
-if ($null -eq $ipv4)
-{
-	"FAIL: Test parameter ipv4 was not specified"
-	return $False
-}
-
-if ($null -eq $logdir)
-{
-	"FAIL: Test parameter logdir was not specified"
-	return $False
 }
 
 #
