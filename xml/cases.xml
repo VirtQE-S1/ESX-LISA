@@ -91,7 +91,7 @@
                 <suiteTest>stor_add_large_file</suiteTest>
                 <suiteTest>stor_add_ide_disk</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
-                <suiteTest>stor_add_remove_cd_dvd</suiteTest>
+                <suiteTest>stor_add_remove_cd</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -220,7 +220,7 @@
                 <suiteTest>stor_add_large_file</suiteTest>
                 <suiteTest>stor_add_ide_disk</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
-                <suiteTest>stor_add_remove_cd_dvd</suiteTest>
+                <suiteTest>stor_add_remove_cd</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
