@@ -176,6 +176,9 @@ else
 foreach ($m in $modules_array)
 {
     $module = $m.Trim()
+    Write-Host -F Red "DEBUG: go_check_modules.ps1: module: $module"
+    Write-Output "DEBUG: go_check_modules.ps1: module: $module"
+
     $ret = CheckModule $ipv4 $sshKey $module
     if ($ret -ne $true)
     {
