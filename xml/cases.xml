@@ -220,7 +220,8 @@
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
                 <suiteTest>stor_add_large_file</suiteTest>
-                <suiteTest>stor_add_ide_disk</suiteTest>
+                <!-- Unstable Case -->
+                <!-- suiteTest>stor_add_ide_disk</suiteTest -->
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
 
