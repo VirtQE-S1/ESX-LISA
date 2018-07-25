@@ -180,6 +180,8 @@ foreach ($m in $modules_array)
     Write-Output "DEBUG: go_check_modules.ps1: module: $module"
 
     $ret = CheckModule $ipv4 $sshKey $module
+    Write-Host -F Red "DEBUG: go_check_modules.ps1: ret: $ret"
+    Write-Output "DEBUG: go_check_modules.ps1: ret: $ret"	
     if ($ret -ne $true)
     {
         Write-Host -F Red "FAIL: The check of $module failed"

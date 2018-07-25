@@ -1331,7 +1331,6 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
 
     $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
     Write-Host -F Red "DEBUG: tcutils.ps1: vm_module: $vm_module"
-    Write-Output "DEBUG: tcutils.ps1: vm_module: $vm_module"
     if ( $vm_module.Trim() -eq $module.Trim() )
     {
         return $True
