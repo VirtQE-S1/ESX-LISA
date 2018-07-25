@@ -3,13 +3,12 @@
 ###############################################################################
 ##
 ## Description:
-##   This script checks vmtoolsd status.
-##   The vmtoolsd status should be running.
+##   This script checks Take snapshot after deadlock condiation.
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - ldu - 03/07/2017 - Draft script for case ESX-OVT-002.
+## v1.0 - ldu - 23/07/2017 -Take snapshot after deadlock condiation..
 ##
 ###############################################################################
 

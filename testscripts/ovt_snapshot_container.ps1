@@ -1,28 +1,27 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot after deadlock condiation.
+## Take snapshot when container running.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 07/23/2018 - Take snapshot after deadlock condiation.
+## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Take snapshot after deadlock condiation.
+    Take snapshot when container running.
 .Description
 <test>
-    <testName>ovt_deadlock_condition</testName>
-    <testID>ESX-OVT-032</testID>
-    <testScript>testscripts/ovt_deadlock_condition.ps1</testScript  >
+    <testName>ovt_snapshot_container</testName>
+    <testID>ESX-OVT-033</testID>
+    <testScript>testscripts/ovt_snapshot_container.ps1</testScript  >
     <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/ovt_check_deadlock.sh</files>
-    <files>remote-scripts/ovt_loop.sh</files>
+    <files>remote-scripts/ovt_docker_install.sh</files>
     <testParams>
-        <param>TC_COVERED=RHEL6-47886,RHEL7-94309</param>
+        <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
     </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
     <timeout>600</timeout>
@@ -146,25 +145,21 @@ $retVal = $Failed
 #
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-$scripts = "ovt_check_deadlock.sh"
+#Install docker and start one network container on guest.
+$scripts = "ovt_docker_install.sh"
 # Run remote test scripts
 $sts =  RunRemoteScript $scripts
-if( -not $sts[-1] ){
-    Write-Host -F Red "ERROR: mount loop device failed"
-    Write-Output "ERROR: mount loop device failed"
+if( -not $sts[-1] )
+{
+    Write-Host -F Red "ERROR:  docker container run failed"
+    Write-Output "ERROR: docker container run failed"
     return $Aborted
-}  else {
-    Write-Host -F Red "Info : mount loop device successfully"
-    Write-Output "Info : mount loop device successfully"
 }
-
-$command1 = "cd /root/ && dos2unix ovt_loop.sh && chmod u+x ovt_loop.sh && ./ovt_loop.sh"
-$Process1 = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command1}" -PassThru -WindowStyle Hidden
-write-host -F Red "$($Process1.id)"
-
-$command2 = "/usr/bin/vmtoolsd -l"
-$Process2 = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command2}" -PassThru -WindowStyle Hidden
-
+else
+{
+    Write-Host -F Red "Info :docker container run successfully"
+    Write-Output "Info : docker container run successfully"
+}
 
 #
 # Take snapshot and select quiesce option
@@ -203,10 +198,6 @@ else
     Write-Output "The snapshot removed failed"
     return $Aborted
 }
-
-$stop1 = Stop-Process -Id $Process1.Id
-$stop2 = Stop-Process -Id $Process2.Id
-
 
 DisconnectWithVIServer
 
