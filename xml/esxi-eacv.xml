@@ -18,30 +18,42 @@
         <suite>
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_deadlock_condition</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
-       <test>
-            <testName>ovt_check_build_version</testName>
-            <testID>ESX-OVT-001</testID>
-            <testScript>ovt_check_build_version.sh</testScript>
-            <files>remote-scripts/ovt_check_build_version.sh</files>
+        <test>
+            <testName>ovt_snapshot_container</testName>
+            <testID>ESX-OVT-033</testID>
+            <testScript>testscripts/ovt_snapshot_container.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_docker_install.sh</files>
             <testParams>
-                <param>redhat_6_stanversion=NOOVT</param>
-                <param>redhat_7_stanversion=open-vm-tools-10.2.5-2.el7.x86_64</param>
-                <param>redhat_8_stanversion=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
-                <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
+                <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
+        <test>
+            <testName>ovt_deadlock_condition</testName>
+            <testID>ESX-OVT-032</testID>
+            <testScript>testscripts/ovt_deadlock_condition.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_check_deadlock.sh</files>
+            <files>remote-scripts/ovt_loop.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47886,RHEL7-94309</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>        
     </testCases>
 
     <VMs>
@@ -49,7 +61,7 @@
             <hvServer>ESXI_HOST_IPADDRESS</hvServer>
             <vmName>VM_NAME</vmName>
             <os>Linux</os>
-            <ipv4></ipv4>
+            <ipv4/>
             <sshKey>demo_id_rsa.ppk</sshKey>
             <suite>eacv</suite>
         </vm>
