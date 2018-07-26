@@ -161,13 +161,13 @@ if ($error_num -ne 0) {
 # Hot Add
 $dst_mem = $vmObj.MemoryGB * 10 
 $status = Set-VM $vmObj -MemoryGB $dst_mem -Confirm:$false
-LogPrint "Info :Change memory for $vmName to $dst_mem"
-
 if (-not $?) {
     LogPrint "ERROR : Failed Hot Add memeory to the VM $vmName"
     DisconnectWithVIServer
     return $Failed
 }
+LogPrint "Info :Change memory for $vmName to $dst_mem"
+
 
 # Wait seconds for Hot Add memory
 Start-Sleep -Seconds 6

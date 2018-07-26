@@ -151,7 +151,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 $url = "http://download.eng.bos.redhat.com/brewroot/packages/stress/0.18.8/3.4.el7eng/x86_64/stress-0.18.8-3.4.el7eng.x86_64.rpm"
 
 if ($DISTRO -eq "RedHat6") {
-$url = "http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/stress/0.18.8/2.4.el6eng/x86_64/stress-0.18.8-2.4.el6eng.x86_64.rpm"
+    $url = "http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/stress/0.18.8/2.4.el6eng/x86_64/stress-0.18.8-2.4.el6eng.x86_64.rpm"
 }
 
 
@@ -160,7 +160,7 @@ $command = "yum localinstall $url -y"
 $status = SendCommandToVM $ipv4 $sshkey $command
 
 if ( -not $status) {
-    LogPrint "Error : yum Failed in $vmName"
+    LogPrint "Error : YUM failed in $vmName, may need to update stress tool URL"
     DisconnectWithVIServer
     return $Failed
 }
@@ -185,16 +185,17 @@ $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${
 
 # Hot Add
 $status = Set-VM $vmObj -MemoryGB ($vmObj.MemoryGB * 2) -Confirm:$false
-LogPrint "Info :Change memory for $status"
-
 if (-not $?) {
     LogPrint "Error : Failed Hot Add memeory to the VM $vmName"
     DisconnectWithVIServer
     return $Failed
 }
+LogPrint "Info :Change memory for $status"
+
 
 # Wait seconds for Hot Add memory
 Start-Sleep -Seconds 6
+
 
 # Now Total Memory
 $Command = "free -m | awk '{print `$2}' | awk 'NR==2'"
@@ -226,7 +227,6 @@ $Process.WaitForExit()
 $status = [int]$Process.ExitCode
 
 # Check Stress return value
-$Command = "stress --vm 5 --vm-keep --vm-bytes 1000M --timeout 60s"
 if ( $status -ne 0 ) {
     LogPrint "Error : Stress Failed in $vmName With Command $Command and ExitCode $status"
     DisconnectWithVIServer
