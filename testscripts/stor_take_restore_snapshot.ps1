@@ -219,7 +219,6 @@ else
 # Confirm test file test01 esxit after restore snapshot
 #
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /root/ -name test01"
-Write-Host -F Red "ERROR: File is exist: $exist"
 if ($null -eq $exist)
 {
     Write-Error -Message "ERROR: snapshot restore failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
@@ -228,11 +227,10 @@ if ($null -eq $exist)
 }
 else
 {
-    Write-Host -F Red "INFO: The snapshot has been restored successfully"
-    Write-Output "INFO: The snapshot has been restored successfully"
+    LogPrint "INFO: File is exist: $exist"
+    LogPrint Red "INFO: The snapshot has been restored successfully"
     $retVal = $Passed
 }
 
 DisconnectWithVIServer
-
 return $retVal
