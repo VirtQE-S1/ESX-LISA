@@ -28,20 +28,17 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 #
 # Checking the input arguments
 #
-if (-not $vmName)
-{
+if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit
 }
 
-if (-not $hvServer)
-{
+if (-not $hvServer) {
     "Error: hvServer cannot be null!"
     exit
 }
 
-if (-not $testParams)
-{
+if (-not $testParams) {
     Throw "Error: No test parameters specified"
 }
 
@@ -58,30 +55,24 @@ $sshKey = $null
 $ipv4 = $null
 
 $params = $testParams.Split(";")
-foreach ($p in $params)
-{
+foreach ($p in $params) {
     $fields = $p.Split("=")
-    switch ($fields[0].Trim())
-    {
-    "sshKey"       { $sshKey = $fields[1].Trim() }
-    "rootDir"      { $rootDir = $fields[1].Trim() }
-    "ipv4"         { $ipv4 = $fields[1].Trim() }
-    default        {}
+    switch ($fields[0].Trim()) {
+        "sshKey" { $sshKey = $fields[1].Trim() }
+        "rootDir" { $rootDir = $fields[1].Trim() }
+        "ipv4" { $ipv4 = $fields[1].Trim() }
+        default {}
     }
 }
 
-if (-not $rootDir)
-{
+if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
-else
-{
-    if ( (Test-Path -Path "${rootDir}") )
-    {
+else {
+    if ( (Test-Path -Path "${rootDir}") ) {
         cd $rootDir
     }
-    else
-    {
+    else {
         "Warn : rootdir '${rootDir}' does not exist"
     }
 }
@@ -93,9 +84,9 @@ else
 
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
-                  $env:ENVVISUSERNAME `
-                  $env:ENVVISPASSWORD `
-                  $env:ENVVISPROTOCOL
+    $env:ENVVISUSERNAME `
+    $env:ENVVISPASSWORD `
+    $env:ENVVISPROTOCOL
 
 ###############################################################################
 #
@@ -106,22 +97,24 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj)
-{
+if (-not $vmObj) {
     Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
     return $Aborted
 }
-else
-{
+else {
     Write-Host -F Gray "Start to enable hot-mem feature......."
     Write-Output "Start to enable hot-mem feature"
+    # $vmObj.ExtensionData.config
     $vmView = Get-vm $vmObj | Get-View
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
-    $extra = New-Object VMware.Vim.optionvalue
-    $extra.Key="mem.hotadd"
-    $extra.Value="true"
-    $vmConfigSpec.extraconfig += $extra
+    $vmConfigSpec.MemoryHotAddEnabled = $true
+    $vmConfigSpec.CPUHotAddEnabled = $true
+    # $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
+    # $extra = New-Object VMware.Vim.optionvalue
+    # $extra.Key="mem.hotadd"
+    # $extra.Value="true"
+    # $vmConfigSpec.extraconfig += $extra
     $vmView.ReconfigVM($vmConfigSpec)
     $retVal = $Passed
 }

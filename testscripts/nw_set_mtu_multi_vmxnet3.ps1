@@ -176,7 +176,7 @@ Write-Output "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
     Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
