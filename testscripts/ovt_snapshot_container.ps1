@@ -137,6 +137,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
+#Skip RHEL6, as not support OVT on RHEL6.
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+if ( $DISTRO -eq "RedHat6" ){
+    DisconnectWithVIServer
+    return $Skipped
+}
 
 $retVal = $Failed
 
