@@ -6,7 +6,8 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 10/24/2017 - Take snapshot with memory and Quiesce.
+## v1.0.0 - ldu - 10/24/2017 - Take snapshot with memory and Quiesce.
+## v1.0.1 - ruqin - 7/26/2018 - FIX: this case failed in RHEL7.6-ESXi6.5-BIOS
 ## RHEL7-81369
 ## ESX-Stor-004
 ###############################################################################
@@ -45,13 +46,13 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
-    exit
+    exit 1
 }
 
 if (-not $hvServer)
 {
     "FAIL: hvServer cannot be null!"
-    exit
+    exit 1
 }
 
 if (-not $testParams)
@@ -81,7 +82,6 @@ foreach ($p in $params)
 		"rootDir"		{ $rootDir = $fields[1].Trim() }
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
-		"TestLogDir"	{ $logdir = $fields[1].Trim()}
 		default			{}
     }
 }
@@ -97,7 +97,7 @@ else
 {
 	if ( (Test-Path -Path "${rootDir}") )
 	{
-		cd $rootDir
+		Set-Location $rootDir
 	}
 	else
 	{
@@ -108,19 +108,13 @@ else
 if ($null -eq $sshKey)
 {
 	"FAIL: Test parameter sshKey was not specified"
-	return $False
+	return $Aborted
 }
 
 if ($null -eq $ipv4)
 {
 	"FAIL: Test parameter ipv4 was not specified"
-	return $False
-}
-
-if ($null -eq $logdir)
-{
-	"FAIL: Test parameter logdir was not specified"
-	return $False
+	return $Aborted
 }
 
 #
@@ -143,6 +137,11 @@ $retVal = $Failed
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 # Create a new test file named test01 before start test
 $newfile = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
@@ -152,20 +151,21 @@ $newfile = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
 #
 $snapshotTargetName = "snap_memory"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Description "snapshot with memory" -Memory:$true -Quiesce:$true -Confirm:$false
-write-host -F Red "new_sp is $new_sp"
+
 $newSPName = $new_sp.Name
+LogPrint "INFO: New Snapshot is $newSPName"
+
 if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        Write-Host -F Red "The snapshot $newSPName with memory and Quiesce is created successfully"
-        Write-Output "The snapshot $newSPName with memory and Quiesce is created successfully"
+        LogPrint "INFO: The snapshot $newSPName with memory and Quiesce is created successfully"
     }
     else
     {
-        Write-Output "The snapshot with memory and Quiesce is created Failed"
+        LogPrint "INFO: The snapshot with memory and Quiesce is created Failed"
         DisconnectWithVIServer
-        return $Aborted
+        return $Fail
     }
 }
 
@@ -173,19 +173,29 @@ if ($new_sp)
 $removefile = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rm -f /root/test01"
 # Confirm file test01 has been removed
 $removeResult = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /root/ -name test01"
-Write-Host -F Red "removeResult is $removeResult"
-if ($removeResult -ne $null)
+LogPrint "INFO: removeResult is $removeResult"
+if ($null -ne $removeResult)
 {
-    Write-Error -Message "remove file failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "ERROR: remove file failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
     return $Aborted
 }
 
+
+# Refresh VM data
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
 #
 # restore SP that just created
 #
-$restore = Set-VM -VM $vmObj -Snapshot $newSPName -Confirm:$false
-write-host -F Red "restore is $restore"
+$restore = Set-VM -VM $vmObj -Snapshot $new_sp -Confirm:$false
+LogPrint "INFO: restore is $restore"
 
 #
 # Remove SP created
@@ -194,13 +204,13 @@ $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
 $snapshots = Get-Snapshot -VM $vmObj
 if ($snapshots.Length -eq 1)
 {
-    Write-Host -F Red "The snapshot has been removed successfully"
-    Write-Output "The snapshot has been removed successfully"
+    Write-Host -F Red "INFO: The snapshot has been removed successfully"
+    Write-Output "INFO: The snapshot has been removed successfully"
 }
 else
 {
-    Write-Host -F Red "The snapshot removed failed"
-    Write-Output "The snapshot removed failed"
+    Write-Host -F Red "ERROR: The snapshot removed failed"
+    Write-Output "ERROR: The snapshot removed failed"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -209,17 +219,17 @@ else
 # Confirm test file test01 esxit after restore snapshot
 #
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /root/ -name test01"
-Write-Host -F Red "exit is $exist"
-if ($exist -eq $null)
+Write-Host -F Red "ERROR: File is exist: $exist"
+if ($null -eq $exist)
 {
-    Write-Error -Message "snapshot restore failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Error -Message "ERROR: snapshot restore failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
-    return $Aborted
+    return $Failed
 }
 else
 {
-    Write-Host -F Red "The snapshot has been restored successfully"
-    Write-Output "The snapshot has been restored successfully"
+    Write-Host -F Red "INFO: The snapshot has been restored successfully"
+    Write-Output "INFO: The snapshot has been restored successfully"
     $retVal = $Passed
 }
 

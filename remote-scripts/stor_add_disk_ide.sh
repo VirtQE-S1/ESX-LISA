@@ -80,7 +80,7 @@ then
     exit 1
 fi
 
-mount /dev/sdb1 /mnt
+mount /dev/"$disk_name"1 /mnt
 
 if [ ! "$?" -eq 0 ]
 then
