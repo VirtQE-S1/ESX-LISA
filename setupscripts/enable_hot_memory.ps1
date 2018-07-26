@@ -70,7 +70,7 @@ if (-not $rootDir) {
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
-        cd $rootDir
+        Set-Location $rootDir
     }
     else {
         "Warn : rootdir '${rootDir}' does not exist"
