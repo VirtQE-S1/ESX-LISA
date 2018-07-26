@@ -564,12 +564,12 @@
                 <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-10.1.10-3.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
                 <param>redhat_7_lower_version=open-vm-tools-10.1.5-3.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8+7.x86_64</param>
                 <param>redhat_8_lower_version=open-vm-tools-10.1.10-3.el8.x86_64</param>
                 <param>redhat_8_lower_rpm=10.1.10/3.el8/x86_64/open-vm-tools-10.1.10-3.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_dsk_rpm=10.1.10/3.el8/x86_64/open-vm-tools-desktop-10.1.10-3.el8.x86_64.rpm</param>
