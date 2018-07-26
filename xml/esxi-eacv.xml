@@ -20,11 +20,87 @@
             <suiteTests>
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
+                <suiteTest>stor_add_ide_disk</suiteTest>
+
+                <suiteTest>bl_add_memory_under_stress</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+                <suiteTest>bl_no_vmmemctl_process</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+
+        <test>
+            <testName>bl_add_memory_under_stress</testName>
+            <testID>ESX-BL-001</testID>
+            <setupScript>
+                <file>SetupScripts\change_memory.ps1</file>
+                <file>SetupScripts\enable_hot_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\bl_add_memory_under_stress.ps1</testScript>
+            <testParams>
+                <param>VMMemory=4GB</param>
+                <param>TC_COVERED=RHEL7-50938</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>bl_add_memory_low_to_high</testName>
+            <testID>ESX-BL-002</testID>
+            <setupScript>
+                <file>SetupScripts\change_memory.ps1</file>
+                <file>SetupScripts\enable_hot_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
+            <testParams>
+                <param>VMMemory=8GB</param>
+                <param>TC_COVERED=RHEL7-80171</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>bl_no_vmmemctl_process</testName>
+            <testID>ESX-BL-003</testID>
+            <testScript>testscripts\bl_no_vmmemctl_process.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50939</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+
+        <test>
+            <testName>stor_add_ide_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-011</testID>
+            <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh
+            </files>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL7-80182</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>ovt_snapshot_container</testName>
             <testID>ESX-OVT-033</testID>
@@ -53,7 +129,7 @@
             <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>        
+        </test>
     </testCases>
 
     <VMs>
