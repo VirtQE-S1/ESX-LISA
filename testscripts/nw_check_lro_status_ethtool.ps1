@@ -19,7 +19,7 @@
             <setupScript>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
+            <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
             <testParams>
                 <param>VCPU=1</param>
                 <param>TC_COVERED=RHEL7-50919</param>
@@ -175,10 +175,10 @@ elseif ($testVM.PowerState -eq "PoweredOff") {
 
 # Install Iperf3
 if ($DISTRO -eq "RedHat6") {
-    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
+    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm"
     $status = SendCommandToVM $ipv4 $sshkey $command
 }
-$command = "yum install iperf3 -y"
+$command = "yum install iperf3"
 $status = SendCommandToVM $ipv4 $sshkey $command
 
 if ( -not $status) {
@@ -202,6 +202,12 @@ if ( $null -eq $Server_Adapter) {
 # Ready iperf3 server in Guest-A
 $Command = "iperf3 -s"
 $Status = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
+
+if ($LRO_status -ne "large-receive-offload: on") {
+    LogPrint "ERROR : LRO should be disable"
+    DisconnectWithVIServer
+    return $Aborted
+}
 LogPrint "INFO: iperf3 is enable"
 
 
@@ -219,10 +225,10 @@ $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
 # Install Iperf3 in Guest-B
 if ($DISTRO -eq "RedHat6") {
-    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
+    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm"
     $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 }
-$command = "yum install iperf3 -y"
+$command = "yum install iperf3"
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 
 if ( -not $status) {
@@ -234,23 +240,31 @@ if ( -not $status) {
 
 # Start iperf3 test
 $Command = "iperf3  -c $ipv4 -t 100 -4"
-$Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${Command}" -PassThru -WindowStyle Hidden
+$Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
 if ( -not $status) {
     LogPrint "Error : iperf3 failed in $testVMName"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: iperf3 is Start"
 
 
 # Get Current LRO rx pkts count
-$Command = "ethtool -S $Server_Adapter |grep LRO | grep -i pkts | awk '{print `$(NF)}'"
-$LRO_count = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-LogPrint "INFO : Before test LRO pkts rx should not be null: $LRO_count"
-if ($null -eq $LRO_count ) {
-    LogPrint "ERROR : Current LRO pkts rx should not be null: $LRO_count"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
+$Command = "ethtool -S $Server_Adapter |grep LRO | grep -i pkts"
+$LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+
+if ($LRO_status -ne "LRO pkts rx: 0") {
+    LogPrint "ERROR : Current LRO pkts rx should be 0"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Get Current ethtool LRO status
+$Command = "ethtool -k $Server_Adapter |grep large"
+$LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+
+if ($LRO_status -ne "large-receive-offload: off") {
+    LogPrint "ERROR : LRO should be disable"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -264,8 +278,7 @@ $Command = "ethtool -k $Server_Adapter |grep large"
 $LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
 if ($LRO_status -ne "large-receive-offload: on") {
-    LogPrint "ERROR : LRO should be enable: $LRO_status"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
+    LogPrint "ERROR : LRO should be enable"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -276,6 +289,18 @@ LogPrint "INFO: LRO is enable"
 Start-Sleep -Seconds 12
 
 
+# Get Current LRO rx pkts count
+$Command = "ethtool -S $Server_Adapter |grep LRO | grep -i pkts | awk '{print `$(NF)}'"
+$Before_LRO_status = [int](bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+LogPrint "INFO: During iperf3 test, LRO pkts rx is $Before_LRO_status"
+
+# Check LRO rx pkts increasing
+if ($Before_LRO_status -lt 500) {
+    LogPrint "ERROR: During iperf3 test, LRO pkts rx is not increasing"
+    DisconnectWithVIServer
+    return $Failed
+}
+
 # Disable LRO
 $Command = "ethtool -K $Server_Adapter lro off"
 $LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
@@ -284,26 +309,11 @@ $Command = "ethtool -k $Server_Adapter |grep large"
 $LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
 if ($LRO_status -ne "large-receive-offload: off") {
-    LogPrint "ERROR : LRO should be disable: $LRO_status"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
+    LogPrint "ERROR : LRO should be disable"
     DisconnectWithVIServer
     return $Aborted
 }
 LogPrint "INFO: LRO is disable"
-
-
-# Get Current LRO rx pkts count
-$Command = "ethtool -S $Server_Adapter |grep LRO | grep -i pkts | awk '{print `$(NF)}'"
-$Before_LRO_status = [int](bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
-LogPrint "INFO: During iperf3 test with LRO enable, LRO pkts rx is $Before_LRO_status"
-
-# Check LRO rx pkts increasing
-if (($Before_LRO_status - $LRO_count) -lt 500) {
-    LogPrint "ERROR: During iperf3 test with LRO enable, LRO pkts rx is not increasing: Before:$LRO_count After:$Before_LRO_status"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
-    DisconnectWithVIServer
-    return $Failed
-}
 
 
 # Wait for 12 seconds
@@ -313,15 +323,13 @@ Start-Sleep -Seconds 12
 # Get Current LRO rx pkts count
 $Command = "ethtool -S $Server_Adapter |grep LRO | grep -i pkts | awk '{print `$(NF)}'"
 $After_LRO_status = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-LogPrint "INFO: After iperf3 test with LRO disable, LRO pkts rx is $After_LRO_status"
+LogPrint "INFO: After iperf3 test, LRO pkts rx is $After_LRO_status"
 
-if (($After_LRO_status - $Before_LRO_status) -gt 200) {
-    LogPrint "ERROR: LRO pkts rx is increasing without LRO enable Before:$Before_LRO_status After:$After_LRO_status"
-    Stop-VM $testVM -Confirm:$False -RunAsync:$true
+if (($Before_LRO_status - $After_LRO_status) -gt 200) {
+    LogPrint "ERROR: LRO pkts rx is increasing without LRO enable"
     DisconnectWithVIServer
     return $Failed
-}
-else {
+} else {
     $retVal = $Passed
 }
 
