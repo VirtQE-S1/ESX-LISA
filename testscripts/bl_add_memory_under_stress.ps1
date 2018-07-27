@@ -168,7 +168,6 @@ if ( -not $status) {
 # # Configure udev file
 $command = "echo 'SUBSYSTEM==`"memory`", ACTION==`"add`", ATTR{state}=`"online`"' > /etc/udev/rules.d/99-hv-balloon.rules"
 $status = SendCommandToVM $ipv4 $sshkey $command
-
 if ( -not $status) {
     LogPrint "Error : Hot add configure $vmName"
     DisconnectWithVIServer
@@ -177,7 +176,7 @@ if ( -not $status) {
 
 
 # # Begin to stress memory
-$Command = "stress --vm 5 --vm-keep --vm-bytes 1000M --timeout 60s"
+$Command = "stress --vm 45 --vm-keep --vm-bytes 100M --timeout 60s"
 
 # Cannot us NoNewWindow Here because this will cause no ExitCode We could use WindowStyle Hidden instead
 $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
