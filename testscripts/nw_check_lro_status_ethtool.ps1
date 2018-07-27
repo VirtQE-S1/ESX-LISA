@@ -25,7 +25,7 @@
                 <param>TC_COVERED=RHEL7-50919</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>400</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -155,6 +155,12 @@ $testVMName[-1] = "B"
 $testVMName = $testVMName -join "-"
 $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
+# Reset Guest-B into Default snapshot
+if ( -not (RevertSnapshotVM $testVMName $hvServer)) {
+    LogPrint "Failed to reset $testVMName into Defautl snapshot"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 if ($testVM.PowerState -eq "PoweredOn") {
     Restart-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
