@@ -13,11 +13,12 @@
     Check the ehtN large-receive-offload(LRO) status via ethtool(BZ918203)
 
 .Description
-        <test>
+       <test>
             <testName>nw_check_lro_status_ethtool</testName>
             <testID>ESX-NW-018</testID>
             <setupScript>
                 <file>SetupScripts\change_cpu.ps1</file>
+                <file>SetupScripts\revert_guest_B.ps1</file>
             </setupScript>
             <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
             <testParams>
@@ -155,28 +156,12 @@ $testVMName[-1] = "B"
 $testVMName = $testVMName -join "-"
 $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
-# Reset Guest-B into Default snapshot
-if ( -not (RevertSnapshotVM $testVMName $hvServer)) {
-    LogPrint "Failed to reset $testVMName into Defautl snapshot"
+# Start Guest-B
+Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    LogPrint "ERROR : Cannot start VM"
     DisconnectWithVIServer
     return $Aborted
-}
-
-if ($testVM.PowerState -eq "PoweredOn") {
-    Restart-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        LogPrint "ERROR : Cannot restart VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
-}
-else {
-    Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        LogPrint "ERROR : Cannot start VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
 }
 
 # Install Iperf3
