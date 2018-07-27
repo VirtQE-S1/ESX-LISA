@@ -183,26 +183,13 @@ $testVMName[-1] = "B"
 $testVMName = $testVMName -join "-"
 $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
-
-if ($testVM.PowerState -eq "PoweredOn") {
-    Restart-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        Write-Host -F Red "ERROR : Cannot restart VM"
-        Write-Output "ERROR : Cannot restart VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
+Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    Write-Host -F Red "ERROR : Cannot start VM"
+    Write-Output "ERROR : Cannot start VM"
+    DisconnectWithVIServer
+    return $Aborted
 }
-elseif ($testVM.PowerState -eq "PoweredOff") {
-    Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        Write-Host -F Red "ERROR : Cannot start VM"
-        Write-Output "ERROR : Cannot start VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
-}
-
 
 # Get another VM IP addr
 if ( -not (WaitForVMSSHReady $testVMName $hvServer $sshKey 300)) {

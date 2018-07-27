@@ -4,7 +4,7 @@
 ## Stop the test VM and then reset it to a snapshot.
 ##
 ## Revision:
-##	v1.0.0 - ruqin - 07/27/2018 - Draft the script for add a vmxnet3
+##	v1.0.0 - ruqin - 07/27/2018 - Draft the script for Stop the test VM and then reset it to a snapshot
 ##
 ###############################################################################
 <#
