@@ -44,11 +44,24 @@ GetDistro
 
 LogMsg $DISTRO
 
-if [ "$DISTRO" == "redhat_6" ]; then
+# Find out current system partition
+system_part=`df -h | grep boot | awk 'NR==1' | awk '{print $1}'| grep a`
+
+if [ ! $system_part ]; then
+#   The IDE disk should be sdb
     disk_name="sda"
 else
+#   The IDE disk should be sda
     disk_name="sdb"
 fi
+
+LogMsg "disk_name is $disk_name"
+
+# if [ "$DISTRO" == "redhat_6" ]; then
+#     disk_name="sda"
+# else
+#     disk_name="sdb"
+# fi
 
 # Do Partition for /dev/sdb
 
