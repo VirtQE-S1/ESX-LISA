@@ -19,17 +19,59 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <suiteTest>ovt_snapshot_container</suiteTest>
-                <suiteTest>ovt_deadlock_condition</suiteTest>
+
                 <suiteTest>stor_add_ide_disk</suiteTest>
 
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
+
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+
+        <test>
+            <testName>stor_cp_big_files</testName>
+            <testID>ESX-OVT-033</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>stor_cp_big_files.sh</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_cp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.194.25:/vol/s13rd/public</param>
+                <param>TC_COVERED=RHEL634923-,RHEL7-50899</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>nw_check_lro_status_ethtool</testName>
+            <testID>ESX-NW-018</testID>
+            <setupScript>
+                <file>SetupScripts\change_cpu.ps1</file>
+            </setupScript>
+            <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
+            <testParams>
+                <param>VCPU=1</param>
+                <param>TC_COVERED=RHEL7-50919</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
         <test>
             <testName>bl_add_memory_under_stress</testName>
