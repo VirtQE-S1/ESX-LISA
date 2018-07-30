@@ -13,11 +13,12 @@
     Check the ehtN large-receive-offload(LRO) status via ethtool(BZ918203)
 
 .Description
-        <test>
+       <test>
             <testName>nw_check_lro_status_ethtool</testName>
             <testID>ESX-NW-018</testID>
             <setupScript>
                 <file>SetupScripts\change_cpu.ps1</file>
+                <file>SetupScripts\revert_guest_B.ps1</file>
             </setupScript>
             <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
             <testParams>
@@ -25,7 +26,7 @@
                 <param>TC_COVERED=RHEL7-50919</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>400</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -155,31 +156,23 @@ $testVMName[-1] = "B"
 $testVMName = $testVMName -join "-"
 $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
-
-if ($testVM.PowerState -eq "PoweredOn") {
-    Restart-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        LogPrint "ERROR : Cannot restart VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
-}
-elseif ($testVM.PowerState -eq "PoweredOff") {
-    Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-    if (-not $?) {
-        LogPrint "ERROR : Cannot start VM"
-        DisconnectWithVIServer
-        return $Aborted
-    }
+# Start Guest-B
+Start-VM -VM $testVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    LogPrint "ERROR : Cannot start VM"
+    DisconnectWithVIServer
+    return $Aborted
 }
 
 # Install Iperf3
 if ($DISTRO -eq "RedHat6") {
-    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
+    $command = "yum localinstall http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
     $status = SendCommandToVM $ipv4 $sshkey $command
 }
-$command = "yum install iperf3 -y"
-$status = SendCommandToVM $ipv4 $sshkey $command
+else {
+    $command = "yum install iperf3 -y"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+}
 
 if ( -not $status) {
     LogPrint "Error : YUM failed in $vmName, may need to update iperf3 tool URL"
@@ -219,11 +212,13 @@ $testVM = Get-VMHost -Name $hvServer | Get-VM -Name $testVMName
 
 # Install Iperf3 in Guest-B
 if ($DISTRO -eq "RedHat6") {
-    $command = "yum install http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
+    $command = "yum localinstall http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm -y"
     $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 }
-$command = "yum install iperf3 -y"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command
+else {
+    $command = "yum install iperf3 -y"
+    $status = SendCommandToVM $ipv4Addr_B $sshkey $command
+}
 
 if ( -not $status) {
     LogPrint "Error : YUM failed in $testVMName, may need to update iperf3 tool URL"
@@ -232,8 +227,20 @@ if ( -not $status) {
 }
 
 
+# Test Network Connection
+$Command = "ping $ipv4 -c 5"
+$status = SendCommandToVM $ipv4Addr_B $sshkey $command
+if ( -not $status) {
+    LogPrint "Error : Cannot ping Guest-A from Guest-B"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Network is working"
+
+
+
 # Start iperf3 test
-$Command = "iperf3  -c $ipv4 -t 100 -4"
+$Command = "iperf3  -c $ipv4 -t 100 -4 > /root/output"
 $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${Command}" -PassThru -WindowStyle Hidden
 if ( -not $status) {
     LogPrint "Error : iperf3 failed in $testVMName"
