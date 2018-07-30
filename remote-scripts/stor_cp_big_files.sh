@@ -63,6 +63,8 @@ UtilsInit
 ##
 ###############################################################################
 #Mount nfs disk to guest.
+#For rhel8, there is no mount.nfs file, so install nfs-utils package.
+yum install nfs-utils -y
 mkdir /nfs
 mount $nfs /nfs
 mount |grep $nfs
@@ -89,15 +91,19 @@ else
 fi
 
 #add IDE disk to guest and make filesystem on it.
-GetDistro
-LogMsg $DISTRO
+system_part=`df -h | grep /boot | awk 'NR==1' | awk '{print $1}'| grep a`
 
-if [ "$DISTRO" == "redhat_6" ]; then
+if [ ! $system_part ]; then
+#   The IDE disk should be sda
     disk_name="sda"
 else
+#   The IDE disk should be sdb
     disk_name="sdb"
 fi
-# Do Partition for /dev/sdb
+
+LogMsg "disk_name is $disk_name"
+
+# Do Partition for IDE disk.
 
 fdisk /dev/"$disk_name" <<EOF
 n
@@ -130,8 +136,8 @@ else
     LogMsg "Format successfully"
     UpdateSummary "Passed: Format successfully"
 fi
-
-mount /dev/sdb1 /mnt
+#Mount ide disk to /mnt.
+mount /dev/"$disk_name"1 /mnt
 
 if [ ! "$?" -eq 0 ]
 then
