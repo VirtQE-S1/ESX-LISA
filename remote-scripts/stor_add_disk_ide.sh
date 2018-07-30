@@ -45,7 +45,7 @@ GetDistro
 LogMsg $DISTRO
 
 # Find out current system partition
-system_part=`df -h | grep boot | awk 'NR==1' | awk '{print $1}'| grep a`
+system_part=`df -h | grep /boot | awk 'NR==1' | awk '{print $1}'| grep a`
 
 if [ ! $system_part ]; then
 #   The IDE disk should be sdb
