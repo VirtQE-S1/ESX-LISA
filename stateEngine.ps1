@@ -1524,6 +1524,9 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
         UpdateState $vm $ForceShutdown
     }
 
+    $currentTest = $vm.currentTest
+    $testID = GetTestID $currentTest $xmlData
+
     #
     # Current behavior for this function is defined to just log some messages
     # and then try to stop and restart the VM again during $timeout
@@ -1534,13 +1537,13 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
     # Proceed with restarting the VM
     #
     $timeout = 120
-    Stop-VM -VM $vmObj -Confirm:$false -Kill
+    Stop-VM -VM $vmObj -Kill -Confirm:$false -ErrorAction SilentlyContinue
     while ($timeout -gt 0)
     {
         if($vmObj.PowerState -eq "PoweredOff")
         {
             LogMsg 0 "Warn : $($vm.vmName) is now starting for the second time for test $($vm.currentTest)"
-            Start-VM -VM $vmObj -Confirm:$False | out-null
+            Start-VM -VM $vmObj -Confirm:$false -RunAsync | out-null
             
              $timeout_startVM = 120
              while ($timeout_startVM -gt 0)
@@ -1556,10 +1559,10 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
              
             $ipv4 = $null
             $hasBooted = $false
-            [int]$timeoutBoot = 25
+            [int]$timeoutBoot = 60
             while (($hasBooted -eq $false) -and ($timeoutBoot -ge 0))
             {
-                Start-Sleep -s 1
+                Start-Sleep -s 6
                 $ipv4 = GetIPv4 $vm.vmName $vm.hvServer
                 LogMsg 9 "Debug: vm.ipv4 = $($vm.ipv4)"
                 if ($ipv4 -and ($vm.ipv4 -ne [String] $ipv4))
@@ -1567,12 +1570,12 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
                     LogMsg 9 "Updating VM IP from $($vm.ipv4) to ${ipv4}"
                     $vm.ipv4 = [String] $ipv4
                 }
-                $sts = TestPort $vm.ipv4 -port 22 -timeout 5
+                $sts = TestPort $vm.ipv4 -port 22 -timeout 6
                 if ($sts)
                 {
                     $hasBooted = $true
                 }
-                $timeoutBoot -= 1
+                $timeoutBoot -= 6
             }
             
             if ($hasBooted -eq $true)
@@ -1582,10 +1585,10 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
             else
             {
                 $completionCode = $Aborted
-                LogMsg 0 "Error: $($vm.vmName) did not boot after second try for test $($vm.currentTest)"
+                LogMsg 0 "Error: $($vm.vmName) could not boot after second try for test $($vm.currentTest)"
                 LogMsg 0 "Info : $($vm.vmName) Status for test $($vm.currentTest) = ${completionCode}"
 
-                SetTestResult $currentTest $completionCode $xmlData
+                SetTestResult $currentTest $testID $completionCode
                 $vm.emailSummary += ("    Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
                 UpdateState $vm $ForceShutdown
             }
