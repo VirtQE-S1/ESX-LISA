@@ -166,10 +166,10 @@ if ( -not $status) {
 }
 
 # # Configure udev file
-$command = "echo 'SUBSYSTEM==`"memory`", ACTION==`"add`", ATTR{state}=`"online`"' > /etc/udev/rules.d/99-hv-balloon.rules"
+$command = "echo 'SUBSYSTEM==`"memory`", ACTION==`"add`", ATTR{state}=`"online`" ATTR{state}==`"offline`"' > /etc/udev/rules.d/99-hv-balloon.rules"
 $status = SendCommandToVM $ipv4 $sshkey $command
 if ( -not $status) {
-    LogPrint "Error : Hot add configure $vmName"
+    LogPrint "Error : Cannot finish system Hot add configure in $vmName"
     DisconnectWithVIServer
     return $Failed
 }
@@ -195,7 +195,16 @@ LogPrint "Info :Change memory for $status"
 
 
 # Wait seconds for Hot Add memory
-Start-Sleep -Seconds 6
+Start-Sleep -Seconds 12
+
+# Clean Cache
+$Command = "sync; echo 3 > /proc/sys/vm/drop_caches"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if ( -not $status) {
+    LogPrint "Error : Clean Cache Failed in $vmName"
+    DisconnectWithVIServer
+    return $Failed
+}
 
 
 # Now Total Memory
@@ -206,7 +215,7 @@ LogPrint "INFO :current memory is $total_mem"
 
 $dst_mem = $vmobj.memorymb * 2
 
-if ( $total_mem -le ($dst_mem - 500) -or $total_mem -gt ($dst_mem + 500)) {
+if ( $total_mem -le ($dst_mem - 1000) -or $total_mem -gt ($dst_mem + 1000)) {
     LogPrint  "error : new hot add memory not fit $dst_mem mb in $vmname"
     disconnectwithviserver
     return $failed

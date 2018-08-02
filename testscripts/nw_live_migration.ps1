@@ -22,7 +22,7 @@
             <testScript>testscripts\nw_live_migration.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.72.129</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
                 <param>dstDatastore=freenas</param>
                 <param>TC_COVERED=RHEL7-50929</param>
