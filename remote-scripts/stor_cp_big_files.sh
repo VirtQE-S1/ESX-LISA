@@ -78,7 +78,7 @@ else
     UpdateSummary "nfs disk mount successfully."
 fi
 
-#Copy a big file more then 5G to scsi type disk.
+#Copy a big file more than 5G to scsi type disk.
 cp /nfs/bigfile /root
 if [ ! "$?" -eq 0 ]; then
     LogMsg "Test Failed. Copy bigfile File from nfs to SCSI disk Failed."

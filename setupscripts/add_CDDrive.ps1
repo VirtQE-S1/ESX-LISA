@@ -64,6 +64,7 @@ foreach ($p in $params)
 	switch ($fields[0].Trim())
 	{
         "cd_num"     { $cd_num = $fields[1].Trim() }
+        "iso"     { $iso = $fields[1].Trim() }
 		default			{}
     }
 }
@@ -95,8 +96,8 @@ $CDList =  Get-CDDrive -VM $vmObj
 $current_cd = $CDList.Length
 while ($current_cd -lt $cd_num )
 {
-    # $add_cd=New-CDDrive -VM $vmObj -ISOPath "[trigger]redhat/cloud-init.iso"
-    $add_cd=New-CDDrive -VM $vmObj
+    # $add_cd=New-CDDrive -VM $vmObj -ISOPath "[trigger] tmp/cloud-init.iso"
+    $add_cd=New-CDDrive -VM $vmObj -ISOPath "$iso" -StartConnected:$true -Confirm:$false -WarningAction SilentlyContinue
     $current_cd=$current_cd+1
     Write-host -F Red "the current cd number is $current_cd "
 }
