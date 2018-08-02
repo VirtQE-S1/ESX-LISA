@@ -79,15 +79,15 @@ else
 fi
 
 #Copy a big file more then 5G to scsi type disk.
-cp /nfs/6G /root
+cp /nfs/bigfile /root
 if [ ! "$?" -eq 0 ]; then
-    LogMsg "Test Failed. Copy 6G File from nfs to SCSI disk Failed."
-    UpdateSummary "Test failed.Copy 6G File from nfs to SCSI disk failed."
+    LogMsg "Test Failed. Copy bigfile File from nfs to SCSI disk Failed."
+    UpdateSummary "Test failed.Copy bigfile File from nfs to SCSI disk failed."
     SetTestStateFailed
     exit 1
 else
-    LogMsg " Copy 6G File from nfs to SCSI disk successfully."
-    UpdateSummary "Copy 6G File from nfs to SCSI disk successfully."
+    LogMsg " Copy bigfile File from nfs to SCSI disk successfully."
+    UpdateSummary "Copy bigfile File from nfs to SCSI disk successfully."
 fi
 
 #add IDE disk to guest and make filesystem on it.
@@ -152,7 +152,7 @@ fi
 
 # copy file to ide disk type.
 
-cp /root/6G /mnt
+cp /root/bigfile /mnt
 
 if [ ! "$?" -eq 0 ]
 then
@@ -161,8 +161,8 @@ then
     SetTestStateFailed
     exit 1
 else
-    LogMsg "Copy 6G File from scsi to ide disk successfully"
-    UpdateSummary "FAIL: Copy 6G File from scsi to ide disk successfully"
+    LogMsg "Copy bigfile File from scsi to ide disk successfully"
+    UpdateSummary "FAIL: Copy bigfile File from scsi to ide disk successfully"
     SetTestStateCompleted
     exit 0
 fi

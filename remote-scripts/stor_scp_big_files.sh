@@ -60,29 +60,29 @@ else
 fi
 
 #Copy a big file more then 5G to scsi type disk.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no /nfs/6G root@${1}:/tmp
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no /nfs/bigfile root@${1}:/root
 if [ ! "$?" -eq 0 ]; then
-    LogMsg "Test Failed.  Copy 6G File from guestA nfs to guestB SCSI disk Failed."
-    UpdateSummary "Test failed.  Copy 6G File from guestA nfs to guestB SCSI disk failed."
+    LogMsg "Test Failed.  Copy bigfile File from guestA nfs to guestB SCSI disk Failed."
+    UpdateSummary "Test failed.  Copy bigfile File from guestA nfs to guestB SCSI disk failed."
     SetTestStateFailed
     exit 1
 else
-    LogMsg "Copy 6G File from guestA nfs to guestB SCSI disk successfully."
-    UpdateSummary "Copy 6G File from guestA nfs to guestB SCSI disk successfully."
+    LogMsg "Copy bigfile File from guestA nfs to guestB SCSI disk successfully."
+    UpdateSummary "Copy bigfile File from guestA nfs to guestB SCSI disk successfully."
 fi
 
 start=`date`
 UpdateSummary "Debug: nfs end date scsi start date is $start"
-#scp 6G file to local scsi disk path from guest B.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/tmp/6G /root/
+#scp bigfile file to local scsi disk path from guest B.
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/root/bigfile /root/
 if [ ! "$?" -eq 0 ]; then
-    LogMsg "Test Failed. Copy 6G File from guestB scsi to guestA scsi disk Failed."
-    UpdateSummary "Test failed.Copy 6G File from guestB scsi to guestA scsi disk failed."
+    LogMsg "Test Failed. Copy bigfile File from guestB scsi to guestA scsi disk Failed."
+    UpdateSummary "Test failed.Copy bigfile File from guestB scsi to guestA scsi disk failed."
     SetTestStateFailed
     exit 1
 else
-    LogMsg " Copy 6G File from guestB scsi to guestA scsi disk successfully."
-    UpdateSummary "Copy 6G File from guestB scsi to guestA scsi disk successfully."
+    LogMsg " Copy bigfile File from guestB scsi to guestA scsi disk successfully."
+    UpdateSummary "Copy bigfile File from guestB scsi to guestA scsi disk successfully."
 fi
 
 #add IDE disk to guest and make filesystem on it.
@@ -141,7 +141,7 @@ else
 fi
 
 # copy file to ide disk type.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/tmp/6G /mnt
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/root/bigfile /mnt
 if [ ! "$?" -eq 0 ]
 then
     LogMsg "copy file from guestB scsi to guestA ide disk Failed"
@@ -151,8 +151,8 @@ then
     SetTestStateFailed
     exit 1
 else
-    LogMsg "Copy 6G File from guestB scsi to guestA ide disk successfully"
-    UpdateSummary "FAIL: Copy 6G File from guestB scsi to guestA disk successfully"
+    LogMsg "Copy  File from guestB scsi to guestA ide disk successfully"
+    UpdateSummary "FAIL: Copy  File from guestB scsi to guestA disk successfully"
     start=`date`
     UpdateSummary "Debug: IDE end date is $start"
     SetTestStateCompleted
