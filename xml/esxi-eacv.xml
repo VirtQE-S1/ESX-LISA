@@ -28,11 +28,29 @@
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>stor_scp_files</suiteTest>
+                <suiteTest>stor_check_cd_file</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>stor_check_cd_file</testName>
+            <testID>ESX-Stor-016</testID>
+            <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
+            <testScript>testscripts\stor_check_cd_file.ps1</testScript>
+            <testParams>
+                <param>cd_num=2</param>
+                <param>iso=[trigger] tmp/cloud-init.iso</param>
+                <param>TC_COVERED=RHEL6-49145,RHEL7-111400</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
         <test>
             <testName>stor_scp_files</testName>
             <testID>ESX-Stor-0</testID>
