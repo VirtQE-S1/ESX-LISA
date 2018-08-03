@@ -16,124 +16,15 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 31 -->
-            <suiteName>open_vm_tools</suiteName>
-            <suiteTests>
-                <suiteTest>ovt_check_build_version</suiteTest>
-                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_pam_unix2</suiteTest>
-                <suiteTest>ovt_yum_install_ovt</suiteTest>
-                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
-                <suiteTest>ovt_check_libmspack_installed</suiteTest>
-                <suiteTest>ovt_check_deploypkg</suiteTest>
-                <suiteTest>ovt_check_vm-support</suiteTest>
-                <suiteTest>ovt_check_libdnet</suiteTest>
-                <suiteTest>ovt_check_privatetmp</suiteTest>
-                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
-                <suiteTest>ovt_check_vaguth_files</suiteTest>
-                <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
-                <suiteTest>ovt_check_period_timesync</suiteTest>
-                <suiteTest>ovt_check_suspend_timesync</suiteTest>
-                <suiteTest>ovt_install_by_iso</suiteTest>
-                <suiteTest>ovt_shutdown_restart_vm</suiteTest>
-                <suiteTest>ovt_check_timesync</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
-                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_IP_display</suiteTest>
-                <suiteTest>ovt_vgauth_add_alias</suiteTest>
-                <suiteTest>ovt_vgauth_list_alias</suiteTest>
-                <suiteTest>ovt_vgauth_del_alias</suiteTest>
-                <suiteTest>ovt_scsi_timeout</suiteTest>
-                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- GO Total Cases: 17 -->
-            <suiteName>general_operation</suiteName>
-            <suiteTests>
-                <suiteTest>go_check_modules</suiteTest>
-                <suiteTest>go_check_cpu</suiteTest>
-                <suiteTest>go_check_memory</suiteTest>
-                <suiteTest>go_check_reboot</suiteTest>
-                <suiteTest>go_vm_install_by_iso</suiteTest>
-                <suiteTest>go_vm_shutdown</suiteTest>
-                <suiteTest>go_suspend_vm</suiteTest>
-                <suiteTest>go_kvm_clock_adjusting</suiteTest>
-                <suiteTest>go_verify_hot_cpu_works</suiteTest>
-                <suiteTest>go_check_suspend_time_drift</suiteTest>
-                <suiteTest>go_install_ide_disk</suiteTest>
-                <suiteTest>go_reboot_12G_memory</suiteTest>
-                <suiteTest>go_reboot_100_times</suiteTest>
-                <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
-                <suiteTest>go_upgrade_kernel</suiteTest>
-                <suiteTest>go_upgrade_guest</suiteTest>
-                <suiteTest>go_unload_vmw_modules</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- Storage Total Cases: 10 -->
-            <suiteName>storage</suiteName>
-            <suiteTests>
-                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
-                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
-                <suiteTest>stor_take_restore_snapshot</suiteTest>
-                <suiteTest>stor_vm_install_by_scsi</suiteTest>
-                <suiteTest>stor_hot_unplug_scsi</suiteTest>
-                <suiteTest>stor_check_pvscsi_error</suiteTest>
-                <suiteTest>stor_add_independent_disk</suiteTest>
-                <suiteTest>stor_add_large_file</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- Kdump Total Cases: 4 -->
-            <suiteName>kdump</suiteName>
-            <suiteTests>
-                <suiteTest>kdump_crash_single_core</suiteTest>
-                <suiteTest>kdump_crash_smp</suiteTest>
-                <suiteTest>kdump_crash_auto_size</suiteTest>
-                <suiteTest>kdump_crash_diff_size</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- Network Total Cases: 15 -->
-            <suiteName>network</suiteName>
-            <suiteTests>
-                <suiteTest>nw_ping</suiteTest>
-                <suiteTest>nw_resize_rx_tx_max</suiteTest>
-                <suiteTest>nw_resize_rx_tx</suiteTest>
-                <suiteTest>nw_arping</suiteTest>
-                <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
-                <suiteTest>nw_hot_plug_unplug</suiteTest>
-                <suiteTest>nw_mulit_vmxnet3</suiteTest>
-                <suiteTest>nw_check_operstate</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest>
-                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
-                <suiteTest>nw_hot_plug_e1000</suiteTest>
-                <suiteTest>nw_pktgen</suiteTest>
-                <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
-                <suiteTest>nw_nic_name_check_after_update</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
             <!-- Acceptance Total Cases: 8 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_yum_install_ovt</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
-                <suiteTest>go_kvm_clock_adjusting</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>nw_ping</suiteTest>
-                <suiteTest>nw_resize_rx_tx_max</suiteTest>
+                <suiteTest>vsock_version</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
