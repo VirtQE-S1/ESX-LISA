@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Check the ehtN large-receive-offload(LRO) status via ethtool
+##  Check the NIC large-receive-offload(LRO) status via ethtool
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 7/26/2018 - Build the script
@@ -10,7 +10,7 @@
 
 <#
 .Synopsis
-    Check the ehtN large-receive-offload(LRO) status via ethtool(BZ918203)
+    Check the NIC large-receive-offload(LRO) status via ethtool(BZ918203)
 
 .Description
        <test>
