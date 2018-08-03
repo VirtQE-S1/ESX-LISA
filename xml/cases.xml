@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
+
     <global>
         <logfileRootDir>TestResults</logfileRootDir>
         <defaultSnapshot>ICABase</defaultSnapshot>
@@ -16,7 +17,7 @@
 
     <testSuites>
         <suite>
-            <!-- OVT Total Cases: 31 -->
+            <!-- OVT Total Cases: 33 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -78,7 +79,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 13 -->
+            <!-- Storage Total Cases: 16 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -94,6 +95,10 @@
                 <suiteTest>stor_add_ide_disk</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
+                <suiteTest>ESX-Stor-XXX</suiteTest>
+                <suiteTest>ESX-stor_check_cd_file</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -107,7 +112,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 17 -->
+            <!-- Network Total Cases: 18 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -125,8 +130,9 @@
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -147,15 +153,16 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Balloon Total Cases: 1 -->
+            <!-- Balloon Total Cases: 3 -->
             <suiteName>balloon</suiteName>
             <suiteTests>
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
+                <suiteTest>bl_add_memory_under_stress</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 86 -->
+            <!-- Acceptance Total Cases: 95 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -173,11 +180,11 @@
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>ovt_check_oneshot_timesync</suiteTest -->
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>ovt_check_period_timesync</suiteTest -->
+                <suiteTest>ovt_check_period_timesync</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>ovt_check_suspend_timesync</suiteTest -->
+                <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>
@@ -195,7 +202,6 @@
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
 
-
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
@@ -203,13 +209,12 @@
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>go_suspend_vm</suiteTest -->
+                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>go_check_suspend_time_drift</suiteTest -->
+                <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
-                <!-- Stress Case -->
                 <suiteTest>go_reboot_12G_memory</suiteTest>
                 <!-- Stress Case -->
                 <suiteTest>go_reboot_100_times</suiteTest>
@@ -221,9 +226,9 @@
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest -->
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>stor_vhdx_mount_nfs_server</suiteTest -->
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
@@ -231,10 +236,13 @@
                 <suiteTest>stor_check_pvscsi_error</suiteTest>
                 <suiteTest>stor_add_independent_disk</suiteTest>
                 <suiteTest>stor_add_large_file</suiteTest>
-                <!-- Unstable Case -->
-                <!-- suiteTest>stor_add_ide_disk</suiteTest -->
+                <suiteTest>stor_add_ide_disk</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
+                <suiteTest>ESX-Stor-XXX</suiteTest>
+                <suiteTest>ESX-stor_check_cd_file</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -247,19 +255,20 @@
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
                 <!-- Unstable Case -->
-                <!-- suiteTest>nw_hot_plug_e1000</suiteTest -->
+                <suiteTest>nw_hot_plug_e1000</suiteTest>
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
 
                 <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
@@ -270,6 +279,8 @@
 
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
+                <!-- Unstable Case -->
+                <suiteTest>bl_add_memory_under_stress</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -1508,6 +1519,22 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_check_lro_status_ethtool</testName>
+            <testID>ESX-NW-018</testID>
+            <setupScript>
+                <file>SetupScripts\change_cpu.ps1</file>
+            </setupScript>
+            <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
+            <testParams>
+                <param>VCPU=1</param>
+                <param>TC_COVERED=RHEL7-50919</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
         <test>
             <testName>vsock_version</testName>
@@ -1591,6 +1618,23 @@
         </test>
 
         <test>
+            <testName>bl_add_memory_under_stress</testName>
+            <testID>ESX-BL-001</testID>
+            <setupScript>
+                <file>SetupScripts\change_memory.ps1</file>
+                <file>SetupScripts\enable_hot_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\bl_add_memory_under_stress.ps1</testScript>
+            <testParams>
+                <param>VMMemory=4GB</param>
+                <param>TC_COVERED=RHEL7-50938</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
             <testName>bl_add_memory_low_to_high</testName>
             <testID>ESX-BL-002</testID>
             <setupScript>
@@ -1603,11 +1647,10 @@
                 <param>TC_COVERED=RHEL7-80171</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>400</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>bl_no_vmmemctl_process</testName>
             <testID>ESX-BL-003</testID>
@@ -1632,5 +1675,5 @@
             <suite>acceptance</suite>
         </vm>
     </VMs>
-
+    
 </config>
