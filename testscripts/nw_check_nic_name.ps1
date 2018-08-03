@@ -258,7 +258,10 @@ if (-not $vmObj) {
 }
 
 # Load and Unload vmxnet3
-$Command = "modprobe -r vmxnet3 && modprobe vmxnet3"
+$Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && systemctl restart NetworkManager"
+if ($DISTRO -eq "RedHat6") {
+    $Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && service network restart"
+}
 $status = SendCommandToVM $ipv4 $sshKey $Command
 
 if ( -not $status) {
