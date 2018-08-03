@@ -17,7 +17,7 @@
 
     <testSuites>
         <suite>
-            <!-- EACV Total Cases: 95 -->
+            <!-- Acceptance Total Cases: 96 -->
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -96,8 +96,7 @@
                 <suiteTest>stor_add_remove_cd</suiteTest>
                 <suiteTest>stor_cp_big_files</suiteTest>
                 <suiteTest>stor_scp_big_files</suiteTest>
-                <suiteTest>ESX-Stor-XXX</suiteTest>
-                <suiteTest>ESX-stor_check_cd_file</suiteTest>
+                <suiteTest>stor_check_cd_file</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -124,6 +123,7 @@
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
                 <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>nw_check_nic_name</suiteTest>
 
                 <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
@@ -1390,6 +1390,22 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_check_nic_name</testName>
+            <testID>ESX-NW-019</testID>
+            <setupScript>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+            </setupScript>
+            <testScript>testscripts\nw_check_nic_name.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL-111702</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
         <test>
             <testName>vsock_version</testName>
@@ -1530,5 +1546,5 @@
             <suite>eacv</suite>
         </vm>
     </VMs>
-    
+
 </config>
