@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
+
     <global>
         <logfileRootDir>TestResults</logfileRootDir>
         <defaultSnapshot>ICABase</defaultSnapshot>
@@ -16,8 +17,153 @@
 
     <testSuites>
         <suite>
-            <!-- Acceptance Total Cases: 8 -->
-            <suiteName>acceptance</suiteName>
+            <!-- OVT Total Cases: 33 -->
+            <suiteName>open_vm_tools</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
+                <suiteTest>ovt_check_pam_unix2</suiteTest>
+                <suiteTest>ovt_yum_install_ovt</suiteTest>
+                <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
+                <suiteTest>ovt_check_libmspack_installed</suiteTest>
+                <suiteTest>ovt_check_deploypkg</suiteTest>
+                <suiteTest>ovt_check_vm-support</suiteTest>
+                <suiteTest>ovt_check_libdnet</suiteTest>
+                <suiteTest>ovt_check_privatetmp</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_vaguth_files</suiteTest>
+                <suiteTest>ovt_check_vgauth_status</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <suiteTest>ovt_check_period_timesync</suiteTest>
+                <suiteTest>ovt_check_suspend_timesync</suiteTest>
+                <suiteTest>ovt_install_by_iso</suiteTest>
+                <suiteTest>ovt_shutdown_restart_vm</suiteTest>
+                <suiteTest>ovt_check_timesync</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
+                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_vgauth_add_alias</suiteTest>
+                <suiteTest>ovt_vgauth_list_alias</suiteTest>
+                <suiteTest>ovt_vgauth_del_alias</suiteTest>
+                <suiteTest>ovt_scsi_timeout</suiteTest>
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
+                <suiteTest>ovt_deadlock_condition</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- GO Total Cases: 17 -->
+            <suiteName>general_operation</suiteName>
+            <suiteTests>
+                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
+                <suiteTest>go_check_memory</suiteTest>
+                <suiteTest>go_check_reboot</suiteTest>
+                <suiteTest>go_vm_install_by_iso</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_kvm_clock_adjusting</suiteTest>
+                <suiteTest>go_verify_hot_cpu_works</suiteTest>
+                <suiteTest>go_check_suspend_time_drift</suiteTest>
+                <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
+                <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
+                <suiteTest>go_upgrade_kernel</suiteTest>
+                <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>go_unload_vmw_modules</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Storage Total Cases: 16 -->
+            <suiteName>storage</suiteName>
+            <suiteTests>
+                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>stor_take_restore_snapshot</suiteTest>
+                <suiteTest>stor_vm_install_by_scsi</suiteTest>
+                <suiteTest>stor_hot_unplug_scsi</suiteTest>
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_add_independent_disk</suiteTest>
+                <suiteTest>stor_add_large_file</suiteTest>
+                <suiteTest>stor_add_ide_disk</suiteTest>
+                <suiteTest>stor_add_remove_multi_scsi</suiteTest>
+                <suiteTest>stor_add_remove_cd</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
+                <suiteTest>ESX-stor_check_cd_file</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Kdump Total Cases: 4 -->
+            <suiteName>kdump</suiteName>
+            <suiteTests>
+                <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_smp</suiteTest>
+                <suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Network Total Cases: 19 -->
+            <suiteName>network</suiteName>
+            <suiteTests>
+                <suiteTest>nw_ping</suiteTest>
+                <suiteTest>nw_resize_rx_tx_max</suiteTest>
+                <suiteTest>nw_resize_rx_tx</suiteTest>
+                <suiteTest>nw_arping</suiteTest>
+                <suiteTest>nw_boot_vmxnet3</suiteTest>
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <suiteTest>nw_hot_plug_unplug</suiteTest>
+                <suiteTest>nw_mulit_vmxnet3</suiteTest>
+                <suiteTest>nw_check_operstate</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
+                <suiteTest>nw_hot_plug_e1000</suiteTest>
+                <suiteTest>nw_pktgen</suiteTest>
+                <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
+                <suiteTest>nw_nic_name_check_after_update</suiteTest>
+                <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>nw_check_nic_name</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- DPDK Total Cases: 4 -->
+            <suiteName>dpdk</suiteName>
+            <suiteTests>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- VSOCK Total Cases: 1 -->
+            <suiteName>vsock</suiteName>
+            <suiteTests>
+                <suiteTest>vsock_version</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Balloon Total Cases: 3 -->
+            <suiteName>balloon</suiteName>
+            <suiteTests>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+                <suiteTest>bl_no_vmmemctl_process</suiteTest>
+                <suiteTest>bl_add_memory_under_stress</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Acceptance Total Cases: 96 -->
+            <suiteName>dsk</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
@@ -31,46 +177,15 @@
 
     <testCases>
         <test>
-            <testName>bl_add_memory_low_to_high</testName>
-            <testID>ESX-BL-002</testID>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\enable_hot_memory.ps1</file>
-            </setupScript>
-            <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
-            <testParams>
-                <param>VMMemory=8GB</param>
-                <param>TC_COVERED=RHEL7-80171</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>vsock_version</testName>
-            <testID>ESX-VSOCK-001</testID>
-            <testScript>testscripts\vsock_check_version.ps1</testScript>
-            <testParams>
-                <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
-                <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
-                <param>TC_COVERED=RHEL-111195</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
             <testName>ovt_check_build_version</testName>
             <testID>ESX-OVT-001</testID>
             <testScript>ovt_check_build_version.sh</testScript>
             <files>remote-scripts/ovt_check_build_version.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>redhat_6_stanversion=NOOVT</param>
-                <param>redhat_7_stanversion=open-vm-tools-10.2.5-2.el7.x86_64</param>
-                <param>redhat_8_stanversion=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
+                <param>redhat_6_standard_version=NOOVT</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -320,7 +435,7 @@
             <testID>ESX-OVT-019</testID>
             <testScript>testscripts/ovt_shutdown_restart_vm.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
@@ -360,10 +475,19 @@
             <files>remote-scripts/ovt_upgrade_downgrade_vmtools.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>defaultVersion=open-vm-tools-10.1.10-3.el7.x86_64</param>
-                <param>version1=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
-                <param>version2=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
-                <param>ChangeVersion=open-vm-tools-10.1.5-3.el7.x86_64</param>
+                <!-- RHELs NO OVT -->
+                <param>redhat_5_standard_version=NOOVT</param>
+                <param>redhat_6_standard_version=NOOVT</param>
+                <!-- RHEL7 -->
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_version=open-vm-tools-10.1.5-3.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_dsk_rpm=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
+                <!-- RHEL8 -->
+                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8+7.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-10.1.10-3.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=10.1.10/3.el8/x86_64/open-vm-tools-10.1.10-3.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=10.1.10/3.el8/x86_64/open-vm-tools-desktop-10.1.10-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -494,6 +618,35 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_deadlock_condition</testName>
+            <testID>ESX-OVT-032</testID>
+            <testScript>testscripts/ovt_deadlock_condition.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_check_deadlock.sh</files>
+            <files>remote-scripts/ovt_loop.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-47886,RHEL7-94309</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_snapshot_container</testName>
+            <testID>ESX-OVT-033</testID>
+            <testScript>testscripts/ovt_snapshot_container.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_docker_install.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -669,7 +822,7 @@
                 <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6000</timeout>
+            <timeout>7200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -718,6 +871,11 @@
             <files>remote-scripts/go_unload_vmw_modules.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
+                <!-- Other modules can't be unload when using -->
+                <!-- Add a new module which can be unload when using with ',' -->
+                <param>redhat_6_modules=vmware_balloon</param>
+                <param>redhat_7_modules=vmw_balloon</param>
+                <param>redhat_8_modules=vmw_balloon</param>
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -726,15 +884,13 @@
             <noReboot>False</noReboot>
         </test>
 
-
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testScript>stor_lis_disk.sh</testScript>
             <files>
-                remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
-                remote-scripts/stor_utils.sh
+                remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh, remote-scripts/stor_utils.sh
             </files>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -754,8 +910,7 @@
             <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
             <testScript>testscripts\stor_nfs_client.ps1</testScript>
             <files>
-                remote-scripts/utils.sh,
-                remote-scripts/stor_utils.sh
+                remote-scripts/utils.sh, remote-scripts/stor_utils.sh
             </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1800</timeout>
@@ -770,8 +925,7 @@
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testScript>stor_lis_disk.sh</testScript>
             <files>
-                remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
-                remote-scripts/stor_utils.sh
+                remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh, remote-scripts/stor_utils.sh
             </files>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -794,7 +948,9 @@
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <files>remote-scripts/utils.sh,remote-scripts/stor_utils.sh</files>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_utils.sh
+            </files>
             <timeout>600</timeout>
             <onError>Continue</onError>
             <testparams>
@@ -836,7 +992,9 @@
             <testID>ESX-STOR-007</testID>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <testScript>testscripts/stor_hot_unplug_scsi.ps1</testScript>
-            <files>remote-scripts/stor_utils.sh</files>
+            <files>
+                remote-scripts/stor_utils.sh
+            </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>300</timeout>
             <testparams>
@@ -863,7 +1021,9 @@
             <testName>stor_add_independent_disk</testName>
             <testID>ESX-STOR-009</testID>
             <testScript>testScripts\stor_add_independent_disk.ps1</testScript>
-            <files>remote-scripts/utils.sh,remote-scripts/fdisk.sh</files>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/fdisk.sh
+            </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>300</timeout>
             <testparams>
@@ -883,6 +1043,111 @@
                 <param>TC_COVERED=RHEL6-38508,RHEL7-80181</param>
             </testparams>
             <onError>Continue</onError>
+        </test>
+        <test>
+            <testName>stor_add_ide_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-011</testID>
+            <testScript>testscripts\stor_add_ide_disk.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh
+            </files>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL7-80182</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_remove_multi_scsi</testName>
+            <testID>ESX-Stor-012</testID>
+            <testScript>testscripts\stor_add_remove_multi_scsi.ps1</testScript>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-80195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_remove_cd</testName>
+            <testID>ESX-Stor-013</testID>
+            <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
+            <testScript>testscripts\stor_add_remove_cd.ps1</testScript>
+            <testParams>
+                <param>cd_num=3</param>
+                <param>TC_COVERED=RHEL6-38505,RHEL7-80233</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>stor_cp_big_files</testName>
+            <testID>ESX-OVT-014</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>stor_cp_big_files.sh</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_cp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.194.25:/vol/s13rd/public</param>
+                <param>TC_COVERED=RHEL634923-,RHEL7-50899</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_scp_files</testName>
+            <testID>ESX-Stor-015</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts/stor_scp_files.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_scp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
+                <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_check_cd_file</testName>
+            <testID>ESX-Stor-016</testID>
+            <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
+            <testScript>testscripts\stor_check_cd_file.ps1</testScript>
+            <testParams>
+                <param>cd_num=2</param>
+                <param>iso=[trigger] tmp/cloud-init.iso</param>
+                <param>TC_COVERED=RHEL6-49145,RHEL7-111400</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
         </test>
 
         <test>
@@ -1173,6 +1438,194 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>nw_set_mtu_multi_vmxnet3</testName>
+            <testID>ESX-NW-016</testID>
+            <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL-111700</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_live_migration</testName>
+            <testID>ESX-NW-017</testID>
+            <testScript>testscripts\nw_live_migration.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.196.191,10.73.72.129</param>
+                <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
+                <param>dstDatastore=freenas</param>
+                <param>TC_COVERED=RHEL7-50929</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_lro_status_ethtool</testName>
+            <testID>ESX-NW-018</testID>
+            <setupScript>
+                <file>SetupScripts\change_cpu.ps1</file>
+            </setupScript>
+            <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
+            <testParams>
+                <param>VCPU=1</param>
+                <param>TC_COVERED=RHEL7-50919</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_nic_name</testName>
+            <testID>ESX-NW-019</testID>
+            <setupScript>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+            </setupScript>
+            <testScript>testscripts\nw_check_nic_name.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL-111702</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>vsock_version</testName>
+            <testID>ESX-VSOCK-001</testID>
+            <testScript>testscripts\vsock_check_version.ps1</testScript>
+            <testParams>
+                <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>TC_COVERED=RHEL-111195</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>dpdk_compile</testName>
+            <testID>ESX-DPDK-001</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupscripts\change_memory.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+                <file>setupscripts\add_vmxnet3.ps1</file>
+            </setupScript>
+            <testScript>dpdk_compile_1.sh</testScript>
+            <files>remote-scripts/dpdk_compile_1.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <testParams>
+                <param>VCPU=8</param>
+                <param>VMMemory=8GB</param>
+                <param>TC_COVERED=RHEL-136107</param>
+            </testParams>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+        <test>
+            <testName>dpdk_bindadapter</testName>
+            <testID>ESX-DPDK-002</testID>
+            <testScript>dpdk_bindadapter_2.sh</testScript>
+            <files>remote-scripts/dpdk_bindadapter_2.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL-136145</param>
+            </testParams>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+        <test>
+            <testName>dpdk_helloworld</testName>
+            <testID>ESX-DPDK-003</testID>
+            <testScript>dpdk_helloworld_3.sh</testScript>
+            <files>remote-scripts/dpdk_helloworld_3.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL-136158</param>
+            </testParams>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+        <test>
+            <testName>dpdk_kni</testName>
+            <testID>ESX-DPDK-004</testID>
+            <testScript>dpdk_kni_4.sh</testScript>
+            <files>remote-scripts/dpdk_kni_4.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
+            <testParams>
+                <param>TC_COVERED=RHEL-136473</param>
+            </testParams>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>True</noReboot>
+        </test>
+
+        <test>
+            <testName>bl_add_memory_under_stress</testName>
+            <testID>ESX-BL-001</testID>
+            <setupScript>
+                <file>SetupScripts\change_memory.ps1</file>
+                <file>SetupScripts\enable_hot_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\bl_add_memory_under_stress.ps1</testScript>
+            <testParams>
+                <param>VMMemory=4GB</param>
+                <param>TC_COVERED=RHEL7-50938</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>bl_add_memory_low_to_high</testName>
+            <testID>ESX-BL-002</testID>
+            <setupScript>
+                <file>SetupScripts\change_memory.ps1</file>
+                <file>SetupScripts\enable_hot_memory.ps1</file>
+            </setupScript>
+            <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
+            <testParams>
+                <param>VMMemory=8GB</param>
+                <param>TC_COVERED=RHEL7-80171</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>bl_no_vmmemctl_process</testName>
+            <testID>ESX-BL-003</testID>
+            <testScript>testscripts\bl_no_vmmemctl_process.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50939</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
     </testCases>
 
     <VMs>
@@ -1182,7 +1635,7 @@
             <os>Linux</os>
             <ipv4/>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suite>acceptance</suite>
+            <suite>dsk</suite>
         </vm>
     </VMs>
 

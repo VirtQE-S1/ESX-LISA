@@ -97,7 +97,6 @@
                 <suiteTest>stor_add_remove_cd</suiteTest>
                 <suiteTest>stor_cp_big_files</suiteTest>
                 <suiteTest>stor_scp_big_files</suiteTest>
-                <suiteTest>ESX-Stor-XXX</suiteTest>
                 <suiteTest>ESX-stor_check_cd_file</suiteTest>
             </suiteTests>
         </suite>
@@ -1196,6 +1195,63 @@
             <testParams>
                 <param>cd_num=3</param>
                 <param>TC_COVERED=RHEL6-38505,RHEL7-80233</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>stor_cp_big_files</testName>
+            <testID>ESX-OVT-014</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>stor_cp_big_files.sh</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_cp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.194.25:/vol/s13rd/public</param>
+                <param>TC_COVERED=RHEL634923-,RHEL7-50899</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_scp_files</testName>
+            <testID>ESX-Stor-015</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts/stor_scp_files.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_scp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
+                <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_check_cd_file</testName>
+            <testID>ESX-Stor-016</testID>
+            <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
+            <testScript>testscripts\stor_check_cd_file.ps1</testScript>
+            <testParams>
+                <param>cd_num=2</param>
+                <param>iso=[trigger] tmp/cloud-init.iso</param>
+                <param>TC_COVERED=RHEL6-49145,RHEL7-111400</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
