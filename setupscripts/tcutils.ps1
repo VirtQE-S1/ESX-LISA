@@ -989,8 +989,8 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
     $dev.Device.backing.DiskMode = "persistent"
     $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
 
-    Write-Host -F Red $dev.Device.Backing.FileName
-    Write-Output $dev.Device.Backing.FileName
+    Write-Host -F Red "$dev.Device.Backing.FileName"
+    Write-Host "$dev.Device.Backing.FileName"
 
     $dev.Device.backing.ThinProvisioned = $true
     $dev.Device.CapacityInKb = $hdSize / 1KB
@@ -1001,7 +1001,6 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
     $vm.ExtensionData.ReconfigVM($spec)
 
     return $true
-
 }
 
 #######################################################################

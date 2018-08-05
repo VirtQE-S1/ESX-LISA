@@ -905,7 +905,7 @@ function DoApplyCheckpoint([System.Xml.XmlElement] $vm, [XML] $xmlData)
         LogMsg 0 "Error: DoApplyCheckpoint received a null or bad xmlData parameter - VM $($vm.vmName) disabled"
         $vm.emailSummary += "    DoApplyCheckpoint received a null xmlData parameter - VM disabled<br />"
         $vm.currentTest = "done"
-        UpdateState $vm $Disabled
+        UpdateState $vm  $Disabled
     }
 
     $testData = GetTestData $vm.currentTest $xmlData
@@ -1525,7 +1525,12 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData)
     }
 
     $currentTest = $vm.currentTest
+    Write-Host "DEBUG: currentTest: $currentTest"
     $testID = GetTestID $currentTest $xmlData
+    # HERE. Debug value for testID
+    Write-Host "DEBUG: Debug above testID value, if not suitable, will try to use 'done'"
+    $testID = "done"
+    Write-Host "DEBUG: testID: $testID"
 
     #
     # Current behavior for this function is defined to just log some messages
@@ -3122,15 +3127,19 @@ function DoDisabled([System.Xml.XmlElement] $vm, [XML] $xmlData)
     LogMsg 9 "Info :   timestamp = $($vm.stateTimestamp)"
     LogMsg 9 "Info :   Test      = $($vm.currentTest)"
 
+    Write-Host "Info : As current state is disabled, completed current case and start next case"
+    UpdateState $vm $PS1TestCompleted
+
+    
     # Disconnect with vCenter if there's a connection.
-    if ($global:DefaultVIServer)
-    {
-        foreach ($viserver in $global:DefaultVIServer)
-        {
-            LogMsg 5 "Info : DoDisabled disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
-        }
-    }
+    # if ($global:DefaultVIServer)
+    # {
+    #     foreach ($viserver in $global:DefaultVIServer)
+    #     {
+    #         LogMsg 5 "Info : DoDisabled disconnect with VIServer $($viserver.name)."
+    #         Disconnect-VIServer -Server $viserver -Force -Confirm:$false
+    #     }
+    # }
 }
 
 ########################################################################
@@ -3328,6 +3337,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
 
     $vmName = $vm.vmName
     $currentTest = $vm.currentTest
+    Write-Host "DEBUG: currentTest: $($vm.currentTest)"
     $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
     $summaryLog  = "${vmName}_summary.log"
 
@@ -3376,8 +3386,13 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
+            else
+            {
+                $completionCode = $Aborted
+                $vm.testCaseResults = $Aborted
+                $vm.individualResults = $vm.individualResults -replace ".$","1"
+            }
         }
-
         Remove-Job -Id $jobID
     }
 

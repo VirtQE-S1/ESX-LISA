@@ -1167,7 +1167,7 @@
                 <param>DiskType=IDE</param>
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=10</param>
-                <param>TC_COVERED=RHEL7-80182</param>
+                <param>TC_COVERED=RHEL7-80182, TC_COVERED=RHEL6-38509</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
@@ -1552,7 +1552,7 @@
             <testID>ESX-NW-016</testID>
             <testScript>testscripts\nw_set_mtu_multi_vmxnet3.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL-111700</param>
+                <param>TC_COVERED=RHEL-111700,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
@@ -1568,7 +1568,7 @@
                 <param>dstHost6.5=10.73.196.191,10.73.72.129</param>
                 <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
                 <param>dstDatastore=freenas</param>
-                <param>TC_COVERED=RHEL7-50929</param>
+                <param>TC_COVERED=RHEL7-50929,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1200</timeout>
@@ -1584,7 +1584,7 @@
             <testScript>testscripts\nw_check_lro_status_ethtool.ps1</testScript>
             <testParams>
                 <param>VCPU=1</param>
-                <param>TC_COVERED=RHEL7-50919</param>
+                <param>TC_COVERED=RHEL7-50919,TC_COVERED=RHEL6-34933</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
@@ -1600,7 +1600,7 @@
             </setupScript>
             <testScript>testscripts\nw_check_nic_name.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL-111702</param>
+                <param>TC_COVERED=RHEL-111702,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
@@ -1615,7 +1615,7 @@
             <testParams>
                 <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
                 <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
-                <param>TC_COVERED=RHEL-111195</param>
+                <param>TC_COVERED=RHEL-111195,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
@@ -1640,7 +1640,7 @@
             <testParams>
                 <param>VCPU=8</param>
                 <param>VMMemory=8GB</param>
-                <param>TC_COVERED=RHEL-136107</param>
+                <param>TC_COVERED=RHEL-136107,RHEL6-99999</param>
             </testParams>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -1654,7 +1654,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=RHEL-136145</param>
+                <param>TC_COVERED=RHEL-136145,RHEL6-99999</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
@@ -1668,7 +1668,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=RHEL-136158</param>
+                <param>TC_COVERED=RHEL-136158,RHEL6-99999</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
@@ -1682,7 +1682,7 @@
             <files>remote-scripts/utils.sh</files>
             <RevertDefaultSnapshot>False</RevertDefaultSnapshot>
             <testParams>
-                <param>TC_COVERED=RHEL-136473</param>
+                <param>TC_COVERED=RHEL-136473,RHEL6-99999</param>
             </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
@@ -1699,7 +1699,7 @@
             <testScript>testscripts\bl_add_memory_under_stress.ps1</testScript>
             <testParams>
                 <param>VMMemory=4GB</param>
-                <param>TC_COVERED=RHEL7-50938</param>
+                <param>TC_COVERED=RHEL7-50938,RHEL6-34957</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
@@ -1716,7 +1716,7 @@
             <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
             <testParams>
                 <param>VMMemory=8GB</param>
-                <param>TC_COVERED=RHEL7-80171</param>
+                <param>TC_COVERED=RHEL7-80171,RHEL6-38494</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
@@ -1728,7 +1728,7 @@
             <testID>ESX-BL-003</testID>
             <testScript>testscripts\bl_no_vmmemctl_process.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL7-50939</param>
+                <param>TC_COVERED=RHEL7-50939,,RHEL6-38494</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>

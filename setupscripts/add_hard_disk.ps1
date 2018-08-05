@@ -7,8 +7,8 @@
 ##
 ## Revision:
 ## v1.0.0 - xuli - 01/16/2017 - Draft script for add hard disk.
-## v1.0.1 - ruqin - 07/11/2018 - ADD IDE hard disk support
-##
+## v1.0.1 - ruqin - 07/11/2018 - Add a IDE hard disk support
+## v1.1.0 - boyang - 08/06/2018 - Fix a return value can't be converted by Invoke-Expression
 ###############################################################################
 <#
 .Synopsis
@@ -65,9 +65,7 @@
 param ([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 
@@ -76,27 +74,27 @@ param ([String] $vmName, [String] $hvServer, [String] $testParams)
 # Main entry point for script
 #
 ############################################################################
-#
+
+
 # Check input arguments
-#
 if ($vmName -eq $null -or $vmName.Length -eq 0) {
-    "Error: VM name is null"
+    Write-Host "Error: VM name is null"
     return $False
 }
 
 if ($testParams -eq $null -or $testParams.Length -lt 3) {
-    "Error: No testParams provided"
-    "       add_hard_disk.ps1 requires test params"
+    Write-Host "Error: No testParams provided"
+    Write-Host "Script Add_hard_disk.ps1 requires these test params"
     return $False
 }
 
-#
+
 # Parse the testParams string
-#
 $params = $testParams.TrimEnd(";").Split(";")
 $diskType = $null
 $storageFormat = $null
 $capacityGB = $null
+
 
 #
 # Support to add more disks for same size, e.g. DiskType0,StorageFormat0,
@@ -133,24 +131,24 @@ for ($pair = 0; $pair -le $max; $pair++) {
     }
 
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
-        "Error: Unknown StorageFormat type: $storageFormat"
+        Write-Host "Error: Unknown StorageFormat type: $storageFormat"
         return $False
     }
 
     if (@("IDE", "SCSI") -notcontains $diskType) {
-        "Error: Unknown StorageFormat type: $diskType"
+        Write-Host "Error: Unknown StorageFormat type: $diskType"
         return $False
     }
 
     if ($diskType -eq "SCSI") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-        New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue
+        New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue | Out-null
        if (-not $?) {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
             return $False
         }
         else {
-            write-output "Add disk done."
+            Write-Host "Add disk done."
             return $True
         }
     }
@@ -163,7 +161,7 @@ for ($pair = 0; $pair -le $max; $pair++) {
             return $False
         }
         else {
-            write-output "Add disk done."
+            Write-Host "Add disk done."
             return $True
         }
     }
