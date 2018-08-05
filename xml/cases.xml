@@ -1202,7 +1202,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>stor_cp_big_files</testName>
             <testID>ESX-OVT-014</testID>
@@ -1224,7 +1223,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>stor_scp_files</testName>
+            <testName>stor_scp_big_files</testName>
             <testID>ESX-Stor-015</testID>
             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
             <testScript>testscripts/stor_scp_files.ps1</testScript>
