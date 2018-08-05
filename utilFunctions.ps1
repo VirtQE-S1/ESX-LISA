@@ -1136,7 +1136,13 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     }
 
     LogMsg 6 ("Info : Invoke-Expression $cmd")
-    $sts = Invoke-Expression $cmd
+    try{
+        $sts = Invoke-Expression $cmd
+    }
+    catch{
+        Write-Host "DEBUG: HERE. Use try...catch to catch Invoke-Expression error, or will aborted framework"
+        return $false
+    }
 
     $numItems = $sts.length
     LogMsg 6 "Debug: $vmName - Invoke-Expression returned array with $($sts.length) elements"
