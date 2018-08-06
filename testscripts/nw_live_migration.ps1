@@ -267,6 +267,9 @@ Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dstHost) -Con
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move VM to required Host $dstHost"
     Write-Output "ERROR : Cannot move VM to required Host $dstHost"
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    # Move Hard Disk back to old datastore
+    $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
     DisconnectWithVIServer
     return $Aborted
 }

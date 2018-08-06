@@ -169,9 +169,17 @@ if (-not $?) {
 LogPrint "Info :Change memory for $vmName to $dst_mem GB"
 
 
-# Wait seconds for Hot Add memory
-Start-Sleep -Seconds 6
+# Wait seconds for Hot Add memory (This value may need to change because case often fails here)
+Start-Sleep -Seconds 24
 
+# Clean Cache
+$Command = "sync; echo 3 > /proc/sys/vm/drop_caches"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if ( -not $status) {
+    LogPrint "Error : Clean Cache Failed in $vmName"
+    DisconnectWithVIServer
+    return $Failed
+}
 
 # check system dmesg again
 $command = "dmesg | grep -i `"call trace`" | wc -l"

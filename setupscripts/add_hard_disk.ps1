@@ -131,38 +131,36 @@ for ($pair = 0; $pair -le $max; $pair++) {
     }
 
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
-        Write-Host "Error: Unknown StorageFormat type: $storageFormat"
+        LogPrint "Error: Unknown StorageFormat type: $storageFormat"
         return $False
     }
 
     if (@("IDE", "SCSI") -notcontains $diskType) {
-        Write-Host "Error: Unknown StorageFormat type: $diskType"
+        LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $False
     }
 
     if ($diskType -eq "SCSI") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue | Out-null
-       if (-not $?) {
-            Throw "Error : Cannot add new hard disk to the VM $vmName"
-            return $False
-        }
-        else {
-            Write-Host "Add disk done."
-            return $True
-        }
-    }
-
-    if ($diskType -eq "IDE") {
-        AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB
-
         if (-not $?) {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
             return $False
         }
         else {
-            Write-Host "Add disk done."
+            LogPrint "INFO: Add disk done."
             return $True
+        }
+    }
+
+    if ($diskType -eq "IDE") {
+        if (AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB) {
+            LogPrint "INFO: Add disk done."
+            return $True
+        }
+        else {
+            Throw "Error : Cannot add new hard disk to the VM $vmName"
+            return $False
         }
     }
 

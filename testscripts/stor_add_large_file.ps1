@@ -28,6 +28,7 @@
        <param>TC_COVERED=RHEL6-38508,RHEL7-80181</param>
     </testparams>
     <onError>Continue</onError>
+    <noReboot>False</noReboot>
 </test>
 
 .Parameter vmName

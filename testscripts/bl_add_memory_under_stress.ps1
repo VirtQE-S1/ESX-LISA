@@ -194,8 +194,8 @@ if (-not $?) {
 LogPrint "Info :Change memory for $status"
 
 
-# Wait seconds for Hot Add memory
-Start-Sleep -Seconds 12
+# Wait seconds for Hot Add memory (This value may need to change because case often fails here)
+Start-Sleep -Seconds 24
 
 # Clean Cache
 $Command = "sync; echo 3 > /proc/sys/vm/drop_caches"

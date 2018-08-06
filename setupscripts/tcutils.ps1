@@ -973,34 +973,42 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
         $ideKey = $ideCtrl.Key
     }
 
-    # Get next harddisk number
-    $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
+    try {
+        # Get next harddisk number
+        $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
 
-    # Get datastore
-    $dsName = $vm.ExtensionData.Config.Files.VmPathName.Split(']')[0].TrimStart('[')
+        # Get datastore
+        $dsName = $vm.ExtensionData.Config.Files.VmPathName.Split(']')[0].TrimStart('[')
 
-    # Add IDE hard disk
-    $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec
-    $dev.FileOperation = "Create"
-    $dev.Operation = "Add"
-    $dev.Device = New-Object VMware.Vim.VirtualDisk
-    $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingInfo
-    $dev.Device.backing.Datastore = (Get-Datastore -Name $dsName).Extensiondata.MoRef
-    $dev.Device.backing.DiskMode = "persistent"
-    $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
+        # Add IDE hard disk
+        $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec
+        $dev.FileOperation = "Create"
+        $dev.Operation = "Add"
+        $dev.Device = New-Object VMware.Vim.VirtualDisk
+        $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingInfo
+        $dev.Device.backing.Datastore = (Get-Datastore -Name $dsName).Extensiondata.MoRef
+        $dev.Device.backing.DiskMode = "persistent"
+        $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
 
-    Write-Host -F Red "$dev.Device.Backing.FileName"
-    Write-Host "$dev.Device.Backing.FileName"
+        # Write-Host -F Red "$dev.Device.Backing.FileName"
+        # Write-Host "$dev.Device.Backing.FileName"
 
-    $dev.Device.backing.ThinProvisioned = $true
-    $dev.Device.CapacityInKb = $hdSize / 1KB
-    $dev.Device.ControllerKey = $ideKey
-    $dev.Device.UnitNumber = -1
-    $spec.deviceChange += $dev
+        $dev.Device.backing.ThinProvisioned = $true
+        $dev.Device.CapacityInKb = $hdSize / 1KB
+        $dev.Device.ControllerKey = $ideKey
+        $dev.Device.UnitNumber = -1
+        $spec.deviceChange += $dev
 
-    $vm.ExtensionData.ReconfigVM($spec)
-
-    return $true
+        $vm.ExtensionData.ReconfigVM($spec)
+        LogPrint "DONE: IDE Disk Add successful"
+        return $true
+    }
+    catch {
+        # Printout Error message
+        $ErrorMessage = $_ | Out-String
+        LogPrint $ErrorMessage
+        return $false
+    }
 }
 
 #######################################################################
