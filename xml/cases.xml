@@ -162,7 +162,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 96 -->
+            <!-- Acceptance Total Cases: 97 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -1559,16 +1559,17 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-        <test>
+         <test>
             <testName>nw_live_migration</testName>
             <testID>ESX-NW-017</testID>
+            <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
             <testScript>testscripts\nw_live_migration.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.196.191,10.73.72.129</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
                 <param>dstDatastore=freenas</param>
-                <param>TC_COVERED=RHEL7-50929,RHEL6-99999</param>
+                <param>TC_COVERED=RHEL7-50929</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1200</timeout>

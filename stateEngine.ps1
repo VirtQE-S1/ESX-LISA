@@ -3386,7 +3386,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
                 $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
             }
-            else
+            elseif ($jobResults[-1] -eq $Aborted)
             {
                 $completionCode = $Aborted
                 $vm.testCaseResults = $Aborted
