@@ -162,6 +162,62 @@
             </suiteTests>
         </suite>
         <suite>
+            <!-- EACV Total Cases: 20 -->
+            <suiteName>eacv</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+
+                <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_smp</suiteTest>
+                <suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest>
+
+                <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_check_suspend_time_drift</suiteTest>
+
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
+
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_hot_plug_e1000</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+            </suiteTests>
+        </suite>
+
+        <suite>
+            <!-- USK Total Cases: 3 -->
+            <suiteName>usk</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>nw_ping</suiteTest>
+                <suiteTest>vsock_version</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- DSK Total Cases: 3 -->
+            <suiteName>dsk</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>nw_ping</suiteTest>
+                <suiteTest>vsock_version</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
             <!-- Acceptance Total Cases: 97 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
@@ -1559,7 +1615,7 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-         <test>
+        <test>
             <testName>nw_live_migration</testName>
             <testID>ESX-NW-017</testID>
             <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
