@@ -162,38 +162,6 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- EACV Total Cases: 20 -->
-            <suiteName>eacv</suiteName>
-            <suiteTests>
-                <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
-
-                <suiteTest>kdump_crash_single_core</suiteTest>
-                <suiteTest>kdump_crash_smp</suiteTest>
-                <suiteTest>kdump_crash_auto_size</suiteTest>
-                <suiteTest>kdump_crash_diff_size</suiteTest>
-
-                <suiteTest>go_install_ide_disk</suiteTest>
-                <suiteTest>go_check_suspend_time_drift</suiteTest>
-
-                <suiteTest>stor_check_pvscsi_error</suiteTest>
-                <suiteTest>stor_cp_big_files</suiteTest>
-                <suiteTest>stor_scp_big_files</suiteTest>
-
-                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
-                <suiteTest>nw_hot_plug_e1000</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest>
-
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
-            </suiteTests>
-        </suite>
-
-        <suite>
             <!-- USK Total Cases: 3 -->
             <suiteName>usk</suiteName>
             <suiteTests>
@@ -235,11 +203,8 @@
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>ovt_check_period_timesync</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
@@ -264,26 +229,20 @@
                 <suiteTest>go_check_reboot</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <!-- Stress Case -->
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
-                <!-- Stress Case -->
                 <suiteTest>go_unload_vmw_modules</suiteTest>
 
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
@@ -309,14 +268,12 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_check_rx_tx_after_reboot</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
@@ -335,7 +292,6 @@
 
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
-                <!-- Unstable Case -->
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
             </suiteTests>
         </suite>
