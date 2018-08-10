@@ -18,21 +18,16 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
-##                                Incorporate VMware PowerCLI with framework
-## v1.1 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
-## v1.2 - xiaofwan - 1/6/2017 - Add PowerCLI import, connecting VCenter server
-##                              disconnecting VCenter server functions.
-## v1.3 - hhei     - 1/10/2017 - Add CheckModule function; update GetLinuxDistro.
-## v1.4 - xiaofwan - 1/25/2016 - Add four test result state RO variable to mark
-##                               test case result.
-## v1.5 - xiaofwan - 2/28/2016 - Add WaitForVMSSHReady function.
-##
-## v1.5.1 - ruqin  - 7/6/2018  - Add GetModuleVersion function
-##
-## v1.5.2 - ruqin  - 7/27/2018 - Add RevertSnapshotVM function
-##
+## v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test
+## v1.1.0 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
+## v1.2.0 - xiaofwan - 01/06/2017 - Add PowerCLIImport; DisconnectWithVIServer
+## v1.3.0 - hhei     - 01/10/2017 - Add CheckModule function
+## v1.4.0 - xiaofwan - 01/25/2016 - Add four test result states
+## v1.5.0 - xiaofwan - 02/28/2016 - Add WaitForVMSSHReady
+## v1.5.1 - ruqin    - 07/06/2018  - Add GetModuleVersion
+## v1.5.2 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
 ###############################################################################
+
 
 <#
 .Synopsis
@@ -43,6 +38,7 @@
     commonly used by PowerShell test case scripts and setup scripts.
 #>
 
+
 #
 # test result codes
 #
@@ -50,6 +46,7 @@ New-Variable Passed              -value "Passed"              -option ReadOnly
 New-Variable Skipped             -value "Skipped"             -option ReadOnly
 New-Variable Aborted             -value "Aborted"             -option ReadOnly
 New-Variable Failed              -value "Failed"              -option ReadOnly
+
 
 ###############################################################################
 #
@@ -63,13 +60,13 @@ function PowerCLIImport () {
     #>
     $modules = Get-Module
 
-    $foundVimautomation = $False
+    $foundVimautomation = $false
     foreach($module in $modules)
     {
         if($module.Name -eq "VMware.VimAutomation.Core")
         {
-            "Info: PowerCLI module VMware.VimAutomation.Core already exists."
-            $foundVimautomation = $True
+            "INFO: PowerCLI module VMware.VimAutomation.Core already exists."
+            $foundVimautomation = $true
             break
         }
     }
@@ -79,6 +76,7 @@ function PowerCLIImport () {
         Import-Module VMware.VimAutomation.Core
     }
 }
+
 
 ###############################################################################
 #
@@ -118,25 +116,25 @@ function ConnectToVIServer ([string] $visIpAddr,
     #
     if (-not $visIpAddr)
     {
-        "Error : vCenter IP address is not configured, it is required."
+        "ERROR : vCenter IP address is not configured, it is required."
         exit
     }
 
     if (-not $visUsername)
     {
-        "Error : vCenter login username is not configured, it is required."
+        "ERROR : vCenter login username is not configured, it is required."
         exit
     }
 
     if (-not $visPassword)
     {
-        "Error : vCenter login password is not configured, it is required."
+        "ERROR : vCenter login password is not configured, it is required."
         exit
     }
 
     if (-not $visProtocol)
     {
-        "Error : vCenter connection method is not configured, it is required."
+        "ERROR : vCenter connection method is not configured, it is required."
         exit
     }
 
@@ -146,13 +144,13 @@ function ConnectToVIServer ([string] $visIpAddr,
     Get-PowerCLIVersion | out-null
     if (-not $?)
     {
-        "Error : Please install VMWare PowerCLI package."
+        "ERROR : Please install VMWare PowerCLI package."
         exit
     }
 
     if (-not $global:DefaultVIServer)
     {
-        "Info : Connecting with VIServer $visIpAddr."
+        "INFO : Connecting with VIServer $visIpAddr."
         Connect-VIServer -Server $visIpAddr `
                          -Protocol $visProtocol `
                          -User $visUsername `
@@ -160,7 +158,7 @@ function ConnectToVIServer ([string] $visIpAddr,
                          -Force | Out-Null
         if (-not $?)
         {
-            "Error : Cannot connect with vCenter with $visIpAddr " +
+            "ERROR : Cannot connect with vCenter with $visIpAddr " +
             "address, $visProtocol protocol, username $visUsername, " +
             "and password $visPassword."
             exit
@@ -170,10 +168,12 @@ function ConnectToVIServer ([string] $visIpAddr,
     }
     else
     {
-        "Info : vCenter connected already! " +
+        "INFO : vCenter connected already! " +
         "Session id: $($global:DefaultVIServer.SessionId)"
     }
 }
+
+
 ###############################################################################
 #
 # Disconnect with VI Server
@@ -193,15 +193,16 @@ function DisconnectWithVIServer ()
     {
         foreach ($viserver in $global:DefaultVIServer)
         {
-            "Info : Disconnect with VIServer $($viserver.name)."
-            Disconnect-VIServer -Server $viserver -Force -Confirm:$False
+            "INFO : Disconnect with VIServer $($viserver.name)."
+            Disconnect-VIServer -Server $viserver -Force -Confirm:$false
         }
     }
     else
     {
-        "Info : There is not session to VI Server exist."
+        "INFO : There is not session to VI Server exist."
     }
 }
+
 
 #######################################################################
 #
@@ -212,9 +213,9 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 {
     <#
     .Synopsis
-        Get Linux Distro info from a Linux VM.
+        Get Linux Distro INFO from a Linux VM.
     .Description
-        Use SSH to het Linux Distro info from a Linux VM.
+        Use SSH to het Linux Distro INFO from a Linux VM.
     .Parameter ipv4
         IPv4 address of the Linux VM.
     .Parameter sshKey
@@ -226,13 +227,13 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 
     if (-not $ipv4)
     {
-        Write-Error -Message "IPv4 address is null" -Category InvalidData -ErrorAction SilentlyContinue
+        Write-ERROR -Message "IPv4 address is null" -Category InvalidData -ERRORAction SilentlyContinue
         return $null
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "SSHKey is null" -Category InvalidData -ErrorAction SilentlyContinue
+        Write-ERROR -Message "SSHKey is null" -Category InvalidData -ERRORAction SilentlyContinue
         return $null
     }
 
@@ -240,7 +241,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 	Write-Host -F red "Debug: distro: $distro"
     if (-not $distro)
     {
-        Write-Error -Message "Return value is null" -Category InvalidData -ErrorAction SilentlyContinue
+        Write-ERROR -Message "Return value is null" -Category InvalidData -ERRORAction SilentlyContinue
         return $null
     }
 
@@ -283,6 +284,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
     return ${linuxDistro}
 }
 
+
 #####################################################################
 #
 # GetFileFromVM()
@@ -308,48 +310,49 @@ function GetFileFromVM([String] $ipv4, [String] $sshKey, [string] $remoteFile, [
         GetFileFromVM "192.168.1.101" "rhel5_id_rsa.ppk" "state.txt" "remote_state.txt"
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     if (-not $ipv4)
     {
-        Write-Error -Message "IPv4 address is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "IPv4 address is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "SSHKey is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "SSHKey is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $remoteFile)
     {
-        Write-Error -Message "remoteFile is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "remoteFile is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $localFile)
     {
-        Write-Error -Message "localFile is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "localFile is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${ipv4}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${ipv4}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
-        Write-Error -Message "Unable to get file '${remoteFile}' from ${ipv4}" -Category ConnectionError -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "Unable to get file '${remoteFile}' from ${ipv4}" -Category ConnectionERROR -ERRORAction SilentlyContinue
+        return $false
     }
 
-    del lisaOut.tmp -ErrorAction "SilentlyContinue"
-    del lisaErr.tmp -ErrorAction "SilentlyContinue"
+    del lisaOut.tmp -ERRORAction "SilentlyContinue"
+    del lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     return $retVal
 }
+
 
 #######################################################################
 #
@@ -381,20 +384,20 @@ function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer)
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj)
     {
-        Write-Error -Message "GetIPv4ViaPowerCLI: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "GetIPv4ViaPowerCLI: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $null
     }
 
     $vmguestOut = Get-VMGuest -VM $vmObj
     if (-not $vmguestOut)
     {
-        Write-Error -Message "GetIPv4ViaPowerCLI: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "GetIPv4ViaPowerCLI: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $null
     }
     $ipAddresses = $vmguestOut.IPAddress
     if (-not $ipAddresses)
     {
-        Write-Error -Message "GetIPv4ViaPowerCLI: No network adapters found on VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "GetIPv4ViaPowerCLI: No network adapters found on VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $null
     }
     foreach ($address in $ipAddresses)
@@ -413,17 +416,18 @@ function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer)
         }
 
         # See if it is an address we can access
-        $ping = New-Object System.Net.NetworkInformation.Ping
+        $ping = New-Object System.Net.NetworkINFOrmation.Ping
         $sts = $ping.Send($address)
-        if ($sts -and $sts.Status -eq [System.Net.NetworkInformation.IPStatus]::Success)
+        if ($sts -and $sts.Status -eq [System.Net.NetworkINFOrmation.IPStatus]::Success)
         {
             return $address
         }
     }
 
-    Write-Error -Message "GetIPv4ViaPowerCLI: No IPv4 address found on any NICs for VM ${vmName}" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-ERROR -Message "GetIPv4ViaPowerCLI: No IPv4 address found on any NICs for VM ${vmName}" -Category ObjectNotFound -ERRORAction SilentlyContinue
     return $null
 }
+
 
 #######################################################################
 #
@@ -449,13 +453,14 @@ function GetIPv4([String] $vmName, [String] $hvServer)
     $addr = GetIPv4ViaPowerCLI $vmName $hvServer
     if (-not $addr)
     {
-        $errMsg += ("`n" + $error[0].Exception.Message)
-        Write-Error -Message ("GetIPv4: Unable to determine IP address for VM ${vmName}`n" + $errmsg) -Category ReadError -ErrorAction SilentlyContinue
+        $errMsg += ("`n" + $ERROR[0].Exception.Message)
+        Write-ERROR -Message ("GetIPv4: Unable to determine IP address for VM ${vmName}`n" + $errmsg) -Category ReadERROR -ERRORAction SilentlyContinue
         return $null
     }
 
     return $addr
 }
+
 
 #######################################################################
 #
@@ -499,6 +504,7 @@ function GenerateIpv4($tempipv4, $oldipv4)
     return $splitip.ToString()
 }
 
+
 #####################################################################
 #
 # SendCommandToVM()
@@ -522,43 +528,44 @@ function SendCommandToVM([String] $ipv4, [String] $sshKey, [string] $command)
         SendCommandToVM "192.168.1.101" "lisa_id_rsa.ppk" "echo 'It worked' > ~/test.txt"
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     if (-not $ipv4)
     {
-        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "ipv4 is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "sshKey is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "sshKey is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $command)
     {
-        Write-Error -Message "command is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "command is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     # get around plink questions
     echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'exit 0'
-    $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
-         Write-Error -Message "Unable to send command to ${ipv4}. Command = '${command}'" -Category SyntaxError -ErrorAction SilentlyContinue
+         Write-ERROR -Message "Unable to send command to ${ipv4}. Command = '${command}'" -Category SyntaxERROR -ERRORAction SilentlyContinue
     }
 
-    del lisaOut.tmp -ErrorAction "SilentlyContinue"
-    del lisaErr.tmp -ErrorAction "SilentlyContinue"
+    del lisaOut.tmp -ERRORAction "SilentlyContinue"
+    del lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     return $retVal
 }
+
 
 #####################################################################
 #
@@ -587,26 +594,26 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
 
     if (-not $ipv4)
     {
-        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "ipv4 is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "sshkey is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $localFile)
     {
-        Write-Error -Message "localFile is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "localFile is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $remoteFile)
     {
-        Write-Error -Message "remoteFile is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "remoteFile is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     $recurse = ""
@@ -618,18 +625,18 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
     # get around plink questions
     echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${ipv4}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${ipv4}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
-        $retVal = $True
+        $retVal = $true
     }
     else
     {
-        Write-Error -Message "Unable to send file '${localFile}' to ${ipv4}" -Category ConnectionError -ErrorAction SilentlyContinue
+        Write-ERROR -Message "Unable to send file '${localFile}' to ${ipv4}" -Category ConnectionERROR -ERRORAction SilentlyContinue
     }
 
-    del lisaOut.tmp -ErrorAction "SilentlyContinue"
-    del lisaErr.tmp -ErrorAction "SilentlyContinue"
+    del lisaOut.tmp -ERRORAction "SilentlyContinue"
+    del lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     if ($ChangeEOL)
     {
@@ -638,6 +645,7 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
 
     return $retVal
 }
+
 
 #######################################################################
 #
@@ -666,27 +674,27 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
 
     if (-not $vmName)
     {
-        Write-Error -Message "StopVMViaSSH: VM name is null" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "StopVMViaSSH: VM name is null" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "StopVMViaSSH: SSHKey is null" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "StopVMViaSSH: SSHKey is null" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $timeout)
     {
-        Write-Error -Message "StopVMViaSSH: timeout is null" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "StopVMViaSSH: timeout is null" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
     }
 
     $vmipv4 = GetIPv4 $vmName $server
     if (-not $vmipv4)
     {
-        Write-Error -Message "StopVMViaSSH: Unable to determine VM IPv4 address" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "StopVMViaSSH: Unable to determine VM IPv4 address" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
     }
 
     #
@@ -696,8 +704,8 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
     .\bin\plink.exe -i ssh\${sshKey} root@${vmipv4} "init 0"
     if (-not $?)
     {
-        Write-Error -Message "StopVMViaSSH: Unable to send command via SSH" -Category ObjectNotFound -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "StopVMViaSSH: Unable to send command via SSH" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
     }
 
     #
@@ -712,18 +720,19 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
         $vm = Get-VMHost -Name $server | Get-VM -Name $vmName
         if (-not $vm)
         {
-            return $False
+            return $false
         }
 
         if ($vm.PowerState -eq "PoweredOff")
         {
-            return $True
+            return $true
         }
     }
 
-    Write-Error -Message "StopVMViaSSH: VM did not stop within timeout period" -Category OperationTimeout -ErrorAction SilentlyContinue
-    return $False
+    Write-ERROR -Message "StopVMViaSSH: VM did not stop within timeout period" -Category OperationTimeout -ERRORAction SilentlyContinue
+    return $false
 }
+
 
 #####################################################################
 #
@@ -748,7 +757,7 @@ function TestPort ([String] $ipv4addr, [Int] $portNumber=22, [Int] $timeout=5)
         TestPort "192.168.1.101" 22 10
     #>
 
-    $retVal = $False
+    $retVal = $false
     $to = $timeout * 1000
 
     #
@@ -785,6 +794,7 @@ function TestPort ([String] $ipv4addr, [Int] $portNumber=22, [Int] $timeout=5)
     return $retVal
 }
 
+
 #######################################################################
 #
 # WaiForVMToStartSSH()
@@ -807,7 +817,7 @@ function WaitForVMToStartSSH([String] $ipv4addr, [int] $timeout)
         WaitForVMToStartSSH "192.168.1.101" 300
     #>
 
-    $retVal = $False
+    $retVal = $false
 
     $waitTimeOut = $timeout
     while($waitTimeOut -gt 0)
@@ -815,7 +825,7 @@ function WaitForVMToStartSSH([String] $ipv4addr, [int] $timeout)
         $sts = TestPort -ipv4addr $ipv4addr -timeout 5
         if ($sts)
         {
-            return $True
+            return $true
         }
 
         $waitTimeOut -= 15  # Note - Test Port will sleep for 5 seconds
@@ -824,11 +834,12 @@ function WaitForVMToStartSSH([String] $ipv4addr, [int] $timeout)
 
     if (-not $retVal)
     {
-        Write-Error -Message "WaitForVMToStartSSH: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ErrorAction SilentlyContinue
+        Write-ERROR -Message "WaitForVMToStartSSH: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ERRORAction SilentlyContinue
     }
 
     return $retVal
 }
+
 
 #######################################################################
 #
@@ -878,11 +889,12 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [String] $sshKe
 
     if (-not $retVal)
     {
-        Write-Error -Message "WaitForVMSSHReady: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ErrorAction SilentlyContinue
+        Write-ERROR -Message "WaitForVMSSHReady: VM ${vmName} did not start SSH within timeout period ($timeout)" -Category OperationTimeout -ERRORAction SilentlyContinue
     }
 
     return $retVal
 }
+
 
 #######################################################################
 #
@@ -914,17 +926,17 @@ function  WaitForVMToStop ([string] $vmName ,[string]  $hvServer, [int] $timeout
          $vm = Get-VMHost -Name $server | Get-VM -Name $vmName
         if (-not $vm)
         {
-            return $False
+            return $false
         }
 
         if ($vm.PowerState -eq "PoweredOff")
         {
-            return $True
+            return $true
         }
     }
 
-    Write-Error -Message "StopVM: VM did not stop within timeout period" -Category OperationTimeout -ErrorAction SilentlyContinue
-    return $False
+    Write-ERROR -Message "StopVM: VM did not stop within timeout period" -Category OperationTimeout -ERRORAction SilentlyContinue
+    return $false
 }
 
 
@@ -951,7 +963,7 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        Write-Error -Message "AddIDEHardDisk: Unable to Get-VM with $vmName" -Category OperationTimeout -ErrorAction SilentlyContinue
+        Write-ERROR -Message "AddIDEHardDisk: Unable to Get-VM with $vmName" -Category OperationTimeout -ERRORAction SilentlyContinue
         return $false
     }
     $hdSize = $capacityGB * 1GB
@@ -985,7 +997,7 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
         $dev.FileOperation = "Create"
         $dev.Operation = "Add"
         $dev.Device = New-Object VMware.Vim.VirtualDisk
-        $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingInfo
+        $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingINFO
         $dev.Device.backing.Datastore = (Get-Datastore -Name $dsName).Extensiondata.MoRef
         $dev.Device.backing.DiskMode = "persistent"
         $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
@@ -1004,12 +1016,13 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
         return $true
     }
     catch {
-        # Printout Error message
-        $ErrorMessage = $_ | Out-String
-        LogPrint $ErrorMessage
+        # Printout ERROR message
+        $ERRORMessage = $_ | Out-String
+        LogPrint $ERRORMessage
         return $false
     }
 }
+
 
 #######################################################################
 #
@@ -1036,11 +1049,11 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
     # Check input arguments
     #
     if ($null -eq $vmName -or $vmName.Length -eq 0) {
-        "Error: VM name is null"
-        return $False
+        "ERROR: VM name is null"
+        return $false
     }
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    while ($True) {
+    while ($true) {
         # How many disks in VM
         $diskList = Get-HardDisk -VM $vmObj
         $diskLength = $diskList.Length
@@ -1050,7 +1063,7 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
             foreach ($disk in $diskList) {
                 $diskName = $disk.Name
                 if ($diskName -ne $sysDisk) {
-                    Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$False -DeletePermanently:$True -ErrorAction SilentlyContinue
+                    Get-HardDisk -VM $vmObj -Name $($diskName) | Remove-HardDisk -Confirm:$false -DeletePermanently:$true -ERRORAction SilentlyContinue
                     # Get new counts of disks
                     $diskNewLength = (Get-HardDisk -VM $vmObj).Length
                     if (($diskLength - $diskNewLength) -eq 1) {
@@ -1071,15 +1084,14 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
     $diskLastList = Get-HardDisk -VM $vmObj
     if ($diskLastList.Length -eq 1) {
         Write-Output "PASS: Clean disk new added successfully"
-        return $True
+        return $true
     }
     else {
         Write-Output "FAIL: Clean disk new added unsuccessfully"
-        return $False
+        return $false
     }
-    return $False
+    return $false
 }
-
 
 
 #######################################################################
@@ -1089,7 +1101,7 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
 #######################################################################
 function RunRemoteScript($remoteScript)
 {
-    $retValue = $False
+    $retValue = $false
     $stateFile     = "state.txt"
     $TestCompleted = "TestCompleted"
     $TestAborted   = "TestAborted"
@@ -1103,40 +1115,40 @@ function RunRemoteScript($remoteScript)
     if (-not $?)
     {
        Write-Output "ERROR: Unable to copy runtest.sh to the VM"
-       return $False
+       return $false
     }
      .\bin\pscp -i ssh\${sshKey} .\remote-scripts\${remoteScript} root@${ipv4}:
     if (-not $?)
     {
        Write-Output "ERROR: Unable to copy ${remoteScript} to the VM"
-       return $False
+       return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix ${remoteScript} 2> /dev/null"
     if (-not $?)
     {
         Write-Output "ERROR: Unable to run dos2unix on ${remoteScript}"
-        return $False
+        return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
     if (-not $?)
     {
         Write-Output "ERROR: Unable to run dos2unix on runtest.sh"
-        return $False
+        return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
     if (-not $?)
     {
         Write-Output "ERROR: Unable to chmod +x ${remoteScript}"
-        return $False
+        return $false
     }
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
     if (-not $?)
     {
         Write-Output "ERROR: Unable to chmod +x runtest.sh " -
-        return $False
+        return $false
     }
 
     # Run the script on the vm
@@ -1156,26 +1168,26 @@ function RunRemoteScript($remoteScript)
             {
                     if ($contents -eq $TestCompleted)
                     {
-                        Write-Output "Info : state file contains Testcompleted."
-                        $retValue = $True
+                        Write-Output "INFO : state file contains Testcompleted."
+                        $retValue = $true
                         break
                     }
 
                     if ($contents -eq $TestAborted)
                     {
-                         Write-Output "Info : State file contains TestAborted message."
+                         Write-Output "INFO : State file contains TestAborted message."
                          break
                     }
                     if ($contents -eq $TestFailed)
                     {
-                        Write-Output "Info : State file contains TestFailed message."
+                        Write-Output "INFO : State file contains TestFailed message."
                         break
                     }
                     $timeout--
 
                     if ($timeout -eq 0)
                     {
-                        Write-Output "Error : Timed out on Test Running , Exiting test execution."
+                        Write-Output "ERROR : Timed out on Test Running , Exiting test execution."
                         break
                     }
 
@@ -1195,8 +1207,8 @@ function RunRemoteScript($remoteScript)
     }
     else
     {
-         Write-Output "Error : pscp exit status = $sts"
-         Write-Output "Error : unable to pull state.txt from VM."
+         Write-Output "ERROR : pscp exit status = $sts"
+         Write-Output "ERROR : unable to pull state.txt from VM."
          break
     }
     }
@@ -1236,11 +1248,12 @@ function RunRemoteScript($remoteScript)
     }
 
     # Cleanup
-    del state.txt -ErrorAction "SilentlyContinue"
-    del runtest.sh -ErrorAction "SilentlyContinue"
+    del state.txt -ERRORAction "SilentlyContinue"
+    del runtest.sh -ERRORAction "SilentlyContinue"
 
     return $retValue
 }
+
 
 #######################################################################
 #
@@ -1268,26 +1281,26 @@ function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
 
     if (-not $ipv4)
     {
-        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "ipv4 is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "sshkey is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $module)
     {
-        Write-Error -Message "module name is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "module name is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
     
     # get around plink questions
     Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
-    $module_version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "modinfo $module | grep -w version: | awk '{print `$2}'"
+    $module_version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "modINFO $module | grep -w version: | awk '{print `$2}'"
 
     return $module_version.Trim()
 }
@@ -1318,20 +1331,20 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
 
     if (-not $ipv4)
     {
-        Write-Error -Message "ipv4 is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "ipv4 is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $sshKey)
     {
-        Write-Error -Message "sshkey is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "sshkey is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
 
     if (-not $module)
     {
-        Write-Error -Message "module name is null" -Category InvalidData -ErrorAction SilentlyContinue
-        return $False
+        Write-ERROR -Message "module name is null" -Category InvalidData -ERRORAction SilentlyContinue
+        return $false
     }
     # get around plink questions
     echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
@@ -1340,14 +1353,15 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
     Write-Host -F Red "DEBUG: tcutils.ps1: vm_module: $vm_module"
     if ( $vm_module.Trim() -eq $module.Trim() )
     {
-        return $True
+        return $true
     }
     else
     {
-        return $False
+        return $false
     }
 
 }
+
 
 ########################################################################
 #
@@ -1363,7 +1377,7 @@ function ConvertStringToDecimal([string] $str)
     #
     if (-not $str)
     {
-        Write-Error -Message "ConvertStringToDecimal() - input string is null" -Category InvalidArgument -ErrorAction SilentlyContinue
+        Write-ERROR -Message "ConvertStringToDecimal() - input string is null" -Category InvalidArgument -ERRORAction SilentlyContinue
         return $null
     }
 
@@ -1379,12 +1393,13 @@ function ConvertStringToDecimal([string] $str)
     }
     else
     {
-        Write-Error -Message "Invalid newSize parameter: ${str}" -Category InvalidArgument -ErrorAction SilentlyContinue
+        Write-ERROR -Message "Invalid newSize parameter: ${str}" -Category InvalidArgument -ERRORAction SilentlyContinue
         return $null
     }
 
     return $uint64Size
 }
+
 
 ########################################################################
 #
@@ -1396,7 +1411,7 @@ function LogPrint([string] $msg) {
 
     $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
     $color = "white"
-    if ( $msg.StartsWith("Error")) {
+    if ( $msg.StartsWith("ERROR")) {
         $color = "red"
     }
     elseif ($msg.StartsWith("Warn")) {
@@ -1408,6 +1423,7 @@ function LogPrint([string] $msg) {
     Write-Host -f $color ($now + $msg)
     Write-Output ($now + $msg)
 }
+
 
 ########################################################################
 # 
@@ -1433,15 +1449,15 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
     #>
 
     if (-not $vmName -or -not $hvServer) {
-        LogPrint "Error : ResetVM was passed an bad vmName or bad hvServer"
+        LogPrint "ERROR : ResetVM was passed an bad vmName or bad hvServer"
         return $false
     }
 
-    LogPrint "Info : ResetVM( $($vmName) )"
+    LogPrint "INFO : ResetVM( $($vmName) )"
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        LogPrint "Error : ResetVM cannot find the VM $($vmName)"
+        LogPrint "ERROR : ResetVM cannot find the VM $($vmName)"
         return $false
     }
 
@@ -1449,10 +1465,10 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
     # If the VM is not stopped, try to stop it
     #
     if ($vmObj.PowerState -ne "PoweredOff") {
-        LogPrint "Info : $($vmName) is not in a stopped state - stopping VM"
+        LogPrint "INFO : $($vmName) is not in a stopped state - stopping VM"
         $outStopVm = Stop-VM -VM $vmObj -Confirm:$false -Kill
         if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") {
-            LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+            LogPrint "ERROR : ResetVM is unable to stop VM $($vmName). VM has been disabled"
             return $false
         }
     }
@@ -1473,14 +1489,14 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
     if ($snapsOut) {
         foreach ($s in $snapsOut) {
             if ($s.Name -eq $snapshotName) {
-                LogPrint "Info : $($vmName) is being reset to snapshot $($s.Name)"
+                LogPrint "INFO : $($vmName) is being reset to snapshot $($s.Name)"
                 $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
                 if ($setsnapOut) {
                     $snapshotFound = $true
                     break
                 }
                 else {
-                    LogPrint "Error : ResetVM is unable to revert VM $($vmName) to snapshot $($s.Name). VM has been disabled"
+                    LogPrint "ERROR : ResetVM is unable to revert VM $($vmName) to snapshot $($s.Name). VM has been disabled"
                     return $false
                 }
             }
@@ -1498,16 +1514,16 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($vmObj) {
             if ($vmObj.PowerState -eq "Suspended") {
-                LogPrint "Info : $($vmName) - resetting to a stopped state after restoring a snapshot"
+                LogPrint "INFO : $($vmName) - resetting to a stopped state after restoring a snapshot"
                 $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false -Kill
                 if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff") {
-                    LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+                    LogPrint "ERROR : ResetVM is unable to stop VM $($vmName). VM has been disabled"
                     return $false
                 }
             }
         }
         else {
-            LogPrint "Error : ResetVM cannot find the VM $($vmName)"
+            LogPrint "ERROR : ResetVM cannot find the VM $($vmName)"
             return $false
         }
     }
@@ -1516,10 +1532,10 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
         $newSnap = New-Snapshot -VM $vmObj -Name $snapshotName
         if ($newSnap) {
             $snapshotFound = $true
-            LogPrint "Info : $($vmName) made a snapshot $snapshotName."
+            LogPrint "INFO : $($vmName) made a snapshot $snapshotName."
         }
         else {
-            LogPrint "Error : ResetVM is unable to make snapshot for VM $($vmName)."
+            LogPrint "ERROR : ResetVM is unable to make snapshot for VM $($vmName)."
             return $false
         }
     }
@@ -1535,17 +1551,15 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 # AddSrIOVNIC()
 #
 ########################################################################
-
 function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 
     $retVal = $false
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     } 
-
 
     # Lock all memory
     try {
@@ -1566,15 +1580,14 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         $vmObj.ExtensionData.ReconfigVM_Task($spec)
     }
     catch {
-        # Printout Error message
-        $ErrorMessage = $_ | Out-String
-        LogPrint "ERROR: Lock all memory error"
-        LogPrint $ErrorMessage
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: Lock all memory ERROR, please check it manually"
+        LogPrint $ERRORMessage
         return $false
     }
 
     try {
-        # Get Switch Info
+        # Get Switch INFO
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
     
         # This is hard code DPortGroup Name (6.0 6.5 6.7) This may change
@@ -1593,37 +1606,34 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         }
 
         $Spec.DeviceChange += $dev
-        $Spec.DeviceChange.Device.Backing = New-Object VMware.Vim.VirtualEthernetCardDistributedVirtualPortBackingInfo
+        $Spec.DeviceChange.Device.Backing = New-Object VMware.Vim.VirtualEthernetCardDistributedVirtualPortBackingINFO
         $Spec.DeviceChange.Device.Backing.Port = New-Object VMware.Vim.DistributedVirtualSwitchPortConnection
     
-        # This is currently unknown function
+        # This is currently UNKNOWN function
         $Spec.DeviceChange.Device.Backing.Port.PortgroupKey = $PG.Key
         $Spec.DeviceChange.Device.Backing.Port.SwitchUuid = $DVS.Key
 
-        # Apply new config
+        # Apply the new config
         $View = Get-View -ViewType VirtualMachine -Filter @{"Name" = "$vmName"} -Property Name, Runtime.Powerstate
         $View.ReconfigVM($Spec)
     }
     catch {
-        # Printout Error message
-        $ErrorMessage = $_ | Out-String
-        LogPrint "ERROR: SRIOV config error, $ErrorMessage"
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: SRIOV config ERROR, $ERRORMessage"
         return $false
     }
-
 
     # Get Sriov PCI Device (like 00000:007:00.0)
     try {
         $vmHost = Get-VMHost -Name $hvServer  
-        # This may fail, you can try to delete -V2 param Current only support one card
+        # This may fail, try to delete -V2 param Current only support one card
         $esxcli = Get-EsxCli -VMHost $vmHost -V2
         $pciDevice = $esxcli.network.sriovnic.list.Invoke() | Select-Object -ExpandProperty "PCIDevice"
     }
     catch {
-        # Printout Error message
-        $ErrorMessage = $_ | Out-String
-        LogPrint "ERROR: Get PCI Device error"
-        LogPrint $ErrorMessage
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: Get PCI Device ERROR"
+        LogPrint $ERRORMessage
         return $false
     }
     if ($null -eq $pciDevice) {
@@ -1632,7 +1642,6 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     }
     LogPrint "INFO: PCI Device is $pciDevice"
 
-
     # Refresh vmView
     $vmView = Get-vm $vmObj | Get-View
 
@@ -1640,37 +1649,33 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
     $pfID = New-Object VMware.Vim.optionvalue
     $passID = New-Object VMware.Vim.optionvalue 
-    # Find correct pci key  this will like "pciPassthru15"
+
+    # Find correct pci key. Like "pciPassthru15"
     $pfID.Key = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.pfid"})[-1] | Select-Object -ExpandProperty "key"
     $pfID.Value = $pciDevice
-
     $passID.Key = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.id"})[-1] | Select-Object -ExpandProperty "key"
     $passID.Value = $pciDevice
 
     if ($passID.Key -notlike "pciPassthru*.id" -or $pfID.Key -notlike "pciPassthru*.pfid") {
         LogPrint "ERROR: Config key failed: passID $passID.Key, pfID $pfID.Key" 
         return $false
-
     }
-
 
     # Add extra into config
     $vmConfigSpec.ExtraConfig += $pfID
     $vmConfigSpec.ExtraConfig += $passID
 
-    # Applay new config
+    # Applay the new config
     $vmView.ReconfigVM($vmConfigSpec)    
 
-
-    # Refresh vm
+    # Refresh the VM
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     }
 
-
-    # Set Network to VM Network "VM Network" is hard code
+    # Set the Network of Guest to "VM Network"(Hard Code)
     $nics = Get-NetworkAdapter -VM $vmObj
     $nicMacAddress = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.generatedMACAddress"})[-1].Value
     foreach ($nic in $nics) {
@@ -1679,16 +1684,14 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         } 
     }
 
-
-    # Refresh vm
+    # Refresh the VM
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     }
 
-
-    # Refresh vmView
+    # Refresh the view
     $vmView = Get-vm $vmObj | Get-View
 
     # Check vmx value
@@ -1696,10 +1699,13 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     $valuepfID = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.pfid"})[-1] | Select-Object -ExpandProperty "Value"
 
     if ( ($pciDevice.Split(":")[1].Trim("0") -ne $valueID.Split(":")[1].Trim("0")) -or ($pciDevice.Split(":")[1].Trim("0") -ne $valuepfID.Split(":")[1].Trim("0")) ) {
-        LogPrint "Error: Add extra config failed"    
+        LogPrint "ERROR: Add extra config failed"    
         return $false
     }
-
-    $retVal = $true
+    else
+    {
+        LogPrint "INFO: Add the SRIOV successfully"
+        $retVal = $true
+    }
     return $retVal
 }

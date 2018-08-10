@@ -12,6 +12,7 @@
 ##
 ###############################################################################
 
+
 dos2unix utils.sh
 
 
@@ -32,19 +33,29 @@ dos2unix utils.sh
 # Source constants file and initialize most common variables
 UtilsInit
 
+
 ###############################################################################
 ##
-## Put your test script here
-## NOTES:
-## 1. Please use LogMsg to output log to terminal.
-## 2. Please use UpdateSummary to output log to summary.log file.
-## 3. Please use SetTestStateFailed, SetTestStateAborted, SetTestStateCompleted,
-##    and SetTestStateRunning to mark test status.
+## Main
 ##
 ###############################################################################
-#install required package for compil iozone.Download iozon form offical website.
+# Install required package for compil iozone.Download iozon form offical website
 yum install make gcc -y
+if [ ! "$?" -eq 0 ]; then
+    LogMsg "ERROR: YUM install make, gcc failed"
+    UpdateSummary "ERROR: YUM install make, gcc failed"
+    SetTestStateAborted
+    exit 1
+fi
+
 wget http://www.iozone.org/src/current/iozone3_482.tar
+if [ ! "$?" -eq 0 ]; then
+    LogMsg "ERROR: WGET failed as iozone address is unavailable"
+    UpdateSummary "ERROR: WGET failed as iozone address is unavailable"
+    SetTestStateAborted
+    exit 1
+fi
+
 tar xvf iozone3_482.tar
 cd /root/iozone3_482/src/current
 make linux
@@ -58,10 +69,8 @@ else
     UpdateSummary "iozone install  successfully."
 fi
 
-#Copy a big file more than 5G to scsi type disk.
-# ./iozone -a -g 8G -n 1010M -s 2020M -f /root/io_file -Rab /home/aiozon.xls
+# Execute IOZONE
 ./iozone -a -g 4G -n 1024M -s 2048M -f /root/io_file -Rab /root/aiozon.wks
-cat /root/aiozon.wks
 if [ ! "$?" -eq 0 ]; then
     LogMsg "Test Failed. iozone run failed."
     UpdateSummary "Test failed.iozone run failed."

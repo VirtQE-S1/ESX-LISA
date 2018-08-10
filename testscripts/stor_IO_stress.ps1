@@ -15,7 +15,7 @@
 .Description
 <test>
     <testName>stor_IO_stress</testName>
-    <testID>ESX-BL-001</testID>
+    <testID>ESX-Stor-017</testID>
     <!-- <setupScript>
         <file>SetupScripts\change_memory.ps1</file>
     </setupScript> -->
@@ -119,8 +119,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
-
 $retVal = $Failed
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -130,9 +128,8 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-#Run remote scripts to install iozone and run iozone test.
+# Run remote scripts to install iozone and run iozone test
 $scripts = "stor_iozone_stress.sh"
-# Run remote test scripts
 $sts =  RunRemoteScript $scripts
 if( -not $sts[-1] )
 {
@@ -146,7 +143,7 @@ else
     Write-Output "Info : iozone inatall and run successfully"
 }
 
-# check system dmesg
+# Check dmesg
 $command = "dmesg | grep -i `"call trace`" | wc -l"
 $error_num = [int] (bin\plink.exe -i ssh\${sshkey} root@${ipv4} $command)
 if ($error_num -ne 0)

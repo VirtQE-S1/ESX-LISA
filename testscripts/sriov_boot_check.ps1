@@ -8,6 +8,7 @@
 ##
 ###############################################################################
 
+
 <#
 .Synopsis
     Check NIC name after unload and load vmxnet3
@@ -126,15 +127,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
 $retVal = $Failed
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
@@ -145,7 +145,6 @@ if (-not $DISTRO) {
     return $Aborted
 }
 LogPrint "INFO: Guest OS version is $DISTRO"
-
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
@@ -173,7 +172,6 @@ if ( $null -eq $sriovNIC) {
     return $Aborted
 }
 
-
 # Get sriov nic driver 
 $Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
 $driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
@@ -183,8 +181,11 @@ if ($driver -ne "ixgbevf") {
     DisconnectWithVIServer
     return $Aborted 
 }
+else
+{
+    $retVal = $Passed
+}
 
-
-$retVal = $Passed
 DisconnectWithVIServer
 return $retVal
+
