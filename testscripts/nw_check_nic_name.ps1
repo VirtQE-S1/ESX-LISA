@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Check the NIC large-receive-offload(LRO) status via ethtool
+##  Check NIC name after unload and load vmxnet3
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 8/2/2018 - Build the script
