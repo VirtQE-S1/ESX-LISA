@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Test the guest with IO stress tool.
+##  Test the guest with IO stress tool iozone.
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 08/06/2018 - Build the script
@@ -13,7 +13,24 @@
     Test the guest with IO stress tool iozone.
 
 .Description
-
+<test>
+    <testName>stor_IO_stress</testName>
+    <testID>ESX-BL-001</testID>
+    <!-- <setupScript>
+        <file>SetupScripts\change_memory.ps1</file>
+    </setupScript> -->
+    <testScript>testscripts\stor_IO_stress.ps1</testScript>
+    <files>remote-scripts/stor_iozone_stress.sh</files>
+    <files>remote-scripts/utils.sh</files>
+    <testParams>
+        <!-- <param>VMMemory=4GB</param> -->
+        <param>TC_COVERED=RHEL6-49148,TC_COVERED=RHEL7-111403</param>
+    </testParams>
+    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+    <timeout>60000</timeout>
+    <onError>Continue</onError>
+    <noReboot>False</noReboot>
+</test>
 
 .Parameter vmName
     Name of the test VM.
@@ -119,14 +136,14 @@ $scripts = "stor_iozone_stress.sh"
 $sts =  RunRemoteScript $scripts
 if( -not $sts[-1] )
 {
-    Write-Host -F Red "ERROR:iozone  run failed"
-    Write-Output "ERROR: iozone run failed"
+    Write-Host -F Red "ERROR:iozone inatall and run failed"
+    Write-Output "ERROR: iozone inatall and run failed"
     return $Aborted
 }
 else
 {
-    Write-Host -F Red "Info :iozone run successfully"
-    Write-Output "Info : iozone run successfully"
+    Write-Host -F Red "Info :iozone inatall and run successfully"
+    Write-Output "Info : iozone inatall and run successfully"
 }
 
 # check system dmesg
