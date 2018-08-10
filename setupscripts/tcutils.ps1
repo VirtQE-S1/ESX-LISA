@@ -1538,6 +1538,8 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 
 function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 
+    $retVal = $false
+
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
         Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
@@ -1572,7 +1574,6 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     }
 
     # Check Lock all memory
-
     try {
         # Get Switch Info
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
@@ -1585,6 +1586,13 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         $Dev = New-Object Vmware.Vim.VirtualDeviceConfigSpec
         $Dev.Operation = "add" 
         $Dev.Device = New-Object VMware.Vim.VirtualSriovEthernetCard
+
+        # change config make mtu editable
+        if ($mtuChange) {
+            LogPrint "INFO: MTU is editable"
+            $Dev.Device.AllowGuestOSMtuChange = $true
+        }
+
         $Spec.DeviceChange += $dev
         $Spec.DeviceChange.Device.Backing = New-Object VMware.Vim.VirtualEthernetCardDistributedVirtualPortBackingInfo
         $Spec.DeviceChange.Device.Backing.Port = New-Object VMware.Vim.DistributedVirtualSwitchPortConnection
@@ -1600,7 +1608,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     catch {
         # Printout Error message
         $ErrorMessage = $_ | Out-String
-        LogPrint "ERROR: SRIOV config error"
+        LogPrint "ERROR: SRIOV config error, $ErrorMessage"
         return $false
     }
 
@@ -1686,20 +1694,12 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     # Check vmx value
     $valueID = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.id"})[-1] | Select-Object -ExpandProperty "Value"
     $valuepfID = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.pfid"})[-1] | Select-Object -ExpandProperty "Value"
-    LogPrint $valuepfID.Trim('0')
-    LogPrint $valueID.Trim('0')
-    Logprint $pciDevice.Trim('0')
 
     if ( ($pciDevice.Split(":")[1].Trim("0") -ne $valueID.Split(":")[1].Trim("0")) -or ($pciDevice.Split(":")[1].Trim("0") -ne $valuepfID.Split(":")[1].Trim("0")) ) {
         LogPrint "Error: Add extra config failed"    
         return $false
     }
 
-
-    # change config make mtu editable
-    if ($mtuChange) {
-        
-    }
-
-    return $true
+    $retVal = $true
+    return $retVal
 }

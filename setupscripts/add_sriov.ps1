@@ -24,6 +24,12 @@
 
 .Parameter testParams
     Semicolon separated list of test parameters
+
+.Example
+    <testparams>
+        <param>mtuChange=True,sriovNum=2</param>
+    </testparams>
+    
 #>
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
@@ -113,8 +119,8 @@ $retVal = $Failed
 
 # Use function to add new sriov nic
 for ($i = 0; $i -lt $sriovNum; $i++) {
-    if ( -not (AddSrIOVNIC $vmName $hvServer $mtuChange)) {
-        DisconnectWithVIServer
+    $status = AddSrIOVNIC $vmName $hvServer $mtuChange
+    if ( -not $status[-1] ) {
         return $Failed
     }
 }
