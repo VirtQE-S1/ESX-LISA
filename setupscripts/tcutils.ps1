@@ -1573,7 +1573,6 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
 
-    # Check Lock all memory
     try {
         # Get Switch Info
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
@@ -1616,7 +1615,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     # Get Sriov PCI Device (like 00000:007:00.0)
     try {
         $vmHost = Get-VMHost -Name $hvServer  
-        # This may fail, you can try to delete -V2 param
+        # This may fail, you can try to delete -V2 param Current only support one card
         $esxcli = Get-EsxCli -VMHost $vmHost -V2
         $pciDevice = $esxcli.network.sriovnic.list.Invoke() | Select-Object -ExpandProperty "PCIDevice"
     }
@@ -1654,6 +1653,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 
     }
 
+
     # Add extra into config
     $vmConfigSpec.ExtraConfig += $pfID
     $vmConfigSpec.ExtraConfig += $passID
@@ -1669,6 +1669,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
 
+
     # Set Network to VM Network "VM Network" is hard code
     $nics = Get-NetworkAdapter -VM $vmObj
     $nicMacAddress = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.generatedMACAddress"})[-1].Value
@@ -1677,7 +1678,6 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
             Set-NetworkAdapter -NetworkAdapter $nic -NetworkName "VM Network" -Confirm:$false
         } 
     }
-
 
 
     # Refresh vm

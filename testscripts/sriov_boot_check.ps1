@@ -174,11 +174,12 @@ if ( $null -eq $sriovNIC) {
 }
 
 
-# Get sriov nic driver
+# Get sriov nic driver 
 $Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
 $driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+# mellanox 40G driver and intel 40G NIC maybe different
 if ($driver -ne "ixgbevf") {
-    LogPrint "ERROR : Sriov driver Error"
+    LogPrint "ERROR : Sriov driver Error or unsupported driver"
     DisconnectWithVIServer
     return $Aborted 
 }
