@@ -9,6 +9,8 @@
 ## v1.0.0 - xuli - 01/16/2017 - Draft script for add hard disk.
 ## v1.0.1 - ruqin - 07/11/2018 - Add a IDE hard disk support
 ## v1.1.0 - boyang - 08/06/2018 - Fix a return value can't be converted by Invoke-Expression
+## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
+##
 ###############################################################################
 <#
 .Synopsis
@@ -28,7 +30,7 @@
         DiskType - IDE or SCSI
         StorageFormat - The format of new hard disk, can be (Thin, Thick,
         EagerZeroedThick
-        DiskDataStore - The datastore for new disk
+        DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
 
     A typical XML definition for this test case would look similar
@@ -46,6 +48,7 @@
         <testparams>
             <param>DiskType=SCSI</param>
             <param>StorageFormat=Thin</param>
+            <param>DiskDataStore=DataStore-97</param>
             <param>CapacityGB=3</param>
         </testparams>
         <onError>Continue</onError>
@@ -128,6 +131,7 @@ for ($pair = 0; $pair -le $max; $pair++) {
             "DiskType" { $diskType = $value }
             "StorageFormat" { $storageFormat = $value }
             "CapacityGB" { $capacityGB = $value }
+            "DiskDataStore" {$diskDataStore = $value}
             default {}  # unknown param - just ignore it
         }
     }
@@ -141,10 +145,16 @@ for ($pair = 0; $pair -le $max; $pair++) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $False
     }
-
     if ($diskType -eq "SCSI") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-        New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue | Out-null
+        if ($null -eq $diskDataStore) {
+            New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat -ErrorAction SilentlyContinue
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            New-HardDisk -CapacityGB $capacityGB -VM $vmObj -Datastore $dataStore -StorageFormat $storageFormat -ErrorAction SilentlyContinue
+        }
         if (-not $?) {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
             return $False
