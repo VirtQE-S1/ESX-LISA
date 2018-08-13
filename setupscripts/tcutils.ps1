@@ -1709,3 +1709,21 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     }
     return $retVal
 }
+
+
+########################################################################
+# 
+# Config IP address for new add NIC
+# ConfigIPforNewDevice()
+# 
+function ConfigIPforNewDevice {
+    Param
+    (
+        [String] $vmName, 
+        [String] $hvServer, 
+        [String] $deviceName, 
+        [parameter(Mandatory = $false)] [String[]] $IP_Prefix,
+        [parameter(Mandatory = $false)] [String[]] $GateWay
+    )
+
+}
