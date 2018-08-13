@@ -27,7 +27,8 @@
    Where
         DiskType - IDE or SCSI
         StorageFormat - The format of new hard disk, can be (Thin, Thick,
-        EagerZeroedThick)
+        EagerZeroedThick
+        DiskDataStore - The datastore for new disk
         CapacityGB - Capacity of the new virtual disk in gigabytes
 
     A typical XML definition for this test case would look similar
@@ -94,6 +95,7 @@ $params = $testParams.TrimEnd(";").Split(";")
 $diskType = $null
 $storageFormat = $null
 $capacityGB = $null
+$diskDataStore = $null
 
 
 #
