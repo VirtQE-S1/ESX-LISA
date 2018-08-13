@@ -6,7 +6,8 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 11/02/2017 - Build script
+## V1.0.0 - boyang - 11/02/2017 - Build script
+## V1.0.1 - ruqin - 13/08/2018 - Change e1000 to e1000e, add driver check
 ##
 ###############################################################################
 
@@ -43,20 +44,17 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 #
 # Checking the input arguments
 #
-if (-not $vmName)
-{
+if (-not $vmName) {
     "FAIL: VM name cannot be null!"
     exit
 }
 
-if (-not $hvServer)
-{
+if (-not $hvServer) {
     "FAIL: hvServer cannot be null!"
     exit
 }
 
-if (-not $testParams)
-{
+if (-not $testParams) {
     Throw "FAIL: No test parameters specified"
 }
 
@@ -74,54 +72,45 @@ $ipv4 = $null
 $logdir = $null
 
 $params = $testParams.Split(";")
-foreach ($p in $params) 
-{
-	$fields = $p.Split("=")
-	switch ($fields[0].Trim()) 
-	{
-		"rootDir"		{ $rootDir = $fields[1].Trim() }
-		"sshKey"		{ $sshKey = $fields[1].Trim() }
-		"ipv4"			{ $ipv4 = $fields[1].Trim() }
-		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-		default			{}
+foreach ($p in $params) {
+    $fields = $p.Split("=")
+    switch ($fields[0].Trim()) {
+        "rootDir" { $rootDir = $fields[1].Trim() }
+        "sshKey" { $sshKey = $fields[1].Trim() }
+        "ipv4" { $ipv4 = $fields[1].Trim() }
+        "TestLogDir"	{ $logdir = $fields[1].Trim()}
+        default {}
     }
 }
 
 #
 # Check all parameters are valid
 #
-if (-not $rootDir)
-{
-	"Warn : no rootdir was specified"
+if (-not $rootDir) {
+    "Warn : no rootdir was specified"
 }
-else
-{
-	if ( (Test-Path -Path "${rootDir}") )
-	{
-		cd $rootDir
-	}
-	else
-	{
-		"Warn : rootdir '${rootDir}' does not exist"
-	}
+else {
+    if ( (Test-Path -Path "${rootDir}") ) {
+        Set-Location $rootDir
+    }
+    else {
+        "Warn : rootdir '${rootDir}' does not exist"
+    }
 }
 
-if ($null -eq $sshKey) 
-{
-	"FAIL: Test parameter sshKey was not specified"
-	return $False
+if ($null -eq $sshKey) {
+    "FAIL: Test parameter sshKey was not specified"
+    return $False
 }
 
-if ($null -eq $ipv4) 
-{
-	"FAIL: Test parameter ipv4 was not specified"
-	return $False
+if ($null -eq $ipv4) {
+    "FAIL: Test parameter ipv4 was not specified"
+    return $False
 }
 
-if ($null -eq $logdir)
-{
-	"FAIL: Test parameter logdir was not specified"
-	return $False
+if ($null -eq $logdir) {
+    "FAIL: Test parameter logdir was not specified"
+    return $False
 }
 
 #
@@ -130,9 +119,9 @@ if ($null -eq $logdir)
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
-                  $env:ENVVISUSERNAME `
-                  $env:ENVVISPASSWORD `
-                  $env:ENVVISPROTOCOL
+    $env:ENVVISUSERNAME `
+    $env:ENVVISPASSWORD `
+    $env:ENVVISPROTOCOL
 
 ###############################################################################
 #
@@ -147,35 +136,57 @@ $new_nic_name = "VM Network"
 #
 # Confirm VM
 #
-$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmOut)
-{
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
     Write-Error -Message "Unable to get-vm with $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
     DisconnectWithVIServer
-	return $Aborted
+    return $Aborted
 }
 
 #
 # Hot plug one new adapter named $new_nic_name, the adapter count will be 2
 #
-$new_nic = New-NetworkAdapter -VM $vmOut -NetworkName $new_nic_name -Type e1000 -WakeOnLan -StartConnected -Confirm:$false
+$new_nic = New-NetworkAdapter -VM $vmObj -NetworkName $new_nic_name -Type e1000e -WakeOnLan -StartConnected -Confirm:$false
 Write-Host -F Red "Get the new NIC: $new_nic"
 Write-Output "Get the new NIC: $new_nic"
 
-$all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
-if ($all_nic_count -eq 2)
-{
-    Write-Host -F Red "PASS: Hot plug e1000 well"
-    Write-Output "PASS: Hot plug e1000 well"
-    # No need to check crash, as if bug is found, the vm will be crashed
-    $retVal = $Passed
-}
-else
-{
+$all_nic_count = (Get-NetworkAdapter -VM $vmObj).Count
+if ($all_nic_count -ne 2) {
     Write-Host -F Red "FAIL: Unknow issue after hot plug e1000, check it manually"
     Write-Output "FAIL: Unknow issue after hot plug e1000, check it manually"
 }
 
-DisconnectWithVIServer
+# Get Old Adapter Name of VM
+$Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+$Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+if ( $null -eq $Old_Adapter) {
+    LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
+# Get e1000e nic
+$Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter | awk 'NR==1'"
+$sriovNIC = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+if ( $null -eq $sriovNIC) {
+    LogPrint "ERROR : Cannot get sriovNIC from guest"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+# Get e100e nic driver 
+$Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
+$driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+# mellanox 40G driver and intel 40G NIC maybe different
+if ($driver -ne "e1000e") {
+    LogPrint "ERROR : Sriov driver Error or unsupported driver"
+    DisconnectWithVIServer
+    return $Aborted 
+}
+else
+{
+    $retVal = $Passed
+}
+
+DisconnectWithVIServer
 return $retVal
