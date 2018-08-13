@@ -143,12 +143,36 @@ if (-not $vmObj) {
     return $Aborted
 }
 
+
+# Get the Guest version
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+LogPrint "DEBUG: DISTRO: $DISTRO"
+if (-not $DISTRO) {
+    LogPrint "ERROR: Guest OS version is NULL"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Guest OS version is $DISTRO"
+
+# Different Guest DISTRO
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    DisconnectWithVIServer
+    return $Skipped
+}
+
 #
 # Hot plug one new adapter named $new_nic_name, the adapter count will be 2
 #
-$new_nic = New-NetworkAdapter -VM $vmObj -NetworkName $new_nic_name -Type e1000e -WakeOnLan -StartConnected -Confirm:$false
-Write-Host -F Red "Get the new NIC: $new_nic"
-Write-Output "Get the new NIC: $new_nic"
+if ($DISTRO -eq "RedHat6") {
+    # RHEL 6 supports e1000
+    $new_nic = New-NetworkAdapter -VM $vmObj -NetworkName $new_nic_name -Type e1000 -WakeOnLan -StartConnected -Confirm:$false
+}
+else {
+    # RHEL 7\8 support e1000e
+    $new_nic = New-NetworkAdapter -VM $vmObj -NetworkName $new_nic_name -Type e1000e -WakeOnLan -StartConnected -Confirm:$false
+}
+LogPrint "Get the new NIC: $new_nic"
 
 $all_nic_count = (Get-NetworkAdapter -VM $vmObj).Count
 if ($all_nic_count -ne 2) {
@@ -183,8 +207,7 @@ if ($driver -ne "e1000e") {
     DisconnectWithVIServer
     return $Aborted 
 }
-else
-{
+else {
     $retVal = $Passed
 }
 
