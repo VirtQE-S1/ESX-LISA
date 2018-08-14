@@ -1716,6 +1716,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 # Config IP address for new add NIC
 # ConfigIPforNewDevice()
 # 
+########################################################################
 function ConfigIPforNewDevice {
     Param
     (
@@ -1725,5 +1726,70 @@ function ConfigIPforNewDevice {
         [parameter(Mandatory = $false)] [String[]] $IP_Prefix,
         [parameter(Mandatory = $false)] [String[]] $GateWay
     )
+    
+    $retVal = $false
 
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+    }  
+
+}
+
+
+
+########################################################################
+# 
+# Add a new pvRDMA nic
+#
+# AddPVrdmaNIC()
+#
+########################################################################
+function AddPVrdmaNIC {
+    param (
+        [String] $vmName,
+        [String] $hvServer
+    )
+
+    $retVal = $false
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+    } 
+
+    try {
+        # Get Switch INFO
+        $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
+    
+        # This is hard code DPortGroup Name (6.0 6.5 6.7) This may change
+        $PG = $DVS | Get-VDPortgroup -Name "DPortGroup"
+
+        # Add new nic into config file
+        $Spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+        $Dev = New-Object Vmware.Vim.VirtualDeviceConfigSpec
+        $Dev.Operation = "add" 
+        $Dev.Device = New-Object VMware.Vim.VirtualVmxnet3Vrdma
+
+        $Spec.DeviceChange += $dev
+        $Spec.DeviceChange.Device.Backing = New-Object VMware.Vim.VirtualEthernetCardDistributedVirtualPortBackingINFO
+        $Spec.DeviceChange.Device.Backing.Port = New-Object VMware.Vim.DistributedVirtualSwitchPortConnection
+    
+        # This is currently UNKNOWN function
+        $Spec.DeviceChange.Device.Backing.Port.PortgroupKey = $PG.Key
+        $Spec.DeviceChange.Device.Backing.Port.SwitchUuid = $DVS.Key
+
+        # Apply the new config
+        $View = Get-View -ViewType VirtualMachine -Filter @{"Name" = "$vmName"} -Property Name, Runtime.Powerstate
+        $View.ReconfigVM($Spec)
+    }
+    catch {
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: RDMA config ERROR, $ERRORMessage"
+        return $false
+    } 
+    $retVal = $true
+    return $retVal
 }
