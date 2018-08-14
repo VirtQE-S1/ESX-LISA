@@ -347,8 +347,8 @@ function GetFileFromVM([String] $ipv4, [String] $sshKey, [string] $remoteFile, [
         return $false
     }
 
-    del lisaOut.tmp -ERRORAction "SilentlyContinue"
-    del lisaErr.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaOut.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     return $retVal
 }
@@ -479,9 +479,8 @@ function GenerateIpv4($tempipv4, $oldipv4)
     .Example
         GenerateIpv4 $testIPv4Address $oldipv4
     #>
-    [int]$i= $null
     [int]$check = $null
-    if ($oldipv4 -eq $null){
+    if ($null -eq $oldipv4){
         [int]$octet = 102
     }
     else {
@@ -549,7 +548,7 @@ function SendCommandToVM([String] $ipv4, [String] $sshKey, [string] $command)
     }
 
     # get around plink questions
-    echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'exit 0'
+    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'exit 0'
     $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
@@ -560,8 +559,8 @@ function SendCommandToVM([String] $ipv4, [String] $sshKey, [string] $command)
          Write-ERROR -Message "Unable to send command to ${ipv4}. Command = '${command}'" -Category SyntaxERROR -ERRORAction SilentlyContinue
     }
 
-    del lisaOut.tmp -ERRORAction "SilentlyContinue"
-    del lisaErr.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaOut.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     return $retVal
 }
@@ -623,7 +622,7 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
     }
 
     # get around plink questions
-    echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
     $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${ipv4}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
@@ -635,8 +634,8 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
         Write-ERROR -Message "Unable to send file '${localFile}' to ${ipv4}" -Category ConnectionERROR -ERRORAction SilentlyContinue
     }
 
-    del lisaOut.tmp -ERRORAction "SilentlyContinue"
-    del lisaErr.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaOut.tmp -ERRORAction "SilentlyContinue"
+    Remove-Item lisaErr.tmp -ERRORAction "SilentlyContinue"
 
     if ($ChangeEOL)
     {
@@ -700,7 +699,7 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
     #
     # Tell the VM to stop
     #
-    echo y | bin\plink -i ssh\${sshKey} root@${vmipv4} exit
+    Write-Output y | bin\plink -i ssh\${sshKey} root@${vmipv4} exit
     .\bin\plink.exe -i ssh\${sshKey} root@${vmipv4} "init 0"
     if (-not $?)
     {
@@ -876,7 +875,7 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [String] $sshKe
         $vmipv4 = GetIPv4 $vmName $hvServer
         if ($vmipv4)
         {
-            $result = echo y | bin\plink -i ssh\${sshKey} root@${vmipv4} "echo 911"
+            $result = Write-Output y | bin\plink -i ssh\${sshKey} root@${vmipv4} "echo 911"
             if ($result -eq 911)
             {
                 $retVal = $true
@@ -1227,7 +1226,7 @@ function RunRemoteScript($remoteScript)
             {
                     if ($null -ne ${TestLogDir})
                     {
-                        move "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
+                        Move-Item "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
                     }
 
                     else
@@ -1248,8 +1247,8 @@ function RunRemoteScript($remoteScript)
     }
 
     # Cleanup
-    del state.txt -ERRORAction "SilentlyContinue"
-    del runtest.sh -ERRORAction "SilentlyContinue"
+    Remove-Item state.txt -ERRORAction "SilentlyContinue"
+    Remove-Item runtest.sh -ERRORAction "SilentlyContinue"
 
     return $retValue
 }
@@ -1347,7 +1346,7 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
         return $false
     }
     # get around plink questions
-    echo y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
     $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
     Write-Host -F Red "DEBUG: tcutils.ps1: vm_module: $vm_module"
@@ -1441,7 +1440,7 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
         This ensures the VM starts the test run in a
         known good state.
     .Parameter vmName
-        Name of the VM that need to add disk.
+        Name of the VM 
     .Parameter hvSesrver
         Name of the server hosting the VM.
     .Example
@@ -1552,6 +1551,20 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 #
 ########################################################################
 function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
+   <#
+    .Synopsis
+        Add a SrIOV NIC
+    .Description
+        Attach a new sriov nic to VM
+    .Parameter vmName
+        Name of the VM
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Parameter mtuChange
+        Allow or disallow guest change MTU
+    .Example
+        AddSrIoVNIC $vmName $hvSever $true
+    #>
 
     $retVal = $false
 
@@ -1614,8 +1627,8 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         $Spec.DeviceChange.Device.Backing.Port.SwitchUuid = $DVS.Key
 
         # Apply the new config
-        $View = Get-View -ViewType VirtualMachine -Filter @{"Name" = "$vmName"} -Property Name, Runtime.Powerstate
-        $View.ReconfigVM($Spec)
+        $View = $vmObj | Get-View
+        $View.ReconfigVM($Spec)    
     }
     catch {
         $ERRORMessage = $_ | Out-String
@@ -1720,21 +1733,98 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 function ConfigIPforNewDevice {
     Param
     (
-        [String] $vmName, 
-        [String] $hvServer, 
+        [String] $ipv4, 
+        [String] $sshkey, 
         [String] $deviceName, 
-        [parameter(Mandatory = $false)] [String[]] $IP_Prefix,
-        [parameter(Mandatory = $false)] [String[]] $GateWay
+        [parameter(Mandatory = $false)] [String[]] $IP_Prefix
     )
+    <#
+    .Synopsis
+        Config IP for new nic
+    .Description
+        Config IP address for new attached NIC
+    .Parameter ipv4
+        ipv4 address of target VM
+    .Parameter sshkey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\Ssh.
+    .Parameter deviceName
+        Name of new attached NIC
+    .Parameter IP_Prefix 
+        IP with prefix such as 192.168.0.100/24
+    .Example
+        ConfigIPforNewDevice $ipv4 $sshkey $deviceName 192.168.0.100/24 192.168.0.1
+    #>
     
     $retVal = $false
 
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    if (-not $vmObj) {
-        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
+    # Get the Guest version
+    $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+    LogPrint "DEBUG: DISTRO: $DISTRO"
+    if (-not $DISTRO) {
+        LogPrint "ERROR: Guest OS version is NULL"
         return $false
-    }  
+    }
+    LogPrint "INFO: Guest OS version is $DISTRO"
 
+    # Different Guest DISTRO
+    if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+        LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+        return $false
+    }
+
+
+    if ($DISTRO -eq "RedHat6") {
+        # Start Specifc device
+        SendCommandToVM $ipv4 $sshKey "ifconfig $deviceName up" 
+        if ($null -ne $IP_Prefix) {
+            $IP = $IP_Prefix.Split("/")[0]
+            $Prefix = $IP_Prefix.Split("/")[1]
+            # Config IP for Device
+            $Network_Script = "DEVICE=$deviceName
+                                BOOTPROTO=none
+                                ONBOOT=yes
+                                IPADDR=$IP
+                                PREFIX=$Prefix"
+            SendCommandToVM $ipv4 $sshKey "echo $Network_Script > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
+        }
+        else {
+            # Config DHCP for Device
+            $Network_Script = "DEVICE=$deviceName
+            BOOTPROTO=dhcp
+            ONBOOT=yes"
+            SendCommandToVM $ipv4 $sshKey "echo $Network_Script > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
+
+        }
+        # Restart Network service
+        $status = SendCommandToVM $ipv4 $sshKey "ifdown $deviceName && ifup $deviceName"
+        if (-not $status) {
+            LogPrint "Error: Cannot activate new nic config"
+            return $false
+        }
+    }
+    else {
+        # Start NetworkManager
+        SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
+        if ($null -ne $IP_Prefix) {
+            # Config New Connection with IP
+            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix" 
+        }
+        else {
+            # Config New Connection with DHCP
+            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet" 
+        }
+        # Restart Connection
+        $status = SendCommandToVM $ipv4 $sshKey "nmcli con down $deviceName && nmcli con up $deviceName" 
+        if (-not $status) {
+            LogPrint "Error: Cannot activate new nic config"
+            return $false
+        }
+    }
+    LogPrint "INFO: IP config for new NIC succeeded"
+
+    $retVal = $true
+    return $retVal
 }
 
 
@@ -1751,7 +1841,18 @@ function AddPVrdmaNIC {
         [String] $vmName,
         [String] $hvServer
     )
-
+<#
+    .Synopsis
+        Add pvRDMA nic
+    .Description
+        Attach a new rdma nic to VM
+    .Parameter vmName
+        Name of the VM that need to add disk.
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Example
+        AddPVrdmaNIC $vmName $hvSever
+    #>
     $retVal = $false
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -1782,7 +1883,7 @@ function AddPVrdmaNIC {
         $Spec.DeviceChange.Device.Backing.Port.SwitchUuid = $DVS.Key
 
         # Apply the new config
-        $View = Get-View -ViewType VirtualMachine -Filter @{"Name" = "$vmName"} -Property Name, Runtime.Powerstate
+        $View = $vmObj | Get-View
         $View.ReconfigVM($Spec)
     }
     catch {
