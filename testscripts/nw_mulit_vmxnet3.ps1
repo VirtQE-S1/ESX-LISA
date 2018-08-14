@@ -128,14 +128,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
 $retVal = $Failed
 $new_device_name = ""
 $new_network_name = "VM Network"
 
-#
 # Confirm VM
-#
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
@@ -161,9 +158,7 @@ while ($count -le $total_nics)
     $count ++
 }
 
-#
 # @all_nic_count: should own $total_nics + 1
-#
 $all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
 Write-Host -F red "All NICs: $all_nic_count"
 if ($all_nic_count -eq ($total_nics + 1))
@@ -176,22 +171,20 @@ else
     return $Aborted
 }
 
-#$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
-#if (-not $result)
-#$exit = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh" -NoNewWindow -Wait -PassThru
-#$exit = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ls /root/" -NoNewWindow -Wait -PassThru
-$process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ls /root/" -Wait -PassThru -WindowStyle Hidden
-$state = $process.ExitCode
-Write-Host -F red "Debug: $state"
-if ($state -ne 0)
+# Send nw_config_ifcfg.sh to VM which setup new NIC ifcfg file, ifdown / ifup the new NIC
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
+Write-Host -F Red "DEBUG: result: $result"
+Write-Output "DEBUG: result: $result"
+if($result)
 {
-	Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM."
-	DisconnectWithVIServer
-	return $Aborted
+    Write-Host -F Red "PASS: Complete to execute nw_config_ifcfg.sh in VM"
+	Write-Output "PASS: Complete to execute nw_config_ifcfg.sh in VM"
+    $retVal = $Passed
 }
 else
 {
-    $retVal = $Passed
+    Write-Host -F Red "FAIL: Failed to execute nw_config_ifcfg.sh in VM"
+    Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM"
 }
 
 DisconnectWithVIServer
