@@ -1828,7 +1828,6 @@ function ConfigIPforNewDevice {
 }
 
 
-
 ########################################################################
 # 
 # Add a new pvRDMA nic
@@ -1841,7 +1840,8 @@ function AddPVrdmaNIC {
         [String] $vmName,
         [String] $hvServer
     )
-<#
+
+    <#
     .Synopsis
         Add pvRDMA nic
     .Description
@@ -1853,6 +1853,7 @@ function AddPVrdmaNIC {
     .Example
         AddPVrdmaNIC $vmName $hvSever
     #>
+
     $retVal = $false
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
