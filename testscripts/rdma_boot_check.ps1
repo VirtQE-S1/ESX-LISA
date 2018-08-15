@@ -1,29 +1,28 @@
 ###############################################################################
 ##
 ## Description:
-##  Boot a Guest with SR-IOV NIC and check SR-IOV NIC
+##  Boot a Guest with RDMA NIC and check RDMA NIC
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/9/2018 - Build the script
+##  v1.0.0 - ruqin - 8/15/2018 - Build the script
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-    Check Sriov NIC after boot guest
+    Check RDMA NIC after boot guest
 
 .Description
        <test>
-            <testName>sriov_boot_check</testName>
-            <testID>ESX-SRIOV-001</testID>
+            <testName>rdma_boot_check</testName>
+            <testID>ESX-RDMA-001</testID>
             <setupScript>
-                <file>setupscripts\add_sriov.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
-            <cleanupScript>SetupScripts\disable_memory_reserve.ps1</cleanupScript> 
-            <testScript>testscripts\sriov_boot_check.ps1</testScript>
+            <testScript>testscripts\rdma_boot_check.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL-113876</param>
+                <param>TC_COVERED=RHEL-111193</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
@@ -168,31 +167,37 @@ if ( $null -eq $Old_Adapter) {
 }
 
 
-# Get sriov nic
-$Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter | awk 'NR==1'"
-$sriovNIC = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-if ( $null -eq $sriovNIC) {
-    LogPrint "ERROR : Cannot get sriovNIC from guest"
+# Get pci status
+$Command = "lspci | grep -i infiniband"
+$pciInfo = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+if ( $pciInfo -notlike "*Infiniband controller: VMware Paravirtual RDMA controller*") {
+    LogPrint "ERROR : Cannot get pvRDMA info from guest"
     DisconnectWithVIServer
-    return $Aborted
+    return $Failed
 }
 
 
-# Get sriov nic driver 
-$Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
-$driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-# mellanox 40G driver and intel 40G NIC maybe different
-if ($driver -ne "ixgbevf") {
-    LogPrint "ERROR : Sriov driver Error or unsupported driver"
+# Install required packages
+$sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
+if (-not $sts) {
+    LogPrint "ERROR : YUM cannot install required packages"
     DisconnectWithVIServer
-    return $Aborted 
+    return $Failed
 }
-else
-{
+
+
+# Make sure the vmw_pvrdma is loaded 
+$Command = "lsmod | grep vmw_pvrdma | wc -l"
+$modules = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+if ($modules -eq 0) {
+    LogPrint "ERROR : Cannot find any pvRDMA module"
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
     $retVal = $Passed
 }
 
 
 DisconnectWithVIServer
 return $retVal
-
