@@ -27,11 +27,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -49,14 +49,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -76,9 +74,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -113,9 +110,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -123,14 +119,13 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
-
 $retVal = $Failed
-
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $state = $vmObj.PowerState
@@ -146,7 +141,7 @@ else
     Write-Output "Now, will Suspend the VM......."
     $vmObj_suspend = Suspend-VM -VM $vmObj -Confirm:$False
     $state = $vmObj_suspend.PowerState
-    Start-sleep 120
+    Start-sleep 180
     if ($state -ne "Suspended")
     {
         Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
@@ -157,9 +152,10 @@ else
         Write-Output "DONE. VM Power state is $state"
             
         Write-Output "Now, will Power On the VM......."
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        $state = $vmObj.PowerState
         $vmObj_on = Start-VM -VM $vmObj -Confirm:$False
-        $state = $vmObj_on.PowerState
-        Start-sleep 120
+        Start-sleep 360
         if ($state -ne "PoweredOn")
         {
             Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue

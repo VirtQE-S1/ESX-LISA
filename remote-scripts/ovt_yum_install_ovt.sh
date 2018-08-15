@@ -44,8 +44,6 @@ if [ -n "$version" ]; then
         exit 1
 else
         yum -y install open-vm-tools-desktop
-        LogMsg "open-vm-tools installed successfully."
-        UpdateSummary " open-vm-tools installed successfully."
         version=$(rpm -qa open-vm-tools)
         if [ -n "$version" ]; then
                 LogMsg "open-vm-tools installed successfully."
