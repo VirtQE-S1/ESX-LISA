@@ -55,8 +55,10 @@ UtilsInit
 # Prepare Start KNI
 
 
+# Printout current Guest OS
 GetDistro
-
+LogMsg $DISTRO
+# This case cannot run on rhel6
 if [ "$DISTRO" == "redhat_6" ]
 then
     SetTestStateSkipped
@@ -65,8 +67,12 @@ then
 fi
 
 
+# Apply environment settings and insert kni module
 source /etc/profile.d/dpdk.sh
 insmod "$RTE_SDK/$RTE_TARGET/kmod/rte_kni.ko"
+
+
+# Compile KNI example code
 cd "$RTE_SDK/examples/kni" || exit 1
 make
 if [ ! "$?" -eq 0 ]
@@ -77,10 +83,12 @@ then
 fi
 cd build || exit 1
 
-# Start Connect with kernel
 
+# Create virtual NIC with KNI
 nohup ./kni -l 1-3 -n 4 -- -P -p 0x1 --config="(0,1,2)" &
 
+
+# Setup new nic
 systemctl restart NetworkManager
 nmcli con add con-name vEth0 ifname vEth0 type Ethernet
 
@@ -92,39 +100,49 @@ then
 fi
 systemctl restart NetworkManager
 
+
 # Test New Network Adapter
 sleep 6
 
-# Get SSH Server IP address
+
+# Get SSH Server IP address dnd NIC
 Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
 
 LogMsg "$Server_IP"
 
 Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 
+
 ##################################################
 # Test Network Connection
 
+# Turn down ssh nic to make sure only have one NIC
 nmcli con down $Server_Adapter
 
+
+# print current nics status
 ip a
+
 
 # DPDK KNI device should be vEth0 at default
 # This ping is test ESX host IP connectivity with current VM, Host IP addr may change in the furture
 ping -I vEth0 -c 3 10.73.196.97
 ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
 
-status=$?
 
+# Record ping results and up old SSH nic
+status=$?
 nmcli con up $Server_Adapter
 
-# Close KNI
+
+# Check status and record results
 if [ "$status" -eq 0 ]
 then
     LogMsg "KNI is working"
     UpdateSummary "KNI is working"
     sleep 1
     LogMsg "Start to Close KNI"
+    # Close KNI
     ps aux | grep "./kni -l 1-3 -n 4 -- -P -p 0x1" | grep -v grep | awk '{print $2}' | xargs kill
     SetTestStateCompleted
     exit 0

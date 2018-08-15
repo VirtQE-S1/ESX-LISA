@@ -58,8 +58,10 @@ UtilsInit
 ###############################################################################
 
 
+# Printout current Guest OS
 GetDistro
-
+LogMsg $DISTRO
+# This case cannot run on rhel6
 if [ "$DISTRO" == "redhat_6" ]
 then
     SetTestStateSkipped
@@ -78,21 +80,28 @@ then
     exit 1
 fi
 
+
+# Show nic status
 cd "$RTE_SDK" || exit 1
 $RTE_SDK/usertools/dpdk-devbind.py -s
+
 
 # Load required DPDK modules
 modprobe uio_pci_generic
 insmod "$RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko"
 
+
+# Start Network Manager
 systemctl restart NetworkManager
+
 
 # Get SSH Server IP address
 Server_IP=$(echo "$SSH_CONNECTION"| awk '{print $3}')
-
 LogMsg "$Server_IP"
 
+# Get connected nic
 Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
+
 
 # Make Sure we have more than 3 network adapter
 if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
@@ -104,6 +113,7 @@ then
     do
         if [ "$i" != "$Server_Adapter" ];
         then
+            # disconnect nic with kernel and bind to dpdk
             LogMsg "Will Disconnect $i"
             nmcli device disconnect "$i"
             count=$((count + 1))
@@ -120,6 +130,7 @@ else
     SetTestStateAborted
     exit 1
 fi
+
 
 # Make sure we have two bind DPDK network adapter
 if [ "$(./usertools/dpdk-devbind.py -s | grep drv=igb_uio | wc -l)" -eq 2 ];
