@@ -162,7 +162,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- EACV Total Cases: 20 -->
+            <!-- EACV Total Cases: 16 -->
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
@@ -172,24 +172,19 @@
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
-                <suiteTest>kdump_crash_diff_size</suiteTest>
+                <suiteTest>kdump_crash_diff_size</suiteTest> -->
 
                 <suiteTest>go_install_ide_disk</suiteTest>
-                <suiteTest>go_check_suspend_time_drift</suiteTest>
+                <!-- <suiteTest>go_check_suspend_time_drift</suiteTest>
 
-                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_check_pvscsi_error</suiteTest> -->
                 <suiteTest>stor_cp_big_files</suiteTest>
                 <suiteTest>stor_scp_big_files</suiteTest>
 
-                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
+                <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest> -->
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest> -->
-
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -217,7 +212,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 74/97 -->
+            <!-- Acceptance Total Cases: 80/97 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -314,10 +309,10 @@
                 <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
                 <suiteTest>nw_check_nic_name</suiteTest>
 
-                <!-- <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest> -->
+                <suiteTest>dpdk_kni</suiteTest>
 
                 <suiteTest>vsock_version</suiteTest>
 

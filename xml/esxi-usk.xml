@@ -186,7 +186,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 74/97 -->
+            <!-- Acceptance Total Cases: 80/97 -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -283,10 +283,10 @@
                 <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
                 <suiteTest>nw_check_nic_name</suiteTest>
 
-                <!-- <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest> -->
+                <suiteTest>dpdk_kni</suiteTest>
 
                 <suiteTest>vsock_version</suiteTest>
 

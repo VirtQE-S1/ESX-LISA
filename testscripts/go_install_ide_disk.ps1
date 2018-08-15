@@ -6,7 +6,7 @@
 ##  IDE disk, if the script gets VM-B's IP, installation in IDE passes
 ##
 ## Revision:
-##  v1.0.0 - ldu - 01/29/2018 - Build the script
+##  v1.0.0 - ldu    - 01/29/2018 - Build the script
 ##  v1.0.1 - boyang - 05/11/2018 - Enhance the script and exit 100 if false
 ##  v1.0.2 - boyang - 05/11/2018 - Enhance to avoid VM B to lost after boot
 ###############################################################################
@@ -42,9 +42,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
@@ -63,15 +61,11 @@ if (-not $testParams)
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -91,9 +85,7 @@ foreach ($p in $params)
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -128,10 +120,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
-
 $retVal = $Failed
-
 
 #
 # The VM A and the VM B own the same part in names
@@ -139,6 +128,7 @@ $retVal = $Failed
 # RHEL-7.3-20161019.0-x86_64-EFI-A / RHEL-7.3-20161019.0-x86_64-EFI-B
 #
 $vmNameB = $vmName -replace "-A$","-B"
+Write-Host -F Red "DEBUG: vmNameB: $vmNameB"
 $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 if (-not $vmObjectB)
 {
@@ -147,7 +137,6 @@ if (-not $vmObjectB)
     DisconnectWithVIServer
 	return $Aborted
 }
-
 
 # Confirm the VM B power state
 $vmObjectBPowerState = $vmObjectB.PowerState
@@ -161,20 +150,20 @@ if ($vmObjectBPowerState -ne "PoweredOn")
     $timeout = 360
     while ($timeout -gt 0)
     {
-        $vmTemp = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-        if (-not $vmTemp)
+        $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+        if (-not $vmObjectB)
         {
-            Write-Host -F Red "ERROR: After start VM $vmTemp, lost it"
-            Write-Output "ERROR: After start VM $vmTemp, lost it"
+            Write-Host -F Red "ERROR: After start VM $vmObjectB, lost it"
+            Write-Output "ERROR: After start VM $vmObjectB, lost it"
             DisconnectWithVIServer
         	return $Aborted
         }
 
-        $vmTempPowerState = $vmTemp.PowerState
+        $vmTempPowerState = $vmObjectB.PowerState
         if ($vmTempPowerState -eq "PoweredOn")
         {
             $ipv4B = GetIPv4 $vmNameB $hvServer
-            if ($ipv4B -ne $null)
+            if ($null -ne $ipv4B)
             {
                 Write-Host -F Red "INFO: The VM B ipv4 is $ipv4B"
                 Write-Output "INFO: The VM B ipv4 is $ipv4B"
@@ -209,7 +198,7 @@ else
     while ($timeout -gt 0)
     {
         $ipv4B = GetIPv4 $vmNameB $hvServer
-        if ($ipv4B -eq $null)
+        if ($null -eq $ipv4B)
         {
             Write-Host -F Red "WARNING: can't get VMB's ipv4, try again"
             Write-Output "WARNING: can't get VMB's ipv4, try again"
@@ -218,6 +207,7 @@ else
         {
             Write-Host -F "PASS: Complete to get VMB IP($ipv4B), will power off the VM B"
             Write-Output "PASS: Complete to get VMB IP($ipv4B), will power off the VM B"
+            $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
             $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False
             $retVal = $Passed
             break
@@ -229,11 +219,11 @@ else
         {
             Write-Host -F Red "FAIL: Timeout, and power off the VM B"
             Write-Output "FAIL: Timeout, and power off the VM B"
+            $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
             $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False
         }
     }
 }
-
 
 DisconnectWithVIServer
 return $retVal

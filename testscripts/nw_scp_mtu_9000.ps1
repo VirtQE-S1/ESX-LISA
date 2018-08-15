@@ -129,8 +129,8 @@ if ($vmObjectBPowerState -ne "PoweredOn")
     $timeout = 360
     while ($timeout -gt 0)
     {
-        $vmTemp = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-        $vmTempPowerState = $vmTemp.PowerState
+        $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+        $vmTempPowerState = $vmObjectB.PowerState
         Write-Host -F Gray "The VM B power state is $vmTempPowerState"        
         Write-Output "The VM B power state is $vmTempPowerState"
         if ($vmTempPowerState -eq "PoweredOn")
@@ -169,17 +169,16 @@ else
     }    
 }
 
-#
 # Will use a shell script to change VM's MTU = 9000 and DD a file > 5G and scp it
-#   
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_scp_mtu_9000.sh && chmod u+x nw_scp_mtu_9000.sh && ./nw_scp_mtu_9000.sh $ipv4B"
-if (-not $result)
+$ret = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_scp_mtu_9000.sh && chmod u+x nw_scp_mtu_9000.sh && ./nw_scp_mtu_9000.sh $ipv4B"
+if (-not $ret)
 {
 	Write-Host -F Red "FAIL: Failed to execute nw_scp_mtu_9000.sh in VM"
 	Write-Output "FAIL: Failed to execute nw_scp_mtu_9000.sh in VM"
 	DisconnectWithVIServer
 	Write-Host -F Red "Last, power off the VM B"
-	Write-Output "Last, power off the VM B"    
+    Write-Output "Last, power off the VM B"
+    $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
     $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False
 	return $Aborted
 }
@@ -187,8 +186,9 @@ else
 {
 	Write-Host -F Green "PASS: Execute script in VM successfully, and power off the VM B"
 	Write-Output "PASS: Execute script in VM successfully, and power off the VM B"
-    $retVal = $Passed
+    $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
     $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False    
+    $retVal = $Passed
 }
 
 DisconnectWithVIServer
