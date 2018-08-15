@@ -1725,7 +1725,7 @@ function ConfigIPforNewDevice {
         [String] $ipv4, 
         [String] $sshkey, 
         [String] $deviceName, 
-        [parameter(Mandatory = $false)] [String[]] $IP_Prefix
+        [parameter(Mandatory = $false)] [String] $IP_Prefix
     )
     <#
     .Synopsis
@@ -1770,19 +1770,13 @@ function ConfigIPforNewDevice {
             $IP = $IP_Prefix.Split("/")[0]
             $Prefix = $IP_Prefix.Split("/")[1]
             # Config IP for Device
-            $Network_Script = "DEVICE=$deviceName
-                                BOOTPROTO=none
-                                ONBOOT=yes
-                                IPADDR=$IP
-                                PREFIX=$Prefix"
-            SendCommandToVM $ipv4 $sshKey "echo $Network_Script > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
+            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=none`\nONBOOT=yes`\nIPADDR=$IP`\nPREFIX=$Prefix"
+            SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
         }
         else {
             # Config DHCP for Device
-            $Network_Script = "DEVICE=$deviceName
-            BOOTPROTO=dhcp
-            ONBOOT=yes"
-            SendCommandToVM $ipv4 $sshKey "echo $Network_Script > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
+            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=dhcp`\nONBOOT=yes"
+            SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
 
         }
         # Restart Network service
