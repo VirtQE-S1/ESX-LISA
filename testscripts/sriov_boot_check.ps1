@@ -20,6 +20,7 @@
             <setupScript>
                 <file>setupscripts\add_sriov.ps1</file>
             </setupScript>
+            <cleanupScript>SetupScripts\disable_memory_reserve.ps1</cleanupScript> 
             <testScript>testscripts\sriov_boot_check.ps1</testScript>
             <testParams>
                 <param>TC_COVERED=RHEL-113876</param>

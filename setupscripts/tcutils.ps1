@@ -1576,17 +1576,6 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
 
     # Lock all memory
     try {
-        # Disable reserve all memory option (snapshot will not totally revert this option)
-        $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
-        $spec.memoryReservationLockedToMax = $false
-        $vmObj.ExtensionData.ReconfigVM_Task($spec)
-
-        # This command make VM refresh their reserve memory option (snapshot will not revert this option)
-        Get-VMResourceConfiguration -VM $vmObj | Set-VMResourceConfiguration -MemReservationMB 100
-        if ( -not $?) {
-            LogPrint "WARN: Reset memory lock failed" 
-        }
-
         # Enable reserve all memory option
         $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
         $spec.memoryReservationLockedToMax = $true
