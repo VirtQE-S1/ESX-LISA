@@ -198,14 +198,16 @@ if (-not $result)
 	Write-Output "FAIL: Failed to execute stor_scp_big_files.sh in VM"
 	DisconnectWithVIServer
 	Write-Host -F Red "Last, power off the VM B"
-	Write-Output "Last, power off the VM B"
+    Write-Output "Last, power off the VM B"
+    $result = SendCommandToVM $ipv4B $sshKey "rm -f /root/bigfile"
     $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False
 	return $Aborted
 }
 else
 {
 	Write-Host -F Green "PASS: Execute stor_scp_big_files script in VM successfully, and power off the VM B"
-	Write-Output "PASS: Execute stor_scp_big_files script in VM successfully, and power off the VM B"
+    Write-Output "PASS: Execute stor_scp_big_files script in VM successfully, and power off the VM B"
+    $result = SendCommandToVM $ipv4B $sshKey "rm -f /root/bigfile"
     $retVal = $Passed
     $vmObjectBOff = Stop-VM -VM $vmObjectB -Confirm:$False
 }
