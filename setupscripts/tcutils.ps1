@@ -970,7 +970,7 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
     $vm = $vmObj
     $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
 
-    # Check if there is an IDE COntroller present
+    # Check if there is an IDE controller present
     $ideCtrl = $vm.ExtensionData.Config.Hardware.Device | Where-Object {$_.GetType().Name -eq "VirtualIDEController"} | Select-Object -First 1 
     if (!$ideCtrl) {
         $ctrl = New-Object VMware.Vim.VirtualDeviceConfigSpec
@@ -997,7 +997,7 @@ function  AddIDEHardDisk ([string] $vmName , [string]  $hvServer, [int] $capacit
         $dev.Operation = "Add"
         $dev.Device = New-Object VMware.Vim.VirtualDisk
         $dev.Device.backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingINFO
-        $dev.Device.backing.Datastore = (Get-Datastore -Name $dsName).Extensiondata.MoRef
+        $dev.Device.backing.Datastore = ($vm.VMHost|Get-Datastore -Name $dsName).Extensiondata.MoRef
         $dev.Device.backing.DiskMode = "persistent"
         $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
 
@@ -1877,4 +1877,142 @@ function AddPVrdmaNIC {
     } 
     $retVal = $true
     return $retVal
+}
+
+
+#######################################################################
+#
+# AddNVMeDisk()
+#
+#######################################################################
+
+function AddNVMeDisk {
+    param (
+        [String] $vmName,
+        [String] $hvServer,
+        [String] $dataStore,
+        [int] $capacityGB
+    )
+
+    <#
+    .Synopsis
+        Add NVMe disk
+    .Description
+        Attach a new NVMe Disk to VM
+    .Parameter vmName
+        Name of the VM that need to add disk.
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Parameter capacityGB
+        The Capacity of Disk
+    .Example
+        AddNVMeDisk $vmName $hvSever 10
+    #>
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "INFO: Unable to Get-VM with $vmName" -Category OperationTimeout -ERRORAction SilentlyContinue
+        return $false
+    }
+
+    
+    # NVMe is not working on ESXi 6.0
+    if ($vmObj.VMHost.Version -le 6.0) {
+        LogPrint "ERROR: This script doesn't support ESXi 6.0"
+        return $false
+    }
+
+    
+    # Convert hdsize
+    $hdSize = $capacityGB * 1GB
+    # Create config
+    $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+    # Check if there is an NVMe controller present
+    $nvmeCtrl = $vmObj.ExtensionData.Config.Hardware.Device | Where-Object {$_.GetType().Name -eq "VirtualNVMEController"}  | Select-Object -First 1 
+    if ( -not $nvmeCtrl) {
+        $ctrl = New-Object VMware.Vim.VirtualDeviceConfigSpec
+        $ctrl.Operation = "add"
+        $ctrl.Device = New-Object VMware.Vim.VirtualNVMEController
+        $nvmeKey = 100
+        $ctrl.Device.ControllerKey = $nvmeKey
+        $spec.deviceChange += $ctrl
+    }
+    else {
+        $nvmeKey = $nvmeCtrl.Key
+    }
+
+
+    # Add NVMe controller
+    try {
+        $vmObj.ExtensionData.ReconfigVM($spec)
+        LogPrint "DONE: NVMe Controller Add successful"
+    }
+    catch {
+        # Printout ERROR message
+        $ERRORMessage = $_ | Out-String
+        LogPrint $ERRORMessage
+        return $false
+    }
+
+
+    # Refresh Key
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "INFO: Unable to Get-VM with $vmName" -Category OperationTimeout -ERRORAction SilentlyContinue
+        return $false
+    }
+    $nvmeCtrl = $vmObj.ExtensionData.Config.Hardware.Device | Where-Object {$_.GetType().Name -eq "VirtualNVMEController"}  | Select-Object -First 1 
+    $nvmeKey = $nvmeCtrl.Key
+
+
+    # Create config
+    $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+
+
+    # Get next harddisk number
+    $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
+
+
+    # Get datastore
+    $dsName = $dataStore
+
+
+    # Add IDE hard disk
+    $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec
+    $dev.FileOperation = "Create"
+    $dev.Operation = "Add"
+    $dev.Device = New-Object VMware.Vim.VirtualDisk
+    $dev.Device.Backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingINFO
+    $dev.Device.Backing.Datastore = ($vmObj.VMHost | Get-Datastore -Name $dsName).Extensiondata.MoRef
+    $dev.Device.Backing.DiskMode = "persistent"
+    $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
+
+
+    # Setup controller
+    $dev.Device.Backing.ThinProvisioned = $true
+    $dev.Device.CapacityInKb = $hdSize / 1KB
+    $dev.Device.ControllerKey = $nvmeKey
+    $dev.Device.UnitNumber = -1
+    $spec.deviceChange += $dev
+
+
+    # Refresh VM
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "INFO: Unable to Get-VM with $vmName" -Category OperationTimeout -ERRORAction SilentlyContinue
+        return $false
+    }
+
+
+    try {
+        $vmObj.ExtensionData.ReconfigVM($spec)
+        LogPrint "DONE: NVMe Disk Add successful"
+        return $true
+    }
+    catch {
+        # Printout ERROR message
+        $ERRORMessage = $_ | Out-String
+        LogPrint $ERRORMessage
+        return $false
+    }
 }

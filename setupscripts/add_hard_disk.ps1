@@ -10,6 +10,7 @@
 ## v1.0.1 - ruqin - 07/11/2018 - Add a IDE hard disk support
 ## v1.1.0 - boyang - 08/06/2018 - Fix a return value can't be converted by Invoke-Expression
 ## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
+## v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
 ##
 ###############################################################################
 <#
@@ -27,9 +28,8 @@
    StorageFormat.
 
    Where
-        DiskType - IDE or SCSI
-        StorageFormat - The format of new hard disk, can be (Thin, Thick,
-        EagerZeroedThick
+        DiskType - IDE, SCSI or NVMe
+        StorageFormat - The format of new hard disk, can be (Thin, Thick, EagerZeroedThick) (IDE and NVMe don't support this parameter)
         DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
 
@@ -138,13 +138,15 @@ for ($pair = 0; $pair -le $max; $pair++) {
 
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
         LogPrint "Error: Unknown StorageFormat type: $storageFormat"
-        return $False
+        return $Aborted
     }
 
-    if (@("IDE", "SCSI") -notcontains $diskType) {
+
+    if (@("IDE", "SCSI", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
-        return $False
+        return $Aborted
     }
+    LogPrint "INFO: Target Datastore is $diskDataStore"
     if ($diskType -eq "SCSI") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
@@ -157,22 +159,35 @@ for ($pair = 0; $pair -le $max; $pair++) {
         }
         if (-not $?) {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
-            return $False
+            return $Failed
         }
         else {
             LogPrint "INFO: Add disk done."
-            return $True
+            return $Passed
         }
     }
 
     if ($diskType -eq "IDE") {
-        if (AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB) {
-            LogPrint "INFO: Add disk done."
-            return $True
+        $sts = AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB
+        if ($sts[-1]) {
+            LogPrint "INFO: Add IDE disk done."
+            return $Passed
         }
         else {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
-            return $False
+            return $Failed
+        }
+    }
+
+    if ($diskType -eq "NVMe") {
+        $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB
+        if ($sts[-1]) {
+            LogPrint "INFO: Add NVMe disk done. $vmName"
+            return $Passed
+        }
+        else {
+            Throw "Error : Cannot add new NVMe disk to the VM $vmName"
+            return $Failed
         }
     }
 
