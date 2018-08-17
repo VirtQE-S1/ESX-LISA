@@ -169,7 +169,7 @@ if ($modules -eq 0) {
 
 # Unload and load vmw_pvrdma module
 $Command = "while true; do modprobe -r vmw_pvrdma; modprobe vmw_pvrdma; done"
-$status = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
+Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
 LogPrint "INFO: vmw_pvrdma while loop is running"
 
 

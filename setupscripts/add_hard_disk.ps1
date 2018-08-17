@@ -11,6 +11,7 @@
 ## v1.1.0 - boyang - 08/06/2018 - Fix a return value can't be converted by Invoke-Expression
 ## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
 ## v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
+## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
 ##
 ###############################################################################
 <#
@@ -32,27 +33,32 @@
         StorageFormat - The format of new hard disk, can be (Thin, Thick, EagerZeroedThick) (IDE and NVMe don't support this parameter)
         DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
+        DiskNum - The number of disk that we need to add during setup scripts
 
     A typical XML definition for this test case would look similar
     to the following:
 
-    <test>
-        <testName>HotAdd_SCSI_Dynamic</testName>
-        <testID>ESX-STOR-001</testID>
-        <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
-        <testScript>stor_lis_disk.sh</testScript>
-        <files>remote-scripts/stor_lis_disk.sh,remote-scripts/utils.sh,
-        remote-scripts/stor_utils.sh </files>
-        <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-        <timeout>18000</timeout>
+
         <testparams>
             <param>DiskType=SCSI</param>
             <param>StorageFormat=Thin</param>
             <param>DiskDataStore=DataStore-97</param>
             <param>CapacityGB=3</param>
+            <param>DiskNum=1</param>
         </testparams>
-        <onError>Continue</onError>
-    </test>
+
+OR
+
+
+        <testparams>
+            <param>DiskType=SCSI,IDE,NVMe</param>
+            <param>StorageFormat=Thin,Thin,Thin</param>
+            <param>DiskDataStore=DataStore-97,DataStore-97,NVMe</param>
+            <param>CapacityGB=3,5,6</param>
+            <param>DiskNum=3</param>
+        </testparams>
+
+
 
 .Parameter vmName
     Name of the VM to add disk.
@@ -66,87 +72,158 @@
 .Example
     setupScripts\add_hard_disk
 #>
-param ([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-# Source the tcutils.ps1 file
-. .\setupscripts\tcutils.ps1
-
-
-############################################################################
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 #
-# Main entry point for script
+# Checking the input arguments
 #
-############################################################################
-
-
-# Check input arguments
-if ($vmName -eq $null -or $vmName.Length -eq 0) {
-    Write-Host "Error: VM name is null"
-    return $False
+if (-not $vmName) {
+    "Error: VM name cannot be null!"
+    exit 1
 }
 
-if ($testParams -eq $null -or $testParams.Length -lt 3) {
-    Write-Host "Error: No testParams provided"
-    Write-Host "Script Add_hard_disk.ps1 requires these test params"
-    return $False
+if (-not $hvServer) {
+    "Error: hvServer cannot be null!"
+    exit 1
+}
+
+if (-not $testParams) {
+    Throw "Error: No test parameters specified"
 }
 
 
-# Parse the testParams string
-$params = $testParams.TrimEnd(";").Split(";")
+# Get VM Obj
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+#
+# Display the test parameters so they are captured in the log file
+#
+"TestParams : '${testParams}'"
+
+
+#
+# Parse the test parameters
+#
+$rootDir = $null
 $diskType = $null
 $storageFormat = $null
 $capacityGB = $null
 $diskDataStore = $null
+$diskNum = $null
+$multipleParams = $false
 
 
-#
-# Support to add more disks for same size, e.g. DiskType0,StorageFormat0,
-# DiskType1,StorageFormat1,CapacityGB
-#
-[int]$max = 0
-$setIndex = $null
+$params = $testParams.Split(";")
 foreach ($p in $params) {
     $fields = $p.Split("=")
-    $value = $fields[0].Trim()
-    switch -wildcard ($value) {
-        "DiskType?" { $setIndex = $value.substring(8) }
-        "StorageFormat?" { $setIndex = $value.substring(13) }
-        default {}  # unknown param - just ignore it
-    }
-
-    if ([int]$setIndex -gt $max -and $null -ne $setIndex) {
-        $max = [int]$setIndex
+    switch ($fields[0].Trim()) {
+        "rootDir" { $rootDir = $fields[1].Trim() }
+        "DiskType" { $diskType = $fields[1].Trim() }
+        "StorageFormat" { $storageFormat = $fields[1].Trim() }
+        "CapacityGB" { $capacityGB = $fields[1].Trim() }
+        "DiskDataStore" { $diskDataStore = $fields[1].Trim() }
+        "DiskNum" { $diskNum = $fields[1].Trim() }
+        default {}
     }
 }
 
-for ($pair = 0; $pair -le $max; $pair++) {
-    foreach ($p in $params) {
-        $fields = $p.Split("=")
-        $value = $fields[1].Trim()
-        switch ( $fields[0].Trim() ) {
-            "DiskType$pair" { $diskType = $value }
-            "StorageFormat$pair" { $storageFormat = $value }
-            "DiskType" { $diskType = $value }
-            "StorageFormat" { $storageFormat = $value }
-            "CapacityGB" { $capacityGB = $value }
-            "DiskDataStore" {$diskDataStore = $value}
-            default {}  # unknown param - just ignore it
-        }
+
+if (-not $rootDir) {
+    "Warn : no rootdir was specified"
+}
+else {
+    if ( (Test-Path -Path "${rootDir}") ) {
+        Set-Location $rootDir
+    }
+    else {
+        "Warn : rootdir '${rootDir}' does not exist"
+    }
+}
+
+# If not set this para, the default value is 1
+if ($null -eq $diskNum) {
+    $diskNum = 1
+}
+
+
+# Default storageformat is Thin
+if ($null -eq $storageFormat) {
+    $storageFormat = "Thin" 
+}
+
+
+# Default DiskDatastore is VM's Host
+if ($null -eq $diskDataStore) {
+    $diskDataStore = $vmObj.ExtensionData.Config.Files.VmPathName.Split(']')[0].TrimStart('[')
+}
+
+
+# Check whether we have multiple opition for params
+if ($diskType -like "*,*" -or $capacityGB -like "*,*" -or $diskDataStore -like "*,*") {
+    # Split params by comma
+    $diskTypeList = $diskType.Split(',')
+    $capacityGBList = $capacityGB.Split(',')
+    $diskDataStoreList = $diskDataStore.Split(',')
+    $storageFormatList = $storageFormat.Split(',')
+    # Check the number of params
+    if ($diskTypeList.count -ne $diskNum -or $capacityGBList.count -ne $diskNum -or $diskDataStoreList.count -ne $diskNum) {
+        LogPrint "ERROR: The number of params is not fit the number fo disk"
+        return $Failed
+    }
+    $multipleParams = $true
+}
+
+#
+# Source the tcutils.ps1 file
+#
+. .\setupscripts\tcutils.ps1
+
+PowerCLIImport
+ConnectToVIServer $env:ENVVISIPADDR `
+    $env:ENVVISUSERNAME `
+    $env:ENVVISPASSWORD `
+    $env:ENVVISPROTOCOL
+
+###############################################################################
+#
+# Main Body
+#
+###############################################################################
+
+
+$retVal = $Failed
+for ($i = 0; $i -lt $diskNum; $i++) {
+    # If we have multiple opition for params
+    if ($multipleParams) {
+        $diskType = $diskTypeList[$i] 
+        $storageFormat = $storageFormatList[$i] 
+        $diskDataStore = $diskDataStoreList[$i] 
+        $capacityGB = $capacityGBList[$i] 
     }
 
+
+    # Check storage format params
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
         LogPrint "Error: Unknown StorageFormat type: $storageFormat"
         return $Aborted
     }
 
 
+    # Check Disk Type params
     if (@("IDE", "SCSI", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
     LogPrint "INFO: Target Datastore is $diskDataStore"
+
+
+    # Add SCSI disk
     if ($diskType -eq "SCSI") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
@@ -162,16 +239,16 @@ for ($pair = 0; $pair -le $max; $pair++) {
             return $Failed
         }
         else {
-            LogPrint "INFO: Add disk done."
-            return $Passed
+            LogPrint "INFO: Add SCSI disk done."
         }
     }
 
+
+    # Add IDE disk
     if ($diskType -eq "IDE") {
         $sts = AddIDEHardDisk -vmName $vmName -hvServer $hvServer -capacityGB $CapacityGB
         if ($sts[-1]) {
             LogPrint "INFO: Add IDE disk done."
-            return $Passed
         }
         else {
             Throw "Error : Cannot add new hard disk to the VM $vmName"
@@ -179,16 +256,20 @@ for ($pair = 0; $pair -le $max; $pair++) {
         }
     }
 
+
+    # Add NVMe disk
     if ($diskType -eq "NVMe") {
         $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB
         if ($sts[-1]) {
             LogPrint "INFO: Add NVMe disk done. $vmName"
-            return $Passed
         }
         else {
             Throw "Error : Cannot add new NVMe disk to the VM $vmName"
             return $Failed
         }
     }
-
 }
+
+
+$retVal = $Passed
+return $retVal
