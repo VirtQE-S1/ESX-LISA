@@ -2016,3 +2016,54 @@ function AddNVMeDisk {
         return $false
     }
 }
+
+
+#######################################################################
+#
+# FindAllNewAddNIC()
+#
+#######################################################################
+
+function FindAllNewAddNIC {
+    Param
+    (
+        [String] $ipv4, 
+        [String] $sshkey
+    )
+    <#
+    .Synopsis
+        Get all new add nic devicename
+    .Description
+        Get all new add nic devicename and this function will return a list which retrive from bash
+    .Parameter ipv4
+        ipv4 address of target VM
+    .Parameter sshkey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\Ssh.
+    .Outputs 
+        A list which contain all other nics
+    .Example
+        $nics = FindAllNewAddNIC $ipv4 $sshkey
+    #>
+    # Get Old Adapter (SSH is using it) of VM
+    $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+    $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    if ( $null -eq $Old_Adapter) {
+        LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
+        return $null
+    }
+
+
+    # Get all other nics
+    $retVal = @()
+    $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
+    $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    $retVal += $nics
+    $retVal.GetType()
+    if ( $null -eq $nics) {
+        LogPrint "ERROR : Cannot get any NIC other than default NIC from guest"
+        return $null
+    }else{
+        return $retVal
+    }
+}
