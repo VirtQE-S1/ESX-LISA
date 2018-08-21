@@ -166,7 +166,7 @@ if ( -not $status ) {
 # Find out new add RDMA nic
 $nics = FindAllNewAddNIC $ipv4 $sshKey
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer
     return $Failed
 }
@@ -179,7 +179,7 @@ LogPrint "INFO: New NIC is $rdmaNIC"
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
 if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
-    LogPrint "ERROR : Config IP Failed"
+    LogPrint "ERROR : Config IP Failed maybe IP address conflit"
     DisconnectWithVIServer
     return $Failed
 }

@@ -1771,6 +1771,7 @@ function ConfigIPforNewDevice {
             $Prefix = $IP_Prefix.Split("/")[1]
             # Config IP for Device
             $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=none`\nONBOOT=yes`\nIPADDR=$IP`\nPREFIX=$Prefix"
+            # This echo $ will help to create new line in script
             SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
         }
         else {
@@ -1898,7 +1899,7 @@ function AddNVMeDisk {
     .Synopsis
         Add NVMe disk
     .Description
-        Attach a new NVMe Disk to VM
+        Attach a new NVMe Disk to VM, Add NVMe controller first and then attach a disk to controller
     .Parameter vmName
         Name of the VM that need to add disk.
     .Parameter hvSesrver
@@ -1933,6 +1934,7 @@ function AddNVMeDisk {
         $ctrl = New-Object VMware.Vim.VirtualDeviceConfigSpec
         $ctrl.Operation = "add"
         $ctrl.Device = New-Object VMware.Vim.VirtualNVMEController
+        # This key is from vmx file may need to change due to different device
         $nvmeKey = 100
         $ctrl.Device.ControllerKey = $nvmeKey
         $spec.deviceChange += $ctrl
@@ -1969,7 +1971,7 @@ function AddNVMeDisk {
     $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
 
 
-    # Get next harddisk number
+    # Get next harddisk number (I use random here to make sure almost no duplicate harddisk num)
     $hdNUM = Get-Random -Minimum 10000 -Maximum 99999
 
 
@@ -1977,7 +1979,7 @@ function AddNVMeDisk {
     $dsName = $dataStore
 
 
-    # Add IDE hard disk
+    # Add NVMe hard disk
     $dev = New-Object VMware.Vim.VirtualDeviceConfigSpec
     $dev.FileOperation = "Create"
     $dev.Operation = "Add"
@@ -2059,6 +2061,7 @@ function FindAllNewAddNIC {
     $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
     $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
     $retVal += $nics
+    # This will make powershell not convert array to string if the array only has one element
     $retVal.GetType()
     if ( $null -eq $nics) {
         LogPrint "ERROR : Cannot get any NIC other than default NIC from guest"
