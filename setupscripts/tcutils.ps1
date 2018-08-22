@@ -1798,6 +1798,8 @@ function ConfigIPforNewDevice {
             # Config New Connection with DHCP
             SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet" 
         }
+        # Restart NetworkManager
+        SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
         # Restart Connection
         $status = SendCommandToVM $ipv4 $sshKey "nmcli con down $deviceName && nmcli con up $deviceName" 
         if (-not $status) {

@@ -393,7 +393,7 @@ if (-not $vmObj) {
 
 
 # Move host to old host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false -RunAsync:$true
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
 if (-not $?) {
     LogPrint "ERROR : Cannot move VM to required Host $hvServer"
     DisconnectWithVIServer
@@ -401,8 +401,12 @@ if (-not $?) {
 }
 
 
+# Wait 6 seconds
+Start-Sleep -Seconds 6
+
+
 # Refresh vmobj
-$vmObj = Get-VMHost -Name $dsthost | Get-VM -Name $vmName
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
