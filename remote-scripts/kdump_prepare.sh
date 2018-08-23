@@ -53,7 +53,7 @@ Check_Kdump_Running(){
 		fi
 		;;
 	redhat_7)
-		service kdump status | grep "Active: active (exited)"
+		systemctl status kdump | grep "Active: active (exited)"
 		if  [ $? -eq 0 ]
 		then
 			LogMsg "PASS: kdump service is active after reboot"
@@ -63,6 +63,18 @@ Check_Kdump_Running(){
 			UpdateSummary "FAIL: kdump service isn't active after reboot"
 			exit 1
 		fi
+		;;
+	redhat_8)
+		systemctl status kdump | grep "Active: active (exited)"
+		if  [ $? -eq 0 ]
+		then
+			LogMsg "PASS: kdump service is active after reboot"
+			UpdateSummary "PASS: kdump service is active after reboot"
+		else
+			LogMsg "FAIL: Kdump isn't active after reboot"
+			UpdateSummary "FAIL: kdump service isn't active after reboot"
+			exit 1
+		fi		
 		;;
         *)
 			LogMsg "FAIL: Unknown OS"
