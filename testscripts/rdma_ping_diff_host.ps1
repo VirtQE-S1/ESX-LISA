@@ -25,7 +25,6 @@
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
                 <param>dstDatastore=freenas</param>
                 <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
@@ -76,10 +75,8 @@ if (-not $testParams) {
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$rdmaDstHost = $null
 $dstHost6_7 = $null
 $dstHost6_5 = $null
-$dstHost6_0 = $null
 $dstDatastore = $null
 
 $params = $testParams.Split(";")
@@ -91,7 +88,6 @@ foreach ($p in $params) {
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "dstHost6.7" { $dstHost6_7 = $fields[1].Trim()}
         "dstHost6.5" { $dstHost6_5 = $fields[1].Trim()}
-        "dstHost6.0" { $dstHost6_0 = $fields[1].Trim()}
         "dstDatastore" { $dstDatastore = $fields[1].Trim() }
         default {}
     }
@@ -132,10 +128,9 @@ if ($null -eq $dstDatastore) {
 }
 
 
-if (-not $dstHost6_7 -or -not $dstHost6_5 -or -not $dstHost6_0) {
+if (-not $dstHost6_7 -or -not $dstHost6_5) {
     "INFO: dstHost 6.7 is $dstHost6_7"
     "INFO: dstHost 6.5 is $dstHost6_5"
-    "INFO: dstHost 6.0 is $dstHost6_0"
     "Warn : dstHost was not specified"
     return $false
 }
@@ -192,15 +187,6 @@ elseif ($version -eq "6.5.0") {
         $dsthost = $ip_addresses[0]
     }
 }
-else {
-    $ip_addresses = $dstHost6_0.Split(",")
-    if ($hvServer -eq $ip_addresses[0].Trim()) {
-        $dsthost = $ip_addresses[1]
-    }
-    else {
-        $dsthost = $ip_addresses[0]
-    }
-}
 LogPrint "INFO: Destination Host is $DstHost"
 
 
@@ -243,15 +229,6 @@ if (-not $shardDatastore) {
 
 $name = $shardDatastore.Name
 LogPrint "INFO: required shard datastore $name"
-
-
-# Refresh vmobj
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
 
 
 # Move Hard Disk to another datastore to prepare next migrate
@@ -391,7 +368,7 @@ if (-not $vmObj) {
 }
 
 
-# Move host to old host
+# Move guest to old host
 $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
 if (-not $?) {
     LogPrint "ERROR : Cannot move VM to required Host $hvServer"
