@@ -7,57 +7,27 @@
 ###############################################################################
 ##
 ## Revision:
-## v1.0.0 - boyang - 01/18/2017 - Build script
-## v1.1.0 - boyang - 02/13/2017 - Remove kdump_result.sh
-## v1.2.0 - boyang - 02/14/2107 - Cancle trigger kdump with at command
-## v1.3.0 - boyang - 02/22/2017 - Check vmcore function into while
-## v1.4.0 - boyang - 02/28/2017 - Send and execute kdump_execute.sh in while
-## v1.5.0 - boyang - 02/03/2017 - Call WaitForVMSSHReady and Remove V1.4
-## v1.6.0 - boyang - 03/07/2017 - Remove push files, framework will do it
-## v1.7.0 - boyang - 03/22/2017 - Execute kdump_execute.sh in while again
-## v1.8.0 - boyang - 06/29/2017 - Trigger kdump as a service to reduce rate of framework can't detect vm
-## v1.9.0 - boyang - 06/30/2017 - Remove kdump_execute.sh to kdump_prepare.sh
-## v2.0.0 - boyang - 10/12/2017 - Remove a server to trigger kdump, using Start-Process
-## v2.1.0 - boyang - 08/23/2018 - Remove disconnect / connect again after trigger
+## V1.0 - boyang - 01/18/2017 - Build script
+## V1.1 - boyang - 02/13/2017 - Remove kdump_result.sh
+## V1.2 - boyang - 02/14/2107 - Cancle trigger kdump with at command
+## V1.3 - boyang - 02/22/2017 - Check vmcore function into while
+## V1.4 - boyang - 02/28/2017 - Send and execute kdump_execute.sh in while
+## V1.5 - boyang - 02/03/2017 - Call WaitForVMSSHReady and Remove V1.4
+## V1.6 - boyang - 03/07/2017 - Remove push files, framework will do it
+## V1.7 - boyang - 03/22/2017 - Execute kdump_execute.sh in while again
+## V1.8 - boyang - 06/29/2017 - Trigger kdump as a service to reduce rate of framework can't detect vm
+## V1.9 - boyang - 06/30/2017 - Remove kdump_execute.sh to kdump_prepare.sh
+## V2.0 - boyang - 10/12/2017 - Remove a server to trigger kdump, using Start-Process
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Trigger the target VM kdump
+    Trigger target VM kdump.
 
 .Description
-    Trigger target VM kdump based on different cases
-	
-	<test>
-		<testName>kdump_crash_mixed_disk</testName>
-		<testID>ESX-KDUMP-005</testID>
-		<setupScript>
-			<file>setupscripts\change_cpu.ps1</file>
-			<file>setupScripts\change_memory.ps1</file>
-			<file>SetupScripts\add_hard_disk.ps1</file>
-		</setupScript>
-		<testScript>testscripts\kdump.ps1</testScript>
-		<files>remote-scripts\utils.sh</files>
-		<files>remote-scripts\kdump_config.sh</files>
-		<files>remote-scripts\kdump_prepare.sh</files>
-		<testParams>
-			<param>crashkernel=128M</param>
-			<param>VCPU=2</param>
-			<param>VMMemory=4GB</param>
-			<param>DiskType=SCSI</param>
-			<param>StorageFormat=Thin</param>
-			<param>CapacityGB=3</param>
-			<param>fileSystems=(ext4 ext3 xfs btrfs)</param>
-			<param>TName=kdump_crash_mixed_disk</param>
-			<param>TC_COVERED=RHEL6-34886,RHEL7-50870</param>
-		</testParams>
-		<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-		<timeout>900</timeout>
-		<onError>Continue</onError>
-		<noReboot>False</noReboot>
-	</test>
-	
+    Trigger target VM kdump based on different cases.
+
 .Parameter vmName
     Name of the test VM.
 
@@ -184,12 +154,13 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-				  
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
+
+
 $retVal = $Failed
 
 
@@ -220,6 +191,7 @@ bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 # SendCommandToVM: Push / execute kdump_prepare.sh in while, in case kdump_prepare.sh fail
 # kdump_prepare.sh: Confirms all configurations works
 #
+$timeout = 360
 $timeout = 360
 while ($timeout -gt 0)
 {
@@ -271,6 +243,18 @@ Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" 
 #		ls /var/crash                -> No above two issues, vmcore should be generated, if not, confirm vmcore isn't generated
 #
 
+# DisconnectWithVIServer
+Write-Host -F Gray "After trigger kdump, disconnect with viserver"        
+Write-Output "After trigger kdump, disconnect with viserver"
+DisconnectWithVIServer
+
+# ConnectToVIServer
+Write-Host -F Gray "Connect with viserver"        
+Write-Output "Connect with viserver"
+ConnectToVIServer $env:ENVVISIPADDR `
+                  $env:ENVVISUSERNAME `
+                  $env:ENVVISPASSWORD `
+                  $env:ENVVISPROTOCOL
 
 #				  
 # Based on WORKAROUND to confirm vmcore	  

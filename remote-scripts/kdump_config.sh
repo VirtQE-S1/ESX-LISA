@@ -34,9 +34,9 @@ UtilsInit
 ## Main Body
 ##
 ###############################################################################
+
 kdump_conf="/etc/kdump.conf"
 dump_path="/var/crash"
-
 
 #
 # Re-write /etc/grub.conf, or cant' update $crashkernel
@@ -50,12 +50,6 @@ rhel6_grub_conf=`find /boot/ -name "grub.conf"`
 #
 rhel7_grub="/etc/default/grub"
 rhel7_grub_cfg=`find /boot/ -name "grub.cfg"`
-
-#
-# RHEL8 BIOS and EFI, they have the same grub
-#
-rhel8_grub="/etc/default/grub"
-rhel8_grub_cfg=`find /boot/ -name "grub.cfg"`
 
 grub_conf=""
 
@@ -177,20 +171,6 @@ case $DISTRO in
 		grub_conf=$rhel7_grub
 		Config_Grub $grub_conf
 		grub2-mkconfig -o $rhel7_grub_cfg
-		if [ $? -ne 0 ]
-		then
-			LogMsg "FAIL: Could not execute grub2-mkconfig"
-			UpdateSummary "FAIL: Could not grub2-mkconfig"
-			exit 1
-		else
-			LogMsg "SUCCESS: Execute grub2-mkconfig well"
-			UpdateSummary "SUCCESS: Execute grub2-mkconfig well"
-		fi
-	;;
-	redhat_8)
-		grub_conf=$rhel8_grub
-		Config_Grub $grub_conf
-		grub2-mkconfig -o $rhel8_grub_cfg
 		if [ $? -ne 0 ]
 		then
 			LogMsg "FAIL: Could not execute grub2-mkconfig"
