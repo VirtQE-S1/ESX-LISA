@@ -98,35 +98,13 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-#Get Current VM
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj) {
-    Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
-    return $Aborted
-} 
-
-
-try {
-    # Disable reserve all memory option (snapshot will not totally revert this option)
-    $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
-    $spec.memoryReservationLockedToMax = $false
-    $vmObj.ExtensionData.ReconfigVM($spec)
-
-
-    # This command make VM refresh their reserve memory option (snapshot will not revert this option)
-    Get-VMResourceConfiguration -VM $vmObj | Set-VMResourceConfiguration -MemReservationMB 0
-    if ( -not $?) {
-        LogPrint "WARN: Reset memory lock failed" 
-        return $Failed
-    }
+$status = DisableMemoryReserve $vmName $hvServer
+if ( -not $status[-1]) {
+    LogPrint "ERROR: Disable memory reserve error" 
 }
-catch {
-    $ERRORMessage = $_ | Out-String
-    LogPrint "ERROR: Lock all memory ERROR, please check it manually"
-    LogPrint $ERRORMessage
-    return $falFailedse
+else {
+    $retVal = $Passed
 }
 
 
-$retVal = $Passed
 return $retVal

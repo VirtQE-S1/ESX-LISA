@@ -178,7 +178,7 @@ if ( -not $status) {
 # # Begin to stress memory
 $Command = "stress --vm 45 --vm-keep --vm-bytes 100M --timeout 60s"
 
-# Cannot us NoNewWindow Here because this will cause no ExitCode We could use WindowStyle Hidden instead
+# Cannot use NoNewWindow Here because this will cause no ExitCode We could use WindowStyle Hidden instead
 $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
 
 # Wait seconds for Hot Add memory

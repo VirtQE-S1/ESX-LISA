@@ -207,12 +207,12 @@ if ( $null -eq $Thrid_Adapter) {
 }
 
 
-# Remove seoncd vmxnet3 NIC
+# Remove vmxnet3 NIC
 $Second_NIC = findNICByMAC -AdapterName $Second_Adapter -vmObj $vmObj -ipv4 $ipv4 -sshKey $sshKey
-
-# Because new patch is not online so I have to poweroff
+# Because new patch is not online so have to poweroff
 $status = Stop-VM $vmObj -Confirm:$False
 LogPrint "INFO: Poweroff sucessful"
+
 
 # Wait for reload
 Start-Sleep -Seconds 6
@@ -223,6 +223,7 @@ if (-not $vmObj) {
     DisconnectWithVIServer
     return $Aborted
 }
+
 
 # Must be [-1] due to powershell return value
 Remove-NetworkAdapter -NetworkAdapter $Second_NIC[-1] -Confirm:$false
@@ -240,7 +241,7 @@ if (-not $?) {
 }
 
 
-# Get  VM IP addr
+# Get VM IP addr
 if ( -not (WaitForVMSSHReady $vmName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
     DisconnectWithVIServer
@@ -272,7 +273,6 @@ if ( -not $status) {
 
 
 # Wait for reload
-
 Start-Sleep -Seconds 6
 
 

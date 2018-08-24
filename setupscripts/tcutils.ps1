@@ -1725,7 +1725,8 @@ function ConfigIPforNewDevice {
         [String] $ipv4, 
         [String] $sshkey, 
         [String] $deviceName, 
-        [parameter(Mandatory = $false)] [String] $IP_Prefix
+        [parameter(Mandatory = $false)] [String] $IP_Prefix,
+        [parameter(Mandatory = $false)] [int] $MTU
     )
     <#
     .Synopsis
@@ -1741,11 +1742,14 @@ function ConfigIPforNewDevice {
         Name of new attached NIC
     .Parameter IP_Prefix 
         IP with prefix such as 192.168.0.100/24
+    .Parameter MTU 
+        The MTU for the NIC (1500 default) 
     .Example
         ConfigIPforNewDevice $ipv4 $sshkey $deviceName 192.168.0.100/24 192.168.0.1
     #>
     
     $retVal = $false
+
 
     # Get the Guest version
     $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
@@ -1756,10 +1760,17 @@ function ConfigIPforNewDevice {
     }
     LogPrint "INFO: Guest OS version is $DISTRO"
 
+
     # Different Guest DISTRO
     if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
         LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
         return $false
+    }
+
+
+    # Setup default MTU
+    if ($null -eq $MTU) {
+       $MTU = 1500 
     }
 
 
@@ -1770,13 +1781,13 @@ function ConfigIPforNewDevice {
             $IP = $IP_Prefix.Split("/")[0]
             $Prefix = $IP_Prefix.Split("/")[1]
             # Config IP for Device
-            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=none`\nONBOOT=yes`\nIPADDR=$IP`\nPREFIX=$Prefix"
+            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=none`\nONBOOT=yes`\nIPADDR=$IP`\nPREFIX=$Prefix`\nMTU=$MTU"
             # This echo $ will help to create new line in script
             SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
         }
         else {
             # Config DHCP for Device
-            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=dhcp`\nONBOOT=yes"
+            $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=dhcp`\nONBOOT=yes`\nMTU=$MTU"
             SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
 
         }
@@ -1798,6 +1809,16 @@ function ConfigIPforNewDevice {
             # Config New Connection with DHCP
             SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet" 
         }
+
+
+        # Set New MTU
+        $status = SendCommandToVM $ipv4 $sshKey "nmcli connection modify `$(nmcli connection show | grep $deviceName | awk '{print `$(NF-2)}') mtu $MTU"
+        if (-not $status) {
+            LogPrint "Error: Cannot setup MTU as $MTU"
+            return $false
+        }
+
+
         # Restart NetworkManager
         SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
         # Restart Connection
@@ -1808,6 +1829,7 @@ function ConfigIPforNewDevice {
         }
     }
     LogPrint "INFO: IP config for new NIC succeeded"
+
 
     $retVal = $true
     return $retVal
@@ -2071,4 +2093,62 @@ function FindAllNewAddNIC {
     }else{
         return $retVal
     }
+}
+
+
+#######################################################################
+#
+# FindAllNewAddNIC()
+#
+#######################################################################
+
+function DisableMemoryReserve {
+    param (
+        [String] $vmName,
+        [String] $hvServer
+    )
+    <#
+    .Synopsis
+        Disable memory reserve settings
+    .Description
+        Disable memory reserve settings, mainly for sr-iov cleanup step
+    .Parameter vmName
+        Name of the VM that need to add disk.
+    .Parameter hvSesrver
+        Name of the server hosting the VM.
+    .Example
+        DisableMemoryReserve $vmName $hvServer
+    #> 
+    #Get Current VM
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        DisconnectWithVIServer
+        return $false
+    }
+
+
+    try {
+        # Disable reserve all memory option (snapshot will not totally revert this option)
+        $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+        $spec.memoryReservationLockedToMax = $false
+        $vmObj.ExtensionData.ReconfigVM($spec)
+
+
+        # This command make VM refresh their reserve memory option (snapshot will not revert this option)
+        Get-VMResourceConfiguration -VM $vmObj | Set-VMResourceConfiguration -MemReservationMB 0
+        if ( -not $?) {
+            LogPrint "WARN: Reset memory lock failed" 
+            return $false
+        }
+    }
+    catch {
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: Lock all memory ERROR, please check it manually"
+        LogPrint $ERRORMessage
+        return $false
+    }
+
+
+    return $true
 }

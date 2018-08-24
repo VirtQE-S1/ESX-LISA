@@ -27,7 +27,7 @@
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
                 <param>dstDatastore=freenas</param>
-                <param>TC_COVERED=RHEL-111209</param>
+                <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>900</timeout>
@@ -139,7 +139,6 @@ if (-not $dstHost6_7 -or -not $dstHost6_5 -or -not $dstHost6_0) {
     "Warn : dstHost was not specified"
     return $false
 }
-
 
 
 #
@@ -300,7 +299,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Find out new add RDMA nic for Guest B
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics = FindAllNewAddNIC $ipv4Addr_B $sshKey
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer
@@ -332,7 +331,7 @@ if (-not $status) {
 }
 
 
-# Move Guest B to RDMA Dst Host
+# Move Guest A to RDMA Dst Host
 $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dsthost) -Confirm:$false
 if (-not $?) {
     LogPrint  "ERROR : Cannot move VM to required Host $dsthost"

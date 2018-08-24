@@ -146,6 +146,7 @@ else {
     }
 }
 
+
 # If not set this para, the default value is 1
 if ($null -eq $diskNum) {
     $diskNum = 1
@@ -178,6 +179,7 @@ if ($diskType -like "*,*" -or $capacityGB -like "*,*" -or $diskDataStore -like "
     }
     $multipleParams = $true
 }
+
 
 #
 # Source the tcutils.ps1 file
