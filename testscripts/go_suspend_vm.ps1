@@ -1,14 +1,11 @@
 ###############################################################################
-##
 ## Description:
 ##  Suspend and Resume the VM
 ##
-###############################################################################
-##
 ## Revision:
-## V1.0 - boyang - 09/06/2017 - Build script
-##
+##  v1.0.0 - boyang - 09/06/2017 - Build script
 ###############################################################################
+
 
 <#
 .Synopsis
@@ -35,13 +32,13 @@ param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
-    exit
+	return $false
 }
 
 if (-not $hvServer)
 {
     "FAIL: hvServer cannot be null!"
-    exit
+	return $false
 }
 
 if (-not $testParams)
@@ -89,25 +86,26 @@ else
 	else
 	{
 		"Warn : rootdir '${rootDir}' does not exist"
+	    return $false
 	}
 }
 
 if ($null -eq $sshKey) 
 {
 	"FAIL: Test parameter sshKey was not specified"
-	return $False
+	return $false
 }
 
 if ($null -eq $ipv4) 
 {
 	"FAIL: Test parameter ipv4 was not specified"
-	return $False
+	return $false
 }
 
 if ($null -eq $logdir)
 {
 	"FAIL: Test parameter logdir was not specified"
-	return $False
+	return $false
 }
 
 
@@ -121,13 +119,20 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 ###############################################################################
-#
 # Main Body
-#
 ###############################################################################
 $retVal = $Failed
 
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+# Check the VM
+$vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vm_obj) {
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
+    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+# Confirm the VM power state should be on as framework does
 $state = $vmObj.PowerState
 if ($state -ne "PoweredOn")
 {
@@ -136,29 +141,34 @@ if ($state -ne "PoweredOn")
 }
 else
 {
-    Write-Output "DONE. VM Power state is $state"
+    Write-Output "INFO: VM Power state: [ $state ]"
     
-    Write-Output "Now, will Suspend the VM......."
-    $vmObj_suspend = Suspend-VM -VM $vmObj -Confirm:$False
-    $state = $vmObj_suspend.PowerState
+    Write-Output "INFO: Will suspend the VM [ $vm_obj ]"
+    $vm_suspend = Suspend-VM -VM $vm_obj -Confirm:$false
+
     Start-sleep 180
+
+    $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    $state = $vm_suspend.PowerState
     if ($state -ne "Suspended")
     {
-        Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-Error -Message "ERROR: After suspend operation, the VM power state is incorrect" -Category ObjectNotFound -ErrorAction SilentlyContinue
         return $Aborted
     }
     else
     {
-        Write-Output "DONE. VM Power state is $state"
-            
-        Write-Output "Now, will Power On the VM......."
-        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-        $state = $vmObj.PowerState
-        $vmObj_on = Start-VM -VM $vmObj -Confirm:$False
+        Write-Output "INFO: The VM power state [ $state ]"
+         
+        Write-Output "INFO: Will power on the VM [ $vm_obj ]"
+        $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        $state = $vm_obj.PowerState
+        $vm_on = Start-VM -VM $vm_obj -Confirm:$false
+
         Start-sleep 360
+
         if ($state -ne "PoweredOn")
         {
-            Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+            Write-Error -Message "ERROR: After power on operation, the VM power state is incorrect" -Category ObjectNotFound -ErrorAction SilentlyContinue
             return $Aborted
         }
         else
@@ -166,12 +176,12 @@ else
             $error_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
             if ($null -eq $error_check)
             {
-                Write-Output "PASS: After resume, NO call trace found"
+                Write-Output "INFO: After resume, NO call trace found"
                 $retVal = $Passed
             }
             else
             {
-                Write-Output "FAIL: After resume, FOUND call trace, PLEASE check it manually"
+                Write-Output "INFO: After resume, FOUND call trace, PLEASE check it manually"
             }
         }
     }
@@ -180,3 +190,4 @@ else
 DisconnectWithVIServer
 
 return $retVal
+
