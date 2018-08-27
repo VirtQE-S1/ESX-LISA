@@ -860,7 +860,7 @@
             <testID>ESX-GO-007</testID>
             <testScript>testscripts\go_suspend_vm.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38513,RHEL7-80222</param>
             </testParams>
