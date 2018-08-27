@@ -132,11 +132,11 @@ if (-not $vm_obj) {
     return $Aborted
 }
 
-# Confirm the VM power state should be on as framework does
-$state = $vmObj.PowerState
+# Confirm the VM power state should be on
+$state = $vm_obj.PowerState
 if ($state -ne "PoweredOn")
 {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-Output "CheckModules: Unable to create VM object for VM $vmName"
     return $Aborted
 }
 else
@@ -144,15 +144,17 @@ else
     Write-Output "INFO: VM Power state: [ $state ]"
     
     Write-Output "INFO: Will suspend the VM [ $vm_obj ]"
-    $vm_suspend = Suspend-VM -VM $vm_obj -Confirm:$false
+    $suspend = Suspend-VM -VM $vm_obj -Confirm:$false
 
+	# HERE. Hard Code. Hope all RHELs in ESXi Hosts complete the suspend in 180s
     Start-sleep 180
 
+	# After suspend, get the VM and its power state again
     $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    $state = $vm_suspend.PowerState
+    $state = $vm_obj.PowerState
     if ($state -ne "Suspended")
     {
-        Write-Error -Message "ERROR: After suspend operation, the VM power state is incorrect" -Category ObjectNotFound -ErrorAction SilentlyContinue
+        Write-Output "ERROR: After suspend operation, the VM power state is incorrect"
         return $Aborted
     }
     else
@@ -160,12 +162,14 @@ else
         Write-Output "INFO: The VM power state [ $state ]"
          
         Write-Output "INFO: Will power on the VM [ $vm_obj ]"
-        $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-        $state = $vm_obj.PowerState
-        $vm_on = Start-VM -VM $vm_obj -Confirm:$false
+        $on = Start-VM -VM $vm_obj -Confirm:$false
 
+		# HERE. Hard Code. Hope all RHELs in ESXi Hosts complete the resume in 360s
         Start-sleep 360
-
+		
+		# After resume, get the VM and its power state again		
+        $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+		$state = $vm_obj.PowerState		
         if ($state -ne "PoweredOn")
         {
             Write-Error -Message "ERROR: After power on operation, the VM power state is incorrect" -Category ObjectNotFound -ErrorAction SilentlyContinue
@@ -190,4 +194,3 @@ else
 DisconnectWithVIServer
 
 return $retVal
-
