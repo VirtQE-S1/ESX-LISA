@@ -22,7 +22,7 @@
             </setupScript>
             <testScript>testscripts\rdma_check_Ibstat.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL-111208</param>
+                <param>TC_COVERED=RHEL6-49155,RHEL-111208</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
