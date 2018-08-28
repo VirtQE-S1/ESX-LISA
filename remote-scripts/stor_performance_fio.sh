@@ -150,7 +150,7 @@ if [[ $FS == raw ]]; then
 else
 	filename="/test/test"
 fi
-./RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path
+./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed.$path"
 	UpdateSummary "Test failed.fio run failed.$path,./RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
