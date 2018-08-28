@@ -1749,6 +1749,10 @@ function ConfigIPforNewDevice {
     #>
     
     $retVal = $false
+    if ($null -eq $deviceName) {
+        LogPrint "ERROR: No device name in param"
+        return $false 
+    }
 
 
     # Get the Guest version
