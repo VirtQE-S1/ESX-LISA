@@ -108,7 +108,7 @@
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
-                <suiteTest>kdump_crash_mixed_disk</suiteTest>				
+                <suiteTest>kdump_crash_mixed_disk</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -163,21 +163,23 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- EACV Total Cases: 16 -->
+            <!-- EACV Total Cases: 17 -->
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- <suiteTest>ovt_check_vmwaretool_directory</suiteTest> -->
                 <!-- <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest> -->
                 <!-- <suiteTest>ovt_check_oneshot_timesync</suiteTest> -->
+                <suiteTest>ovt_check_build_version</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
-                <suiteTest>kdump_crash_mixed_disk</suiteTest>								
+                <suiteTest>kdump_crash_mixed_disk</suiteTest>
 
                 <!-- <suiteTest>go_install_ide_disk</suiteTest> -->
                 <!-- <suiteTest>go_check_suspend_time_drift</suiteTest> -->
+                <suiteTest>go_suspend_vm</suiteTest>
 
                 <!-- <suiteTest>stor_check_pvscsi_error</suiteTest> -->
                 <!-- <suiteTest>stor_cp_big_files</suiteTest> -->
@@ -1392,34 +1394,34 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-		<test>
-			<testName>kdump_crash_mixed_disk</testName>
-			<testID>ESX-KDUMP-005</testID>
-			<setupScript>
-				<file>setupscripts\change_cpu.ps1</file>
-				<file>setupScripts\change_memory.ps1</file>
-				<file>SetupScripts\add_hard_disk.ps1</file>
-			</setupScript>
-			<testScript>testscripts\kdump.ps1</testScript>
-			<files>remote-scripts\utils.sh</files>
-			<files>remote-scripts\kdump_config.sh</files>
-			<files>remote-scripts\kdump_prepare.sh</files>
-			<testParams>
-				<param>crashkernel=128M</param>
-				<param>VCPU=2</param>
-				<param>VMMemory=4GB</param>
-				<param>DiskType=SCSI</param>
-				<param>StorageFormat=Thin</param>
-				<param>CapacityGB=3</param>
-				<param>fileSystems=(ext4 ext3 xfs btrfs)</param>
-				<param>TName=kdump_crash_mixed_disk</param>
-				<param>TC_COVERED=RHEL6-34886,RHEL7-50870</param>
-			</testParams>
-			<RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-			<timeout>600</timeout>
-			<onError>Continue</onError>
-			<noReboot>False</noReboot>
-		</test>
+        <test>
+            <testName>kdump_crash_mixed_disk</testName>
+            <testID>ESX-KDUMP-005</testID>
+            <setupScript>
+                <file>setupscripts\change_cpu.ps1</file>
+                <file>setupScripts\change_memory.ps1</file>
+                <file>SetupScripts\add_hard_disk.ps1</file>
+            </setupScript>
+            <testScript>testscripts\kdump.ps1</testScript>
+            <files>remote-scripts\utils.sh</files>
+            <files>remote-scripts\kdump_config.sh</files>
+            <files>remote-scripts\kdump_prepare.sh</files>
+            <testParams>
+                <param>crashkernel=128M</param>
+                <param>VCPU=2</param>
+                <param>VMMemory=4GB</param>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=3</param>
+                <param>fileSystems=(ext4 ext3 xfs btrfs)</param>
+                <param>TName=kdump_crash_mixed_disk</param>
+                <param>TC_COVERED=RHEL6-34886,RHEL7-50870</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
         <test>
             <testName>nw_ping</testName>
