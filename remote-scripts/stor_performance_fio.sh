@@ -34,20 +34,20 @@ UtilsInit
 ## Main
 ##
 ###############################################################################
-#Check the guest version which use python2.x, so install pip
+#Check the guest version which use python2.x or python3, so install pip
 #Below moudle yaml,click pandas numpy scipy is used by python script RunFioTest.py and GenerateTestReport.py.
 if [[ $DISTRO != "redhat_8" ]]; then
-	yum install -y python-yaml
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 	python get-pip.py
-	pip install click pandas numpy scipy
+	pip install click pandas numpy scipy PyYAML
 	UpdateSummary "For rhel6 and rhel7, python2.x use pip"
 else
-	yum install python3-yaml -y
-	pip3 install click pandas numpy scipy
+	#For tree rhel8.0-20180824.2,only have pip3.6
+	pip3.6 install click pandas numpy scipy PyYAML
 	#For RHEL8, manually create soft link python point to python3.
-	ln -s /usr/bin/python3 /usr/bin/python
-	UpdateSummary "For rhel8, use pip3 install modules"
+	# ln -s /usr/bin/python3 /usr/bin/python
+	ln -s /usr/libexec/platform-python /usr/bin/python
+	UpdateSummary "For rhel8, use pip3.6 install modules"
 fi
 
 #Install required package for fio copile and mount nfs disk.
@@ -136,7 +136,7 @@ else
 fi
 
 #Create fio test result path.
-path="/root/log/${DISTRO}_kernel-$(uname -r)_${disktype}_${FS}_$(date +%Y%m%d%H%M%S)/"
+path="/root/log/${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
 mkdir -p $path
 
 #Download fio python scripts from github.
@@ -152,8 +152,8 @@ else
 fi
 ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path
 if [ $? -ne 0 ]; then
-	LogMsg "Test Failed. fio run failed.$path"
-	UpdateSummary "Test failed.fio run failed.$path,./RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
+	LogMsg "Test Failed. fio run failed."
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
 	SetTestStateFailed
 	exit 1
 else
@@ -165,7 +165,7 @@ fi
 ./GenerateTestReport.py --result_path $path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
-	UpdateSummary "Test report generate failed,$path and $file"
+	UpdateSummary "Test report generate failed"
 	SetTestStateFailed
 	exit 1
 else
