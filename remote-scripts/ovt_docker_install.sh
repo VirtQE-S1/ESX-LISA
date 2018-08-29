@@ -52,15 +52,24 @@ else
 fi
 
 #start a network container
-docker run -d -P --name web training/webapp python app.py
+docker run -P -d nginx:latest
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. The container run successfully"
     UpdateSummary "Test Successfully. The container run successfully."
     SetTestStateCompleted
     exit 0
 else
-    LogMsg "Test failed. The container run failed."
-    UpdateSummary "Test Failed. The container run failed."
-    SetTestStateFailed
-    exit 1
+    LogMsg "Test failed. The container web app run failed."
+    UpdateSummary "Test Failed. The container web app run failed."
+    #Run another image
+    docker run -d -P --name web training/webapp python app.py
+    if [[ $? == 0 ]]; then
+        LogMsg "Test Successfully. The container run successfully"
+        UpdateSummary "Test Successfully. The container run successfully."
+        SetTestStateCompleted
+        exit 0
+    else
+        SetTestStateFailed
+        exit 1
+    fi
 fi
