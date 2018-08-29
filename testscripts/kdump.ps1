@@ -155,7 +155,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 $retVal = $Failed
 
-# SendCommandToVM: Push and execute kdump_config.sh
 # kdump_config.sh: configures kdump.config / grub
 Write-Host -F Red "INFO: Start to execute kdump_config.sh in VM"
 Write-Output "INFO: Start to execute kdump_config.sh in VM"
@@ -168,14 +167,16 @@ if (-not $result)
 	return $Aborted
 }
 
-# Rebooting VM to apply the kdump settings
+# Rebooting the VM to apply the kdump settings
 Write-Host -F Red "INFO: Start to reboot VM after kdump and grub changed"
 Write-Output "INFO: Start to reboot VM after kdump and grub changed"
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
+# Confirm enough time, below kdump_prepare.sh execution starts well after 60s
+# As the VM receives init 6, but its IP maybe still be detected
+# HERE. TODO. StopVMViaSSH, WaitForVMSSHReady
 Start-Sleep -S 60
 
-# SendCommandToVM: Push / execute kdump_prepare.sh in while, in case kdump_prepare.sh fail
 # kdump_prepare.sh: Confirms all configurations works
 $timeout = 60
 while ($timeout -gt 0)
@@ -205,16 +206,18 @@ while ($timeout -gt 0)
 	}
 }
 
-# Trigger the kernel panic
+# Trigger the kernel panic with subprocess
 Write-Host -F Red "INFO: Start a new process to triger kdump"
 Write-Output "INFO: Start a new process to triger kdump"
 $tmpCmd = "echo c > /proc/sysrq-trigger 2>/dev/null &"
 Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" -WindowStyle Hidden
 
-# The Guest power state and IP can be detected when kdump is being triggered
+# Confirm enough time to complete vmcore save and reboot
+# As maybe the VM IP still be detected and go to the next 120s while loop
+# HERE. TODO. Poweredoff
 Start-Sleep -S 60
 
-# Check vmcore size after it is generated
+# Check vmcore after trigger complete and reboot
 $timeout = 120
 while ($timeout -gt 0)
 {
