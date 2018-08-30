@@ -6,7 +6,8 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - boyang - 08/29/2017 - Build script
+## V1.0.0 - boyang - 08/29/2017 - Build script
+## V1.1.0 - ruqin  - 08/28/2018 - Use NetworkManager instead of network
 ##
 ###############################################################################
 
@@ -15,7 +16,18 @@
     Add one more vmxnet3 network adapter
 
 .Description
-    When VM alives, Add one more vmxnet3 network adapter, configure their ifcfg-ens192.cfg
+    <test>
+            <testName>nw_mulit_vmxnet3</testName>
+            <testID>ESX-NW-008</testID>
+            <testScript>testscripts\nw_mulit_vmxnet3.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL6-38520,RHEL7-80532</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+    </test>
 
 .Parameter vmName
     Name of the test VM.
@@ -27,166 +39,148 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
-if (-not $vmName)
-{
+if (-not $vmName) {
     "FAIL: VM name cannot be null!"
-    exit
+    exit 1
 }
 
-if (-not $hvServer)
-{
+if (-not $hvServer) {
     "FAIL: hvServer cannot be null!"
-    exit
+    exit 1
 }
 
-if (-not $testParams)
-{
+if (-not $testParams) {
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
 $logdir = $null
 
+
 $params = $testParams.Split(";")
-foreach ($p in $params) 
-{
-	$fields = $p.Split("=")
-	switch ($fields[0].Trim()) 
-	{
-		"rootDir"		{ $rootDir = $fields[1].Trim() }
-		"sshKey"		{ $sshKey = $fields[1].Trim() }
-		"ipv4"			{ $ipv4 = $fields[1].Trim() }
-		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-		default			{}
+foreach ($p in $params) {
+    $fields = $p.Split("=")
+    switch ($fields[0].Trim()) {
+        "rootDir" { $rootDir = $fields[1].Trim() }
+        "sshKey" { $sshKey = $fields[1].Trim() }
+        "ipv4" { $ipv4 = $fields[1].Trim() }
+        "TestLogDir"	{ $logdir = $fields[1].Trim()}
+        default {}
     }
 }
 
-#
+
 # Check all parameters are valid
-#
-if (-not $rootDir)
-{
-	"Warn : no rootdir was specified"
+if (-not $rootDir) {
+    "Warn : no rootdir was specified"
 }
-else
-{
-	if ( (Test-Path -Path "${rootDir}") )
-	{
-		cd $rootDir
-	}
-	else
-	{
-		"Warn : rootdir '${rootDir}' does not exist"
-	}
+else {
+    if ( (Test-Path -Path "${rootDir}") ) {
+        Set-Location $rootDir
+    }
+    else {
+        "Warn : rootdir '${rootDir}' does not exist"
+    }
 }
 
-if ($null -eq $sshKey) 
-{
-	"FAIL: Test parameter sshKey was not specified"
-	return $False
+if ($null -eq $sshKey) {
+    "FAIL: Test parameter sshKey was not specified"
+    return $False
 }
 
-if ($null -eq $ipv4) 
-{
-	"FAIL: Test parameter ipv4 was not specified"
-	return $False
+if ($null -eq $ipv4) {
+    "FAIL: Test parameter ipv4 was not specified"
+    return $False
 }
 
-if ($null -eq $logdir)
-{
-	"FAIL: Test parameter logdir was not specified"
-	return $False
+if ($null -eq $logdir) {
+    "FAIL: Test parameter logdir was not specified"
+    return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
-                  $env:ENVVISUSERNAME `
-                  $env:ENVVISPASSWORD `
-                  $env:ENVVISPROTOCOL
+    $env:ENVVISUSERNAME `
+    $env:ENVVISPASSWORD `
+    $env:ENVVISPROTOCOL
+
 
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
+
+
 $retVal = $Failed
-$new_device_name = ""
-$new_network_name = "VM Network"
-
-# Confirm VM
-$vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmOut)
-{
-    Write-Error -Message "nw_remove_vmxnet3.ps1: Unable to get-vm with $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
-	return $Aborted
-}
-
-#
-# Hot plug two new NICs
-# @total_nics: target nic number want to add
-# @count: flag
-# @new_nic_obj_x: every new nic object
-#
-$total_nics = 2
-$count = 1
-while ($count -le $total_nics)
-{
-    Write-Output "Now, is creating the $count NIC"
-    $new_nic_obj_x = "new_nic_obj" + $count
-    $new_nic_obj_x = New-NetworkAdapter -VM $vmOut -NetworkName $new_network_name -WakeOnLan -StartConnected -Confirm:$false
-    
-    Write-Host -F red "Get new NIC: $new_nic_obj_x"
-    $count ++
-}
-
-# @all_nic_count: should own $total_nics + 1
-$all_nic_count = (Get-NetworkAdapter -VM $vmOut).Count
-Write-Host -F red "All NICs: $all_nic_count"
-if ($all_nic_count -eq ($total_nics + 1))
-{
-    Write-Output "PASS: Hot plug vmxnet3 well"
-}
-else
-{
-    Write-Error -Message "FAIL: Unknow issue after hot plug adapter, check it manually" -Category ObjectNotFound -ErrorAction SilentlyContinue
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
     return $Aborted
 }
 
-# Send nw_config_ifcfg.sh to VM which setup new NIC ifcfg file, ifdown / ifup the new NIC
-$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_config_ifcfg.sh && chmod u+x nw_config_ifcfg.sh && ./nw_config_ifcfg.sh"
-Write-Host -F Red "DEBUG: result: $result"
-Write-Output "DEBUG: result: $result"
-if($result)
-{
-    Write-Host -F Red "PASS: Complete to execute nw_config_ifcfg.sh in VM"
-	Write-Output "PASS: Complete to execute nw_config_ifcfg.sh in VM"
-    $retVal = $Passed
+
+# Hot plug two new NICs
+$networkName = "VM Network"
+$total_nics = 2
+$count = 1
+while ($count -le $total_nics) {
+    $newNIC = New-NetworkAdapter -VM $vmObj -NetworkName $networkName -WakeOnLan -StartConnected -Confirm:$false
+    LogPrint "INFO: New Add NIC $newNIC"
+    $count++
 }
-else
-{
-    Write-Host -F Red "FAIL: Failed to execute nw_config_ifcfg.sh in VM"
-    Write-Output "FAIL: Failed to execute nw_config_ifcfg.sh in VM"
+
+
+# Check hot plug NIC
+$all_nic_count = (Get-NetworkAdapter -VM $vmObj).Count
+LogPrint "INFO: All NICs count: $all_nic_count"
+if ($all_nic_count -eq ($total_nics + 1)) {
+    LogPrint "INFO: Hot plug vmxnet3 successfully"
 }
+else {
+    LogPrint "FAIL: Unknow issue after hot plug adapter, check it manually"
+    return $Aborted
+}
+
+
+# Find new add vmxnet3 nic
+$nics = FindAllNewAddNIC $ipv4 $sshKey
+if ($null -eq $nics) {
+    LogPrint "ERROR: Cannot find new add NIC" 
+    DisconnectWithVIServer
+    return $Failed
+}
+LogPrint "INFO: New NIC count is $($nics.Count)"
+
+
+# Config new NIC
+foreach ($nic in $nics) {
+    if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $nic)) {
+        LogPrint "ERROR : Config IP Failed for $nic"
+        DisconnectWithVIServer
+        return $Failed
+    }
+    LogPrint "INFO: vmxnet3 NIC $nic, IP setup successfully" 
+}
+$retVal = $Passed
+
 
 DisconnectWithVIServer
-
 return $retVal

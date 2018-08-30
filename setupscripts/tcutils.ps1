@@ -1562,17 +1562,19 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         Name of the server hosting the VM.
     .Parameter mtuChange
         Allow or disallow guest change MTU
+    .Outputs
+        Boolean
     .Example
         AddSrIoVNIC $vmName $hvSever $true
     #>
 
     $retVal = $false
-
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
         Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     } 
+
 
     # Lock all memory
     try {
@@ -1625,6 +1627,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
 
+
     # Get Sriov PCI Device (like 00000:007:00.0)
     try {
         $vmHost = Get-VMHost -Name $hvServer  
@@ -1643,6 +1646,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
     LogPrint "INFO: PCI Device is $pciDevice"
+
 
     # Refresh vmView
     $vmView = Get-vm $vmObj | Get-View
@@ -1663,6 +1667,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
 
+
     # Add extra into config
     $vmConfigSpec.ExtraConfig += $pfID
     $vmConfigSpec.ExtraConfig += $passID
@@ -1677,6 +1682,7 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         return $false
     }
 
+
     # Set the Network of Guest to "VM Network"(Hard Code)
     $nics = Get-NetworkAdapter -VM $vmObj
     $nicMacAddress = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.generatedMACAddress"})[-1].Value
@@ -1686,12 +1692,14 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         } 
     }
 
+
     # Refresh the VM
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
         Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     }
+
 
     # Refresh the view
     $vmView = Get-vm $vmObj | Get-View
@@ -1744,6 +1752,8 @@ function ConfigIPforNewDevice {
         IP with prefix such as 192.168.0.100/24
     .Parameter MTU 
         The MTU for the NIC (1500 default) 
+    .Outputs
+        Boolean
     .Example
         ConfigIPforNewDevice $ipv4 $sshkey $deviceName 192.168.0.100/24 192.168.0.1
     #>
@@ -1862,6 +1872,8 @@ function AddPVrdmaNIC {
         Name of the VM that need to add disk.
     .Parameter hvSesrver
         Name of the server hosting the VM.
+    .Outputs
+        Boolean
     .Example
         AddPVrdmaNIC $vmName $hvSever
     #>
@@ -1934,6 +1946,8 @@ function AddNVMeDisk {
         Name of the server hosting the VM.
     .Parameter capacityGB
         The Capacity of Disk
+    .Outputs
+        Boolean
     .Example
         AddNVMeDisk $vmName $hvSever 10
     #>
@@ -2120,6 +2134,8 @@ function DisableMemoryReserve {
         Name of the VM that need to add disk.
     .Parameter hvSesrver
         Name of the server hosting the VM.
+    .Outputs
+        Boolean
     .Example
         DisableMemoryReserve $vmName $hvServer
     #> 

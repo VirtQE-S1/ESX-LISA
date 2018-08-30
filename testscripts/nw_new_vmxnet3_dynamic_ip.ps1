@@ -160,7 +160,8 @@ if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic)) {
     LogPrint "ERROR : Config IP Failed"
     DisconnectWithVIServer
     return $Failed
-} else {
+}
+else {
     $retVal = $Passed
 }
 LogPrint "INFO: vmxnet3 NIC IP setup successfully"
