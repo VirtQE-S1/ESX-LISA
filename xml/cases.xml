@@ -1782,12 +1782,12 @@
 
     <VMs>
         <vm>
-            <hvServer>ESXI_HOST_IPADDRESS</hvServer>
-            <vmName>VM_NAME</vmName>
+            <hvServer>10.73.196.97</hvServer>
+            <vmName>ruqin_rhel7.6_Test</vmName>
             <os>Linux</os>
             <ipv4/>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suite>acceptance</suite>
+            <suite>debug_demo_suite</suite>
         </vm>
     </VMs>
 

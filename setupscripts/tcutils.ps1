@@ -1826,7 +1826,7 @@ function ConfigIPforNewDevice {
 
 
         # Set New MTU
-        $status = SendCommandToVM $ipv4 $sshKey "nmcli connection modify `$(nmcli connection show | grep $deviceName | awk '{print `$(NF-2)}') mtu $MTU"
+        $status = SendCommandToVM $ipv4 $sshKey "nmcli connection modify $deviceName mtu $MTU"
         if (-not $status) {
             LogPrint "Error: Cannot setup MTU as $MTU"
             return $false
@@ -1834,9 +1834,11 @@ function ConfigIPforNewDevice {
 
 
         # Restart NetworkManager
-        SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
+        $status = SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
+        # Start-Sleep -Seconds 1
         # Restart Connection
-        $status = SendCommandToVM $ipv4 $sshKey "nmcli con down $deviceName && nmcli con up $deviceName" 
+        $Command =  "nmcli con down $deviceName && nmcli con up $deviceName" 
+        $status = SendCommandToVM $ipv4 $sshKey $Command
         if (-not $status) {
             LogPrint "Error: Cannot activate new nic config"
             return $false

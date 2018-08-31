@@ -24,15 +24,16 @@
             <cleanupScript>
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
-            </cleanupScript> 
+            </cleanupScript>
             <testScript>testscripts\sriov_mtu_check.ps1</testScript>
             <testParams>
                 <param>TC_COVERED=RHEL-113877,RHEL6-49164</param>
                 <param>mtuChange=True</param>
+                <param>mtu=9000</param>
                 <param>memoryReserve=True</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -78,6 +79,7 @@ if (-not $testParams) {
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
+$mtu = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params) {
@@ -86,6 +88,7 @@ foreach ($p in $params) {
         "sshKey" { $sshKey = $fields[1].Trim() }
         "rootDir" { $rootDir = $fields[1].Trim() }
         "ipv4" { $ipv4 = $fields[1].Trim() }
+        "mtu" { $mtu = $fields[1].Trim() }
         default {}
     }
 }
@@ -114,6 +117,10 @@ if ($null -eq $sshKey) {
 if ($null -eq $ipv4) {
     "FAIL: Test parameter ipv4 was not specified"
     return $False
+}
+
+if ($null -eq $mtu) {
+    $mtu = 1500
 }
 
 
@@ -153,6 +160,8 @@ $GuestBName[-1] = "B"
 $GuestBName = $GuestBName -join "-"
 
 
+# disable memory reserve
+$status = DisableMemoryReserve $GuestBName $hvServer
 # Addd sriov nic for guest B
 $status = AddSrIOVNIC $GuestBName $hvServer $true
 if ( -not $status[-1] ) {
@@ -187,7 +196,8 @@ LogPrint "INFO: New NIC for GuestA is $sriovNIC_A"
 
 # Config RDMA NIC IP addr for Guest A and MTU
 $IPAddr_guest_A = "192.168.99." + (Get-Random -Maximum 124 -Minimum 2)
-if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC_A ($IPAddr_guest_A + "/24") 9000)) {
+$status = ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC_A ($IPAddr_guest_A + "/24") $mtu
+if ( -not $status) {
     LogPrint "ERROR : Guest A Config IP Failed"
     DisconnectWithVIServer
     return $Aborted
@@ -197,7 +207,7 @@ LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
 
 # Install tcpdump at GuestA
 $status = SendCommandToVM $ipv4 $sshKey "yum install tcpdump -y"
-if (-not $status) {
+if (-not $status[-1]) {
     LogPrint "Error: Cannot install tcpdump"
     DisconnectWithVIServer
     return $Aborted
@@ -233,7 +243,8 @@ LogPrint "INFO: New NIC for Guest B is $sriovNIC"
 
 # Config RDMA NIC IP addr for Guest B and MTU
 $IPAddr_guest_B = "192.168.99." + (Get-Random -Maximum 254 -Minimum 125)
-if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24") 9000)) {
+$status = ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24") $mtu
+if ( -not $status[-1]) {
     LogPrint "ERROR : Guest B Config IP Failed"
     DisconnectWithVIServer
     return $Aborted
@@ -241,17 +252,18 @@ if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B +
 LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 
+$packetSize = $mtu - 28
 # Ping Guest A from Guest B
-$Command = "ping -s 8972 -M do $IPAddr_guest_A"
+$Command = "ping -s $packetSize -M do $IPAddr_guest_A"
 Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${Command}" -PassThru -WindowStyle Hidden
 
 
 # Use tcpdump to check the packet is not fragmented
 LogPrint "INFO: Start tcpdump to receive Ping"
-$Command = "tcpdump -n -v -i $sriovNIC_A -l -c 20 icmp and src $IPAddr_guest_B | grep 'offset 0' | wc -l"
+$Command = "tcpdump -n -v -i $sriovNIC_A -l -c 20 icmp and src $IPAddr_guest_B | grep 'offset 0'| grep 'length $mtu' | wc -l"
 $packetsCount = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 if ($packetsCount -ne 20) {
-    LogPrint "INFO: Packet is not fragmented" 
+    LogPrint "INFO: Packet is fragmented" 
     DisconnectWithVIServer
     return $Failed
 }

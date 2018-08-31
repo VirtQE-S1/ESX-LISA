@@ -117,6 +117,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
+
+# disable memory reserve
+DisableMemoryReserve $vmName $hvServer
 # Use function to add new sriov nic
 for ($i = 0; $i -lt $sriovNum; $i++) {
     $status = AddSrIOVNIC $vmName $hvServer $mtuChange
