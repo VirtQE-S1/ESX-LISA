@@ -182,7 +182,7 @@ if (-not $?) {
 
 
 # Find out new add sriov nic for Guest A
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
     DisconnectWithVIServer
@@ -229,7 +229,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Find out new add RDMA nic for Guest B
-$nics = FindAllNewAddNIC $ipv4Addr_B $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer
@@ -254,18 +254,29 @@ LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 $packetSize = $mtu - 28
 # Ping Guest A from Guest B
-$Command = "ping -s $packetSize -M do $IPAddr_guest_A"
-Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${Command}" -PassThru -WindowStyle Hidden
+$Command = "ping -s $packetSize -M do -c 50 -W 1 $IPAddr_guest_A"
+$proc = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${Command}" -PassThru -WindowStyle Hidden
 
 
 # Use tcpdump to check the packet is not fragmented
 LogPrint "INFO: Start tcpdump to receive Ping"
-$Command = "tcpdump -n -v -i $sriovNIC_A -l -c 20 icmp and src $IPAddr_guest_B | grep 'offset 0'| grep 'length $mtu' | wc -l"
+$Command = "timeout 100 tcpdump -n -v -i $sriovNIC_A -l -c 20 icmp and src $IPAddr_guest_B | grep 'offset 0'| grep 'length $mtu' | wc -l"
 $packetsCount = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 if ($packetsCount -ne 20) {
-    LogPrint "INFO: Packet is fragmented" 
+    LogPrint "ERROR: Packet is fragmented or tcpdump is timeout" 
     DisconnectWithVIServer
     return $Failed
+}
+
+
+# Check Ping results
+$handle = $proc.Handle
+$proc.WaitForExit()
+LogPrint "INFO: Handle is $handle, Exit Code is $($proc.ExitCode)"
+if ($proc.ExitCode -ne 0) {
+    LogPrint "ERROR: Exit Code is not 0" 
+    DisconnectWithVIServer
+    return $Failed 
 }
 else {
     $retVal = $Passed
