@@ -259,11 +259,11 @@
                 <suiteTest>stor_scp_big_files</suiteTest> -->
                 <suiteTest>stor_check_cd_file</suiteTest>
 
-                <!-- <suiteTest>kdump_crash_single_core</suiteTest>
+                <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
-                <suiteTest>kdump_crash_mixed_disk</suiteTest> -->
+                <suiteTest>kdump_crash_mixed_disk</suiteTest>
 
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
@@ -308,8 +308,8 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
-                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-3.el7.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -603,15 +603,15 @@
                 <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
-                <param>redhat_7_lower_version=open-vm-tools-10.1.5-3.el7.x86_64</param>
-                <param>redhat_7_lower_rpm=10.1.5/3.el7/x86_64/open-vm-tools-10.1.5-3.el7.x86_64.rpm</param>
-                <param>redhat_7_lower_dsk_rpm=10.1.5/3.el7/x86_64/open-vm-tools-desktop-10.1.5-3.el7.x86_64.rpm</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.2.5-3.el7.x86_64</param>
+                <param>redhat_7_lower_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-10.2.5-2.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_dsk_rpm=10.2.5/2.el7/x86_64/open-vm-tools-desktop-10.2.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8+7.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-10.1.10-3.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.1.10/3.el8/x86_64/open-vm-tools-10.1.10-3.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=10.1.10/3.el8/x86_64/open-vm-tools-desktop-10.1.10-3.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
+                <param>redhat_8_lower_rpm=10.1.10/3.el8+5/x86_64/open-vm-tools-10.1.10-3.el8+5.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=10.1.10/3.el8+5/x86_64/open-vm-tools-desktop-10.1.10-3.el8+5.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
