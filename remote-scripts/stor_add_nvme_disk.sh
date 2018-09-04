@@ -13,7 +13,7 @@
 ###############################################################################
 # <test>
 #     <testName>stor_add_nvme_disk</testName>
-#     <testID>ESX-Stor-0</testID>
+#     <testID>ESX-Stor-017</testID>
 #     <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
 #     <testScript>stor_add_nvme_disk.sh</testScript  >
 #     <files>remote-scripts/utils.sh</files>
@@ -23,8 +23,8 @@
 #         <param>StorageFormat=Thick</param>
 #         <param>DiskDataStore=NVMe</param>
 #         <param>CapacityGB=5</param>
-#         <param>disk=nvme0n1</param>
-#         <param>FS=xfs</param>
+#         <param>disk=/dev/nvme0n1</param>
+#         <param>FS=ext4</param>
 #         <param>TC_COVERED=RHEL6-0000,RHEL-144415</param>
 #     </testParams>
 #     <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
@@ -51,13 +51,15 @@ dos2unix utils.sh
 # Source constants file and initialize most common variables
 UtilsInit
 
+# Source stor_utils.sh
+
 ###############################################################################
 ##
 ## Main
 ##
 ###############################################################################
 #Check the new added Test disk /dev/$disk exist.
-ls /dev/$disk
+ls $disk
 if [ ! "$?" -eq 0 ]; then
 	LogMsg "Test Failed.Test disk /dev/$disk not exist."
 	UpdateSummary "Test failed.Test disk /dev/$disk not exist."
@@ -69,7 +71,7 @@ else
 fi
 
 # Do Partition for Test disk if needed.
-fdisk /dev/$disk <<EOF
+fdisk $disk <<EOF
         n
         p
         1
@@ -79,13 +81,13 @@ fdisk /dev/$disk <<EOF
 EOF
 
 # Get new partition
-kpartx /dev/$disk
+kpartx $disk
 
 # Wait a while
 sleep 6
 
 # Format with file system
-disk="/dev/${disk}p1"
+disk="${disk}p1"
 mkfs.$FS $disk
 UpdateSummary "format with $FS filesystem"
 #Mount  disk to /$disk.

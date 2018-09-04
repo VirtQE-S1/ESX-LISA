@@ -65,7 +65,7 @@ sleep 6
 
 # Format with file system
 disk="/dev/sdb1"
-mkfs.ext4
+mkfs.ext4 $disk
 UpdateSummary "format with $FS filesystem"
 #Mount  disk to /$disk.
 mkdir /test
@@ -80,7 +80,7 @@ else
 	UpdateSummary "Passed: Mount disk successfully"
 fi
 
-#Create test file in new added scsi disk.
+# Create test file in new added scsi disk.
 touch /test/test
 cat /test/test
 if [ $? -ne 0 ]; then

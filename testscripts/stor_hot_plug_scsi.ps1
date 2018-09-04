@@ -6,7 +6,7 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 08/31/2018 - Hot add scsi disk.
+## v1.0.0 - ldu - 08/31/2018 - Hot add scsi disk.
 ##
 ## 
 ###############################################################################
@@ -17,7 +17,7 @@
 .Description
 <test>
             <testName>stor_hot_plug_scsi</testName>
-            <testID>ESX-Stor-016</testID>
+            <testID>ESX-Stor-001</testID>
             <testScript>testscripts\stor_hot_plug_scsi.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_hot_plug_scsi_disk.sh</files>
