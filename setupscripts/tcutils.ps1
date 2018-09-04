@@ -2182,3 +2182,86 @@ function DisableMemoryReserve {
 
     return $true
 }
+
+
+#######################################################################
+#
+# FindDstHost()
+#
+#######################################################################
+
+function FindDstHost {
+    param (
+        [String] $vmName,
+        [String] $hvServer,
+        [Parameter(Mandatory = $false)] [String] $Host6_0,
+        [Parameter(Mandatory = $false)] [String] $Host6_5,
+        [Parameter(Mandatory = $false)] [String] $Host6_7
+    )    
+       <#
+    .Synopsis
+        Find Dest Host Address
+    .Description
+        Find Dest Host Address from input ESXi 6.7,6.5,6.0 address set
+    .Parameter vmName
+        Name of the VM
+    .Parameter hvServer
+        Host of VM
+    .Parameter Host6_0
+        Address set in EXSi 6.0. such as "10.73.196.95,10.73.196.97"
+    .Parameter Host6_5
+        Address set in EXSi 6.5. such as "10.73.196.95,10.73.196.97"
+    .Parameter Host6_7
+        Address set in EXSi 6.7. such as "10.73.196.95,10.73.196.97"
+    .Outputs
+        IP address string
+    .Example
+        FindDstHost -vmName $vmName -hvServer $hvServer -Host6_0 $dstHost6_0 -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
+    #> 
+
+
+    # Get obj first
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+
+
+    # Get Host version
+    $vm_host = Get-VMHost -VM $vmObj
+    $version = $vm_host.Version
+
+
+    # Specify dst host
+    $dstHost = $null
+    if ($PSBoundParameters.ContainsKey("Host6_0") -and  $version -eq "6.0.0") {
+        $ip_addresses = $Host6_0.Split(",")
+        if ($hvServer -eq $ip_addresses[0].Trim()) {
+            $dsthost = $ip_addresses[1]
+        }
+        else {
+            $dsthost = $ip_addresses[0]
+        }
+    }
+    elseif ($PSBoundParameters.ContainsKey("Host6_7") -and $version -eq "6.7.0") {
+        $ip_addresses = $Host6_7.Split(",")
+        if ($hvServer -eq $ip_addresses[0].Trim()) {
+            $dsthost = $ip_addresses[1]
+        }
+        else {
+            $dsthost = $ip_addresses[0]
+        }
+    }
+    elseif ($PSBoundParameters.ContainsKey("Host6_5") -and $version -eq "6.5.0") {
+        $ip_addresses = $Host6_5.Split(",")
+        if ($hvServer -eq $ip_addresses[0].Trim()) {
+            $dsthost = $ip_addresses[1]
+        }
+        else {
+            $dsthost = $ip_addresses[0]
+        }
+    }
+    return $dstHost
+}

@@ -1,31 +1,30 @@
 ###############################################################################
 ##
 ## Description:
-##  Ping successfully between 2 Guests on the different Hosts
+##  Migration to a Host with SR-IOV supported should be supported
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/21/2018 - Build the script
+##  v1.0.0 - ruqin - 09/04/2018 - Build the script
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-    Ping successfully between 2 Guests on the different Hosts 
+    Migration to a Host with SR-IOV supported should be supported 
 
 .Description
        <test>
-            <testName>rdma_ping_diff_host</testName>
-            <testID>ESX-RDMA-004</testID>
+            <testName>sriov_move_host_supported</testName>
+            <testID>ESX-SRIOV-003</testID>
             <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_pvrdma.ps1</file>
+                <file>setupscripts\add_sriov.ps1</file>
             </setupScript>
-            <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
+            <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=freenas</param>
+                <param>dstDatastore=datastore</param>
                 <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -214,157 +213,16 @@ $name = $shardDatastore.Name
 LogPrint "INFO: required shard datastore $name"
 
 
-# Move Hard Disk to another datastore to prepare next migrate
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-
-
-# Start another VM
-$GuestBName = $vmObj.Name.Split('-')
-# Get another VM by change Name
-$GuestBName[-1] = "B"
-$GuestBName = $GuestBName -join "-"
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-
-
-# Add RDMA NIC for Guest B
-$status = AddPVrdmaNIC $GuestBName $hvServer
-if ( -not $status[-1]) {
-    LogPrint "ERROR: RDMA NIC adds failed" 
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+# Poweroff VM
+$status = Stop-VM $vmObj -Confirm:$False
 if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
+    LogPrint "ERROR : Cannot stop VM $vmName, $status"
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Wait for GuestB SSH ready
-if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Ready SSH"
-
-
-# Get another VM IP addr
-$ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-
-
-# Find out new add RDMA nic for Guest B
-$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
-    DisconnectWithVIServer
-    return $Failed
-}
-else {
-    $rdmaNIC = $nics[-1]
-}
-LogPrint "INFO: New NIC is $rdmaNIC"
-
-
-# Config RDMA NIC IP addr for Guest B
-$IPAddr_guest_B = "172.31.1." + (Get-Random -Maximum 254 -Minimum 125)
-if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $rdmaNIC ($IPAddr_guest_B + "/24"))) {
-    LogPrint "ERROR : Guest B Config IP Failed"
-    DisconnectWithVIServer
-    return $Failed
-}
-LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
-
-
-# Check Migration status
-$status = Wait-Task -Task $task
-LogPrint "INFO: Migration result is $status"
-if (-not $status) {
-    LogPrint "ERROR : Cannot move disk to required Datastore $shardDatastore"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move Guest A to RDMA Dst Host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dsthost) -Confirm:$false
-if (-not $?) {
-    LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    # Make sure VM back to old Host
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
-    # Move Hard Disk back to old datastore
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Find out new add RDMA nic for Guest A
-$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add rdma NIC" 
-    DisconnectWithVIServer
-    return $Failed
-}
-else {
-    $rdmaNIC = $nics[-1]
-}
-LogPrint "INFO: New NIC is $rdmaNIC"
-
-
-# Config RDMA NIC IP addr for Guest A
-$IPAddr_guest_A = "172.31.1." + (Get-Random -Maximum 124 -Minimum 2)
-if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr_guest_A + "/24"))) {
-    LogPrint "ERROR : Guest A Config IP Failed"
-    DisconnectWithVIServer
-    return $Failed
-}
-LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
-
-
-# Check can we ping GuestA from GuestB via RDMA NIC
-$Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
-    $retVal = $Failed
-} else {
-    $retVal = $Passed
-}
-
-
-# Clean up phase: Move back to old host
-
-
-# Refresh vmobj
-$vmObj = Get-VMHost -Name $dsthost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move guest to old host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
-if (-not $?) {
-    LogPrint "ERROR : Cannot move VM to required Host $hvServer"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Wait 6 seconds
-Start-Sleep -Seconds 6
-
-
-# Refresh vmobj
+# Refresh status
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -373,23 +231,97 @@ if (-not $vmObj) {
 }
 
 
-# Move Hard Disk back to old datastore
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
+# Move storage and resource
+$status = Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $dsthost) -Datastore $shardDatastore -Confirm:$false -ErrorAction SilentlyContinue
 if (-not $?) {
-    LogPrint "ERROR : Cannot move disk to required Datastore $oldDatastore"
-    DisconnectWithVIServer
-    return $Failed
-}
-
-
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-# Shutdown another VM
-Stop-VM $GuestB -Confirm:$False -RunAsync:$true
-if (-not $?) {
-    LogPrint "ERROR : Cannot stop VM $GuestBName"
+    LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
     DisconnectWithVIServer
     return $Aborted
 }
+
+
+# Refresh status
+$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Start Guest
+Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    # Move VM back
+    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+    LogPrint "ERROR : Cannot start VM"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Wait for SSH ready
+if ( -not (WaitForVMSSHReady $vmName $dstHost $sshKey 300)) {
+    # Move VM back
+    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+    LogPrint "ERROR : Cannot start SSH"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Ready SSH"
+
+
+# Get another VM IP addr and refresh
+$ipv4 = GetIPv4 -vmName $vmName -hvServer $dstHost
+$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+if (-not $vmObj) {
+   LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Find out new add RDMA nic for Guest A
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+if ($null -eq $nics) {
+    # Move VM back
+    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
+    $sriovNIC = $nics[-1]
+}
+LogPrint "INFO: New NIC is $sriovNIC"
+
+
+# Get sriov nic driver 
+$Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
+$driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+# mellanox 40G driver and intel 40G NIC maybe different
+if ($driver -ne "ixgbevf") {
+    LogPrint "ERROR : Sriov driver error or unsupported driver"
+    DisconnectWithVIServer
+    return $Aborted 
+}
+else {
+    $retVal = $Passed
+}
+
+
+# Refresh status
+$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Move VM back
+Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+LogPrint "INFO: Move VM back"
 
 
 DisconnectWithVIServer

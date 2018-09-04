@@ -150,46 +150,18 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-# Get Host version
-$vm_host = Get-VMHost -VM $vmObj
-$version = $vm_host.Version
-
 # Specify dst host
-$dstHost = $null
-if ($version -eq "6.7.0") {
-    $ip_addresses = $dstHost6_7.Split(",")
-    if ($hvServer -eq $ip_addresses[0].Trim()) {
-        $dsthost = $ip_addresses[1]
-    }
-    else {
-        $dsthost = $ip_addresses[0]
-    }
+$dstHost = FindDstHost -vmName $vmName -hvServer $hvServer -Host6_0 $dstHost6_0 -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
+if ($null -eq $dstHost) {
+    LogPrint "ERROR: Cannot find required Host"    
+    DisconnectWithVIServer
+    return $Aborted
 }
-elseif ($version -eq "6.5.0") {
-    $ip_addresses = $dstHost6_5.Split(",")
-    if ($hvServer -eq $ip_addresses[0].Trim()) {
-        $dsthost = $ip_addresses[1]
-    }
-    else {
-        $dsthost = $ip_addresses[0]
-    }
-}
-else {
-    $ip_addresses = $dstHost6_0.Split(",")
-    if ($hvServer -eq $ip_addresses[0].Trim()) {
-        $dsthost = $ip_addresses[1]
-    }
-    else {
-        $dsthost = $ip_addresses[0]
-    }
-}
+LogPrint "INFO: Destination Host is $dstHost"
 
-LogPrint "INFO: Destination Host is $DstHost"
 
 # Store Old datastore
-
 $oldDatastore = Get-Datastore -Name "datastore-*" -VMHost $hvServer
-
 if (-not $oldDatastore) {
     Write-Host -F Red "ERROR: Unable to Get required original datastore $oldDatastore"
     Write-Output "ERROR: Unable to Get required original datastore $oldDatastore"
@@ -197,9 +169,9 @@ if (-not $oldDatastore) {
     return $Aborted
 }
 
+
 # Get Required Datastore
 $shardDatastore = Get-Datastore -VMHost (Get-VMHost $hvServer) | Where-Object {$_.Name -like "*$dstDatastore*"}
-
 if (-not $shardDatastore) {
     Write-Host -F Red "ERROR: Unable to Get required shard datastore $dstDatastore"
     Write-Output "ERROR: Unable to Get required shard datastore $dstDatastore"
