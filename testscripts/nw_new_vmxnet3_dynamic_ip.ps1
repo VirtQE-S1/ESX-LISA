@@ -143,7 +143,7 @@ if (-not $vmObj) {
 
 
 # Find new add vmxnet3 nic
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add NIC" 
     DisconnectWithVIServer
@@ -156,7 +156,8 @@ LogPrint "INFO: New NIC is $vmxnetNic"
 
 
 # Config new NIC
-if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic)) {
+$status = ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic
+if ( $null -eq $status -or -not $status[-1]) {
     LogPrint "ERROR : Config IP Failed"
     DisconnectWithVIServer
     return $Failed

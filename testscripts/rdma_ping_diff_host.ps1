@@ -276,7 +276,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Find out new add RDMA nic for Guest B
-$nics = FindAllNewAddNIC $ipv4Addr_B $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer
@@ -323,7 +323,7 @@ if (-not $?) {
 
 
 # Find out new add RDMA nic for Guest A
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
     DisconnectWithVIServer

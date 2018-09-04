@@ -164,7 +164,7 @@ if ( -not $status ) {
 
 
 # Find out new add RDMA nic
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer

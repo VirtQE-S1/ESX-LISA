@@ -1733,8 +1733,8 @@ function ConfigIPforNewDevice {
         [String] $ipv4, 
         [String] $sshkey, 
         [String] $deviceName, 
-        [parameter(Mandatory = $false)] [String] $IP_Prefix,
-        [parameter(Mandatory = $false)] [int] $MTU
+        [Parameter(Mandatory = $false)] [String] $IP_Prefix,
+        [Parameter(Mandatory = $false)] [String] $MTU
     )
     <#
     .Synopsis
@@ -1764,7 +1764,6 @@ function ConfigIPforNewDevice {
         return $false 
     }
 
-
     # Get the Guest version
     $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
     LogPrint "DEBUG: DISTRO: $DISTRO"
@@ -1782,16 +1781,17 @@ function ConfigIPforNewDevice {
     }
 
 
-    # Setup default MTU
-    if ($null -eq $MTU) {
-       $MTU = 1500 
+    # Setup default MTU value
+    if ( -not $PSBoundParameters.ContainsKey("MTU")) {
+        LogPrint "INFO: MTU set to default 1500"
+        $MTU = 1500 
     }
 
-
+    
     if ($DISTRO -eq "RedHat6") {
         # Start Specifc device
         SendCommandToVM $ipv4 $sshKey "ifconfig $deviceName up" 
-        if ($null -ne $IP_Prefix) {
+        if ($PSBoundParameters.ContainsKey("IP_Prefix")) {
             $IP = $IP_Prefix.Split("/")[0]
             $Prefix = $IP_Prefix.Split("/")[1]
             # Config IP for Device
@@ -1815,7 +1815,7 @@ function ConfigIPforNewDevice {
     else {
         # Start NetworkManager
         SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
-        if ($null -ne $IP_Prefix) {
+        if ($PSBoundParameters.ContainsKey("IP_Prefix")) {
             # Config New Connection with IP
             SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix" 
         }
@@ -1837,12 +1837,21 @@ function ConfigIPforNewDevice {
         $status = SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
         # Start-Sleep -Seconds 1
         # Restart Connection
-        $Command =  "nmcli con down $deviceName && nmcli con up $deviceName" 
+        $Command = "nmcli con down $deviceName && nmcli con up $deviceName" 
         $status = SendCommandToVM $ipv4 $sshKey $Command
         if (-not $status) {
             LogPrint "Error: Cannot activate new nic config"
             return $false
         }
+
+
+        # Check current MTU
+        $Command = "ip a | grep ens192 | head -n 1 | awk '{print `$5}'"
+        $Current_MTU = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+        if ($Current_MTU -ne $MTU) {
+           LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement" 
+           return $false
+        } 
     }
     LogPrint "INFO: IP config for new NIC succeeded"
 
@@ -2101,12 +2110,11 @@ function FindAllNewAddNIC {
 
 
     # Get all other nics
-    $retVal = @()
+    $retVal = $null
     $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
     $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-    $retVal += $nics
-    # This will make powershell not convert array to string if the array only has one element
-    $retVal.GetType()
+    $retVal = ,$nics
+    #  powershell  convert array to string if the array only has one element
     if ( $null -eq $nics) {
         LogPrint "ERROR : Cannot get any NIC other than default NIC from guest"
         return $null

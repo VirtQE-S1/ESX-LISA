@@ -127,6 +127,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
+LogPrint "dfasdfasdf"
 
 $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -139,7 +140,7 @@ if (-not $vmObj) {
 
 # Hot plug two new NICs
 $networkName = "VM Network"
-$total_nics = 2
+$total_nics = 5
 $count = 1
 while ($count -le $total_nics) {
     $newNIC = New-NetworkAdapter -VM $vmObj -NetworkName $networkName -WakeOnLan -StartConnected -Confirm:$false
@@ -161,25 +162,28 @@ else {
 
 
 # Find new add vmxnet3 nic
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add NIC" 
     DisconnectWithVIServer
     return $Failed
 }
-LogPrint "INFO: New NIC count is $($nics.Count)"
+LogPrint "INFO: New NIC count is $($nics.Length)"
 
 
 # Config new NIC
 foreach ($nic in $nics) {
-    if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $nic)) {
+    $status = ConfigIPforNewDevice $ipv4 $sshKey $nic
+    if ( $null -eq $status -or -not $status[-1]) {
         LogPrint "ERROR : Config IP Failed for $nic"
         DisconnectWithVIServer
         return $Failed
     }
+    else {
+        $retVal = $Passed
+    }
     LogPrint "INFO: vmxnet3 NIC $nic, IP setup successfully" 
 }
-$retVal = $Passed
 
 
 DisconnectWithVIServer

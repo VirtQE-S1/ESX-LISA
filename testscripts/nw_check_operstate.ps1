@@ -6,6 +6,7 @@
 ## Revision:
 ##  v1.0.0 - boyang - 08/31/2017 - Build the script
 ##  v1.0.1 - boyang - 05/10/2018 - Enhance the script in debug info
+##  v2.0.0 - ruqin  - 09/03/2018 - Use powershell instead of bash
 ##
 ###############################################################################
 
@@ -160,7 +161,7 @@ LogPrint "INFO: Complete the hot plug of vmxnet3"
 
 
 # Find new add vmxnet3 nic
-$nics = FindAllNewAddNIC $ipv4 $sshKey
+$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add NIC" 
     DisconnectWithVIServer
