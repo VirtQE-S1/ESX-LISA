@@ -171,17 +171,17 @@
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_build_version</suiteTest>
 
-                <!-- <suiteTest>go_install_ide_disk</suiteTest> -->
-                <!-- <suiteTest>go_check_suspend_time_drift</suiteTest> -->
+                <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_check_suspend_time_drift</suiteTest>
 
-                <!-- <suiteTest>stor_check_pvscsi_error</suiteTest> -->
-                <!-- <suiteTest>stor_cp_big_files</suiteTest> -->
-                <!-- <suiteTest>stor_scp_big_files</suiteTest> -->
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
 
-                <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
-                <!-- <suiteTest>nw_live_migration</suiteTest> -->
-                <!-- <suiteTest>nw_hot_plug_e1000</suiteTest> -->
-                <!-- <suiteTest>nw_scp_mtu_9000</suiteTest> -->
+                <suiteTest>nw_check_lro_status_ethtool</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>nw_hot_plug_e1000</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
             </suiteTests>
         </suite>        
         <suite>
