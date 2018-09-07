@@ -21,7 +21,7 @@
     Name of the VM to modify.
 
 .Parameter hvServer
-    Name of the Hyper-V server hosting the VM.
+    Name of the ESXi server hosting the VM.
 
 .Parameter testParams
     A semicolon separated list of test parameters.

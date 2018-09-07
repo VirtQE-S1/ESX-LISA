@@ -91,8 +91,8 @@ $nics = Get-NetworkAdapter -VM $vmOut
 foreach ($nic in $nics)
 {
     Write-Host -F red nic is ${nic} , nic.Type is ${nic}.Type
-    if (${nic}.Type -eq "Vmxnet3")
-    {
+    # if (${nic}.Type -eq "Vmxnet3")
+    # {
         $result = Remove-NetworkAdapter -NetworkAdapter $nic -Confirm:$false
         if ($result -eq $null)
         {
@@ -104,7 +104,7 @@ foreach ($nic in $nics)
             Write-Host -F red nic.Type is ${nic}.Type
             write-output "FAIL: Remove-NetworkAdapter Failed"
         }
-    }
+    # }
 }
 
 return $retVal

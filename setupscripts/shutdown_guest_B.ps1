@@ -25,6 +25,9 @@
 .Parameter testParams
     Semicolon separated list of test parameters
 
+.Example
+    <param>memoryReserve=False,revertSnapshot=True</param>
+
 #>
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)

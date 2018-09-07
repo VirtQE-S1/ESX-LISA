@@ -1,34 +1,37 @@
 ###############################################################################
 ##
 ## Description:
-##  Migration to a Host with SR-IOV supported should be supported
+##  Ping successfully between 2 Guests which support SR-IOV on the different Hosts
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 09/04/2018 - Build the script
+##  v1.0.0 - ruqin - 09/05/2018 - Build the script
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-    Migration to a Host with SR-IOV supported should be supported 
+    Ping successfully between 2 Guests which support SR-IOV on the different Hosts 
 
 .Description
        <test>
-            <testName>sriov_move_host_supported</testName>
-            <testID>ESX-SRIOV-003</testID>
+            <testName>sriov_ping_diff_host</testName>
+            <testID>ESX-SRIOV-005</testID>
             <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_sriov.ps1</file>
             </setupScript>
             <cleanupScript>
+                <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
             </cleanupScript>
-            <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
+            <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
+                <param>dstDatastore=freenas</param>
+                <param>memoryReserve=True</param>
+                <param>TC_COVERED=RHEL-113884,RHEL6-49171</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>900</timeout>
@@ -47,7 +50,9 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
+#
 # Checking the input arguments
+#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -63,11 +68,15 @@ if (-not $testParams) {
 }
 
 
+#
 # Output test parameters so they are captured in log file
+#
 "TestParams : '${testParams}'"
 
 
+#
 # Parse the test parameters
+#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -90,7 +99,9 @@ foreach ($p in $params) {
 }
 
 
+#
 # Check all parameters are valid
+#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -130,7 +141,9 @@ if (-not $dstHost6_7 -or -not $dstHost6_5) {
 }
 
 
+#
 # Source the tcutils.ps1 file
+#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -144,6 +157,63 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 # Main Body
 # ############################################################################### 
+
+
+# Help to reset guest to origin host
+function resetGuest {
+    param (
+        [String] $vmName,
+        [String] $hvServer,
+        [String] $dstHost,
+        $oldDatastore
+    )
+    
+    LogPrint "WARN: Start to run reset function"
+    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        DisconnectWithVIServer
+        return $Aborted
+    } 
+
+
+    # Poweroff VM
+    $status = Stop-VM $vmObj -Confirm:$False
+    if (-not $?) {
+        LogPrint "ERROR: Cannot stop VM $vmName, $status"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+
+
+    # refresh VM
+    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+
+
+    # Move VM back to host
+    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) `
+        -Datastore $oldDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+    LogPrint "INFO: Move VM back to old host and old datastore in Reset function"
+    $status = Wait-Task -Task $task
+    LogPrint "INFO: Migration result is $status"
+
+
+    Start-Sleep -Seconds 6
+
+    # Refresh status
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    # Start Guest
+    Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+
+
+    # Wait for SSH ready
+    if ( -not (WaitForVMSSHReady $vmName $hvServer $sshKey 300)) {
+        LogPrint "ERROR : Cannot start SSH"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+    LogPrint "INFO: In reset function, VM already started"
+}
 
 
 $retVal = $Failed
@@ -200,13 +270,12 @@ if (-not $shardDatastore) {
     DisconnectWithVIServer
     return $Aborted
 }
-
-
+# Print Datastore name
 $name = $shardDatastore.Name
 LogPrint "INFO: required shard datastore $name"
 
 
-# Poweroff VM
+# Poweroff VM for SR-IOV migration
 $status = Stop-VM $vmObj -Confirm:$False
 if (-not $?) {
     LogPrint "ERROR : Cannot stop VM $vmName, $status"
@@ -215,18 +284,79 @@ if (-not $?) {
 }
 
 
-# Refresh status
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+# Move VM to another host
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dsthost) `
+    -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+
+
+# Start another VM
+$GuestBName = $vmObj.Name.Split('-')
+# Get another VM by change Name
+$GuestBName[-1] = "B"
+$GuestBName = $GuestBName -join "-"
+$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+
+
+# Add SR-IOV NIC for Guest B
+$status = AddSrIOVNIC $GuestBName $hvServer
+if ( -not $status[-1]) {
+    LogPrint "ERROR: SRIOV NIC adds failed" 
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Move storage and resource
-$status = Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $dsthost) -Datastore $shardDatastore -Confirm:$false -ErrorAction SilentlyContinue
+# Start GuestB
+Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
+    LogPrint "ERROR : Cannot start VM"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Wait for GuestB SSH ready
+if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
+    LogPrint "ERROR : Cannot start SSH"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Ready SSH"
+
+
+# Get GuestB VM IP addr
+$ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
+$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+
+
+# Find out new add SR-IOV nic for Guest B
+$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+if ($null -eq $nics) {
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
+    $sriovNIC = $nics[-1]
+}
+LogPrint "INFO: New NIC is $sriovNIC"
+
+
+# Config SR-IOV NIC IP addr for Guest B
+$IPAddr_guest_B = "172.31.1." + (Get-Random -Maximum 254 -Minimum 125)
+if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24"))) {
+    LogPrint "ERROR : Guest B Config IP Failed"
+    DisconnectWithVIServer
+    return $Failed
+}
+LogPrint "INFO: Guest B SR-IOV NIC IP add is $IPAddr_guest_B"
+
+
+# Check Migration status
+$status = Wait-Task -Task $task
+LogPrint "INFO: Migration result is $status"
+if (-not $status) {
+    resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
     DisconnectWithVIServer
     return $Aborted
@@ -242,16 +372,11 @@ if (-not $vmObj) {
 }
 
 
-# Start Guest
+# Start Guest A
 Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
-    # Poweroff VM
-    $status = Stop-VM $vmObj -Confirm:$False
-    # Refresh status
-    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-    # Move VM back
-    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
     LogPrint "ERROR : Cannot start VM"
+    resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
     return $Aborted
 }
@@ -259,39 +384,19 @@ if (-not $?) {
 
 # Wait for SSH ready
 if ( -not (WaitForVMSSHReady $vmName $dstHost $sshKey 300)) {
-    # Poweroff VM
-    $status = Stop-VM $vmObj -Confirm:$False
-    # Refresh status
-    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-    # Move VM back
-    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
     LogPrint "ERROR : Cannot start SSH"
+    resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
     return $Aborted
 }
 LogPrint "INFO: Ready SSH"
 
 
-# Get another VM IP addr and refresh
-$ipv4 = GetIPv4 -vmName $vmName -hvServer $dstHost
-$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Find out new add RDMA nic for Guest A
+# Find out new add SR-IOV nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
-    # Poweroff VM
-    $status = Stop-VM $vmObj -Confirm:$False
-    # Refresh status
-    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-    # Move VM back
-    Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
     LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
     return $Failed
 }
@@ -301,51 +406,31 @@ else {
 LogPrint "INFO: New NIC is $sriovNIC"
 
 
-# Get sriov nic driver 
-$Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
-$driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-# mellanox 40G driver and intel 40G NIC maybe different
-if ($driver -ne "ixgbevf") {
-    LogPrint "ERROR : Sriov driver error or unsupported driver"
+# Config SR-IOV NIC IP addr for Guest A
+$IPAddr_guest_A = "172.31.1." + (Get-Random -Maximum 124 -Minimum 2)
+if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC ($IPAddr_guest_A + "/24"))) {
+    LogPrint "ERROR : Guest A Config IP Failed"
+    resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
-    return $Aborted 
+    return $Failed
+}
+LogPrint "INFO: Guest A SR-IOV NIC IP add is $IPAddr_guest_A"
+
+
+# Check can we ping GuestA from GuestB via SR-IOV NIC
+$Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
+$status = SendCommandToVM $ipv4Addr_B $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : Ping test Failed"
+    $retVal = $Failed
 }
 else {
     $retVal = $Passed
 }
 
 
-# Refresh status
-$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Poweroff VM
-$status = Stop-VM $vmObj -Confirm:$False
-if (-not $?) {
-    LogPrint "ERROR : Cannot stop VM $vmName, $status"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Refresh status
-$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move VM back
-$status = Move-VM -VMotionPriority High -VM $vmObj -Destination $(Get-VMHost $hvServer) -Datastore $oldDatastore `
-    -Confirm:$false -ErrorAction SilentlyContinue
-LogPrint "INFO: Move VM back"
+# Clean up phase: Move back to old host
+resetGuest -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
 
 
 DisconnectWithVIServer

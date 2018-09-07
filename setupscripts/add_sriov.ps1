@@ -20,14 +20,15 @@
     Name of the test VM
 
 .Parameter hvServer
-    Name of the Hyper-V server hosting the VM.
+    Name of the ESXi server hosting the VM.
 
 .Parameter testParams
     Semicolon separated list of test parameters
 
 .Example
     <testparams>
-        <param>mtuChange=True,sriovNum=2</param>
+        <param>mtuChange=True</param>
+        <param>sriovNum=2</param>
     </testparams>
     
 #>

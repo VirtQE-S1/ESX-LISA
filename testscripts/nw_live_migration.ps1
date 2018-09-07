@@ -16,8 +16,7 @@
 .Description
         Dst host should be different with hvServer
          <test>
-            <testName>nw_live_migration</testName>
-            <testID>ESX-NW-017</testID>
+            <testName>nw_live_migration</testName> <testID>ESX-NW-017</testID>
             <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
             <testScript>testscripts\nw_live_migration.ps1</testScript>
             <testParams>
@@ -186,7 +185,6 @@ Write-Output "INFO: required shard datastore $name"
 
 # Move Hard Disk to shared datastore to prepare next migrate
 $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -ErrorAction SilentlyContinue
-
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move disk to required Datastore $shardDatastore"
     Write-Output "ERROR : Cannot move disk to required Datastore $shardDatastore"
@@ -342,7 +340,6 @@ if (-not $?) {
 
 # Shutdown another VM
 Stop-VM $testVM -Confirm:$False -RunAsync:$true
-
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot stop VM $testVMName"
     Write-Output "ERROR : Cannot stop VM $testVMName"

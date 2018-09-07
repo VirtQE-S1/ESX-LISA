@@ -1550,7 +1550,13 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 # AddSrIOVNIC()
 #
 ########################################################################
-function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
+function AddSrIOVNIC { 
+    Param(
+        [String] $vmName, 
+        [String] $hvServer, 
+        [bool] $mtuChange,
+        [Parameter(Mandatory = $false)] [String] $Network
+        )
    <#
     .Synopsis
         Add a SrIOV NIC
@@ -1633,7 +1639,9 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
         $vmHost = Get-VMHost -Name $hvServer  
         # This may fail, try to delete -V2 param Current only support one card
         $esxcli = Get-EsxCli -VMHost $vmHost -V2
-        $pciDevice = $esxcli.network.sriovnic.list.Invoke() | Select-Object -ExpandProperty "PCIDevice"
+        # TODO: add multiple SRIOV support
+        # Here may have problem if we have multiple SRIOV adapter
+        $pciDevice = $esxcli.network.sriovnic.list.Invoke() | Select-Object -ExpandProperty "PCIDevice" | Select-Object -First 1
     }
     catch {
         $ERRORMessage = $_ | Out-String
@@ -1683,12 +1691,18 @@ function AddSrIOVNIC([String] $vmName, [String] $hvServer, [bool] $mtuChange) {
     }
 
 
-    # Set the Network of Guest to "VM Network"(Hard Code)
+    # Default Network should be "VM Network"
+    if (-not $PSBoundParameters.ContainsKey("Network")) {
+        $Network = "VM Network"
+    }
+
+
+    # Set the Network of Guest to required Network
     $nics = Get-NetworkAdapter -VM $vmObj
     $nicMacAddress = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.generatedMACAddress"})[-1].Value
     foreach ($nic in $nics) {
         if ($nic.MacAddress -eq $nicMacAddress) {
-            Set-NetworkAdapter -NetworkAdapter $nic -NetworkName "VM Network" -Confirm:$false
+            Set-NetworkAdapter -NetworkAdapter $nic -NetworkName $Network -Confirm:$false
         } 
     }
 
@@ -2264,4 +2278,50 @@ function FindDstHost {
         }
     }
     return $dstHost
+}
+
+
+#######################################################################
+#
+# CheckCallTrace()
+#
+#######################################################################
+function CheckCallTrace {
+    Param
+    (
+        [String] $ipv4, 
+        [String] $sshkey
+    )
+    <#
+    .Synopsis
+        Function to checks if "Call Trace" message appears in the system logs
+    .Description
+        Function to checks if "Call Trace" message appears in the system logs, if system has Call Trace, function will return false
+    .Parameter ipv4
+        ipv4 address of target VM
+    .Parameter sshkey
+        Name of the SSH key file to use.  Note this function assumes the
+        ssh key a directory with a relative path of .\Ssh.
+    .Outputs 
+        True or False
+    .Example
+        $status = CheckCallTrace $ipv4 $sshkey
+    #>
+
+    $Command = '[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
+	content=$(grep -i "Call Trace" $logfile)
+	if [[ -n $content ]]; then
+		LogMsg "Error: System get Call Trace in $logfile"
+		return 1
+	else
+		LogMsg "No Call Trace in $logfile"
+		return 0
+	fi'
+    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+  
+    if (1 -eq $retVal) {
+       return $false 
+    }else {
+        return $true
+    }
 }

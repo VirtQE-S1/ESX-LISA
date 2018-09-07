@@ -20,7 +20,7 @@
     Name of the test VM
 
 .Parameter hvServer
-    Name of the Hyper-V server hosting the VM.
+    Name of the  server hosting the VM.
 
 .Parameter testParams
     Semicolon separated list of test parameters
