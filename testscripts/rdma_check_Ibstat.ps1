@@ -16,7 +16,7 @@
 .Description
        <test>
             <testName>rdma_check_Ibstat</testName>
-            <testID>ESX-RDMA-004</testID>
+            <testID>ESX-RDMA-005</testID>
             <setupScript>
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>

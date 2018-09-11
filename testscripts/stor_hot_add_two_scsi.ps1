@@ -17,7 +17,7 @@
 .Description
         <test>
             <testName>stor_hot_add_two_scsi</testName>
-            <testID>ESX-Stor-016</testID>
+            <testID>ESX-Stor-018</testID>
             <testScript>testscripts\stor_hot_add_two_scsi.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
             <files>testscripts\stor_hot_add_two_scsi.ps1</files>
