@@ -282,7 +282,7 @@ if (-not $vmObj) {
 }
 
 
-# Find out new add RDMA nic for Guest A
+# Find out new add SR-IOV nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     # Poweroff VM
