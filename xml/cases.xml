@@ -370,7 +370,7 @@
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -384,7 +384,7 @@
                 <param>TC_COVERED=RHEL6-34899,RHEL7-50882</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -398,7 +398,7 @@
                 <param>TC_COVERED=RHEL6-34900,RHEL7-50883</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -412,7 +412,7 @@
                 <param>TC_COVERED=RHEL6-35403,RHEL7-79913</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -454,7 +454,7 @@
                 <param>TC_COVERED=RHEL6-34897,RHEL7-50880</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -468,7 +468,7 @@
                 <param>TC_COVERED=RHEL6-34898,RHEL7-50881</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -482,7 +482,7 @@
                 <param>TC_COVERED=RHEL6-34903,RHEL7-50886</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -496,7 +496,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -510,7 +510,7 @@
                 <param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -523,7 +523,7 @@
                 <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -537,7 +537,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
             </testParams>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -551,7 +551,7 @@
                 <param>TC_COVERED=RHEL6-34893,RHEL7-50877</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -565,7 +565,7 @@
                 <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -579,7 +579,7 @@
                 <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -742,7 +742,7 @@
                 <param>TC_COVERED=RHEL6-47885,RHEL7-93440</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -757,7 +757,7 @@
                 <param>TC_COVERED=RHEL6-47879,RHEL7-93450</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -772,7 +772,7 @@
                 <param>TC_COVERED=RHEL6-47880,RHEL7-93453</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -845,7 +845,7 @@
                 <param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -859,7 +859,7 @@
                 <param>TC_COVERED=RHEL6-34905,RHEL7-50887</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -874,7 +874,7 @@
                 <param>TC_COVERED=RHEL6-34878,RHEL7-50864</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -898,7 +898,7 @@
                 <param>TC_COVERED=RHEL6-34872,RHEL7-50858</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -910,7 +910,7 @@
                 <param>TC_COVERED=RHEL6-34876,RHEL7-50862</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>120</timeout>
+            <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1364,7 +1364,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=128M</param>
+                <param>crashkernel=256M</param>
                 <param>VCPU=1</param>
                 <param>VMMemory=2GB</param>
                 <param>TName=kdump_crash_single_core</param>
@@ -1387,7 +1387,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=128M</param>
+                <param>crashkernel=256M</param>
                 <param>VCPU=2</param>
                 <param>VMMemory=4GB</param>
                 <param>TName=kdump_crash_smp</param>
@@ -1433,7 +1433,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=196M</param>
+                <param>crashkernel=512M</param>
                 <param>VCPU=8</param>
                 <param>VMMemory=16GB</param>
                 <param>TName=kdump_crash_diff_size</param>
@@ -1457,7 +1457,7 @@
             <files>remote-scripts\kdump_config.sh</files>
             <files>remote-scripts\kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=128M</param>
+                <param>crashkernel=256M</param>
                 <param>VCPU=2</param>
                 <param>VMMemory=4GB</param>
                 <param>DiskType=SCSI</param>
@@ -1863,7 +1863,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -1925,7 +1925,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -1956,7 +1956,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -1987,7 +1987,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -2018,7 +2018,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
