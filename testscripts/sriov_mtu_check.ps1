@@ -30,7 +30,7 @@
                 <param>TC_COVERED=RHEL-113877,RHEL6-49164</param>
                 <param>mtuChange=True</param>
                 <param>mtu=9000</param>
-                <param>memoryReserve=True</param>
+                <param>memoryReserve=true</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
@@ -49,9 +49,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -67,15 +65,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -94,9 +88,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -124,9 +116,7 @@ if ($null -eq $mtu) {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -162,10 +152,10 @@ $GuestBName = $GuestBName -join "-"
 
 # disable memory reserve
 $status = DisableMemoryReserve $GuestBName $hvServer
-# Addd sriov nic for guest B
+# Add sriov nic for guest B
 $status = AddSrIOVNIC $GuestBName $hvServer $true
 if ( -not $status[-1] ) {
-    LogPrint "ERROR: Guest B sriov nic add filed"
+    LogPrint "ERROR: Guest B sriov nic add failed"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -194,15 +184,15 @@ else {
 LogPrint "INFO: New NIC for GuestA is $sriovNIC_A"
 
 
-# Config RDMA NIC IP addr for Guest A and MTU
+# Config SR-IOV NIC IP addr for Guest A and MTU
 $IPAddr_guest_A = "192.168.99." + (Get-Random -Maximum 124 -Minimum 2)
 $status = ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC_A ($IPAddr_guest_A + "/24") $mtu
-if ( -not $status) {
+if ( -not $status[-1]) {
     LogPrint "ERROR : Guest A Config IP Failed"
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
+LogPrint "INFO: Guest A SR-IOV NIC IP add is $IPAddr_guest_A"
 
 
 # Install tcpdump at GuestA
@@ -228,10 +218,10 @@ $ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
-# Find out new add RDMA nic for Guest B
+# Find out new add SR-IOV nic for Guest B
 $nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
     DisconnectWithVIServer
     return $Aborted
 }
@@ -241,7 +231,7 @@ else {
 LogPrint "INFO: New NIC for Guest B is $sriovNIC"
 
 
-# Config RDMA NIC IP addr for Guest B and MTU
+# Config SR-IOV NIC IP addr for Guest B and MTU
 $IPAddr_guest_B = "192.168.99." + (Get-Random -Maximum 254 -Minimum 125)
 $status = ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24") $mtu
 if ( -not $status[-1]) {
@@ -249,7 +239,7 @@ if ( -not $status[-1]) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
+LogPrint "INFO: Guest B SR-IOV NIC IP add is $IPAddr_guest_B"
 
 
 $packetSize = $mtu - 28
