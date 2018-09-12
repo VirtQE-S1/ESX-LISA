@@ -248,12 +248,10 @@
                 <!-- <suiteTest>stor_cp_big_files</suiteTest> -->
                 <!-- <suiteTest>stor_scp_big_files</suiteTest> -->
                 <suiteTest>stor_add_nvme_disk</suiteTest>
-                <suiteTest>stor_hot_add_two_scsi</suiteTest>
 
                 <!-- <suiteTest>nw_hot_plug_e1000</suiteTest> -->
                 <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
                 <!-- <suiteTest>nw_live_migration</suiteTest> -->
-                <suiteTest>nw_arbitrary_mtu</suiteTest>
 
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
@@ -349,8 +347,8 @@
                 <!-- <suiteTest>stor_cp_big_files</suiteTest>
                 <suiteTest>stor_scp_big_files</suiteTest> -->
                 <suiteTest>stor_check_cd_file</suiteTest>
-                <!-- <suiteTest>stor_add_nvme_disk</suiteTest>
-                <suiteTest>stor_hot_add_two_scsi</suiteTest> -->
+                <suiteTest>stor_add_nvme_disk</suiteTest>
+                <suiteTest>stor_hot_add_two_scsi</suiteTest>
 
 
                 <suiteTest>nw_ping</suiteTest>
@@ -372,7 +370,7 @@
                 <!-- <suiteTest>nw_live_migration</suiteTest> -->
                 <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
                 <suiteTest>nw_check_nic_name</suiteTest>
-                <!-- <suiteTest>nw_arbitrary_mtu</suiteTest> -->
+                <suiteTest>nw_arbitrary_mtu</suiteTest>
 
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
