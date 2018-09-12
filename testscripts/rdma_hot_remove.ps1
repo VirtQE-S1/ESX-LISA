@@ -141,7 +141,7 @@ $pciInfo = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 if ( $pciInfo -notlike "*Infiniband controller: VMware Paravirtual RDMA controller*") {
     LogPrint "ERROR : Cannot get pvRDMA info from guest"
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
 }
 
 $nics = Get-NetworkAdapter -VM $vmObj
@@ -151,7 +151,7 @@ foreach ($nic in $nics)
     if (${nic}.NetworkName -eq "DPortGroup")
     {
         $result = Remove-NetworkAdapter -NetworkAdapter $nic -Confirm:$false
-        if ($result -eq $null)
+        if ($result -eq 0)
         {
             Write-Output "PASS: Remove-NetworkAdapter RDMA well"
             $retVal = $Passed
