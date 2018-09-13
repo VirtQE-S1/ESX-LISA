@@ -305,7 +305,7 @@ LogPrint "INFO: New NIC is $sriovNIC"
 $Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
 $driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 # mellanox 40G driver and intel 40G NIC maybe different
-if ($driver -ne "ixgbevf") {
+if ($driver -ne "ixgbevf" -and $driver -ne "i40evf") {
     LogPrint "ERROR : Sriov driver error or unsupported driver"
     DisconnectWithVIServer
     return $Aborted 

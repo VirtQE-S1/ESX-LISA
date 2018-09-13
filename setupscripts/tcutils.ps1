@@ -1656,32 +1656,49 @@ function AddSrIOVNIC {
     LogPrint "INFO: PCI Device is $pciDevice"
 
 
+    # Modify device address to make sure it fit the format of config file  (For example: 00000:068:00.0)
+    $address = $pciDevice.Split(":")
+    $address[0] = $address[0].PadLeft(5,'0')
+    $hex = $address[1]
+    $address[1] = ([String][convert]::toint64($hex,16)).PadLeft(3,'0')
+    $pciDevice = $address -join ":"
+    LogPrint "INFO: After format PCI Device is $pciDevice"
+
+
     # Refresh vmView
     $vmView = Get-vm $vmObj | Get-View
-
     # Change config pfId and Id to required PCI Device
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
     $pfID = New-Object VMware.Vim.optionvalue
     $passID = New-Object VMware.Vim.optionvalue 
+
 
     # Find correct pci key. Like "pciPassthru15"
     $pfID.Key = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.pfid"})[-1] | Select-Object -ExpandProperty "key"
     $pfID.Value = $pciDevice
     $passID.Key = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.id"})[-1] | Select-Object -ExpandProperty "key"
     $passID.Value = $pciDevice
-
     if ($passID.Key -notlike "pciPassthru*.id" -or $pfID.Key -notlike "pciPassthru*.pfid") {
         LogPrint "ERROR: Config key failed: passID $passID.Key, pfID $pfID.Key" 
         return $false
     }
 
 
-    # Add extra into config
-    $vmConfigSpec.ExtraConfig += $pfID
-    $vmConfigSpec.ExtraConfig += $passID
+    try {
+        # Add extra into config
+        $vmConfigSpec.ExtraConfig += $pfID
+        $vmConfigSpec.ExtraConfig += $passID
 
-    # Applay the new config
-    $vmView.ReconfigVM($vmConfigSpec)    
+        # Applay the new config
+        $vmView.ReconfigVM($vmConfigSpec)    
+    }
+    catch {
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: Config SRIOV ERROR"
+        LogPrint $ERRORMessage
+        return $false
+    }
+
 
     # Refresh the VM
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -1689,6 +1706,8 @@ function AddSrIOVNIC {
         Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     }
+        # Refresh the view
+        $vmView = Get-vm $vmObj | Get-View
 
 
     # Default Network should be "VM Network"
@@ -1703,6 +1722,10 @@ function AddSrIOVNIC {
     foreach ($nic in $nics) {
         if ($nic.MacAddress -eq $nicMacAddress) {
             Set-NetworkAdapter -NetworkAdapter $nic -NetworkName $Network -Confirm:$false
+            if  (-not $?){
+                LogPrint "ERROR: Setup Network to $Network failed"    
+                return $false
+            }
         } 
     }
 
@@ -1718,10 +1741,10 @@ function AddSrIOVNIC {
     # Refresh the view
     $vmView = Get-vm $vmObj | Get-View
 
+
     # Check vmx value
     $valueID = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.id"})[-1] | Select-Object -ExpandProperty "Value"
     $valuepfID = ($vmView.Config.ExtraConfig | Where-Object { $_.Key -like "pciPassthru*.pfid"})[-1] | Select-Object -ExpandProperty "Value"
-
     if ( ($pciDevice.Split(":")[1].Trim("0") -ne $valueID.Split(":")[1].Trim("0")) -or ($pciDevice.Split(":")[1].Trim("0") -ne $valuepfID.Split(":")[1].Trim("0")) ) {
         LogPrint "ERROR: Add extra config failed"    
         return $false
@@ -1731,6 +1754,8 @@ function AddSrIOVNIC {
         LogPrint "INFO: Add the SRIOV successfully"
         $retVal = $true
     }
+
+
     return $retVal
 }
 
