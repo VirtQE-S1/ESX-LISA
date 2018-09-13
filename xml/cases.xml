@@ -252,6 +252,8 @@
                 <!-- <suiteTest>nw_hot_plug_e1000</suiteTest> -->
                 <!-- <suiteTest>nw_check_lro_status_ethtool</suiteTest> -->
                 <!-- <suiteTest>nw_live_migration</suiteTest> -->
+                <!-- <suiteTest>nw_remove_vmxnet3</suiteTest> -->
+                
 
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
@@ -356,7 +358,7 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <!-- <suiteTest>nw_remove_vmxnet3</suiteTest> -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
