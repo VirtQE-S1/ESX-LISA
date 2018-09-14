@@ -175,10 +175,10 @@ bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 # Confirm enough time, below kdump_prepare.sh execution starts well after 60s
 # As the VM receives init 6, but its IP maybe still be detected
 # HERE. TODO. StopVMViaSSH, WaitForVMSSHReady
-Start-Sleep -S 60
+Start-Sleep -S 120
 
 # kdump_prepare.sh: Confirms all configurations works
-$timeout = 60
+$timeout = 180
 while ($timeout -gt 0)
 {
 	Write-Host -F Red "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
@@ -194,8 +194,8 @@ while ($timeout -gt 0)
 	{
     	Write-Host -F Gray "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
 		Write-Output "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
-		Start-Sleep -S 6
-		$timeout = $timeout - 6
+		Start-Sleep -S 18
+		$timeout = $timeout - 18
 		if ($timeout -eq 0)
 		{
         	Write-Host -F Red "ERROR: Failed to execute kdump_prepare.sh in VM"
@@ -218,7 +218,7 @@ Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" 
 Start-Sleep -S 60
 
 # Check vmcore after trigger complete and reboot
-$timeout = 120
+$timeout = 180
 while ($timeout -gt 0)
 {
 	Write-Host -F Red "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"

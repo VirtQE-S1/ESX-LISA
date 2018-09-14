@@ -84,6 +84,7 @@ Check_Kdump_Running(){
 	esac
 }
 
+
 ConfigureNMI()
 {
 	sysctl -w kernel.unknown_nmi_panic=1
