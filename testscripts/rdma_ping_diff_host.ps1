@@ -202,7 +202,7 @@ if (-not $oldDatastore) {
 
 
 # Get Required Datastore
-$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dsthost) | Where-Object {$_.Name -like "*$dstDatastore*"}
+$shardDatastore = Get-Datastore -VMHost (Get-VMHost $hvServer) | Where-Object {$_.Name -like "*$dstDatastore*"}
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
@@ -282,10 +282,11 @@ LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 
 # Check Migration status
+Start-Sleep -Seconds 6
 $status = Wait-Task -Task $task
 LogPrint "INFO: Migration result is $status"
 if (-not $status) {
-    LogPrint "ERROR : Cannot move disk to required Datastore $shardDatastore"
+    LogPrint "ERROR : Cannot move disk to required Datastore ${shardDatastore.Name}"
     DisconnectWithVIServer
     return $Aborted
 }

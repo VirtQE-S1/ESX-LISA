@@ -125,6 +125,8 @@ DisableMemoryReserve $vmName $hvServer
 for ($i = 0; $i -lt $sriovNum; $i++) {
     $status = AddSrIOVNIC $vmName $hvServer $mtuChange
     if ( -not $status[-1] ) {
+        # disable memory reserve
+        DisableMemoryReserve $vmName $hvServer
         return $Failed
     }
 }
