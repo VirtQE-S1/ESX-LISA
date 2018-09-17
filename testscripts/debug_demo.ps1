@@ -13,6 +13,7 @@
 ##                              DisconnectWithVIServer functions to tcutils.ps1
 ## v1.3.0 - xiaofwan - 01/09/2017 - Fix variable error bug.
 ##
+##
 ###############################################################################
 
 
@@ -66,9 +67,7 @@ if (-not $testParams) {
 # Display the test parameters so they are captured in the log file
 "TestParams : '${testParams}'"
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -91,16 +90,14 @@ if (-not $rootDir) {
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
-        cd $rootDir
+        Set-Location $rootDir
     }
     else {
         "Warn : rootdir '${rootDir}' does not exist"
     }
 }
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
