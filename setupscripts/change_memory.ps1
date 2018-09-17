@@ -31,7 +31,7 @@
     .\change_memory.ps1 "testVM" "localhost" "VMMemory=2GB"
 #>
 
-param([string] $vmName, [string] $hvServer, [string] $testParams)
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
 # Checking the input arguments
@@ -124,7 +124,6 @@ $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
     return $Aborted
 }
 
@@ -142,7 +141,7 @@ catch {
 
 
 # Update VMMemory on the VM
-Set-VM $vm -MemoryGB $VMMemory -Confirm:$false
+Set-VM $vmObj -MemoryGB $VMMemory -Confirm:$false
 if (-not $?) {
     LogPrint "ERROR: Set memory failed"
     return $Failed
