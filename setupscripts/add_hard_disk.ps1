@@ -30,7 +30,7 @@
 
    Where
         DiskType - IDE, SCSI or NVMe
-        StorageFormat - The format of new hard disk, can be (Thin, Thick, EagerZeroedThick) (IDE and NVMe don't support this parameter)
+        StorageFormat - The format of new hard disk, can be (Thin, Thick, EagerZeroedThick) (IDE doesn't support this parameter)
         DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
         DiskNum - The number of disk that we need to add during setup scripts
@@ -75,9 +75,7 @@ OR
 
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
@@ -101,15 +99,12 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $diskType = $null
 $storageFormat = $null
@@ -181,10 +176,9 @@ if ($diskType -like "*,*" -or $capacityGB -like "*,*" -or $diskDataStore -like "
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
+
 
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -261,7 +255,7 @@ for ($i = 0; $i -lt $diskNum; $i++) {
 
     # Add NVMe disk
     if ($diskType -eq "NVMe") {
-        $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB
+        $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB $storageFormat
         if ($sts[-1]) {
             LogPrint "INFO: Add NVMe disk done. $vmName"
         }

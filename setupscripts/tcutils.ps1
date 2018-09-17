@@ -1982,7 +1982,8 @@ function AddNVMeDisk {
         [String] $vmName,
         [String] $hvServer,
         [String] $dataStore,
-        [int] $capacityGB
+        [int] $capacityGB,
+        [String] $storageFormat
     )
 
     <#
@@ -1996,10 +1997,12 @@ function AddNVMeDisk {
         Name of the server hosting the VM.
     .Parameter capacityGB
         The Capacity of Disk
+    .Parameter storageFormat
+        The storage of disk (Thin, Thick, EagerZeroedThick)
     .Outputs
         Boolean
     .Example
-        AddNVMeDisk $vmName $hvSever 10
+        AddNVMeDisk $vmName $hvSever $dataSotre 10 $storageFormat
     #>
 
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -2078,12 +2081,30 @@ function AddNVMeDisk {
     $dev.Device = New-Object VMware.Vim.VirtualDisk
     $dev.Device.Backing = New-Object VMware.Vim.VirtualDiskFlatVer2BackingINFO
     $dev.Device.Backing.Datastore = ($vmObj.VMHost | Get-Datastore -Name $dsName).Extensiondata.MoRef
-    $dev.Device.Backing.DiskMode = "persistent"
     $dev.Device.Backing.FileName = "[" + $dsName + "] " + $vmName + "/" + $vmName + "_" + $hdNUM + ".vmdk"
+    $dev.Device.Backing.DiskMode = "persistent"
+
+
+    # Setup Disk Storage format
+    LogPrint "INFO: Storage format is $storageFormat"
+    if ($storageFormat -eq "Thin") {
+        $dev.Device.Backing.ThinProvisioned = $true   
+        $dev.Device.Backing.EagerlyScrub = $false
+    }
+    elseif ($storageFormat -eq "Thick") {
+        $dev.Device.Backing.ThinProvisioned = $false  
+        $dev.Device.Backing.EagerlyScrub = $false
+    }
+    elseif ($storageFormat -eq "EagerZeroedThick") {
+        $dev.Device.Backing.ThinProvisioned = $false  
+        $dev.Device.Backing.EagerlyScrub = $true
+    } else {
+        LogPrint "ERROR: storage format not found"
+        return $false
+    }
 
 
     # Setup controller
-    $dev.Device.Backing.ThinProvisioned = $true
     $dev.Device.CapacityInKb = $hdSize / 1KB
     $dev.Device.ControllerKey = $nvmeKey
     $dev.Device.UnitNumber = -1
