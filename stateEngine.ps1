@@ -3374,23 +3374,29 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData)
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
+            Write-Host -F Red "DEBUG: jobResults: [$jobResults]"
+
             if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $true)
             {
                 $completionCode = $Passed
                 $vm.testCaseResults = $Passed
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
+                Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
+
             }
             elseif ($jobResults[-1] -eq $Skipped)
             {
                 $completionCode = $Skipped
                 $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$","1"
+                Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
             }
             elseif ($jobResults[-1] -eq $Aborted)
             {
                 $completionCode = $Aborted
                 $vm.testCaseResults = $Aborted
-                $vm.individualResults = $vm.individualResults -replace ".$","1"
+                $vm.individualResults = $vm.individualResults -replace ".$","0"
+                Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
             }
         }
         Remove-Job -Id $jobID
