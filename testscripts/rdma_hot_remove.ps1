@@ -151,7 +151,7 @@ foreach ($nic in $nics)
     if (${nic}.NetworkName -eq "DPortGroup")
     {
         $result = Remove-NetworkAdapter -NetworkAdapter $nic -Confirm:$false
-        if ($result -eq 0)
+        if ($? -eq 0)
         {
             Write-Output "PASS: Remove-NetworkAdapter RDMA well"
             $retVal = $Passed
