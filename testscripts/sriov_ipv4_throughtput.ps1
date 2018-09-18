@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-##  Ping successfully between 2 Guests which support SR-IOV on the different Hosts
+##  Test a 10G network IPv4 throughput via SR-IOV
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 09/05/2018 - Build the script
@@ -11,13 +11,15 @@
 
 <#
 .Synopsis
-    Ping successfully between 2 Guests which support SR-IOV on the different Hosts 
+    Test a 10G network IPv4 throughput via SR-IOV 
 
 .Description
        <test>
-            <testName>sriov_ping_diff_host</testName>
-            <testID>ESX-SRIOV-005</testID>
+            <testName>sriov_ipv4_throughtput</testName>
+            <testID>ESX-SRIOV-007</testID>
             <setupScript>
+                <file>SetupScripts\change_cpu.ps1</file>
+                <file>SetupScripts\change_memory.ps1</file>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_sriov.ps1</file>
             </setupScript>
@@ -25,16 +27,19 @@
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
             </cleanupScript>
-            <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
+            <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=freenas</param>
                 <param>memoryReserve=True</param>
-                <param>TC_COVERED=RHEL-113884,RHEL6-49171</param>
+                <param>VCPU=8</param>
+                <param>VMMemory=4GB</param>
+                <param>NetworkBandWidth=10</param>
+                <param>TC_COVERED=RHEL-113880,RHEL6-49167</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>900</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -77,6 +82,7 @@ $ipv4 = $null
 $dstHost6_7 = $null
 $dstHost6_5 = $null
 $dstDatastore = $null
+$NetworkBandWidth = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params) {
@@ -88,6 +94,7 @@ foreach ($p in $params) {
         "dstHost6.7" { $dstHost6_7 = $fields[1].Trim()}
         "dstHost6.5" { $dstHost6_5 = $fields[1].Trim()}
         "dstDatastore" { $dstDatastore = $fields[1].Trim() }
+        "NetworkBandWidth" { $NetworkBandWidth = $fields[1].Trim() }
         default {}
     }
 }
@@ -125,6 +132,12 @@ if ($null -eq $dstDatastore) {
 }
 
 
+if ($null -eq $NetworkBandWidth) {
+    "FAIL: Test parameter NetworkBandWidth was not specified"
+    return $False  
+}
+
+
 if (-not $dstHost6_7 -or -not $dstHost6_5) {
     "INFO: dstHost 6.7 is $dstHost6_7"
     "INFO: dstHost 6.5 is $dstHost6_5"
@@ -147,7 +160,8 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 #
 # Main Body
-# ############################################################################### 
+#
+############################################################################### 
 
 
 $retVal = $Failed
@@ -157,6 +171,10 @@ if (-not $vmObj) {
     DisconnectWithVIServer
     return $Aborted
 }
+
+
+# iperf3 rhel6 url
+$ipef3URL = "http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/iperf3/3.3/2.el6eng/x86_64/iperf3-3.3-2.el6eng.x86_64.rpm"
 
 
 # Specify dst host
@@ -209,26 +227,20 @@ $name = $shardDatastore.Name
 LogPrint "INFO: required shard datastore $name"
 
 
-# Poweroff VM for SR-IOV migration
-$status = Stop-VM $vmObj -Confirm:$False
-if (-not $?) {
-    LogPrint "ERROR : Cannot stop VM $vmName, $status"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move VM to another host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dsthost) `
-    -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-
-
-# Start another VM
-$GuestBName = $vmObj.Name.Split('-')
 # Get another VM by change Name
+$GuestBName = $vmObj.Name.Split('-')
 $GuestBName[-1] = "B"
 $GuestBName = $GuestBName -join "-"
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+
+
+# Change CPU and memory for Guest B
+$status = Set-VM -VM $GuestB -NumCpu 8 -MemoryGB 4 -Confirm:$False
+if (-not $?) {
+    LogPrint "ERROR: Cannot setup guest B for required cpu and memory"
+    DisconnectWithVIServer
+    return $Aborted 
+}
 
 
 # Add SR-IOV NIC for Guest B
@@ -240,99 +252,19 @@ if ( -not $status[-1]) {
 }
 
 
-# Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Wait for GuestB SSH ready
-if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Ready SSH"
-
-
-# Get GuestB VM IP addr
-$ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-
-
-# Find out new add SR-IOV nic for Guest B
-$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
-    DisconnectWithVIServer
-    return $Failed
-}
-else {
-    $sriovNIC = $nics[-1]
-}
-LogPrint "INFO: New NIC is $sriovNIC"
-
-
-# Config SR-IOV NIC IP addr for Guest B
-$IPAddr_guest_B = "172.31.1." + (Get-Random -Maximum 254 -Minimum 125)
-if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24"))) {
-    LogPrint "ERROR : Guest B Config IP Failed"
-    DisconnectWithVIServer
-    return $Failed
-}
-LogPrint "INFO: Guest B SR-IOV NIC IP add is $IPAddr_guest_B"
-
-
-# Check Migration status
-$status = Wait-Task -Task $task
-LogPrint "INFO: Migration result is $status"
-if (-not $status) {
-    resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
-    LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Refresh status
-$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Start Guest A
-Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
-    resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Wait for SSH ready
-if ( -not (WaitForVMSSHReady $vmName $dstHost $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
-    resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Ready SSH"
+# Move Guest B to another host
+$task = Move-VM -VMotionPriority High -VM $GuestB -Destination (Get-VMHost $dsthost) `
+    -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Find out new add SR-IOV nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
-    resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    $status = Wait-Task -Task $task
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
 }
 else {
     $sriovNIC = $nics[-1]
@@ -341,21 +273,161 @@ LogPrint "INFO: New NIC is $sriovNIC"
 
 
 # Config SR-IOV NIC IP addr for Guest A
-$IPAddr_guest_A = "172.31.1." + (Get-Random -Maximum 124 -Minimum 2)
+$IPAddr_guest_A = "172.31.2." + (Get-Random -Maximum 124 -Minimum 2)
 if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC ($IPAddr_guest_A + "/24"))) {
     LogPrint "ERROR : Guest A Config IP Failed"
-    resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    $status = Wait-Task -Task $task
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
 }
 LogPrint "INFO: Guest A SR-IOV NIC IP add is $IPAddr_guest_A"
 
 
-# Check can we ping GuestA from GuestB via SR-IOV NIC
-$Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
+# Install iperf3 on Guest A
+if ($DISTRO -eq "RedHat6") {
+    $Command = "yum localinstall $ipef3URL -y"
+}
+else {
+    $Command = "yum install iperf3 -y"
+}
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR: iperf3 install failed"
+    $status = Wait-Task -Task $task
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Check Migration status
+$status = Wait-Task -Task $task
+LogPrint "INFO: Migration result is $status"
+if (-not $status) {
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Refresh Guest B status
+$GuestB = Get-VMHost -Name $dstHost | Get-VM -Name $GuestBName
+if (-not $GuestB) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Start GuestB
+Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    LogPrint "ERROR : Cannot start VM"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Wait for GuestB SSH ready
+if ( -not (WaitForVMSSHReady $GuestBName $dstHost $sshKey 300)) {
+    LogPrint "ERROR : Cannot start SSH"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Ready SSH"
+
+
+# Get GuestB VM IP addr
+$ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $dstHost
+$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+
+
+# Find out new add SR-IOV nic for Guest B
+$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+if ($null -eq $nics) {
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    DisconnectWithVIServer
+    return $Aborted
+}
+else {
+    $sriovNIC = $nics[-1]
+}
+LogPrint "INFO: New NIC is $sriovNIC"
+
+
+# Config SR-IOV NIC IP addr for Guest B
+$IPAddr_guest_B = "172.31.2." + (Get-Random -Maximum 254 -Minimum 125)
+if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24"))) {
+    LogPrint "ERROR : Guest B Config IP Failed"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Guest B SR-IOV NIC IP add is $IPAddr_guest_B"
+
+
+# Install iperf3 on Guest B
+if ($DISTRO -eq "RedHat6") {
+    $Command = "yum localinstall $ipef3URL -y"
+}
+else {
+    $Command = "yum install iperf3 -y"
+}
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
+    LogPrint "ERROR: iperf3 install failed"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+### Starting iperf3 test
+
+
+# Ready iperf3 server in Guest-A
+$Command = "iperf3 -s"
+$Status = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${Command}" -PassThru -WindowStyle Hidden
+LogPrint "INFO: iperf3 is enable"
+
+
+# Test Network Connection
+$Command = "ping $IPAddr_guest_A -c 5"
+$status = SendCommandToVM $ipv4Addr_B $sshkey $command
+if ( -not $status) {
+    LogPrint "Error : Cannot ping Guest-A from Guest-B"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Network is working"
+
+
+# Start iperf3 test
+$total = 0
+for ($i = 0; $i -lt 10; $i++) {
+    $Command = "iperf3 -t 30 -Z -P16 -c $IPAddr_guest_A -O10 | grep SUM | grep sender |awk '{print `$6}'"
+    $bandwidth = [decimal] (bin\plink.exe -i ssh\${sshkey} root@${ipv4Addr_B} $command)
+    if ( -not $bandwidth) {
+        LogPrint "Error : iperf3 failed in $GuestBName"
+        resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+        DisconnectWithVIServer
+        return $Failed
+    }
+    LogPrint "INFO: Round $i, bandwidth is $bandwidth"
+    $total += $bandwidth
+}
+
+
+# Check bandwidth value
+$total = $total / 10
+LogPrint "INFO: average bandwidth is $total"
+$NetworkBandWidth = ([decimal]$NetworkBandWidth) * 0.9
+if ($total -lt $NetworkBandWidth) {
+    LogPrint "INFO: Network bandwidth doesn't fit requirement" 
     $retVal = $Failed
 }
 else {
@@ -363,8 +435,8 @@ else {
 }
 
 
-# Clean up phase: Move back to old host
-resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+# Clean up step
+resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
 
 
 DisconnectWithVIServer

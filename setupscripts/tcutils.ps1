@@ -2371,3 +2371,80 @@ function CheckCallTrace {
         return $true
     }
 }
+
+
+#######################################################################
+#
+# resetGuestSRIOV()
+#
+#######################################################################
+function resetGuestSRIOV {
+    param (
+        [String] $vmName,
+        [String] $hvServer,
+        [String] $dstHost,
+        $oldDatastore
+    )
+    <#
+    .Synopsis
+        Help to reset guest to origin host
+    .Description
+        Help to reset guest to origin host, mainly for migration cases
+    .Parameter vmName
+        Name of the VM
+    .Parameter hvServer
+        Host of VM, original host
+    .Parameter dstHost
+        VM current Host
+    .Parameter oldDatastore
+        VM old datastooe
+    .Example
+        resetGuestSRIOV -vmName $vmName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    #>
+    
+    LogPrint "WARN: Start to run reset function"
+    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        DisconnectWithVIServer
+        return $Aborted
+    } 
+
+
+    # Poweroff VM
+    $status = Stop-VM $vmObj -Confirm:$False
+    if (-not $?) {
+        LogPrint "ERROR: Cannot stop VM $vmName, $status"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+
+
+    # refresh VM
+    $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
+
+
+    # Move VM back to host
+    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) `
+        -Datastore $oldDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+    LogPrint "INFO: Move VM back to old host and old datastore in Reset function"
+    $status = Wait-Task -Task $task
+    LogPrint "INFO: Migration result is $status"
+
+
+    Start-Sleep -Seconds 6
+
+    # Refresh status
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    # Start Guest
+    Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+
+
+    # Wait for SSH ready
+    if ( -not (WaitForVMSSHReady $vmName $hvServer $sshKey 300)) {
+        LogPrint "ERROR : Cannot start SSH"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+    LogPrint "INFO: In reset function, VM already started"
+}
