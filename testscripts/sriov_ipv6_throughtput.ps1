@@ -1,22 +1,22 @@
 ###############################################################################
 ##
 ## Description:
-##  Test a 10G network IPv4 throughput via SR-IOV
+##  Test a 10G network IPv6 throughput via SR-IOV
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 09/18/2018 - Build the script
+##  v1.0.0 - ruqin - 09/19/2018 - Build the script
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-    Test a 10G network IPv4 throughput via SR-IOV 
+    Test a 10G network IPv6 throughput via SR-IOV 
 
 .Description
        <test>
-            <testName>sriov_ipv4_throughtput</testName>
-            <testID>ESX-SRIOV-007</testID>
+            <testName>sriov_ipv6_throughtput</testName>
+            <testID>ESX-SRIOV-008</testID>
             <setupScript>
                 <file>SetupScripts\change_cpu.ps1</file>
                 <file>SetupScripts\change_memory.ps1</file>
@@ -27,7 +27,7 @@
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
             </cleanupScript>
-            <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
+            <testScript>testscripts\sriov_ipv6_throughtput.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
@@ -36,7 +36,7 @@
                 <param>VCPU=8</param>
                 <param>VMMemory=4GB</param>
                 <param>NetworkBandWidth=10</param>
-                <param>TC_COVERED=RHEL-113880,RHEL6-49167</param>
+                <param>TC_COVERED=RHEL-113881,RHEL6-49168</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1200</timeout>
@@ -284,6 +284,19 @@ if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC ($IPAddr_guest_A + "/24"
 LogPrint "INFO: Guest A SR-IOV NIC IP add is $IPAddr_guest_A"
 
 
+# Setup ipv6 addr for Guest A
+$IPAddr6_guest_A = "fd00::" + ([Convert]::ToString((Get-Random -Maximum 32767 -Minimum 2), 16))
+$Command = "nmcli con mod $sriovNIC ipv6.addresses '$($IPAddr6_guest_A + '/64')' ipv6.method manual && `
+        nmcli con down $sriovNIC && nmcli con up $sriovNIC"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR: Guest A ipv6 config failed"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
 # Install iperf3 on Guest A
 if ($DISTRO -eq "RedHat6") {
     $Command = "yum localinstall $ipef3URL -y"
@@ -369,6 +382,19 @@ if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B +
 LogPrint "INFO: Guest B SR-IOV NIC IP add is $IPAddr_guest_B"
 
 
+# Setup ipv6 addr for Guest B
+$IPAddr6_guest_B = "fd00::" + ([Convert]::ToString((Get-Random -Maximum 65535 -Minimum 32768), 16))
+$Command = "nmcli con mod $sriovNIC ipv6.addresses '$($IPAddr6_guest_B + '/64')' ipv6.method manual && `
+        nmcli con down $sriovNIC && nmcli con up $sriovNIC"
+$status = SendCommandToVM $ipv4Addr_B $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR: Guest B ipv6 config failed"
+    resetGuestSRIOV -vmName $GuestBName -hvServer $hvServer -dstHost $dstHost -oldDatastore $oldDatastore
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
 # Install iperf3 on Guest B
 if ($DISTRO -eq "RedHat6") {
     $Command = "yum localinstall $ipef3URL -y"
@@ -395,7 +421,7 @@ LogPrint "INFO: iperf3 is enable"
 
 
 # Test Network Connection
-$Command = "ping $IPAddr_guest_A -c 5"
+$Command = "ping6 $IPAddr6_guest_A -c 5"
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 if ( -not $status) {
     LogPrint "Error : Cannot ping Guest-A from Guest-B"
@@ -409,7 +435,7 @@ LogPrint "INFO: Network is working"
 # Start iperf3 test
 $total = 0
 for ($i = 0; $i -lt 10; $i++) {
-    $Command = "iperf3 -t 30 -Z -P16 -c $IPAddr_guest_A -O10 | grep SUM | grep sender |awk '{print `$6}'"
+    $Command = "iperf3 -t 30 -Z -P16 -c $IPAddr6_guest_A -O10 | grep SUM | grep sender |awk '{print `$6}'"
     $bandwidth = [decimal] (bin\plink.exe -i ssh\${sshkey} root@${ipv4Addr_B} $command)
     if ( -not $bandwidth) {
         LogPrint "Error : iperf3 failed in $GuestBName"
