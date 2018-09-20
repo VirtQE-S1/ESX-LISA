@@ -4,14 +4,12 @@
 ##   What does this script?
 ##   What's the result the case expected?
 ##
-###############################################################################
-##
 ## Revision:
-## v1.0.0 - xiaofwan - 11/25/2016 - Draft a template for Powershell script.
-## v1.1.0 - xiaofwan - 12/29/2016 - Add rootDir, sshKey, and ipv4 params support.
-## v1.2.0 - xiaofwan - 01/06/2017 - Move PowerCLIImport, ConnectToVIServer, and
+##  v1.0.0 - xiaofwan - 11/25/2016 - Draft a template for Powershell script.
+##  v1.1.0 - xiaofwan - 12/29/2016 - Add rootDir, sshKey, and ipv4 params support.
+##  v1.2.0 - xiaofwan - 01/06/2017 - Move PowerCLIImport, ConnectToVIServer, and
 ##                              DisconnectWithVIServer functions to tcutils.ps1
-## v1.3.0 - xiaofwan - 01/09/2017 - Fix variable error bug.
+##  v1.3.0 - xiaofwan - 01/09/2017 - Fix variable error bug.
 ##
 ##
 ###############################################################################
