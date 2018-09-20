@@ -1363,8 +1363,8 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
         LogMsg 1 $error
     }
 
-    del lisaOut.tmp -ErrorAction "SilentlyContinue"
-    del lisaErr.tmp -ErrorAction "SilentlyContinue"
+    Remove-Item lisaOut.tmp -ErrorAction "SilentlyContinue"
+    Remove-Item lisaErr.tmp -ErrorAction "SilentlyContinue"
 
     return $retVal
 }
@@ -1400,7 +1400,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
     while(!$process.hasExited)
     {
         LogMsg 8 "Waiting 1 second to check the process status for Command = '$command'."
-        sleep 1
+        Start-Sleep 1
         $commandTimeout -= 1
         if ($commandTimeout -le 0)
         {
@@ -1416,8 +1416,8 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command)
         LogMsg 2 "Success: $vmName successfully sent command to VM. Command = '$command'"
     }
 
-    del lisaOut.tmp -ErrorAction "SilentlyContinue"
-    del lisaErr.tmp -ErrorAction "SilentlyContinue"
+    Remove-Item lisaOut.tmp -ErrorAction "SilentlyContinue"
+    Remove-Item lisaErr.tmp -ErrorAction "SilentlyContinue"
 
     return $retVal
 }
