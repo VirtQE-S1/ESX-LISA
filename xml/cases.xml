@@ -1359,7 +1359,7 @@
             <testName>stor_add_nvme_disk</testName>
             <testID>ESX-Stor-017</testID>
             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <testScript>stor_add_nvme_disk.sh</testScript  >
+            <testScript>stor_add_nvme_disk.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_add_nvme_disk.sh</files>
             <testParams>
@@ -1380,7 +1380,7 @@
         <test>
             <testName>stor_hot_add_two_scsi</testName>
             <testID>ESX-Stor-018</testID>
-            <testScript>testscripts\stor_hot_add_two_scsi.ps1</testScript  >
+            <testScript>testscripts\stor_hot_add_two_scsi.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>testscripts\stor_hot_add_two_scsi.ps1</files>
             <testParams>
@@ -1722,6 +1722,9 @@
             <testID>ESX-NW-017</testID>
             <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
             <testScript>testscripts\nw_live_migration.ps1</testScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
@@ -1954,7 +1957,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -2235,6 +2238,7 @@
             </setupScript>
             <cleanupScript>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
             <testParams>
@@ -2276,6 +2280,7 @@
             <cleanupScript>
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
             <testParams>
@@ -2322,6 +2327,7 @@
             <cleanupScript>
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
             <testParams>
@@ -2351,6 +2357,7 @@
             <cleanupScript>
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_ipv6_throughtput.ps1</testScript>
             <testParams>
@@ -2419,6 +2426,9 @@
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
             <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
