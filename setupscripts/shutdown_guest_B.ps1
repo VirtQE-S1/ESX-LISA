@@ -26,36 +26,35 @@
     Semicolon separated list of test parameters
 
 .Example
-    <param>memoryReserve=False,revertSnapshot=True</param>
+    <param>revertSnapshot=True</param>
+    <param>memoryReserve=False</param>
 
 #>
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
 }
+
 
 if (-not $hvServer) {
     "Error: hvServer cannot be null!"
     exit 1
 }
 
+
 if (-not $testParams) {
     Throw "Error: No test parameters specified"
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse the test parameters
-#
 $rootDir = $null
 $memoryReserve = $null
 $revertSnapshot = $null
@@ -104,10 +103,9 @@ else {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
+
 
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `

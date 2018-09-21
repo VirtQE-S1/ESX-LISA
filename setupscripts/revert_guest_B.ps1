@@ -66,7 +66,6 @@ $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
     return $Aborted
 }
 

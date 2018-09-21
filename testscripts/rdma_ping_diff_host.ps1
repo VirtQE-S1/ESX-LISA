@@ -21,6 +21,9 @@
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
             <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>

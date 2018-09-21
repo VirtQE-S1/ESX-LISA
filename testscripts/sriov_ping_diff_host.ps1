@@ -24,6 +24,7 @@
             <cleanupScript>
                 <file>SetupScripts\shutdown_guest_B.ps1</file>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
             <testParams>

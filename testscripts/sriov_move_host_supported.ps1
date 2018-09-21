@@ -22,6 +22,7 @@
             </setupScript>
             <cleanupScript>
                 <file>SetupScripts\disable_memory_reserve.ps1</file>
+                <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
             <testParams>

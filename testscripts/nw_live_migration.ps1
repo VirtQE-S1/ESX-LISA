@@ -19,6 +19,9 @@
             <testName>nw_live_migration</testName> <testID>ESX-NW-017</testID>
             <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
             <testScript>testscripts\nw_live_migration.ps1</testScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>

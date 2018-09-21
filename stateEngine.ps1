@@ -2943,11 +2943,7 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     $summaryLog = "${vmName}_summary.log"
 
 
-    #
     # Collect log data
-    #
-    $completionCode = $Failed
-    $jobID = $vm.jobID
     if ($jobStatus.State -ne "Completed") {
         $jobResults = @(Receive-Job -id $jobID -ErrorAction SilentlyContinue)
         $error.Clear()
