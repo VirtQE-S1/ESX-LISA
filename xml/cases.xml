@@ -247,7 +247,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 126 - 1(Stress) - 11(PERF) -->
+            <!-- Acceptance Total Cases: 126 - 1(Stress) - 11(PERF - 1) -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -332,7 +332,7 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <!-- <suiteTest>nw_remove_vmxnet3</suiteTest> -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
