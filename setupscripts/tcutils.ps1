@@ -1596,12 +1596,15 @@ function AddSrIOVNIC {
         return $false
     }
 
+
     try {
         # Get Switch INFO
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
+
     
         # This is hard code DPortGroup Name (6.0 6.5 6.7) This may change
         $PG = $DVS | Get-VDPortgroup -Name "DPortGroup"
+
 
         # Add new nic into config file
         $Spec = New-Object VMware.Vim.VirtualMachineConfigSpec
@@ -1609,19 +1612,23 @@ function AddSrIOVNIC {
         $Dev.Operation = "add" 
         $Dev.Device = New-Object VMware.Vim.VirtualSriovEthernetCard
 
+
         # change config make mtu editable
         if ($mtuChange) {
             LogPrint "INFO: MTU is editable"
             $Dev.Device.AllowGuestOSMtuChange = $true
         }
 
+
         $Spec.DeviceChange += $dev
         $Spec.DeviceChange.Device.Backing = New-Object VMware.Vim.VirtualEthernetCardDistributedVirtualPortBackingINFO
         $Spec.DeviceChange.Device.Backing.Port = New-Object VMware.Vim.DistributedVirtualSwitchPortConnection
+
     
         # This is currently UNKNOWN function
         $Spec.DeviceChange.Device.Backing.Port.PortgroupKey = $PG.Key
         $Spec.DeviceChange.Device.Backing.Port.SwitchUuid = $DVS.Key
+
 
         # Apply the new config
         $View = $vmObj | Get-View
@@ -1658,15 +1665,21 @@ function AddSrIOVNIC {
 
     # Modify device address to make sure it fit the format of config file  (For example: 00000:068:00.0)
     $address = $pciDevice.Split(":")
-    $address[0] = $address[0].PadLeft(5,'0')
+    $address[0] = $address[0].PadLeft(5, '0')
     $hex = $address[1]
-    $address[1] = ([String][convert]::toint64($hex,16)).PadLeft(3,'0')
+    $address[1] = ([String][convert]::toint64($hex, 16)).PadLeft(3, '0')
     $pciDevice = $address -join ":"
     LogPrint "INFO: After format PCI Device is $pciDevice"
 
 
+    # Refresh the VM
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+    }
     # Refresh vmView
-    $vmView = Get-vm $vmObj | Get-View
+    $vmView = $vmObj | Get-View
     # Change config pfId and Id to required PCI Device
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
     $pfID = New-Object VMware.Vim.optionvalue
@@ -1706,8 +1719,8 @@ function AddSrIOVNIC {
         Write-ERROR -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
         return $false
     }
-        # Refresh the view
-        $vmView = Get-vm $vmObj | Get-View
+    # Refresh the view
+    $vmView = $vmObj | Get-View
 
 
     # Default Network should be "VM Network"
@@ -1739,7 +1752,7 @@ function AddSrIOVNIC {
 
 
     # Refresh the view
-    $vmView = Get-vm $vmObj | Get-View
+    $vmView = $vmObj | Get-View
 
 
     # Check vmx value
