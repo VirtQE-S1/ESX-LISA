@@ -1111,16 +1111,15 @@
             </testparams>
             <onError>Continue</onError>
         </test>
-        <test>
+         <test>
             <testName>stor_vhdx_mount_nfs_server</testName>
             <testID>ESX-STOR-002</testID>
-            <setupScript>SetupScripts\setup_nfs_server.ps1</setupScript>
             <testScript>testscripts\stor_nfs_client.ps1</testScript>
             <files>
                 remote-scripts/utils.sh, remote-scripts/stor_utils.sh
             </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>900</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-34925,RHEL7-50903</param>
             </testparams>
