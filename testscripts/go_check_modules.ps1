@@ -194,7 +194,7 @@ foreach ($m in $modules_array)
         Write-Host -F Red "PASS: Complete the check of $module"
         Write-Output "PASS: Complete the check of $module"
     }
-    $retVal = $Passed
+        $retVal = $Passed
 }
 
 

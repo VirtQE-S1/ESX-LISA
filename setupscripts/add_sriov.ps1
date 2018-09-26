@@ -119,6 +119,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
+# Check host version
+$hvHost = Get-VMHost -Name $hvServer
+if ($hvHost.Version -lt "6.5.0") {
+    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
+    return $Skipped
+}
+
+
 # disable memory reserve
 DisableMemoryReserve $vmName $hvServer
 # Use function to add new sriov nic
@@ -130,6 +138,7 @@ for ($i = 0; $i -lt $sriovNum; $i++) {
         return $Failed
     }
 }
+
 
 $retVal = $Passed
 return $retVal

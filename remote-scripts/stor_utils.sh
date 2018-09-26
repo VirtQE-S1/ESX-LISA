@@ -273,12 +273,12 @@ DoUMountFs()
     ############################################################################
     local mountPoint=$1
     local cleanfs=$2
+    if [ $cleanfs = "true" ];  then
+        rm -f $mountPoint/*
+    fi
     umount $mountPoint
     if [ "$?" = "0" ]; then
         LogMsg "Drive umounted successfully..."
-        if [ $cleanfs = "true" ];  then
-            rm -f $mountPoint/*
-        fi
         return 0
     else
         LogMsg "Error in umount $mountPoint..."

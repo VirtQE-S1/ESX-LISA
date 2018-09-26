@@ -215,16 +215,14 @@ LogPrint "INFO :current memory is $total_mem"
 
 $dst_mem = $vmobj.memorymb * 2
 
-if ( $total_mem -le ($dst_mem - 1000) -or $total_mem -gt ($dst_mem + 1000)) {
+if ( $total_mem -le ($dst_mem * 0.9) -or $total_mem -gt ($dst_mem * 1.1)) {
     LogPrint  "error : new hot add memory not fit $dst_mem mb in $vmname"
     disconnectwithviserver
     return $failed
 }
 
 # check system dmesg
-$command = "dmesg | grep -i `"call trace`" | wc -l"
-$error_num = [int] (bin\plink.exe -i ssh\${sshkey} root@${ipv4} $command)
-if ($error_num -ne 0) {
+if ( -not (CheckCallTrace $ipv4 $sshKey)) {
     LogPrint "error : hot add memory has error call trace in $vmname"
     disconnectwithviserver
     return $Failed

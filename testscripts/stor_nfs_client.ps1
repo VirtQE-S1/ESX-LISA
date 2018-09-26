@@ -105,30 +105,26 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 $result = $Failed
-$vmNameB = $vmName -replace "A$","B"
-$ipv4B = GetIPv4 $vmNameB $hvServer
 
-if ($ipv4B -eq $null)
+
+$sts = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=10.73.199.36:/mnt/MainVolume/nfs-smb/esx >> ~/constants.sh"
+if (-not $sts)
 {
-    "Error: Failed to get ipAddress for assistant VM $vmNameB"
+    LogPrint "Error : Cannot send command to vm for setting NFS_Path"
 }
 
-$sta = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=$($ipv4B):/nfs_share >> ~/constants.sh"
-if (-not $sta)
-{
-    "Error : Cannot send command to vm for setting NFS_Path"
-}
 
 $remoteScript="stor_lis_nfs.sh"
 $sta = RunRemoteScript $remoteScript
 if (-not $($sta[-1]))
 {
-    "Error: Failed to run for $remoteScript"
+    LogPrint "Error: Failed to run for $remoteScript"
 }
 else
 {
     $result = $Passed
 }
+
 
 "Info : stor_nfs_client script completed"
 DisconnectWithVIServer

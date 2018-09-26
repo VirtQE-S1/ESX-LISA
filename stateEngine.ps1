@@ -985,7 +985,8 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                 }
             }
         }
-        else { # original syntax of <preStartConfig>.\setupscripts\Config-VM.ps1</preStartConfig>
+        else {
+            # original syntax of <preStartConfig>.\setupscripts\Config-VM.ps1</preStartConfig>
             LogMsg 3 "Info : $($vm.vmName) - starting preStart script $($vm.preStartConfig)"
             $sts = RunPSScript $vm $($vm.preStartConfig) $xmlData "preStartConfig"
             if (-not $sts) {
@@ -1030,7 +1031,8 @@ function DoRunSetupScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                     }
                 }
             }
-            else { # the older, single setup script syntax
+            else {
+                # the older, single setup script syntax
                 LogMsg 3 "Info : $($vm.vmName) - running single setup script '$($testData.setupScript)'"
 
                 if (-not (RunPSScript $vm $($testData.setupScript) $xmlData "Setup" $logfile)) {
@@ -1125,7 +1127,15 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     # Start the VM and wait for the state to go to Running
     #
     LogMsg 6 "Info : $($vm.vmName) is being started"
-    $startvmOut = Start-VM -VM $vmObj -Confirm:$false
+    try {
+        $startvmOut = Start-VM -VM $vmObj -Confirm:$false
+    }
+    catch {
+        $ERRORMessage = $_ | Out-String
+        LogPrint "ERROR: Cannot Start VM:"
+        LogPrint $ERRORMessage
+        return
+    }
 
     $timeout = 180
     while ($timeout -gt 0) {
@@ -1779,7 +1789,8 @@ function DoRunPreTestScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                         }
                     }
                 }
-                else { # Original syntax of <pretest>setupscripts\myPretest.ps1</pretest>
+                else {
+                    # Original syntax of <pretest>setupscripts\myPretest.ps1</pretest>
                     LogMsg 3 "Info : $($vm.vmName) - starting preTest script $($testData.setupScript)"
 
                     $sts = RunPSScript $vm $($testData.preTest) $xmlData "PreTest"
@@ -2264,7 +2275,8 @@ function DoRunPostTestScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                     }
                 }
             }
-            else { # Original syntax of <postTest>setupscripts\myPretest.ps1</postTest>
+            else {
+                # Original syntax of <postTest>setupscripts\myPretest.ps1</postTest>
                 LogMsg 3 "Info : $($vm.vmName) - starting postTest script $($testData.postTest)"
                 $sts = RunPSScript $vm $($testData.postTest) $xmlData "PostTest"
                 if (-not $sts) {
@@ -2359,12 +2371,14 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                 $nextState = $SystemUp
             }
         }
-        else { # reboot
+        else {
+            # reboot
             # Test successful, reboot required
             $nextState = $ShutDownSystem
         }
     }
-    else { # current test failed
+    else {
+        # current test failed
         if ($continueOnError) {
             if ($noReboot) {
                 if ($nextTest -eq "done") {
@@ -2381,7 +2395,8 @@ function DoDetermineReboot([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                 $nextState = $ShutDownSystem
             }
         }
-        else { # abort on error
+        else {
+            # abort on error
             # Test failed, abort on error
             $nextState = $ShutDownSystem
         }
@@ -2607,7 +2622,8 @@ function DoRunCleanUpScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                 }
             }
         }
-        else { # original syntax of <cleanupscript>setupscripts\myCleanup.ps1</cleanupscript>
+        else {
+            # original syntax of <cleanupscript>setupscripts\myCleanup.ps1</cleanupscript>
             LogMsg 3 "Info : $($vm.vmName) running cleanup script $($currentTestData.cleanupScript) for test $($currentTestData.testName)"
 
             $sts = RunPSScript $vm $($currentTestData.cleanupScript) $xmlData "Cleanup"

@@ -96,6 +96,15 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 $retVal = $Failed
 
+
+# Check host version
+$hvHost = Get-VMHost -Name $hvServer
+if ($hvHost.Version -lt "6.5.0") {
+    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
+    return $Skipped
+}
+
+
 # Use function to add new RDMA nic
 $status = AddPVrdmaNIC -vmName $vmName -hvServer $hvServer
 if ( -not $status[-1] ) {
