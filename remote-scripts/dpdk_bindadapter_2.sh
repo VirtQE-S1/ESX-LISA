@@ -83,7 +83,7 @@ fi
 
 # Show nic status
 cd "$RTE_SDK" || exit 1
-$RTE_SDK/usertools/dpdk-devbind.py -s
+python2 $RTE_SDK/usertools/dpdk-devbind.py -s
 
 
 # Load required DPDK modules
@@ -104,11 +104,11 @@ Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 
 
 # Make Sure we have more than 3 network adapter
-if [ "$(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
+if [ "$(python2 ./usertools/dpdk-devbind.py -s | grep unused=igb_uio | wc -l)"  -gt 3 ];
 then
     count=0
     # For each adapter, get device name, disconnect with kernel and bind with DPDK
-    for i in $(./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
+    for i in $(python2 ./usertools/dpdk-devbind.py -s | grep unused=igb_uio | awk 'NR>0{print}'\
     |  awk 'BEGIN{FS="="}{print $2}' | awk '{print $1}');
     do
         if [ "$i" != "$Server_Adapter" ];
@@ -119,7 +119,7 @@ then
             count=$((count + 1))
             
             LogMsg "Start Bind $i"
-            ./usertools/dpdk-devbind.py -b igb_uio "$i"
+            python2 ./usertools/dpdk-devbind.py -b igb_uio "$i"
             if [ $count -eq 2 ]; then
                 break
             fi
@@ -133,7 +133,7 @@ fi
 
 
 # Make sure we have two bind DPDK network adapter
-if [ "$(./usertools/dpdk-devbind.py -s | grep drv=igb_uio | wc -l)" -eq 2 ];
+if [ "$(python2 ./usertools/dpdk-devbind.py -s | grep drv=igb_uio | wc -l)" -eq 2 ];
 then
     LogMsg "Successfully bind two network adapter to DPDK igb_uio"
     UpdateSummary "Successfully bind two network adapter to DPDK igb_uio"

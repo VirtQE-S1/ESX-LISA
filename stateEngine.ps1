@@ -2953,14 +2953,15 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         AbortCurrentTest $vm "bad or incorrect jobId for test $($vm.currentTest)"
         return
     }
-    $vmName = $vm.vmName
-    $currentTest = $vm.currentTest
-    $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
-    $summaryLog = "${vmName}_summary.log"
 
 
     # Collect log data
     if ($jobStatus.State -ne "Completed") {
+        $vmName = $vm.vmName
+        $currentTest = $vm.currentTest
+        $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
+
+
         $jobResults = @(Receive-Job -id $jobID -ErrorAction SilentlyContinue)
         $error.Clear()
         if ($error.Count -gt 0) {
@@ -3052,7 +3053,12 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
-            Write-Host -F Red "DEBUG: jobResults: [$jobResults]"
+            LogMsg 0 "DEBUG: jobResults: [$jobResults]"
+
+
+            # Load whole log file in order to avoid sync issue
+            $jobResults = Get-Content -Path $logFilename
+
 
             if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $true) {
                 $completionCode = $Passed

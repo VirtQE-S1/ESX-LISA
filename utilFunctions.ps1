@@ -696,7 +696,7 @@ function GetTestData([String] $testName, [xml] $xmlData)
     .Example
         GetTestData "MyTest"
     #>
-    LogMsg 6 ("Info :    GetTestData($($testName))")
+    LogMsg 9 ("Info :    GetTestData($($testName))")
 
     $testData = $null
 

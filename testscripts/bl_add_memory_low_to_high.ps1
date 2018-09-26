@@ -195,8 +195,8 @@ $Command = "free -m | awk '{print `$2}' | awk 'NR==2'"
 $Total_Mem = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 
 LogPrint "INFO :current memory is $total_mem"
-
 $dst_mem = $dst_mem * 1024
+
 
 # Check new Add memory range
 if ( $total_mem -le ($dst_mem * 0.95) -or $total_mem -gt ($dst_mem * 1.05)) {
