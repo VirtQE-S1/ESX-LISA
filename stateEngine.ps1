@@ -2963,13 +2963,17 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
 
         $jobResults = @(Receive-Job -id $jobID -ErrorAction SilentlyContinue)
+		Write-Output "DEBUG: jobResults: [$jobResults]"
+		Write-Host "DEBUG: jobResults: [$jobResults]"		
+		
         $error.Clear()
         if ($error.Count -gt 0) {
             "Error : ${currentTest} script encountered an error"
             $error[0].Exception.Message | out-file -encoding ASCII -append -filePath $logFilename
         }
 
-        foreach ($line in $jobResults) {
+		# Can't read all data from pipe. keep the last exit statu value passed / failed / aborted used by completed phrase to update result
+        foreach ($line in $jobResults[0..($jobResults.count - 2)]) {
             if ($null -ne $line) {
                 $line | out-file -encoding ASCII -append -filePath $logFilename
             }
@@ -3031,6 +3035,8 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     #
     $completionCode = $Failed
     $jobID = $vm.jobID
+	Write-Host "DEBUG: jobID: [$jobID]"
+	Write-Output "DEBUG: jobID: [$jobID]"
     if ($jobID -ne "none") {
         $error.Clear()
         $jobResults = @(Receive-Job -id $jobID -ErrorAction SilentlyContinue)
@@ -3053,18 +3059,18 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             # The last object in the $jobResults array will be the boolean
             # value the script returns on exit.  See if it is true.
             #
-            LogMsg 0 "DEBUG: jobResults: [$jobResults]"
-
+			Write-Output "DEBUG: jobResults: [$jobResults]"
+			Write-Host "DEBUG: jobResults: [$jobResults]"
 
             # Load whole log file in order to avoid sync issue
             $jobResults = Get-Content -Path $logFilename
-
 
             if ($jobResults[-1] -eq $Passed -or $jobResults[-1] -eq $true) {
                 $completionCode = $Passed
                 $vm.testCaseResults = $Passed
                 $vm.individualResults = $vm.individualResults -replace ".$", "1"
                 Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
+                Write-Output "DEBUG: vm.individualResults: [$($vm.individualResults)]"
 
             }
             elseif ($jobResults[-1] -eq $Skipped) {
@@ -3072,12 +3078,15 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                 $vm.testCaseResults = $Skipped
                 $vm.individualResults = $vm.individualResults -replace ".$", "1"
                 Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
+                Write-Output "DEBUG: vm.individualResults: [$($vm.individualResults)]"
+				
             }
             elseif ($jobResults[-1] -eq $Aborted) {
                 $completionCode = $Aborted
                 $vm.testCaseResults = $Aborted
                 $vm.individualResults = $vm.individualResults -replace ".$", "0"
                 Write-Host -F Red "DEBUG: vm.individualResults: [$($vm.individualResults)]"
+                Write-Output "DEBUG: vm.individualResults: [$($vm.individualResults)]"				
             }
         }
         Remove-Job -Id $jobID

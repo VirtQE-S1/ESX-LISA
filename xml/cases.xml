@@ -247,7 +247,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 126 - 1(Stress) - 11(PERF - 1) -->
+            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) -->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
