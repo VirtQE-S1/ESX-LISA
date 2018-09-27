@@ -63,8 +63,7 @@ if [ "$offset" -eq 0 ]; then
 else
         LogMsg $offset
         UpdateSummary "offset: $offset,Set the guest time behand the host time successfully."
-        vmware-toolbox-cmd timesync enable
-        sleep 6
+        enable=`vmware-toolbox-cmd timesync enable`
         #enable the guest timesync with host
         datehost=`vmware-toolbox-cmd stat hosttime`
         timehost=`date +%s -d"$datehost"`
