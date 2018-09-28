@@ -1309,7 +1309,7 @@
                 <param>DiskType=IDE</param>
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=10</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public</param>
+                <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
                 <param>TC_COVERED=RHEL634923-,RHEL7-50899</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
