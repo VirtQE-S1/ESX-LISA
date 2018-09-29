@@ -154,7 +154,7 @@ $GuestBName = $GuestBName -join "-"
 # disable memory reserve
 $status = DisableMemoryReserve $GuestBName $hvServer
 # Add sriov nic for guest B
-$status = AddSrIOVNIC $GuestBName $hvServer $true
+AddSrIOVNIC $GuestBName $hvServer $true | Write-Output -OutVariable status
 if ( -not $status[-1] ) {
     LogPrint "ERROR: Guest B sriov nic add failed"
     DisconnectWithVIServer
@@ -187,7 +187,7 @@ LogPrint "INFO: New NIC for GuestA is $sriovNIC_A"
 
 # Config SR-IOV NIC IP addr for Guest A and MTU
 $IPAddr_guest_A = "192.168.99." + (Get-Random -Maximum 124 -Minimum 2)
-$status = ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC_A ($IPAddr_guest_A + "/24") $mtu
+ConfigIPforNewDevice $ipv4 $sshKey $sriovNIC_A ($IPAddr_guest_A + "/24") $mtu | Write-Output -OutVariable status
 if ( -not $status[-1]) {
     LogPrint "ERROR : Guest A Config IP Failed"
     DisconnectWithVIServer
@@ -234,7 +234,7 @@ LogPrint "INFO: New NIC for Guest B is $sriovNIC"
 
 # Config SR-IOV NIC IP addr for Guest B and MTU
 $IPAddr_guest_B = "192.168.99." + (Get-Random -Maximum 254 -Minimum 125)
-$status = ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24") $mtu
+ConfigIPforNewDevice $ipv4Addr_B $sshKey $sriovNIC ($IPAddr_guest_B + "/24") $mtu | Write-Output -OutVariable status
 if ( -not $status[-1]) {
     LogPrint "ERROR : Guest B Config IP Failed"
     DisconnectWithVIServer

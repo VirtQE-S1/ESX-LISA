@@ -907,5 +907,5 @@ default    {
     }
 }
 
-LogMsg 0 "Test will exit with error code $lisaExitCode"
+Write-Host "Test will exit with error code $lisaExitCode"
 exit $lisaExitCode
