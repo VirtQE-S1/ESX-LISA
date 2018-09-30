@@ -1862,6 +1862,8 @@ function ConfigIPforNewDevice {
         if (-not $status) {
             LogPrint "Error: Cannot activate new nic config"
             return $false
+        } else {
+            $retVal = $true
         }
     }
     else {
@@ -1869,18 +1871,17 @@ function ConfigIPforNewDevice {
         SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
         if ($PSBoundParameters.ContainsKey("IP_Prefix")) {
             # Config New Connection with IP
-            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix" 
+            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix mtu $MTU" 
         }
         else {
             # Config New Connection with DHCP
-            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet" 
+            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet mtu $MTU" 
         }
 
 
-        # Set New MTU
-        $status = SendCommandToVM $ipv4 $sshKey "nmcli connection modify $deviceName mtu $MTU"
+        # Check results
         if (-not $status) {
-            LogPrint "Error: Cannot setup MTU as $MTU"
+            LogPrint "Error: Config new connection failed"
             return $false
         }
 
@@ -1898,17 +1899,18 @@ function ConfigIPforNewDevice {
 
 
         # Check current MTU
-        $Command = "ip a | grep ens192 | head -n 1 | awk '{print `$5}'"
+        $Command = "ip a | grep $deviceName | head -n 1 | awk '{print `$5}'"
         $Current_MTU = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
         if ($Current_MTU -ne $MTU) {
            LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement" 
            return $false
-        } 
+        } else {
+            $retVal = $true
+        }
     }
     LogPrint "INFO: IP config for new NIC succeeded"
 
 
-    $retVal = $true
     return $retVal
 }
 
