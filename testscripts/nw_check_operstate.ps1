@@ -23,7 +23,7 @@
             <testID>ESX-NW-009</testID>
             <testScript>testscripts\nw_check_operstate.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34937,RHEL7-50917</param>
             </testParams>
