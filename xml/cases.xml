@@ -1111,7 +1111,7 @@
             </testparams>
             <onError>Continue</onError>
         </test>
-         <test>
+        <test>
             <testName>stor_vhdx_mount_nfs_server</testName>
             <testID>ESX-STOR-002</testID>
             <testScript>testscripts\stor_nfs_client.ps1</testScript>
@@ -1314,7 +1314,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>3600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1581,7 +1581,7 @@
             </setupScript>
             <testScript>testscripts\nw_remove_vmxnet3.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34944,RHEL7-50924</param>
             </testParams>
@@ -1607,7 +1607,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_config_ifcfg.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38520,RHEL7-80532</param>
             </testParams>
@@ -1619,7 +1619,7 @@
             <testID>ESX-NW-009</testID>
             <testScript>testscripts\nw_check_operstate.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34937,RHEL7-50917</param>
             </testParams>
@@ -1764,7 +1764,7 @@
                 <param>TC_COVERED=RHEL-111702,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1836,7 +1836,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL-136145,RHEL6-99999</param>
             </testParams>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
@@ -1850,7 +1850,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL-136158,RHEL6-99999</param>
             </testParams>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
@@ -1864,7 +1864,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL-136473,RHEL6-99999</param>
             </testParams>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
@@ -2310,7 +2310,7 @@
                 <param>sriovNum=10</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
