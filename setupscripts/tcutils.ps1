@@ -1871,11 +1871,11 @@ function ConfigIPforNewDevice {
         SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
         if ($PSBoundParameters.ContainsKey("IP_Prefix")) {
             # Config New Connection with IP
-            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix mtu $MTU" 
+            $status = SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet ip4 $IP_Prefix mtu $MTU" 
         }
         else {
             # Config New Connection with DHCP
-            SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet mtu $MTU" 
+            $status = SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet mtu $MTU" 
         }
 
 
@@ -2264,10 +2264,8 @@ function DisableMemoryReserve {
 # FindDstHost()
 #
 #######################################################################
-
 function FindDstHost {
     param (
-        [String] $vmName,
         [String] $hvServer,
         [Parameter(Mandatory = $false)] [String] $Host6_0,
         [Parameter(Mandatory = $false)] [String] $Host6_5,
@@ -2295,23 +2293,14 @@ function FindDstHost {
     #> 
 
 
-    # Get obj first
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    if (-not $vmObj) {
-        LogPrint "ERROR: Unable to Get-VM with $vmName"
-        DisconnectWithVIServer
-        return $Aborted
-    }
-
-
     # Get Host version
-    $vm_host = Get-VMHost -VM $vmObj
+    $vm_host = Get-VMHost -Name $hvServer
     $version = $vm_host.Version
 
 
     # Specify dst host
     $dstHost = $null
-    if ($PSBoundParameters.ContainsKey("Host6_0") -and  $version -eq "6.0.0") {
+    if ($PSBoundParameters.ContainsKey("Host6_0") -and $null -ne $Host6_0 -and  $version -eq "6.0.0") {
         $ip_addresses = $Host6_0.Split(",")
         if ($hvServer -eq $ip_addresses[0].Trim()) {
             $dsthost = $ip_addresses[1]
@@ -2320,7 +2309,7 @@ function FindDstHost {
             $dsthost = $ip_addresses[0]
         }
     }
-    elseif ($PSBoundParameters.ContainsKey("Host6_7") -and $version -eq "6.7.0") {
+    elseif ($PSBoundParameters.ContainsKey("Host6_7") -and $null -ne $Host6_7 -and $version -eq "6.7.0") {
         $ip_addresses = $Host6_7.Split(",")
         if ($hvServer -eq $ip_addresses[0].Trim()) {
             $dsthost = $ip_addresses[1]
@@ -2329,7 +2318,7 @@ function FindDstHost {
             $dsthost = $ip_addresses[0]
         }
     }
-    elseif ($PSBoundParameters.ContainsKey("Host6_5") -and $version -eq "6.5.0") {
+    elseif ($PSBoundParameters.ContainsKey("Host6_5") -and $null -ne $Host6_5 -and $version -eq "6.5.0") {
         $ip_addresses = $Host6_5.Split(",")
         if ($hvServer -eq $ip_addresses[0].Trim()) {
             $dsthost = $ip_addresses[1]
