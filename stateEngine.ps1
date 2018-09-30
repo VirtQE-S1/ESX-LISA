@@ -2513,6 +2513,11 @@ function DoShuttingDown([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         UpdateState $vm $ForceShutdown
     }
 
+
+    # Check whether need to relocate 
+    cleanupMigration $vm $xmlData
+
+
     $timeout = 400
     if ($vm.timeouts.shuttingDownTimeout) {
         $timeout = $vm.timeouts.shuttingDownTimeout
@@ -2805,7 +2810,9 @@ function DoDisabled([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     Write-Host "Info : As current state is disabled, completed current case and start next case"
     UpdateState $vm $PS1TestCompleted
 
-    
+
+    # Check whether need to relocate 
+    cleanupMigration $vm $xmlData
     # Disconnect with vCenter if there's a connection.
     # if ($global:DefaultVIServer)
     # {

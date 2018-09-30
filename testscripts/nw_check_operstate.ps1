@@ -23,7 +23,7 @@
             <testID>ESX-NW-009</testID>
             <testScript>testscripts\nw_check_operstate.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34937,RHEL7-50917</param>
             </testParams>
@@ -168,7 +168,8 @@ else {
 LogPrint "INFO: New NIC is $vmxnetNic"
 
 # Config the new NIC
-if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic)) {
+ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic | Write-Output -OutVariable status
+if ( -not $status[-1]) {
     LogPrint "ERROR : Config IP Failed"
     DisconnectWithVIServer
     return $Aborted
@@ -184,7 +185,7 @@ for ($i = 0; $i -lt 10; $i++) {
     if ($operstate -ne "up") {
         LogPrint "ERROR: NIC operstate is not correct on up" 
         DisconnectWithVIServer
-        return $Aborted
+        return $Failed
     }
 
     Start-Sleep -Seconds 6
@@ -202,7 +203,7 @@ for ($i = 0; $i -lt 10; $i++) {
     if ($operstate -ne "down") {
         LogPrint "ERROR: NIC operstate is not correct on down" 
         DisconnectWithVIServer
-        return $Aborted
+        return $Failed
     }
 
     Start-Sleep -Seconds 6

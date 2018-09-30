@@ -216,6 +216,16 @@ for ($i = 0; $i -lt $diskNum; $i++) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
+
+
+    # Check Datastore
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        return $Aborted
+    }
+    $vmDataStore = $vmObj.VMHost | Get-Datastore -Name "*$diskDataStore*"
+    $diskDataStore = $vmDataStore.Name
     LogPrint "INFO: Target Datastore is $diskDataStore"
 
 
