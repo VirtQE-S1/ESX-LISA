@@ -38,13 +38,13 @@ if [[ $DISTRO == "redhat_6" ]]; then
     exit
 fi
 
-vmware-toolbox-cmd timesync enable
-sync
+enable=`vmware-toolbox-cmd timesync enable`
 
-vmware-toolbox-cmd timesync disable
+
+disable=`vmware-toolbox-cmd timesync disable`
 
 # set new time for guest
-date -s "2017-08-29 12:00:00"
+olddate=`date -s "2017-08-29 12:00:00"`
 
 #stanversion='open-vm-tools-10.1.5-2.el7.x86_64'
 datehost=`vmware-toolbox-cmd stat hosttime`
@@ -63,13 +63,21 @@ if [ "$offset" -eq 0 ]; then
 else
         LogMsg $offset
         UpdateSummary "offset: $offset,Set the guest time behand the host time successfully."
-        enable=`vmware-toolbox-cmd timesync enable`
+        sleep 1
+        vmware-toolbox-cmd timesync enable
+        if [ $? -ne 0 ]; then
+            LogMsg "Test Failed. command enable failed."
+            UpdateSummary "Test Failed. command enable failed."
+            SetTestStateAborted 
+            exit 1
+        fi
+        sleep 1
         #enable the guest timesync with host
         datehost=`vmware-toolbox-cmd stat hosttime`
         timehost=`date +%s -d"$datehost"`
-        UpdateSummary "timehost  after enable: $timehost"
+        UpdateSummary "timehost after enable: $timehost"
         timeguest=`date +%s`
-        UpdateSummary "timeguest  after enable: $timeguest"
+        UpdateSummary "timeguest after enable: $timeguest"
         offset=$[timehost-timeguest]
         #calculate the guest time and host time difference
         if [ $offset -ne 0 ]; then
