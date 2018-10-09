@@ -1850,7 +1850,7 @@ which have migration
 
     # Stop Guest A
     if ($vmObj.PowerState -ne "PoweredOff") {
-        $status = Stop-VM $vmObj -Confirm:$False
+        $status = Stop-VM $vmObj -Confirm:$False -ErrorAction SilentlyContinue
         if (-not $?) {
             LogMsg 6 "ERROR: Cannot stop VM $vmName, $status"
             return $false
@@ -1860,7 +1860,7 @@ which have migration
     
     # Stop Guest B
     if ($GuestB.PowerState -ne "PoweredOff") {
-        $status = Stop-VM $GuestB -Confirm:$False
+        $status = Stop-VM $GuestB -Confirm:$False -ErrorAction SilentlyContinue
         if (-not $?) {
             LogMsg 6 "ERROR: Cannot stop VM $GuestB, $status"
             return $false
