@@ -2468,6 +2468,11 @@ function DoShutdownSystem([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
     LogMsg 9 "Info : DoShutdownSystem($($vm.vmName))"
 
+
+    # Check whether need to relocate 
+    cleanupMigration $vm $xmlData
+
+
     if (-not $xmlData -or $xmlData -isnot [XML]) {
         LogMsg 0 "Error : DoShutdownSystem received a null or bad xmlData parameter - disabling VM"
         $vm.emailSummary += "DoShutdownSystem received a null xmlData parameter - disabling VM<br />"
