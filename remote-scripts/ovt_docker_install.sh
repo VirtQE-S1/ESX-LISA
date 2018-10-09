@@ -33,14 +33,25 @@ if [[ $DISTRO == "redhat_6" ]]; then
     exit
 fi
 
-#Install docker package
-yum install -y docker
+#Install docker CE package
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce
 systemctl enable docker
 systemctl start docker
+if [[ $? == 0 ]]; then
+    LogMsg "Test Successfully. Docker service start successfully"
+    UpdateSummary "Test Successfully. Docker service start successfully."
+else
+    LogMsg "Test failed. Docker service start failed."
+    UpdateSummary "Test Failed.  Docker service start failed."
+    SetTestStateAborted
+    exit 1
+fi 
 
 service=$(systemctl status docker |grep running -c)
 
-if [ "$service" = "2" ]; then
+if [ "$service" = "1" ]; then
   LogMsg $service
   UpdateSummary "Test Successfully. service docker is running."
 
