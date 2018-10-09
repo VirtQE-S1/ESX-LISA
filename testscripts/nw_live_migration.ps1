@@ -235,7 +235,7 @@ if (-not $vmObj) {
 
 
 # Another VM Ping During Migration
-Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dstHost) -Confirm:$false -RunAsync:$true
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dstHost) -Confirm:$false -RunAsync:$true
 
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move VM to required Host $dstHost"
@@ -251,16 +251,6 @@ $command = "ping $ipv4 -c 100  | grep -i 'packet loss' | awk '{print `$(NF-4)}'"
 $packetLoss = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
 Write-Host -F Red "Info: Packets Loss $packetLoss"
 Write-Output "Info: Packets Loss $packetLoss"
-
-
-
-$vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
-if (-not $vmObj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
 
 
 Start-Sleep 1

@@ -2298,6 +2298,20 @@ function FindDstHost {
     $version = $vm_host.Version
 
 
+    # Help to setup amd 6.7 server
+    $vmHost = Get-VMHost -Name $hvServer  
+    # This may fail, try to delete -V2 param Current only support one card
+    $esxcli = Get-EsxCli -VMHost $vmHost -V2
+    # Get cpu info
+    $cpuInfo = $esxcli.Hardware.cpu.list.Invoke() | Select-Object -ExpandProperty "Brand" -First 1
+
+
+    # Reset dstHost6_7 if host is AMD
+    if ($cpuInfo -like "*amd*") {
+       $Host6_7 = "10.73.196.39,10.73.196.33" 
+    }
+
+
     # Specify dst host
     $dstHost = $null
     if ($PSBoundParameters.ContainsKey("Host6_0") -and $null -ne $Host6_0 -and  $version -eq "6.0.0") {
