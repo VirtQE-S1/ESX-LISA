@@ -1745,6 +1745,20 @@ function FindDstHostUtil {
     $version = $vm_host.Version
 
 
+    # Help to setup amd 6.7 server
+    $vmHost = Get-VMHost -Name $hvServer  
+    # This may fail, try to delete -V2 param Current only support one card
+    $esxcli = Get-EsxCli -VMHost $vmHost -V2
+    # Get cpu info
+    $cpuInfo = $esxcli.Hardware.cpu.list.Invoke() | Select-Object -ExpandProperty "Brand" -First 1
+
+
+    # Reset dstHost6_7 if host is AMD
+    if ($cpuInfo -like "*amd*") {
+       $Host6_7 = "10.73.196.39,10.73.196.33" 
+    }
+
+
     # Specify dst host
     $dstHost = $null
     if ($PSBoundParameters.ContainsKey("Host6_0") -and $null -ne $Host6_0 -and $version -eq "6.0.0") {
@@ -1822,11 +1836,11 @@ which have migration
     
     # Find Guest A
     $guestAHost = $hvServer
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName -ErrorAction SilentlyContinue
     if (-not $vmObj) {
         LogMsg 6 "ERROR: Unable to Get-VM with $vmName on $hvServer"
         $guestAHost = $dstHost
-        $vmObj = Get-VMHost -Name $dstHost| Get-VM -Name $vmName
+        $vmObj = Get-VMHost -Name $dstHost| Get-VM -Name $vmName -ErrorAction SilentlyContinue
         if (-not $vmObj) {
             LogMsg 6 "ERROR: Unable to Get-VM with $vmName on $dstHost"
             return $false
@@ -1836,11 +1850,11 @@ which have migration
     
     # Find Guest B
     $guestBHost = $hvServer
-    $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+    $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName -ErrorAction SilentlyContinue
     if (-not $GuestB) {
         LogMsg 6 "ERROR: Unable to Get-VM with $GuestBName on $hvServer"
         $guestBHost = $dstHost
-        $GuestB = Get-VMHost -Name $dstHost| Get-VM -Name $GuestBName
+        $GuestB = Get-VMHost -Name $dstHost| Get-VM -Name $GuestBName -ErrorAction SilentlyContinue
         if (-not $GuestB) {
             LogMsg 6 "ERROR: Unable to Get-VM with $GuestBName on $dstHost"
             return $false
