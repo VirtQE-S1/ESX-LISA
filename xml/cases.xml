@@ -1334,7 +1334,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3600</timeout>
+            <timeout>6000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
