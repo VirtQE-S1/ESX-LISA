@@ -244,6 +244,8 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- Put your unstable cases here -->
+                <suiteTest>sriov_manual_mac</suiteTest>
+                <suiteTest>stor_take_restore_snapshot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
