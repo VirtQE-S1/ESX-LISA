@@ -64,13 +64,13 @@ else
 
         #Restart the vmtoolsd service, the guest time should be sync with host.
         systemctl restart vmtoolsd
-        sleep 6
+        sleep 3
         #Get the host time and guest time, print the seconds from 1970-01-01 to now.
         datehost=`vmware-toolbox-cmd stat hosttime`
         timehost=`date +%s -d"$datehost"`
-        UpdateSummary "timehost  after enable: $timehost"
         timeguest=`date +%s`
-        UpdateSummary "timeguest  after enable: $timeguest"
+        UpdateSummary "timeguest  after restart vmtoolsd: $timeguest"
+        UpdateSummary "timehost  after restart vmtoolsd: $timehost"
 
         #calculate the guest time and host time difference
         diff=$[timehost-timeguest]
@@ -78,7 +78,6 @@ else
           let diff=0-$diff
         fi
 
-        UpdateSummary "offset: $diff."
         if [ $diff -lt 1 ]; then
             LogMsg "$diff"
             UpdateSummary "offset: $diff,Test Successfully. The guest time is sync with host successfully."

@@ -156,8 +156,8 @@ if ($new_sp)
 # Remove SP created
 #
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-$snapshots = Get-Snapshot -VM $vmObj
-if ($snapshots.Length -eq 1)
+$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
+if ($snapshots -eq $null)
 {
     Write-Host -F Red "The snapshot has been removed successfully"
     Write-Output "The snapshot has been removed successfully"

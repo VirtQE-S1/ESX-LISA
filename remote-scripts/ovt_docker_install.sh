@@ -34,10 +34,13 @@ if [[ $DISTRO == "redhat_6" ]]; then
 fi
 
 #Install docker CE package
-yum install -y yum-utils
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum install -y docker-ce
-systemctl enable docker
+command=`yum install -y yum-utils`
+sleep 1
+command=`yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
+sleep 1
+commnad=`yum install -y docker-ce`
+sleep 1
+command=`systemctl enable docker`
 systemctl start docker
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. Docker service start successfully"
@@ -63,7 +66,7 @@ else
 fi
 
 #start a network container
-docker run -P -d nginx:latest
+docker run -d -P --name web training/webapp python app.py
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. The container run successfully"
     UpdateSummary "Test Successfully. The container run successfully."
@@ -73,7 +76,7 @@ else
     LogMsg "Test failed. The container web app run failed."
     UpdateSummary "Test Failed. The container web app run failed."
     #Run another image
-    docker run -d -P --name web training/webapp python app.py
+    docker run -P -d nginx:latest
     if [[ $? == 0 ]]; then
         LogMsg "Test Successfully. The container run successfully"
         UpdateSummary "Test Successfully. The container run successfully."
