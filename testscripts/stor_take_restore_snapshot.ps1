@@ -196,20 +196,21 @@ if (-not $vmObj) {
 #
 $restore = Set-VM -VM $vmObj -Snapshot $new_sp -Confirm:$false
 LogPrint "INFO: restore is $restore"
-
+sleep 3
 #
 # Remove SP created
 #
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-$snapshots = Get-Snapshot -VM $vmObj
-if ($snapshots.Length -eq 1)
+sleep 3
+$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
+if ($snapshots -eq $null)
 {
-    Write-Host -F Red "INFO: The snapshot has been removed successfully"
+    Write-Host -F Red "INFO: The snapshot has been removed successfully,$snapshots"
     Write-Output "INFO: The snapshot has been removed successfully"
 }
 else
 {
-    Write-Host -F Red "ERROR: The snapshot removed failed"
+    Write-Host -F Red "ERROR: The snapshot removed failed $snapshots ."
     Write-Output "ERROR: The snapshot removed failed"
     DisconnectWithVIServer
     return $Aborted
