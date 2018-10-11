@@ -175,7 +175,7 @@ $Process2 = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4}
 #
 # Take snapshot and select quiesce option
 #
-$snapshotTargetName = "snap001"
+$snapshotTargetName = "snapdeadlock"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"

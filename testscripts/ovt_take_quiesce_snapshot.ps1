@@ -135,7 +135,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 #
 # Take snapshot and select quiesce option
 #
-$snapshotTargetName = "snap001"
+$snapshotTargetName = "snapquiesce"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 if ($new_sp)

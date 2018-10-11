@@ -170,7 +170,7 @@ else
 #
 # Take snapshot and select quiesce option
 #
-$snapshotTargetName = "snap001"
+$snapshotTargetName = "snapcontainer"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"
