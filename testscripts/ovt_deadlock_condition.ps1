@@ -175,7 +175,7 @@ $Process2 = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4}
 #
 # Take snapshot and select quiesce option
 #
-$snapshotTargetName = "snap001"
+$snapshotTargetName = "snapdeadlock"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"
@@ -197,8 +197,8 @@ if ($new_sp)
 # Remove SP created
 #
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-$snapshots = Get-Snapshot -VM $vmObj
-if ($snapshots.Length -eq 1)
+$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
+if ($snapshots -eq $null)
 {
     Write-Host -F Red "The snapshot has been removed successfully"
     Write-Output "The snapshot has been removed successfully"
