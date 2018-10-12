@@ -246,6 +246,14 @@
                 <!-- Put your unstable cases here -->
                 <suiteTest>sriov_manual_mac</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_deadlock_condition</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_check_timesync</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
             </suiteTests>
         </suite>
         <suite>
