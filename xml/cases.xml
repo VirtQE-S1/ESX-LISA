@@ -216,14 +216,12 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- USK Total Cases: 6 -->
+            <!-- USK Total Cases: 4 -->
             <suiteName>usk</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>nw_ping</suiteTest>
-                <suiteTest>vsock_version</suiteTest>
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
             </suiteTests>
         </suite>
@@ -243,7 +241,7 @@
             <!-- EACV Total Cases: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <!-- Put your unstable cases here -->
+                <!-- Put unstable cases here -->
                 <suiteTest>sriov_manual_mac</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
@@ -353,7 +351,7 @@
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
-                <!-- <suiteTest>nw_live_migration</suiteTest> -->
+                <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
@@ -386,8 +384,6 @@
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
                 <suiteTest>dpdk_kni</suiteTest>
-
-                <suiteTest>nw_live_migration</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
