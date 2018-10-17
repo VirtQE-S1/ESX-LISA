@@ -255,7 +255,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) -->
+            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) - 5(migration cases)-->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -351,7 +351,7 @@
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
+                <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
@@ -365,17 +365,17 @@
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest>
+                <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
 
                 <suiteTest>vsock_version</suiteTest>
 
                 <suiteTest>sriov_boot_check</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
+                <!-- suiteTest>sriov_mtu_check</suiteTest -->
+                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
                 <suiteTest>sriov_manual_mac</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
+                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
                 <suiteTest>sriov_maximum_nics</suiteTest>
                 <suiteTest>sriov_ipv4_throughtput</suiteTest>
                 <suiteTest>sriov_ipv6_throughtput</suiteTest>
