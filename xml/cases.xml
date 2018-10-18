@@ -555,7 +555,7 @@
                 <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1023,7 +1023,7 @@
                 <param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1047,7 +1047,7 @@
                 <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3000</timeout>
+            <timeout>3600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1225,7 +1225,7 @@
                 <param>TC_COVERED=RHEL6-34930,RHEL7-54890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1320,7 +1320,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3600</timeout>
+            <timeout>6000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1340,7 +1340,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6000</timeout>
+            <timeout>9000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
