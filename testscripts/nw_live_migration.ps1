@@ -30,7 +30,7 @@
                 <param>TC_COVERED=RHEL7-50929</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
