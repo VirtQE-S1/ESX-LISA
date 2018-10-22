@@ -205,7 +205,7 @@ if (-not $oldDatastore) {
 
 
 # Get Required Datastore
-$shardDatastore = Get-Datastore -VMHost (Get-VMHost $hvServer) | Where-Object {$_.Name -like "*$dstDatastore*"}
+$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
@@ -218,7 +218,7 @@ LogPrint "INFO: required shard datastore $name"
 
 
 # Move Hard Disk to another datastore to prepare next migrate
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -RunAsync:$true -Destination (Get-VMHost $dsthost) -ErrorAction SilentlyContinue
 
 
 # Start another VM
@@ -295,20 +295,6 @@ if (-not $status) {
 }
 
 
-# Move Guest A to RDMA Dst Host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $dsthost) -Confirm:$false
-if (-not $?) {
-    LogPrint  "ERROR : Cannot move VM to required Host $dsthost"
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    # Make sure VM back to old Host
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
-    # Move Hard Disk back to old datastore
-    $task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
 # Find out new add RDMA nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
@@ -338,7 +324,8 @@ $status = SendCommandToVM $ipv4Addr_B $sshkey $command
 if (-not $status) {
     LogPrint "ERROR : Ping test Failed"
     $retVal = $Failed
-} else {
+}
+else {
     $retVal = $Passed
 }
 
