@@ -199,7 +199,7 @@ if (-not $oldDatastore) {
 
 
 # Get Required Datastore
-$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dsthost) | Where-Object {$_.Name -like "*$dstDatastore*"}
+$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dsthost) | Where-Object {$_.Name -like "*datastore*"}
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer

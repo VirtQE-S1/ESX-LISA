@@ -242,20 +242,19 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- Put unstable cases here -->
-                <suiteTest>sriov_manual_mac</suiteTest>
-                <suiteTest>stor_take_restore_snapshot</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_deadlock_condition</suiteTest>
-                <suiteTest>ovt_snapshot_container</suiteTest>
-                <suiteTest>ovt_check_timesync</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
+                <suiteTest>stor_check_pvscsi_error</suiteTest>
+                <suiteTest>go_reboot_12G_memory</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
-                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>sriov_manual_mac</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>stor_scp_big_files</suiteTest>
+                <suiteTest>stor_take_restore_snapshot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) - 5(migration cases)-->
+            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) - 7(migration cases)-->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -377,8 +376,8 @@
                 <suiteTest>sriov_manual_mac</suiteTest>
                 <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
                 <suiteTest>sriov_maximum_nics</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
+                <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
+                <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
 
                 <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
@@ -555,7 +554,7 @@
                 <param>TC_COVERED=RHEL6-34909,RHEL7-50891</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -697,10 +696,10 @@
                 <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-10.2.5-2.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.2.5/2.el7/x86_64/open-vm-tools-desktop-10.2.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-10.1.10-3.el8+5.x86_64</param>
-                <param>redhat_8_lower_rpm=10.1.10/3.el8+5/x86_64/open-vm-tools-10.1.10-3.el8+5.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=10.1.10/3.el8+5/x86_64/open-vm-tools-desktop-10.1.10-3.el8+5.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.3.0-1.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=10.2.5/2.el8/x86_64/open-vm-tools-10.2.5-2.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=10.2.5/2.el8/x86_64/open-vm-tools-desktop-10.2.5-2.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -859,7 +858,7 @@
                 <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1023,7 +1022,7 @@
                 <param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1047,7 +1046,7 @@
                 <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3000</timeout>
+            <timeout>3600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1225,7 +1224,7 @@
                 <param>TC_COVERED=RHEL6-34930,RHEL7-54890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1320,7 +1319,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3600</timeout>
+            <timeout>6000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1340,7 +1339,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6000</timeout>
+            <timeout>9000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

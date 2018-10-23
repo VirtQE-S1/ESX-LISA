@@ -120,9 +120,15 @@ then
 fi
 
 
-# Install required packages
-yum install elfutils-libelf-devel  elfutils-devel \
-make gcc glibc-devel kernel-devel numactl-devel numactl-libs python-devel -y
+if [ "$DISTRO" == "redhat_7" ]; then
+    # Install required packages
+    yum install elfutils-libelf-devel  elfutils-devel \
+    make gcc glibc-devel kernel-devel numactl-devel numactl-libs python-devel -y
+else
+    # Install required packages
+    yum install elfutils-libelf-devel  elfutils-devel \
+    make gcc glibc-devel kernel-devel numactl-devel numactl-libs python2-devel -y
+fi
 
 
 if [ ! "$?" -eq 0 ]

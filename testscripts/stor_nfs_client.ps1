@@ -112,7 +112,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 $result = $Failed
-$sts = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=10.73.199.36:/mnt/MainVolume/nfs-smb/esx/nfs_case >> ~/constants.sh"
+$sts = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=10.73.196.210:/mnt/MainVolume/nfs-smb/esx/nfs_case >> ~/constants.sh"
 if (-not $sts) {
     LogPrint "Error : Cannot send command to vm for setting NFS_Path"
 }
