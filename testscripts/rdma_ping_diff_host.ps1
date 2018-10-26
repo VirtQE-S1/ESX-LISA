@@ -343,9 +343,9 @@ if (-not $vmObj) {
 
 
 # Move guest to old host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false
 if (-not $?) {
-    LogPrint "ERROR : Cannot move VM to required Host $hvServer"
+    LogPrint "ERROR : Cannot move VM to required Host $hvServer and Datastore $oldDatastore"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -359,25 +359,6 @@ Start-Sleep -Seconds 6
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move Hard Disk back to old datastore
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
-if (-not $?) {
-    LogPrint "ERROR : Cannot move disk to required Datastore $oldDatastore"
-    DisconnectWithVIServer
-    return $Failed
-}
-
-
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-# Shutdown another VM
-Stop-VM $GuestB -Confirm:$False -RunAsync:$true
-if (-not $?) {
-    LogPrint "ERROR : Cannot stop VM $GuestBName"
     DisconnectWithVIServer
     return $Aborted
 }
