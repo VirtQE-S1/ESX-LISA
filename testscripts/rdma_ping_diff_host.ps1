@@ -21,18 +21,18 @@
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
+            <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
             <cleanupScript>
                 <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
-            <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=freenas</param>
+                <param>dstDatastore=datastore</param>
                 <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
