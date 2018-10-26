@@ -16,7 +16,8 @@
 .Description
         Dst host should be different with hvServer
          <test>
-            <testName>nw_live_migration</testName> <testID>ESX-NW-017</testID>
+            <testName>nw_live_migration</testName>
+            <testID>ESX-NW-017</testID>
             <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
             <testScript>testscripts\nw_live_migration.ps1</testScript>
             <cleanupScript>
@@ -26,11 +27,11 @@
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
-                <param>dstDatastore=freenas</param>
+                <param>dstDatastore=nfs-ceph</param>
                 <param>TC_COVERED=RHEL7-50929</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>2000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

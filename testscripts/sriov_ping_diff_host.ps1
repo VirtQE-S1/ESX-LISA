@@ -30,12 +30,12 @@
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=freenas</param>
+                <param>dstDatastore=datastore</param>
                 <param>memoryReserve=True</param>
                 <param>TC_COVERED=RHEL-113884,RHEL6-49171</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>900</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

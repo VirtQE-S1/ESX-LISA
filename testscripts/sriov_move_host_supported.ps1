@@ -14,7 +14,7 @@
     Migration to a Host with SR-IOV supported should be supported 
 
 .Description
-       <test>
+        <test>
             <testName>sriov_move_host_supported</testName>
             <testID>ESX-SRIOV-003</testID>
             <setupScript>
@@ -32,7 +32,7 @@
                 <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>900</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

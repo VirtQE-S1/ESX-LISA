@@ -13,26 +13,29 @@
 .Synopsis
     SCP a large file from the VM A to VM B with different disk type
 .Description
-<test>
-    <testName>stor_scp_files</testName>
-    <testID>ESX-Stor-0</testID>
-    <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-    <testScript>testscripts/stor_scp_files.ps1</testScript  >
-    <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/stor_scp_big_files.sh</files>
-    <testParams>
-        <param>DiskType=IDE</param>
-        <param>StorageFormat=Thin</param>
-        <param>CapacityGB=10</param>
-        <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
-        <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
-    </testParams>
-    <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>3600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+ <test>
+            <testName>stor_scp_big_files</testName>
+            <testID>ESX-Stor-015</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_hard_disk.ps1</file>
+            </setupScript>
+            <testScript>testscripts/stor_scp_files.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_scp_big_files.sh</files>
+            <testParams>
+                <param>DiskType=IDE</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=10</param>
+                <param>nfs=10.73.198.65:/mnt/nfs</param>
+                <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>9000</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 .Parameter vmName
     Name of the VM to add disk.
 

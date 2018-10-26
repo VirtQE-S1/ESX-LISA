@@ -21,18 +21,18 @@
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
+            <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
             <cleanupScript>
                 <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
-            <testScript>testscripts\rdma_ping_diff_host.ps1</testScript>
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=freenas</param>
+                <param>dstDatastore=datastore</param>
                 <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>900</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -343,9 +343,9 @@ if (-not $vmObj) {
 
 
 # Move guest to old host
-$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Confirm:$false
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false
 if (-not $?) {
-    LogPrint "ERROR : Cannot move VM to required Host $hvServer"
+    LogPrint "ERROR : Cannot move VM to required Host $hvServer and Datastore $oldDatastore"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -359,25 +359,6 @@ Start-Sleep -Seconds 6
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-
-
-# Move Hard Disk back to old datastore
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
-if (-not $?) {
-    LogPrint "ERROR : Cannot move disk to required Datastore $oldDatastore"
-    DisconnectWithVIServer
-    return $Failed
-}
-
-
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
-# Shutdown another VM
-Stop-VM $GuestB -Confirm:$False -RunAsync:$true
-if (-not $?) {
-    LogPrint "ERROR : Cannot stop VM $GuestBName"
     DisconnectWithVIServer
     return $Aborted
 }
