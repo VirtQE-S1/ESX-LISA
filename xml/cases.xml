@@ -242,15 +242,13 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- Put unstable cases here -->
-                <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
-                <suiteTest>stor_check_pvscsi_error</suiteTest>
-                <suiteTest>go_reboot_12G_memory</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest>
-                <suiteTest>sriov_manual_mac</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_snapshot_container</suiteTest>
-                <suiteTest>stor_scp_big_files</suiteTest>
-                <suiteTest>stor_take_restore_snapshot</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
+                <suiteTest>rdma_ping_diff_host</suiteTest>
+                <suiteTest>sriov_mtu_check</suiteTest>
+                <suiteTest>sriov_move_host_supported</suiteTest>
+                <suiteTest>sriov_ping_diff_host</suiteTest>
+                <suiteTest>sriov_ipv4_throughtput</suiteTest>
+                <suiteTest>sriov_ipv6_throughtput</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -397,7 +395,7 @@
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <param>redhat_7_standard_version=open-vm-tools-10.2.5-3.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.3.0-1.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
