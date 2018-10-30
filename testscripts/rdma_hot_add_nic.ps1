@@ -147,7 +147,7 @@ LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
