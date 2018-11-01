@@ -135,6 +135,14 @@ if (-not $vmObj) {
 }
 
 
+# Check host version
+$hvHost = Get-VMHost -Name $hvServer
+if ($hvHost.Version -lt "6.5.0") {
+    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
+    return $Skipped
+}
+
+
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
@@ -147,11 +155,12 @@ LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
 }
+
 
 
 # Hot add RDMA nic
@@ -192,7 +201,8 @@ if (-not $status) {
     LogPrint "ERROR : Ping test Failed"
     DisconnectWithVIServer
     return $Failed
-} else {
+}
+else {
     $retVal = $Passed
 }
 
