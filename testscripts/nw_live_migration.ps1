@@ -188,7 +188,7 @@ Write-Host -F Red "INFO: required shard datastore $name"
 Write-Output "INFO: required shard datastore $name"
 
 # Move Hard Disk to shared datastore to prepare next migrate
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -ErrorAction SilentlyContinue
+$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $shardDatastore -Confirm:$false -DiskStorageFormat Thin -ErrorAction SilentlyContinue
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move disk to required Datastore $shardDatastore"
     Write-Output "ERROR : Cannot move disk to required Datastore $shardDatastore"
@@ -323,7 +323,7 @@ Write-Host -F Red $status
 
 
 # Move Hard Disk back to old datastore
-$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -Confirm:$false
+$task = Move-VM -VMotionPriority High -VM $vmObj -Datastore $oldDatastore -DiskStorageFormat Thin -Confirm:$false
 
 if (-not $?) {
     Write-Host -F Red "ERROR : Cannot move disk to required Datastore $oldDatastore"
