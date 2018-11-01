@@ -1897,7 +1897,7 @@ which have migration
           
     # Move Guest A back to host
     Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) `
-        -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+        -Datastore $oldDatastore -DiskStorageFormat Thin -Confirm:$false -ErrorAction SilentlyContinue
     if (-not $?) {
         LogMsg 6 "ERROR: Cannot Move $vmName back to $oldDatastore and $hvServer in reset process"
         return $false
@@ -1908,7 +1908,7 @@ which have migration
       
     # Move Guest B back to host
     Move-VM -VMotionPriority High -VM $GuestB -Destination (Get-VMHost $hvServer) `
-        -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+        -Datastore $oldDatastore -DiskStorageFormat Thin -Confirm:$false -ErrorAction SilentlyContinue
     if (-not $?) {
         LogMsg 6 "ERROR: Move $GuestBName back to $oldDatastore and $hvServer in reset process"
         return $false
