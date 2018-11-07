@@ -1113,40 +1113,40 @@ function RunRemoteScript($remoteScript)
     .\bin\pscp -i ssh\${sshKey} .\runtest.sh root@${ipv4}:
     if (-not $?)
     {
-       Write-Output "ERROR: Unable to copy runtest.sh to the VM"
+       LogPrint "ERROR: Unable to copy runtest.sh to the VM"
        return $false
     }
      .\bin\pscp -i ssh\${sshKey} .\remote-scripts\${remoteScript} root@${ipv4}:
     if (-not $?)
     {
-       Write-Output "ERROR: Unable to copy ${remoteScript} to the VM"
+        LogPrint "ERROR: Unable to copy ${remoteScript} to the VM"
        return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix ${remoteScript} 2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to run dos2unix on ${remoteScript}"
+        LogPrint "ERROR: Unable to run dos2unix on ${remoteScript}"
         return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to run dos2unix on runtest.sh"
+        LogPrint "ERROR: Unable to run dos2unix on runtest.sh"
         return $false
     }
 
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to chmod +x ${remoteScript}"
+        LogPrint "ERROR: Unable to chmod +x ${remoteScript}"
         return $false
     }
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to chmod +x runtest.sh " -
+        LogPrint "ERROR: Unable to chmod +x runtest.sh " -
         return $false
     }
 
@@ -1167,47 +1167,47 @@ function RunRemoteScript($remoteScript)
             {
                     if ($contents -eq $TestCompleted)
                     {
-                        Write-Output "INFO : state file contains Testcompleted."
+                        LogPrint "INFO : state file contains Testcompleted."
                         $retValue = $true
                         break
                     }
 
                     if ($contents -eq $TestAborted)
                     {
-                         Write-Output "INFO : State file contains TestAborted message."
+                        LogPrint "INFO : State file contains TestAborted message."
                          break
                     }
                     if ($contents -eq $TestFailed)
                     {
-                        Write-Output "INFO : State file contains TestFailed message."
+                        LogPrint "INFO : State file contains TestFailed message."
                         break
                     }
                     $timeout--
 
                     if ($timeout -eq 0)
                     {
-                        Write-Output "ERROR : Timed out on Test Running , Exiting test execution."
+                        LogPrint "ERROR : Timed out on Test Running , Exiting test execution."
                         break
                     }
 
             }
             else
             {
-                Write-Output "Warn : state file is empty"
+                LogPrint "Warn : state file is empty"
                 break
             }
 
         }
         else
         {
-             Write-Host "Warn : ssh reported success, but state file was not copied"
+            LogPrint "Warn : ssh reported success, but state file was not copied"
              break
         }
     }
     else
     {
-         Write-Output "ERROR : pscp exit status = $sts"
-         Write-Output "ERROR : unable to pull state.txt from VM."
+        LogPrint "ERROR : pscp exit status = $sts"
+        LogPrint "ERROR : unable to pull state.txt from VM."
          break
     }
     }
@@ -1231,18 +1231,18 @@ function RunRemoteScript($remoteScript)
 
                     else
                     {
-                        Write-Output "INFO: $remoteScriptLog is copied in ${rootDir}"
+                        LogPrint "INFO: $remoteScriptLog is copied in ${rootDir}"
                     }
 
             }
             else
             {
-                Write-Output "Warn: $remoteScriptLog is empty"
+                LogPrint "Warn: $remoteScriptLog is empty"
             }
         }
         else
         {
-             Write-Output "Warn: ssh reported success, but $remoteScriptLog file was not copied"
+            LogPrint "Warn: ssh reported success, but $remoteScriptLog file was not copied"
         }
     }
 
