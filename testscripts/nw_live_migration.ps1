@@ -256,7 +256,7 @@ Write-Output "Info: Packets Loss $packetLoss"
 
 Start-Sleep 1
 # Check packet Loss value
-if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" -and $packetLoss -ne "3%") {
+if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" -and $packetLoss -ne "2%") {
     Write-Host -F Red "ERROR : Packet Loss During Migration"
     Write-Output "ERROR : Packet Loss During Migration"
     $vmObj = Get-VMHost -Name $dstHost | Get-VM -Name $vmName
@@ -308,7 +308,7 @@ if (-not $vmObj) {
 }
 
 # Check packet Loss value
-if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" -and $packetLoss -ne "3%" ) {
+if ($packetLoss -ne "0%" -and $packetLoss -ne "1%" -and $packetLoss -ne "2%" ) {
     Write-Host -F Red "ERROR : Packet Loss During Migration"
     Write-Output "ERROR : Packet Loss During Migration"
     DisconnectWithVIServer
