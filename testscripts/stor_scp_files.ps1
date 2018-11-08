@@ -27,7 +27,7 @@
                 <param>DiskType=IDE</param>
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=10</param>
-                <param>nfs=10.73.198.65:/mnt/nfs</param>
+                <param>nfs=10.73.198.145:/mnt/ceph-block/esx</param>
                 <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
