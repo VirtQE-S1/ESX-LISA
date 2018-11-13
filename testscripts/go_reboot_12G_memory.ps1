@@ -1,75 +1,70 @@
-###############################################################################
-##
+#######################################################################################
+##  
 ## Description:
-## Reboot guest wiht memory more then 12G many times.
-##
-###############################################################################
+##  Reboot guest wiht memory more then 12G many times.
 ##
 ## Revision:
-## V1.0 - ldu - 01/31/2018 - Reboot guest with memory more then 12G 4 times.
+##  v1.0.0 - ldu - 01/31/2018 - Create the script
+##  v1.1.0 - boyang - 11/13/2018 - Different reboot methods
 ##
-## ESX-GO-012
-##
-###############################################################################
+#######################################################################################
+
 
 <#
 .Synopsis
-    Reboot guest with memory more then 12G 4 times.
+    Reboot guest with memory more then 12G 8 times with different reboot methods
+
 .Description
-<test>
-    <testName>go_reboot_12G_memory</testName>
-    <testID>ESX-GO-012</testID>
-    <setupScript>setupscripts\change_memory.ps1</setupScript>
-    <testScript>testscripts\go_reboot_12G_memory.ps1</testScript>
-    <testParams>
-        <param>VMMemory=16GB</param>
-        <param>standard_diff=1</param>
-        <param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+    <test>
+        <testName>go_reboot_12G_memory</testName>
+        <testID>ESX-GO-012</testID>
+        <setupScript>setupscripts\change_memory.ps1</setupScript>
+        <testScript>testscripts\go_reboot_12G_memory.ps1</testScript>
+        <testParams>
+            <param>VMMemory=16GB</param>
+            <param>standard_diff=1</param>
+            <param>TC_COVERed=RHEL6-47863,RHEL7-87238</param>
+        </testParams>
+        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        <timeout>1200</timeout>
+        <onError>Continue</onError>
+        <noReboot>False</noReboot>
+    </test>
 
 .Parameter vmName
-    Name of the test VM.
+    Name of the test VM
+
 .Parameter hvServer
-    Name of the VIServer hosting the VM.
+    Name of the VIServer hosting the VM
+
 .Parameter testParams
-    Semicolon separated list of test parameters.
+    Semicolon separated list of test parameters
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-#
 # Checking the input arguments
-#
-if (-not $vmName)
-{
-    "FAIL: VM name cannot be null!"
-    exit
+# Checking the input arguments
+if (-not $vmName) {
+    "Error: VM name cannot be null!"
+    exit 1
 }
 
-if (-not $hvServer)
-{
-    "FAIL: hvServer cannot be null!"
-    exit
+if (-not $hvServer) {
+    "Error: hvServer cannot be null!"
+    exit 1
 }
 
-if (-not $testParams)
-{
-    Throw "FAIL: No test parameters specified"
+if (-not $testParams) {
+    Throw "Error: No test parameters specified"
 }
 
-#
-# Output test parameters so they are captured in log file
-#
+
+# Display the test parameters so they are captuRed in the log file
 "TestParams : '${testParams}'"
 
-#
-# Parse test parameters
-#
+
+# Parse the test parameters
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -91,9 +86,7 @@ foreach ($p in $params)
     }
 }
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -128,116 +121,147 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
+
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
+
+#######################################################################################
 #
 # Main Body
 #
-###############################################################################
+#######################################################################################
 
 $retVal = $Failed
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-#Get the guest memory from outside of vm(XML).
-$staticMemory = ConvertStringToDecimal $mem.ToUpper()
-Write-Host -F Red "staticMemory is $staticMemory"
-
 if (-not $vmObj)
 {
     Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
 }
-else
+
+# Get the guest memory from outside of vm(XML)
+$staticMemory = ConvertStringToDecimal $mem.ToUpper()
+Write-Output "DEBUG: staticMemory: [${staticMemory}]"
+Write-Host -F Red "DEBUG: staticMemory: [${staticMemory}]"
+
+# Get the expected memory
+$expected_mem = ([Convert]::ToDecimal($staticMemory)) * 1024 * 1024
+Write-Output "DEBUG: expected_mem: [${expected_mem}]"
+Write-Host -F Red "DEBUG: expected_mem: [${expected_mem}]"
+
+$diff = 100
+# Check mem in vm
+$meminfo_total = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "awk '/MemTotal/{print `$2}' /proc/meminfo"
+Write-Output "DEBUG: meminfo_total: [${meminfo_total}]"
+Write-Host -F Red "DEBUG: meminfo_total: [${meminfo_total}]"
+if (-not $meminfo_total)
 {
-    $expected_mem = ([Convert]::ToDecimal($staticMemory)) * 1024 * 1024
-    "Info : Expected total memory is $expected_mem"
-    $diff = 100
-    # check mem in vm
-    # MemTotal in /proc/meminfo is kB
-    $meminfo_total = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "awk '/MemTotal/{print `$2}' /proc/meminfo"
-    "Debug : meminfo_total in vm is $meminfo_total"
-    if ( -not $meminfo_total )
+    Write-Output "ERROR: Get MemTotal from /proc/meminfo failed"
+    Write-Host -F Red "ERROR: Get MemTotal from /proc/meminfo failed"
+    return $Aborted
+}
+
+# Kdump reserved memory size with Byte, need to devide 1024
+$kdump_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/kernel/kexec_crash_size"
+Write-Output "DEBUG: kdump_kernel: [${kdump_kernel}]"
+Write-Host -F Red "DEBUG: kdump_kernel: [${kdump_kernel}]"
+if ($kdump_kernel -ge 0)
+{
+    $meminfo_total = ([Convert]::ToDecimal($meminfo_total)) + (([Convert]::ToDecimal($kdump_kernel))/1024)
+    Write-Output "INFO: Acutal total memory in vm [${meminfo_total}]"
+    Write-Host -F Red "INFO: Acutal total memory in vm [${meminfo_total}]"
+
+    $diff = ($expected_mem - $meminfo_total)/$expected_mem
+    Write-Host -F Red "The memory in VM: $meminfo_total, expected memory: $expected_mem, actual diff: $diff (standard is $standard_diff) "
+    Write-Output "The memory total in guest is $meminfo_total, expected memory is $expected_mem"
+
+    if ($diff -lt $standard_diff -and $diff -gt 0)
     {
-        "Error : Get MemTotal from /proc/meminfo failed"
-        return $Aborted
+        Write-Output "INFO: : Check memory in vm passed, diff is $diff (standard is $standard_diff)"
+        Write-Host -F Red "INFO: Check memory in vm passed, diff is $diff (standard is $standard_diff)"
     }
     else
     {
-        # kdump reserved memory size, in B,need to devide 1024
-        $kdump_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/kernel/kexec_crash_size"
-        "Debug : kdump_kernel in vm is $kdump_kernel"
-        if ( $kdump_kernel -ge 0 )
-        {
+        Write-Host -F Red "The memory total in guest is $meminfo_total, expected memory is $expected_mem "
+        Write-Output "The memory total in guest is $meminfo_total, expected memory is $expected_mem"
 
-            $meminfo_total = ([Convert]::ToDecimal($meminfo_total)) + (([Convert]::ToDecimal($kdump_kernel))/1024)
-            "Info : Acutal total memory in vm is $meminfo_total"
-
-            $diff = ($expected_mem - $meminfo_total)/$expected_mem
-            Write-Host -F Red "The memory total in guest is $meminfo_total, expected memory is $expected_mem,actual is: $diff (standard is $standard_diff) "
-            Write-Output "The memory total in guest is $meminfo_total, expected memory is $expected_mem"
-
-            if ( $diff -lt $standard_diff -and $diff -gt 0 )
-            {
-                "Info : Check memory in vm passed, diff is $diff (standard is $standard_diff)"
-            }
-            else
-            {
-                Write-host -F Red "The memory total in guest is $meminfo_total, expected memory is $expected_mem "
-                Write-Output "The memory total in guest is $meminfo_total, expected memory is $expected_mem"
-
-                "Error : Check memory in vm failed, actual is: $diff (standard is $standard_diff)"
-                return $Aborted
-            }
-        }
-        else
-        {
-            "Error : Get kdump memory size from /sys/kernel/kexec_crash_size failed"
-            return $Aborted
-        }
+        Write-Host -F Red "ERROR: Check memory in vm failed, actual is: $diff (standard is $standard_diff)"
+        Write-Output "ERROR: Check memory in vm failed, actual is: $diff (standard is $standard_diff)"
+        return $Aborted
     }
-
 }
-"Info : go_check_memory.ps1 script completed"
-#
-#Reboot the guest first time.
-#
+else
+{
+    Write-Host -F Red "ERROR: Get kdump memory size from /sys/kernel/kexec_crash_size failed"
+    Write-Output "ERROR: Get kdump memory size from /sys/kernel/kexec_crash_size failed"
+    return $Aborted
+}
+
+Write-Host -F Red "INFO: go_check_memory.ps1 script completed"
+Write-Output "INFO: go_check_memory.ps1 script completed"
+
+# Reboot with init 6 in VM
 $round=0
 while ($round -lt 4)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
     Start-Sleep -seconds 6
     # wait for vm to Start
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
     if ( $ssh -ne $true )
     {
-        Write-Output "Failed: Failed to start VM.The round is $round"
-        Write-host -F Red "the round is $round "
+        Write-Output "ERROR: Failed to init VM. The round is $round"
+        Write-Host -F Red "ERROR: Failed to init VM. The round is $round"
         return $Aborted
     }
     $round=$round+1
-    Write-host -F Red "the round is $round "
+    Write-Host -F Red "the round is $round"
+}
+if ($round -eq 4)
+{
+    Write-Output "INFO: The guest could reboot(init 6) 3 times with no crash.The round is $round"
+    Write-Host -F Red "INFO: The guest could reboot(init 6) 3 times with no crash.The round is $round"
+}
+else
+{
+    Write-Host -F Red "the round is $round"
+}
+
+# Reboot with reset in vsphere
+$round=0
+while ($round -lt 4)
+{
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    $on = Start-VM -VM $vmObj -Confirm:$False
+    Start-Sleep -seconds 12
+    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
+    if ($ssh -ne $true)
+    {
+        Write-Output "ERROR: Failed to Start-VM.The round is $round"
+        Write-Host -F Red "ERROR: Failed to Start-VM.The round is $round"
+        return $Aborted
+    }
+    $round=$round+1
+    Write-Host -F Red "the round is $round "
 }
 if ($round -eq 4)
 {
     $retVal = $Passed
-    Write-Output "The guest could reboot 3 times with no crash.The round is $round"
-    Write-host -F Red "The round is $round, the guest could reboot 3 times with no crash "
+    Write-Output "INFO: The guest could reboot(Start-VM) 3 times with no crash.The round is $round"
+    Write-Host -F Red "INFO: The guest could reboot(Start-VM) 3 times with no crash.The round is $round"
 }
 else
 {
-    Write-host -F Red "the round is $round "
+    Write-Host -F Red "the round is $round"
 }
-
-
 
 DisconnectWithVIServer
 
