@@ -1132,8 +1132,8 @@ function DoStartSystem([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
     catch {
         $ERRORMessage = $_ | Out-String
-        LogPrint "ERROR: Cannot Start VM:"
-        LogPrint $ERRORMessage
+        LogMsg 0 "ERROR: Cannot Start VM:"
+        LogMsg 0 $ERRORMessage
         return
     }
 
