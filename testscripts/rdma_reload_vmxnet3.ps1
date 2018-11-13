@@ -1,32 +1,31 @@
 ###############################################################################
 ##
 ## Description:
-##  Boot a Guest with SR-IOV NIC and check SR-IOV NIC
+##  Boot a Guest with RDMA NIC and reload vmxnet3 module
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/9/2018 - Build the script
+##  v1.0.0 - ruqin - 11/8/2018 - Build the script
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-    Check Sriov NIC after boot guest
+    Check RDMA NIC after boot guest
 
 .Description
        <test>
-            <testName>sriov_boot_check</testName>
-            <testID>ESX-SRIOV-001</testID>
+            <testName>rdma_reload_vmxnet3</testName>
+            <testID>ESX-RDMA-008</testID>
             <setupScript>
-                <file>setupscripts\add_sriov.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
-            <cleanupScript>SetupScripts\disable_memory_reserve.ps1</cleanupScript> 
-            <testScript>testscripts\sriov_boot_check.ps1</testScript>
+            <testScript>testscripts\rdma_reload_vmxnet3.ps1</testScript>
             <testParams>
-                <param>TC_COVERED=RHEL-113876</param>
+                <param>TC_COVERED=RHEL-149060</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -158,27 +157,52 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 }
 
 
-# Find out new add Sriov nic
-$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+# Get Old Adapter Name of VM
+$Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+$Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+if ( $null -eq $Old_Adapter) {
+    LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
 }
-else {
-    $sriovNIC = $nics[-1]
-}
-LogPrint "INFO: New NIC is $sriovNIC"
 
 
-# Get sriov nic driver 
-$Command = "ethtool -i $sriovNIC | grep driver | awk '{print `$2}'"
-$driver = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-# mellanox 40G driver and intel 40G NIC maybe different here driver type is hard coding
-if ($driver -ne "ixgbevf" -and $driver -ne "i40evf" -and $driver -ne "iavf") {
-    LogPrint "ERROR : Sriov driver error or unsupported driver"
+# Get pci status
+$Command = "lspci | grep -i infiniband"
+$pciInfo = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+if ( $pciInfo -notlike "*Infiniband controller: VMware Paravirtual RDMA controller*") {
+    LogPrint "ERROR : Cannot get pvRDMA info from guest"
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
+}
+
+
+# Install required packages
+$sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
+if (-not $sts) {
+    LogPrint "ERROR : YUM cannot install required packages"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Make sure the vmw_pvrdma is loaded 
+$Command = "lsmod | grep vmw_pvrdma | wc -l"
+$modules = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+if ($modules -eq 0) {
+    LogPrint "ERROR : Cannot find any pvRDMA module"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Guest should work well when load and unload vmxnet3
+$Command = "for i in {1..300}; do  modprobe -r vmxnet3; modprobe vmxnet3; done;"
+$result = SendCommandToVM $ipv4 $sshKey $Command
+if (-not $result) {
+    LogPrint "ERROR : Cannot load and unload vmxnet3"
+    DisconnectWithVIServer
+    return $Failed    
 }
 else {
     $retVal = $Passed
@@ -187,4 +211,3 @@ else {
 
 DisconnectWithVIServer
 return $retVal
-
