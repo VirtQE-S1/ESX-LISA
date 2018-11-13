@@ -157,7 +157,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 
 $scripts = "stor_add_disk_ide.sh"
 # Run remote test scripts
-$sts =  RunRemoteScript $scripts
+RunRemoteScript $scripts | Write-Output -OutVariable sts
 if( -not $sts[-1] ){
     Write-Host -F Red "ERROR: Add IDE disk test script completed failed"
     Write-Output "ERROR: Add IDE disk test script completed failed"
