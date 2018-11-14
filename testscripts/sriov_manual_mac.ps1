@@ -170,7 +170,8 @@ if (-not $vmObj) {
 
 
 # Mac address generate
-$macAddress = (0..5 | ForEach-Object { '{0:x}{1:x}' -f (Get-Random -Minimum 0 -Maximum 15),(Get-Random -Minimum 0 -Maximum 15)})  -join ':'
+$macAddress = "00:50:56" + ":" + `
+((0..2 | ForEach-Object { '{0:x}{1:x}' -f (Get-Random -Minimum 0 -Maximum 15), (Get-Random -Minimum 0 -Maximum 15)}) -join ':')
 LogPrint "INFO: Generate mac address is $macAddress"
 
 
@@ -230,10 +231,11 @@ LogPrint "INFO: New NIC is $sriovNIC"
 $Command = "ip link show $sriovNIC  | grep link | awk '{print `$2}'"
 $macGuest = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 if ($macGuest -ne $macAddress) {
-   LogPrint "ERROR: mac address $macGuest is different with generate $macAddress" 
-   DisconnectWithVIServer
-   return $Failed
-}else {
+    LogPrint "ERROR: mac address $macGuest is different with generate $macAddress" 
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
     $retVal = $Passed
 }
 
