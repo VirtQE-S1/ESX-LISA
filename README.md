@@ -166,4 +166,6 @@ a Putty Private Key (.ppk).
 
 ```.\lisa.ps1 run .\xml\debug_demo.xml -dbgLevel 10```
 
+```.\lisa.ps1 run .\xml\debug_demo.xml -dbgLevel 10 -NoShutDown```
+
 ```.\lisa.ps1 run .\xml\debug_demo.xml -vmName VM_NAME -hvServer ESXI_HOST_IPADDRESS -sshKey demo_id_rsa.ppk -suite debug_demo_suite -os Linux -dbgLevel 10```
