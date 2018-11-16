@@ -202,6 +202,9 @@
     The debug level to use when running tests.  Values are 0 - 10.  The higher
     the value, the more verbose the logging of message.  Levels above 5 are 
     quite chatty and are not recommended.
+.Parameter NoShutDown
+    With this parameter lisa will exit and not shutdown virtual machine
+    after first case finished. This parameter helps debug test cases.
 .Example
     .\lisa.ps1 run xml\debug_demo.xml
 
@@ -227,7 +230,8 @@ param([string] $cmdVerb,
       [string] $CLIlogDir,
       [string] $os,
       [switch] $help,
-      [int]    $dbgLevel=0
+      [int]    $dbgLevel=0,
+      [switch] $NoShutDown
      )
 
 
@@ -651,6 +655,17 @@ function RunInitShutdownScript([String] $scriptName, [String] $xmlFilename )
     }
 
     return $retVal
+}
+
+
+#####################################################################
+#
+# NoShutDown()
+#
+#####################################################################
+function NoShutDownCheck ()
+{
+    return $NoShutDown
 }
 
 

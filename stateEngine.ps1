@@ -665,8 +665,12 @@ function DoStateMachine([XML] $xmlConfig) {
                 }
 
                 $ShutdownSystem {
-                    DoShutdownSystem $vm $xmlConfig
+                    if (NoShutDownCheck) {
+                        UpdateState $vm $Finished 
+                    }else {
+                        DoShutdownSystem $vm $xmlConfig
                     $done = $false
+                    }
                 }
 
                 $ShuttingDown {
