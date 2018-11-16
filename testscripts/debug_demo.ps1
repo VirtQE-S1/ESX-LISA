@@ -1,8 +1,8 @@
-###############################################################################
+#######################################################################################
 ##  
 ## Description:
-##   What does this script?
-##   What's the result the case expected?
+##  What does this script?
+##  What's the result the case expected?
 ##
 ## Revision:
 ##  v1.0.0 - xiaofwan - 11/25/2016 - Draft a template for Powershell script.
@@ -12,7 +12,7 @@
 ##  v1.3.0 - xiaofwan - 01/09/2017 - Fix variable error bug.
 ##
 ##
-###############################################################################
+#######################################################################################
 
 
 <#
@@ -50,12 +50,10 @@ if (-not $vmName) {
     exit 1
 }
 
-
 if (-not $hvServer) {
     "Error: hvServer cannot be null!"
     exit 1
 }
-
 
 if (-not $testParams) {
     Throw "Error: No test parameters specified"
@@ -64,6 +62,7 @@ if (-not $testParams) {
 
 # Display the test parameters so they are captured in the log file
 "TestParams : '${testParams}'"
+
 
 # Parse the test parameters
 $rootDir = $null
@@ -95,8 +94,10 @@ else {
     }
 }
 
+
 # Source the tcutils.ps1 file
 . .\setupscripts\tcutils.ps1
+
 
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -104,7 +105,8 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-###############################################################################
+
+#######################################################################################
 #
 # Put your test script here
 # NOTES:
@@ -112,11 +114,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # 2. Please close VI Server connection at the end of your test but
 #    before return cmdlet by useing function - DisconnectWithVIServer
 #
-###############################################################################
+#######################################################################################
 
 # An example
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 "$vmOut"
+
 
 "Info : Debug script completed"
 DisconnectWithVIServer
