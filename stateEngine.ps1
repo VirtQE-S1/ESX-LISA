@@ -1950,10 +1950,11 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         return
     }
 
+
     #
     # Submit the runtest.sh script to the at queue
     #
-    SendCommandToVM $vm "rm -f state.txt"
+    # SendCommandToVM $vm "rm -f state.txt"
     LogMsg 3 "Info : $($vm.vmName) submitting job runtest.sh"
     if (-not (SendCommandToVM $vm "at -f runtest.sh now") ) {
         LogMsg 0 "Error : $($vm.vmName) unable to submit runtest.sh to atd on VM"
@@ -1962,6 +1963,8 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         UpdateState $vm $DetermineReboot
         return
     }
+    Start-Sleep 6
+
 
     UpdateState $vm $TestStarting
 }

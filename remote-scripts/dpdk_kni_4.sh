@@ -116,6 +116,7 @@ Server_Adapter=$(ip a|grep "$Server_IP"| awk '{print $(NF)}')
 ##################################################
 # Test Network Connection
 
+
 # Turn down ssh nic to make sure only have one NIC
 nmcli con down $Server_Adapter
 
@@ -132,6 +133,8 @@ ping -I vEth0 -c 3 10.73.196.97 | grep ttl > /dev/null
 
 # Record ping results and up old SSH nic
 status=$?
+# Turn down vEth0
+nmcli con down vEth0
 nmcli con up $Server_Adapter
 
 
