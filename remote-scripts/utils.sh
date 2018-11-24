@@ -112,12 +112,16 @@ UtilsInit()
 
 	# Set standard umask for root
 	umask 022
+	# sync data
+	sync
 	# Create state file and update test state
 	touch "$__LIS_STATE_FILE"
 	SetTestStateRunning || {
 		LogMsg "Warning: unable to update test state-file. Cannot continue initializing testscript"
 		return 2
 	}
+	# sync data
+	sync
 
 	touch "$__LIS_SUMMARY_FILE"
 

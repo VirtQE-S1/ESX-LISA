@@ -1303,6 +1303,9 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command) {
     $hostname = $vm.ipv4
     $sshKey = $vm.sshKey
 
+
+    # Wait a second
+    Start-Sleep 1
     $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${hostname} ${command}" -PassThru -NoNewWindow -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     $commandTimeout = 30
     while (!$process.hasExited) {
