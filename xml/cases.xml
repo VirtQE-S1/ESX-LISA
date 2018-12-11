@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-
     <global>
         <logfileRootDir>TestResults</logfileRootDir>
         <defaultSnapshot>ICABase</defaultSnapshot>
@@ -14,7 +13,6 @@
             <smtpServer>mysmtphost.mycompany.com</smtpServer>
         </email>
     </global>
-
     <testSuites>
         <suite>
             <!-- GO Total Cases: 17 -->
@@ -113,7 +111,6 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
             </suiteTests>
         </suite>
-
         <suite>
             <!-- Network Total Cases: 20 -->
             <suiteName>network</suiteName>
@@ -182,6 +179,12 @@
                 <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
+                <suiteTest>rdma_perf_test_diff_host</suiteTest>
+                <suiteTest>rdma_rping_test_diff_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+                <suiteTest>rdma_perf_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_same_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -272,13 +275,11 @@
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
-
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
-
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
@@ -312,7 +313,6 @@
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
-
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
@@ -331,7 +331,6 @@
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_add_nvme_disk</suiteTest>
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
-
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -352,22 +351,17 @@
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
-
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
-
                 <!-- HERE PERFORMANCE 11 CASES WHICH CAN'T BE RUN -->
-
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
                 <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
-
                 <suiteTest>vsock_version</suiteTest>
-
                 <suiteTest>sriov_boot_check</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_move_host_supported</suiteTest -->
@@ -376,7 +370,6 @@
                 <suiteTest>sriov_maximum_nics</suiteTest>
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-
                 <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
@@ -384,7 +377,6 @@
             </suiteTests>
         </suite>
     </testSuites>
-
     <testCases>
         <test>
             <testName>ovt_check_build_version</testName>
@@ -860,7 +852,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>go_check_modules</testName>
             <testID>ESX-GO-001</testID>
@@ -1093,7 +1084,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>stor_hotadd_scsi_dynamic</testName>
             <testID>ESX-STOR-001</testID>
@@ -1394,7 +1384,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>kdump_crash_single_core</testName>
             <testID>ESX-KDUMP-001</testID>
@@ -1515,7 +1504,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>nw_ping</testName>
             <testID>ESX-NW-001</testID>
@@ -1790,7 +1778,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>vsock_version</testName>
             <testID>ESX-VSOCK-001</testID>
@@ -1805,7 +1792,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>dpdk_compile</testName>
             <testID>ESX-DPDK-001</testID>
@@ -1871,7 +1857,6 @@
             <onError>Continue</onError>
             <noReboot>True</noReboot>
         </test>
-
         <test>
             <testName>bl_add_memory_under_stress</testName>
             <testID>ESX-BL-001</testID>
@@ -1918,7 +1903,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>perf_stor_fio_NVMe_FS</testName>
             <testID>ESX-PERF-010</testID>
@@ -2123,7 +2107,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>perf_nw_ipv4_udp</testName>
             <testID>ESX-PERF-001</testID>
@@ -2192,7 +2175,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>sriov_boot_check</testName>
             <testID>ESX-SRIOV-001</testID>
@@ -2377,7 +2359,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>rdma_boot_check</testName>
             <testID>ESX-RDMA-001</testID>
@@ -2472,8 +2453,127 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+        <test>
+            <testName>rdma_rping_test_diff_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=rping</param>
+                <param>TC_COVERED=RHEL-145304,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_ibv_rc_pingpong_test_diff_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=ibvrc</param>
+                <param>TC_COVERED=RHEL-145303,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_perf_test_diff_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=perf</param>
+                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_rping_test_same_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>tool=rping</param>
+                <param>TC_COVERED=RHEL-145304,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_ibv_rc_pingpong_test_same_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>tool=ibvrc</param>
+                <param>TC_COVERED=RHEL-145303,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_perf_test_same_host</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>tool=perf</param>
+                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
     </testCases>
-
     <VMs>
         <vm>
             <hvServer>ESXI_HOST_IPADDRESS</hvServer>
@@ -2484,5 +2584,4 @@
             <suite>open_vm_tools</suite>
         </vm>
     </VMs>
-
 </config>
