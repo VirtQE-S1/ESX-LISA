@@ -60,7 +60,7 @@ else
 fi
 
 #Copy a big file more then 5G to scsi type disk.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no /nfs/bigfile root@${1}:/root
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no /nfs/bigfile root@${ipv4B}:/root
 if [ ! "$?" -eq 0 ]; then
     LogMsg "Test Failed.  Copy bigfile File from guestA nfs to guestB SCSI disk Failed."
     UpdateSummary "Test failed.  Copy bigfile File from guestA nfs to guestB SCSI disk failed."
@@ -74,7 +74,7 @@ fi
 start=`date`
 UpdateSummary "Debug: nfs end date scsi start date is $start"
 #scp bigfile file to local scsi disk path from guest B.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/root/bigfile /root/
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${ipv4B}:/root/bigfile /root/
 if [ ! "$?" -eq 0 ]; then
     LogMsg "Test Failed. Copy bigfile File from guestB scsi to guestA scsi disk Failed."
     UpdateSummary "Test failed.Copy bigfile File from guestB scsi to guestA scsi disk failed."
@@ -141,7 +141,7 @@ else
 fi
 
 # copy file to ide disk type.
-scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${1}:/root/bigfile /mnt
+scp -i $HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no root@${ipv4B}:/root/bigfile /mnt
 if [ ! "$?" -eq 0 ]
 then
     LogMsg "copy file from guestB scsi to guestA ide disk Failed"
