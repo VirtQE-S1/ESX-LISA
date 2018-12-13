@@ -2531,6 +2531,10 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=perf</param>
                 <param>tool=rping</param>
                 <param>TC_COVERED=RHEL-145304,RHEL6-0000</param>
             </testParams>
@@ -2548,6 +2552,9 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
                 <param>tool=ibvrc</param>
                 <param>TC_COVERED=RHEL-145303,RHEL6-0000</param>
             </testParams>
@@ -2565,6 +2572,9 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
                 <param>tool=perf</param>
                 <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
             </testParams>
