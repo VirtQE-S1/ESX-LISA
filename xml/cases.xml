@@ -90,7 +90,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 18 + 1 BELONG TO PERF -->
+            <!-- Storage Total Cases: 18 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
@@ -113,7 +113,6 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
             </suiteTests>
         </suite>
-
         <suite>
             <!-- Network Total Cases: 20 -->
             <suiteName>network</suiteName>
@@ -241,9 +240,13 @@
             <!-- EACV Total Cases: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <!-- Put unstable cases here -->
-                <suiteTest>nw_live_migration</suiteTest>
+                <!-- PUT UNSTABLE CASES HERE FOR EACV -->
+
+                <!-- HERE PERFORMANCE 11 CASES WHICH CAN'T BE RUN -->
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
+                <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>sriov_mtu_check</suiteTest>
                 <suiteTest>sriov_move_host_supported</suiteTest>
                 <suiteTest>sriov_ping_diff_host</suiteTest>
@@ -252,7 +255,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) - 7(migration cases)-->
+            <!-- Acceptance Total Cases: 126 - 1(go_reboot_100_times) - 11(PERF) - 1(nw_remove_vmxnet3) - 7(migration)-->
             <suiteName>acceptance</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -1715,7 +1718,7 @@
                 <param>TC_COVERED=RHEL-111700,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1915,211 +1918,6 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-
-        <test>
-            <testName>perf_stor_fio_NVMe_FS</testName>
-            <testID>ESX-PERF-010</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=nvme0n1</param>
-                <param>FS=xfs</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-0000,RHEL-144405</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_fio_NVMe_RAW</testName>
-            <testID>ESX-PERF-009</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=nvme0n1</param>
-                <param>FS=raw</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-0000,RHEL-144406</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_fio_SCSI_FS</testName>
-            <testID>ESX-PERF-005</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=sdb</param>
-                <param>FS=xfs</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-34977,RHEL7-61578</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_fio_SCSI_RAW</testName>
-            <testID>ESX-PERF-007</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=sdb</param>
-                <param>FS=raw</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-34979,RHEL7-61580</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_fio_IDE_FS</testName>
-            <testID>ESX-PERF-006</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=sdb</param>
-                <param>FS=ext4</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-34978,RHEL7-61579</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_fio_IDE_RAW</testName>
-            <testID>ESX-PERF-008</testID>
-            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\add_hard_disk.ps1</file>
-                <file>SetupScripts\change_cpu.ps1</file>
-            </setupScript>
-            <testScript>stor_performance_fio.sh</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/stor_performance_fio.sh</files>
-            <testParams>
-                <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
-                <param>DiskDataStore=NVMe</param>
-                <param>CapacityGB=20</param>
-                <param>VMMemory=8GB</param>
-                <param>VCPU=8</param>
-                <param>disk=sdb</param>
-                <param>FS=raw</param>
-                <param>backend=NVMe</param>
-                <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
-                <param>TC_COVERED=RHEL6-34980,RHEL7-61918</param>
-            </testParams>
-            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>perf_stor_iozone_stress</testName>
-            <testID>ESX-PERF-011</testID>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-            </setupScript>
-            <testScript>stor_iozone_stress.sh</testScript>
-            <files>remote-scripts/stor_iozone_stress.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <!-- <param>VMMemory=4GB</param> -->
-                <param>TC_COVERED=RHEL6-49145,TC_COVERED=RHEL7-50938</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>90000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

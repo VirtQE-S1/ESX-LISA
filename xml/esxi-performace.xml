@@ -16,6 +16,7 @@
 
     <testSuites>
         <suite>
+            <!-- PERF Total Cases: 7 -->
             <suiteName>storage_performance_suite</suiteName>
             <suiteTests>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
