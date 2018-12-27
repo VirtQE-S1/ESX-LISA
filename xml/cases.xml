@@ -242,13 +242,13 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- Put unstable cases here -->
-                <suiteTest>nw_live_migration</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
+                <suiteTest>stor_cp_big_files</suiteTest>
+                <suiteTest>stor_scp_big_files</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+                <suiteTest>nw_check_operstate</suiteTest>
             </suiteTests>
         </suite>
         <suite>
