@@ -549,7 +549,15 @@ function SendCommandToVM([String] $ipv4, [String] $sshKey, [string] $command)
 
     # get around plink questions
     Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'exit 0'
+
+
+    # Wait a second
+    Start-Sleep 1
     $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
+
+
+    # Wait a second
+    Start-Sleep 1
     if ($process.ExitCode -eq 0)
     {
         $retVal = $true

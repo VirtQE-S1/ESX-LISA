@@ -78,7 +78,7 @@ if [ "$DISTRO" == "redhat_7" ]; then
     LogMsg "RHEL7"
     UpdateSummary "RHEL7"
     # This URL may change due to system update
-    url=https://fast.dpdk.org/rel/dpdk-18.02.2.tar.xz
+    url=https://fast.dpdk.org/rel/dpdk-18.05.1.tar.xz
 elif [ "$DISTRO" == "redhat_8" ]; then
     LogMsg "RHEL8"
     UpdateSummary "RHEL8"
@@ -160,7 +160,6 @@ folder=`tar -xvf $filename | awk 'NR==1{print}' | cut -d/ -f1`
 # Start to Compile
 cd $folder
 let folder=pwd
-make config T=x86_64-native-linuxapp-gcc
 
 
 LogMsg "Start Compile"
