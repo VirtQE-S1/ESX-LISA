@@ -246,8 +246,10 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- PUT UNSTABLE CASES HERE FOR EACV -->
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
 
-                <!-- HERE PERFORMANCE 11 CASES WHICH CAN'T BE RUN -->
                 <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
@@ -257,7 +259,6 @@
                 <suiteTest>sriov_ping_diff_host</suiteTest>
                 <suiteTest>sriov_ipv4_throughtput</suiteTest>
                 <suiteTest>sriov_ipv6_throughtput</suiteTest>
-
             </suiteTests>
         </suite>
         <suite>
