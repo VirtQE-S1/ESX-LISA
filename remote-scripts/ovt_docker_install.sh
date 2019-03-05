@@ -1,4 +1,4 @@
-#!/bin/bash
+# !/bin/bash
 
 ###############################################################################
 ##
@@ -16,7 +16,7 @@
 dos2unix utils.sh
 
 # Source utils.sh
-. utils.sh || {
+. utils.sh ||  {
     echo "Error: unable to source utils.sh!"
     exit 1
 }
@@ -33,14 +33,14 @@ if [[ $DISTRO == "redhat_6" ]]; then
     exit
 fi
 
-#Install docker CE package
-command=`yum install -y yum-utils`
+#Install docker package
+command = `yum install -y yum-utils`
 sleep 1
-command=`yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
+command = `yum-config-manager --add - repo https://download.docker.com/linux/centos/docker-ce.repo`
 sleep 1
-commnad=`yum install -y docker-ce`
+commnad = `yum install -y docker`
 sleep 1
-command=`systemctl enable docker`
+command = `systemctl enable docker`
 systemctl start docker
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. Docker service start successfully"
@@ -52,21 +52,28 @@ else
     exit 1
 fi 
 
-service=$(systemctl status docker |grep running -c)
+service = $(systemctl status docker | grep running - c)
 
-if [ "$service" = "1" ]; then
-  LogMsg $service
+if [[ $DISTRO == "redhat_7" ]]; then
+    num = 1
+else
+    num = 2
+fi
+
+
+if [ "$service" = "$num"]; then
+
   UpdateSummary "Test Successfully. service docker is running."
 
 else
   LogMsg "Info : The service docker is not running'"
-  UpdateSummary "Test failed. The service docker is not running."
+  UpdateSummary " $service Test failed. The service docker is not running."
   SetTestStateAborted
   exit 1
 fi
 
 #start a network container
-docker run -d -P --name web training/webapp python app.py
+docker run - d - P--name web training/webapp python app.py
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. The container run successfully"
     UpdateSummary "Test Successfully. The container run successfully."
@@ -76,7 +83,7 @@ else
     LogMsg "Test failed. The container web app run failed."
     UpdateSummary "Test Failed. The container web app run failed."
     #Run another image
-    docker run -P -d nginx:latest
+    docker run - P - d nginx:latest
     if [[ $? == 0 ]]; then
         LogMsg "Test Successfully. The container run successfully"
         UpdateSummary "Test Successfully. The container run successfully."
