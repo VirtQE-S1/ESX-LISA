@@ -394,12 +394,9 @@ else
   write-host -F Red "$($Process1.id)"
 
   #Then run test on guest A, guest A as client.
-  $a = "touch /root/aa"
-  $status = SendCommandToVM $ipv4 $sshkey $a
   $status = SendCommandToVM $ipv4 $sshkey $commandA
   if (-not $status) {
       LogPrint "ERROR :  test $commandA test Failed"
-      DisconnectWithVIServer
       $retVal = $Failed
   } else {
       $retVal = $Passed
@@ -408,6 +405,38 @@ else
   
 }
 
+# Clean up phase: Move back to old host
+
+
+# Refresh vmobj
+$vmObj = Get-VMHost -Name $dsthost | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Move guest to old host
+$task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false
+if (-not $?) {
+    LogPrint "ERROR : Cannot move VM to required Host $hvServer and Datastore $oldDatastore"
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+# Wait 6 seconds
+Start-Sleep -Seconds 6
+
+
+# Refresh vmobj
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 DisconnectWithVIServer
 return $retVal

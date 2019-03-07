@@ -1,3 +1,4 @@
+ 
 #!/bin/bash
 
 ###############################################################################
@@ -38,7 +39,12 @@ command=`yum install -y yum-utils`
 sleep 1
 command=`yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
 sleep 1
-commnad=`yum install -y docker-ce`
+if [[ $DISTRO == "redhat_8" ]]; then
+    commnad=`yum install -y docker`
+else
+    commnad=`yum install -y docker-ce`
+fi
+
 sleep 1
 command=`systemctl enable docker`
 systemctl start docker
@@ -54,7 +60,14 @@ fi
 
 service=$(systemctl status docker |grep running -c)
 
-if [ "$service" = "1" ]; then
+
+if [[ $DISTRO == "redhat_8" ]]; then
+    num=2
+else
+    num=1
+fi
+
+if [ "$service" = "$num" ]; then
   LogMsg $service
   UpdateSummary "Test Successfully. service docker is running."
 
@@ -87,3 +100,5 @@ else
         exit 1
     fi
 fi
+
+
