@@ -220,6 +220,18 @@
             </suiteTests>
         </suite>
         <suite>
+            <!-- GT Total Cases: 6 -->
+            <suiteName>dsk</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>ovt_yum_install_ovt</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
             <!-- USK Total Cases: 4 -->
             <suiteName>usk</suiteName>
             <suiteTests>
