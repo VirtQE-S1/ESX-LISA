@@ -59,7 +59,6 @@
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>ovt_yum_install_ovt</suiteTest>
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
-                <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>ovt_check_libdnet</suiteTest>
@@ -220,6 +219,15 @@
             </suiteTests>
         </suite>
         <suite>
+            <!-- libmspack Total Cases: 4 -->
+            <suiteName>libmspack</suiteName>
+            <suiteTests>
+                <suiteTest>lib_check_libmspack_installed</suiteTest>
+                <suiteTest>lib_yum_install_libmspack</suiteTest>
+                <suiteTest>lib_uninstall_libmspack</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
             <!-- GT Total Cases: 6 -->
             <suiteName>dsk</suiteName>
             <suiteTests>
@@ -305,7 +313,6 @@
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
                 <suiteTest>ovt_yum_install_ovt</suiteTest>
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
-                <suiteTest>ovt_check_libmspack_installed</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>ovt_check_libdnet</suiteTest>
@@ -393,6 +400,9 @@
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
                 <suiteTest>dpdk_kni</suiteTest>
+                <suiteTest>lib_check_libmspack_installed</suiteTest>
+                <suiteTest>lib_yum_install_libmspack</suiteTest>
+                <suiteTest>lib_uninstall_libmspack</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -479,20 +489,6 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-34895,RHEL7-51913</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>ovt_check_libmspack_installed</testName>
-            <testID>ESX-OVT-007</testID>
-            <testScript>ovt_check_libmspack_installed.sh</testScript>
-            <files>remote-scripts/ovt_check_libmspack_installed.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <param>TC_COVERED=RHEL6-34897,RHEL7-50880</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
@@ -2335,6 +2331,48 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>lib_check_libmspack_installed</testName>
+            <testID>ESX-lib-001</testID>
+            <testScript>lib_check_libmspack_installed.sh</testScript>
+            <files>remote-scripts/lib_check_libmspack_installed.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-34897,RHEL7-50880</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>lib_yum_install_libmspack</testName>
+            <testID>ESX-lib-002</testID>
+            <testScript>lib_yum_install_libmspack.sh</testScript>
+            <files>remote-scripts/lib_yum_install_libmspack.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL7-152491</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>lib_uninstall_libmspack</testName>
+            <testID>ESX-lib-003</testID>
+            <testScript>lib_uninstall_libmspack.sh</testScript>
+            <files>remote-scripts/lib_uninstall_libmspack.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL7-152492</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

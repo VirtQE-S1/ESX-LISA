@@ -10,7 +10,7 @@
 ##
 ## Revision:
 ## v1.0 - ldu - 03/14/2017 - Draft script for case ESX-OVT-007.
-##
+## v1.0 - ldu - 03/15/2019 - Draft script for case ESX-lib-001.
 ###############################################################################
 
 dos2unix utils.sh
