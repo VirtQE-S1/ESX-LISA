@@ -219,7 +219,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- libmspack Total Cases: 4 -->
+            <!-- libmspack Total Cases: 3 -->
             <suiteName>libmspack</suiteName>
             <suiteTests>
                 <suiteTest>lib_check_libmspack_installed</suiteTest>
@@ -228,8 +228,17 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- GT Total Cases: 6 -->
-            <suiteName>dsk</suiteName>
+            <!-- GT-libmspack Total Cases: 3 -->
+            <suiteName>gt-libmspack</suiteName>
+            <suiteTests>
+                <suiteTest>lib_check_libmspack_installed</suiteTest>
+                <suiteTest>lib_yum_install_libmspack</suiteTest>
+                <suiteTest>lib_uninstall_libmspack</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- GT-ovt Total Cases: 6 -->
+            <suiteName>gt-ovt</suiteName>
             <suiteTests>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
