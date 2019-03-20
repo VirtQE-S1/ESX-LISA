@@ -226,6 +226,16 @@
                 <suiteTest>lib_yum_install_libmspack</suiteTest>
                 <suiteTest>lib_uninstall_libmspack</suiteTest>
             </suiteTests>
+            
+        </suite>
+        <suite>
+            <!-- cloud-init Total Cases: 2 -->
+            <suiteName>cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+            </suiteTests>
+
         </suite>
         <suite>
             <!-- GT-libmspack Total Cases: 3 -->
@@ -412,11 +422,41 @@
                 <suiteTest>lib_check_libmspack_installed</suiteTest>
                 <suiteTest>lib_yum_install_libmspack</suiteTest>
                 <suiteTest>lib_uninstall_libmspack</suiteTest>
+                <suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>cloud-init_yum_install</testName>
+            <testID>ESX-lib-002</testID>
+            <testScript>cloud-init_yum_install.sh</testScript>
+            <files>remote-scripts/cloud-init_yum_install.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152574</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_uninstall</testName>
+            <testID>ESX-lib-003</testID>
+            <testScript>cloud-init_uninstall.sh</testScript>
+            <files>remote-scripts/cloud-init_uninstall.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152575</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>300</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>ovt_check_build_version</testName>
             <testID>ESX-OVT-001</testID>
@@ -2364,7 +2404,7 @@
             <files>remote-scripts/lib_yum_install_libmspack.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL7-152491</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152491</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>300</timeout>
@@ -2378,7 +2418,7 @@
             <files>remote-scripts/lib_uninstall_libmspack.sh</files>
             <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL7-152492</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152492</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>300</timeout>
