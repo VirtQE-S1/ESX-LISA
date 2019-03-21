@@ -237,7 +237,7 @@
         </suite>
         <suite>
             <!-- GT-cloud-init Total Cases: 2 -->
-            <suiteName>cloud-init</suiteName>
+            <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
