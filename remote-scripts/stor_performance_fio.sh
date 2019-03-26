@@ -42,11 +42,13 @@ if [[ $DISTRO != "redhat_8" ]]; then
 	pip install click pandas numpy scipy PyYAML
 	UpdateSummary "For rhel6 and rhel7, python2.x use pip"
 else
-	#For tree rhel8.0-20180824.2,only have pip3.6
-	pip3.6 install click pandas numpy scipy PyYAML
-	#For RHEL8, manually create soft link python point to python3.
-	# ln -s /usr/bin/python3 /usr/bin/python
+	#For RHEL8, manually create soft link python point to python3
 	ln -s /usr/libexec/platform-python /usr/bin/python
+	#install pip3.6 for RHEL8
+	curl https://bootstrap.pypa.io/get-pip.py | python
+	
+	#install modules with pip command
+	pip3.6 install click pandas numpy scipy PyYAML
 	UpdateSummary "For rhel8, use pip3.6 install modules"
 fi
 
