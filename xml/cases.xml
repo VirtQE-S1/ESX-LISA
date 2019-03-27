@@ -236,32 +236,27 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- GT-cloud-init Total Cases: 2 -->
+            <!-- GT-cloud-init Total Cases: 1 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
-                <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- GT-libmspack Total Cases: 3 -->
+            <!-- GT-libmspack Total Cases: 2 -->
             <suiteName>gt-libmspack</suiteName>
             <suiteTests>
                 <suiteTest>lib_check_libmspack_installed</suiteTest>
-                <suiteTest>lib_yum_install_libmspack</suiteTest>
                 <suiteTest>lib_uninstall_libmspack</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- GT-ovt Total Cases: 6 -->
+            <!-- GT-ovt Total Cases: 3 -->
             <suiteName>gt-ovt</suiteName>
             <suiteTests>
-                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_yum_install_ovt</suiteTest>
             </suiteTests>
         </suite>
         <suite>
