@@ -12,6 +12,7 @@
 ## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
 ## v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
 ## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
+## v1.5.0 - ldu   - 04/02/2019 - support add LSILogicSAS and LSI Logic Parallel scsi disk
 ##
 ###############################################################################
 <#
@@ -212,7 +213,7 @@ for ($i = 0; $i -lt $diskNum; $i++) {
 
 
     # Check Disk Type params
-    if (@("IDE", "SCSI", "NVMe") -notcontains $diskType) {
+    if (@("IDE", "SCSI", "Parallel", "SAS", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
@@ -249,6 +250,45 @@ for ($i = 0; $i -lt $diskNum; $i++) {
         }
     }
 
+#Add LSI Logic SAS scsi disk
+    if ($diskType -eq "SAS") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        if ($null -eq $diskDataStore) {
+            $vmObj | New-HardDisk -CapacityGB $capacityGB  -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogicSAS
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -Datastore $dataStore -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogicSAS
+        }
+        if (-not $?) {
+            Throw "Error : Cannot add new hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add LSI Logic SAS SCSI disk done."
+        }
+    }
+
+#Add LSI Logic Parallel scsi disk
+    if ($diskType -eq "Parallel") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        if ($null -eq $diskDataStore) {
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogic -ErrorAction SilentlyContinue
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -StorageFormat $storageFormat -Datastore $dataStore | New-ScsiController -Type VirtualLsiLogic -ErrorAction SilentlyContinue
+        }
+        if (-not $?) {
+            Throw "Error : Cannot add new  LSI Logic Parallel SCSI hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add LSI Logic Parallel SCSI disk done."
+        }
+    }
 
     # Add IDE disk
     if ($diskType -eq "IDE") {
