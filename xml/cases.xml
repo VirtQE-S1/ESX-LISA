@@ -109,6 +109,8 @@
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_add_nvme_disk</suiteTest>
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
+                <suiteTest>stor_hot_plug_SAS</suiteTest>
+                <suiteTest>stor_hot_plug_Parallel</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -222,9 +224,9 @@
             <!-- Libmspac Total Cases: 3 -->
             <suiteName>libmspack</suiteName>
             <suiteTests>
-                <suiteTest>lib_check_libmspack_installed</suiteTest>
-                <suiteTest>lib_yum_install_libmspack</suiteTest>
-                <suiteTest>lib_uninstall_libmspack</suiteTest>
+                <suiteTest>libmspack_yum_install</suiteTest>
+                <suiteTest>libmspack_uninstall</suiteTest>
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -246,8 +248,8 @@
             <!-- GT-libmspack Total Cases: 2 -->
             <suiteName>gt-libmspack</suiteName>
             <suiteTests>
-                <suiteTest>lib_check_libmspack_installed</suiteTest>
-                <suiteTest>lib_uninstall_libmspack</suiteTest>
+                <suiteTest>libmspack_uninstall</suiteTest>
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -377,6 +379,8 @@
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_add_nvme_disk</suiteTest>
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
+                <suiteTest>stor_hot_plug_SAS</suiteTest>
+                <suiteTest>stor_hot_plug_Parallel</suiteTest>
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -420,9 +424,9 @@
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
                 <suiteTest>dpdk_kni</suiteTest>
-                <suiteTest>lib_check_libmspack_installed</suiteTest>
-                <suiteTest>lib_yum_install_libmspack</suiteTest>
-                <suiteTest>lib_uninstall_libmspack</suiteTest>
+                <suiteTest>libmspack_yum_install</suiteTest>
+                <suiteTest>libmspack_uninstall</suiteTest>
+                <suiteTest>libmspack_check_status</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
             </suiteTests>
@@ -430,6 +434,37 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>stor_hot_plug_SAS</testName>
+            <testID>ESX-Stor-019</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts\stor_hot_plug_SAS.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>DiskType=SAS</param>
+                <param>StorageFormat=Thick</param>
+                <param>CapacityGB=5</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152739</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_hot_plug_Parallel</testName>
+            <testID>ESX-Stor-020</testID>
+            <testScript>testscripts\stor_hot_plug_Parallel.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152740</param>
+            </testParams>
+            <cleanupScript>SetupScripts\revert_guest_B.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>cloud-init_yum_install</testName>
             <testID>ESX-lib-002</testID>
@@ -2385,8 +2420,8 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>lib_check_libmspack_installed</testName>
-            <testID>ESX-lib-001</testID>
+            <testName>libmspack_check_status</testName>
+            <testID>ESX-lib-003</testID>
             <testScript>lib_check_libmspack_installed.sh</testScript>
             <files>remote-scripts/lib_check_libmspack_installed.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -2399,8 +2434,8 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>lib_yum_install_libmspack</testName>
-            <testID>ESX-lib-002</testID>
+            <testName>libmspack_uninstall</testName>
+            <testID>ESX-lib-001</testID>
             <testScript>lib_yum_install_libmspack.sh</testScript>
             <files>remote-scripts/lib_yum_install_libmspack.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -2413,8 +2448,8 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>lib_uninstall_libmspack</testName>
-            <testID>ESX-lib-003</testID>
+            <testName>libmspack_uninstall</testName>
+            <testID>ESX-lib-002</testID>
             <testScript>lib_uninstall_libmspack.sh</testScript>
             <files>remote-scripts/lib_uninstall_libmspack.sh</files>
             <files>remote-scripts/utils.sh</files>

@@ -9,6 +9,7 @@
 ##
 ## Revision:
 ## v1.0.0 - ldu - 8/20/2018 - Build the script
+## v2.0.0 - ldu - 04/02/2019 - add new function, could benchmark test result.
 ##
 ###############################################################################
 
@@ -137,8 +138,20 @@ else
 
 fi
 
+# #mount one nfs disk to store the test result.
+ mount -t nfs $nfs /mnt -o vers=3
+if [ $? -ne 0 ]; then
+	LogMsg "Test Failed. mount nfs failed."
+	UpdateSummary "Test failed. mount nfs failed"
+	SetTestStateFailed
+	exit 1
+else
+	LogMsg "mount nfs successfully."
+	UpdateSummary "mount nfs successfully."
+fi
+
 #Create fio test result path.
-path="/root/log/${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
+path="/mnt/${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
 mkdir -p $path
 
 #Download fio python scripts from github.
@@ -174,17 +187,19 @@ else
 	LogMsg "Test report generate successfully."
 	UpdateSummary "Test report generate successfully."
 fi
-#mount one nfs disk to store the test result.
-mount -t nfs $nfs /mnt -o vers=3
-cp -a $path /mnt
+
+#Generate benchmark Report
+basepath=`ls /mnt | grep ${base}_${DiskType}_${FS}_`
+
+./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  ${path}/fio_report.csv --report_csv /mnt/${base}VS${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}.csv
 if [ $? -ne 0 ]; then
-	LogMsg "Test result copy failed"
-	UpdateSummary "Test result copy failed"
+	LogMsg "Test result benchmark failed,"
+	UpdateSummary "Test result benchmark failed"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg "Test result copy successfully."
-	UpdateSummary "Test result copy successfully."
+	LogMsg "Test result benchmark successfully."
+	UpdateSummary "Test result benchmark successfully."
 	SetTestStateCompleted
 	exit 0
 fi
