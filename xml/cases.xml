@@ -235,6 +235,7 @@
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -242,6 +243,7 @@
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -429,11 +431,26 @@
                 <suiteTest>libmspack_check_status</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>cloud-init_check_status</testName>
+            <testID>ESX-cloud-init-003</testID>
+            <testScript>cloud-init_check_status.sh</testScript>
+            <files>remote-scripts/cloud-init_check_status.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-153100</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>stor_hot_plug_SAS</testName>
             <testID>ESX-Stor-019</testID>
@@ -2291,7 +2308,7 @@
         </test>
         <test>
             <testName>rdma_rping_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-012</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2314,7 +2331,7 @@
         </test>
         <test>
             <testName>rdma_ibv_rc_pingpong_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-013</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2337,7 +2354,7 @@
         </test>
         <test>
             <testName>rdma_perf_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-007</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2360,7 +2377,7 @@
         </test>
         <test>
             <testName>rdma_rping_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-011</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2381,7 +2398,7 @@
         </test>
         <test>
             <testName>rdma_ibv_rc_pingpong_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-010</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2401,7 +2418,7 @@
         </test>
         <test>
             <testName>rdma_perf_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-009</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
