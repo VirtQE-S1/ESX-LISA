@@ -2308,7 +2308,7 @@
         </test>
         <test>
             <testName>rdma_rping_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-012</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2331,7 +2331,7 @@
         </test>
         <test>
             <testName>rdma_ibv_rc_pingpong_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-013</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2354,7 +2354,7 @@
         </test>
         <test>
             <testName>rdma_perf_test_diff_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-007</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2377,7 +2377,7 @@
         </test>
         <test>
             <testName>rdma_rping_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-011</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2398,7 +2398,7 @@
         </test>
         <test>
             <testName>rdma_ibv_rc_pingpong_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-010</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
@@ -2418,7 +2418,7 @@
         </test>
         <test>
             <testName>rdma_perf_test_same_host</testName>
-            <testID>ESX-RDMA-008</testID>
+            <testID>ESX-RDMA-009</testID>
             <setupScript>
                 <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
