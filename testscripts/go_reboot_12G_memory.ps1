@@ -241,7 +241,9 @@ while ($round -lt 4)
 {
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     $on = Start-VM -VM $vmObj -Confirm:$False
+
     Start-Sleep -seconds 12
+    
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
     if ($ssh -ne $true)
     {
@@ -249,9 +251,11 @@ while ($round -lt 4)
         Write-Host -F Red "ERROR: Failed to Start-VM.The round is $round"
         return $Aborted
     }
+    
     $round=$round+1
     Write-Host -F Red "the round is $round "
 }
+
 if ($round -eq 4)
 {
     $retVal = $Passed
@@ -260,7 +264,8 @@ if ($round -eq 4)
 }
 else
 {
-    Write-Host -F Red "the round is $round"
+    Write-Output "INFO: Round: $round "
+    Write-Host -F Red "INFO: Round: $round"
 }
 
 DisconnectWithVIServer

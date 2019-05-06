@@ -124,9 +124,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -142,46 +140,49 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
-#
 #Reboot the guest 100 times.
-#
 $round=0
 while ($round -lt 100)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
     Start-Sleep -seconds 6
-    # wait for vm to Start
+    
+    # Wait for VM booting
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ( $ssh -ne $true )
+    if ($ssh -ne $true)
     {
-        Write-Output "Failed: Failed to start VM,the round is $round."
-        Write-host -F Red "the round is $round "
+        Write-Output "ERROR: Failed to start VM,the round is $round"
+        Write-Host -F Red "ERROR: Failed to start VM,the round is $round"
         return $Aborted
     }
+
     $round=$round+1
-    Write-host -F Red "the round is $round "
+    Write-Output "INFO: Round: $round "
+    Write-Host -F Red "INFO: Round: $round"
 }
 
 if ($round -eq 100)
 {
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-    Write-Host -F red "$calltrace_check"
+    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'dmesg | grep "Call Trace"'
+    Write-Output "DEBUG: calltrace_check: $calltrace_check"
+    Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
+
     if ($null -eq $calltrace_check)
     {
         $retVal = $Passed
-        Write-host -F Red "The guest could reboot $round times with no crash, no Call Trace "
-        Write-Output "PASS: After $round times booting, NO $calltrace_check found"
+        Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
+        Write-Output "INFO: After $round times booting, NO $calltrace_check found"
     }
     else{
-        Write-Output "FAIL: After booting, FOUND $calltrace_check in demsg"
+        Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
     }
 
 }
 else{
-    Write-host -F Red "the round is $round "
-    Write-Output "FAIL: The guest not boot 100 times, only $round times"
+    Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
+    Write-Output "ERROR: The guest not boot 100 times, only $round times"
 }
-
 
 DisconnectWithVIServer
 
