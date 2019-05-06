@@ -3,12 +3,12 @@
 ## Description:
 ##  reboot and shutdown the VM
 ##
-###############################################################################
-##
 ## Revision:
-## V1.0 - ldu - 09/06/2017 - reboot and shutdown guest.
-##V1.0 - ldu - 07/23/2018
+##  v1.0.0 - ldu - 09/06/2017 - reboot and shutdown guest
+##  v1.0.1 - boyang - 05/06/2019 - Increase sleep time after shutdown
+##
 ###############################################################################
+
 
 <#
 .Synopsis
@@ -49,14 +49,10 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -76,9 +72,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -114,9 +109,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -124,22 +117,20 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
 
+$retVal = $Failed
 
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" ){
     DisconnectWithVIServer
     return $Skipped
 }
-
-
-$retVal = $Failed
-
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $vmObj_restart = Restart-VMGuest -VM $vmObj -Confirm:$False
@@ -150,20 +141,23 @@ if ( $ret -ne $true )
     write-host -F Red "Failed: Failed to start VM."
     return $Aborted
 }
+
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
 
 $shutdown = Shutdown-VMGuest -VM $vmObj -Confirm:$False
-Start-sleep 30
+
+Start-sleep 120
+
 $vmObjShutdown = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $state = $vmObjShutdown.PowerState
 if ($state -ne "PoweredOff")
 {
-    Write-Output "The vm status is not powered off, status is $state"
-    write-host -F Red "Failed: Failed to shutdown VM."
+    Write-Output "INFO: The vm status is not powered off, status is $state"
+    write-host -F Red "ERROR: Failed to shutdown VM"
 }
 else
 {
-    Write-Output "passed: the vm shutdown successfully,status is $state"
+    Write-Output "INFO: the vm shutdown successfully,status is $state"
     $retVal = $Passed
 }
 
