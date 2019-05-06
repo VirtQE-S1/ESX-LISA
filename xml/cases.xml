@@ -230,28 +230,27 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Cloud-init Total Cases: 2 -->
-            <suiteName>cloud-init</suiteName>
-            <suiteTests>
-                <suiteTest>cloud-init_yum_install</suiteTest>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- GT-cloud-init Total Cases: 1 -->
-            <suiteName>gt-cloud-init</suiteName>
-            <suiteTests>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
             <!-- GT-libmspack Total Cases: 2 -->
             <suiteName>gt-libmspack</suiteName>
             <suiteTests>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+            </suiteTests>
+        </suite>        
+        <suite>
+            <!-- Cloud-init Total Cases: 2 -->
+            <suiteName>cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- GT-cloud-init Total Cases: 2 -->
+            <suiteName>gt-cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -293,16 +292,6 @@
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
-                <suiteTest>go_reboot_100_times</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -431,7 +420,6 @@
                 <suiteTest>libmspack_check_status</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
