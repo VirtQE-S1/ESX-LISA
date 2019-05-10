@@ -168,7 +168,7 @@ LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
@@ -317,8 +317,8 @@ write-host -F Red "Test tool is $tool"
 if ( $tool -eq "perf" )
 {
   #array for perftest command
-  $perf_guestB = @("ib_send_lat -x 0 -a","ib_send_bw -x 0 -a","ib_read_lat -x 0 -a","ib_read_bw -x 0 -a","ib_write_lat -x 0 -a","ib_write_bw -x 0 -a" )
-  $perf_guestA = @("ib_send_lat -x 0 -a $IPAddr_guest_B","ib_send_bw -x 0 -a $IPAddr_guest_B","ib_read_lat -x 0 -a $IPAddr_guest_B","ib_read_bw -x 0 -a $IPAddr_guest_B","ib_write_lat -x 0 -a $IPAddr_guest_B","ib_write_bw -x 0 -a $IPAddr_guest_B" )
+  $perf_guestB = @("ib_send_lat -a","ib_send_bw -a","ib_read_lat -a","ib_read_bw -a","ib_write_lat -a","ib_write_bw -a" )
+  $perf_guestA = @("ib_send_lat -a $IPAddr_guest_B","ib_send_bw -a $IPAddr_guest_B","ib_read_lat -a $IPAddr_guest_B","ib_read_bw -a $IPAddr_guest_B","ib_write_lat -a $IPAddr_guest_B","ib_write_bw -a $IPAddr_guest_B" )
 
   foreach($i in $perf_guestB)
   {
