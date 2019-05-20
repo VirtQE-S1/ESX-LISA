@@ -36,6 +36,7 @@
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
+                <suiteTest>go_check_GUI_driver</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -425,6 +426,18 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_check_GUI_driver</testName>
+            <testID>ESX-GO-019</testID>
+            <testScript>testscripts\go_check_GUI_driver.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-170986</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>cloud-init_check_status</testName>
             <testID>ESX-cloud-init-003</testID>
