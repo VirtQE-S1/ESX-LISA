@@ -6,7 +6,7 @@
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 05/20/2019 - Check the vmware driver xorg-x11-drv-vmware exist in guest.
+## V1.0.0 - ldu - 05/20/2019 - Check the vmware driver xorg-x11-drv-vmware exist in guest.
 ##
 ##
 ###############################################################################
@@ -137,7 +137,7 @@ Write-Host -F Red "driver result is $vmware_driver"
 
 if ($vmware_driver -eq $null)
 {
-    Write-Output "Failed:The no vmware gui related driver xorg-x11-drv-vmware found in guest.$vmware_driver"
+	Write-Output "Failed:The no vmware gui related driver xorg-x11-drv-vmware found in guest.$vmware_driver"
 }
 else{
     Write-Output "passed, the vmware driver xorg-x11-drv-vmware exist, $vmware_driver."
