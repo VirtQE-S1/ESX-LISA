@@ -8,6 +8,7 @@
 ##
 ## Revision:
 ## 	v1.0.0 - boyang - 03/09/2018 - Build script
+## 	v1.0.1 - boyang - 05/14/2019 - Get VM's IP dynamically
 ##
 ###############################################################################
 
@@ -15,18 +16,13 @@
 dos2unix utils.sh
 
 
-#
 # Source utils.sh
-#
 . utils.sh || {
 	echo "Error: unable to source utils.sh!"
 	exit 1
 }
 
-
-#
 # Source constants file and initialize most common variables
-#
 UtilsInit
 
 
@@ -39,35 +35,42 @@ UtilsInit
 
 # Get NIC interface
 nic=`ls /sys/class/net | grep ^e[tn][hosp]`
+LogMsg "DEBUG: nic: $nic"
+UpdateSummary "DEBUG: nic: $nic"
+
 
 # NIC hardware address
 hwadd=`cat /sys/class/net/$nic/address`
-LogMsg "hwadd is $hwadd"
-UpdateSummary "hwadd is $hwadd"
+LogMsg "INFO: hwadd is $hwadd"
+UpdateSummary "INFO: hwadd is $hwadd"
+
 
 # NIC IP address
-ipadd=`ip -f inet add |grep eth0 |grep inet | awk '{print $2}' | awk -F "/" '{print $1}'`
+ipadd=`ip -f inet add | grep $nic | grep inet | awk '{print $2}' | awk -F "/" '{print $1}'`
 if [ "x$ipadd" -eq "x" ]
     then
-		LogMsg "hwadd is $hwadd"
-		UpdateSummary "hwadd is $hwadd"
-		SetTestStateAborted
+	LogMsg "ERROR: Get VM's IP failed"
+	UpdateSummary "ERROR: Get VM's IP failed"
+	SetTestStateAborted
         exit 1
 fi
-LogMsg "ipadd is $ipadd"
-UpdateSummary "ipadd is $ipadd"
+LogMsg "INFO: ipadd is $ipadd"
+UpdateSummary "INFO: ipadd is $ipadd"
 
 
-LogMsg "modprobe pktgen"
-UpdateSummary "modprobe pktgen"
+LogMsg "INFO: Will modprobe pktgen"
+UpdateSummary "INFO: Will modprobe pktgen"
 modprobe pktgen
+if [ $? -ne 0 ]; then
+    LogMsg "ERROR: Before RHEL8.1.0 DISTRO, modprobe pktgen directlly. After RHEL8.1.0, it has been moved to kernel self test package, should install kernel-module-internal package from brew"
+    UpdateSummary "ERROR: Before RHEL8.1.0 DISTRO, modprobe pktgen directlly. After RHEL8.1.0, it has been moved to kernel self test package, should install kernel-module-internal package from brew"
+    exit 1
+fi 
 
 
 function pgset() {
     local result
-
     echo $1 > $PGDEV
-
     result=`cat $PGDEV | fgrep "Result: OK:"`
     if [ "$result" = "" ]; then
          cat $PGDEV | fgrep Result:
@@ -86,20 +89,20 @@ function pg() {
 #
 
 # Thread config
-# Each CPU has own thread. One CPU exammple. We add the name the guest nic, such as eth0
+# Each CPU has own thread. One CPU exammple. Add the name the guest nic, such as eth0
 PGDEV=/proc/net/pktgen/kpktgend_0
-LogMsg "Removing all devices"
-UpdateSummary "Removing all devices"
+LogMsg "INFO: Removing all devices"
+UpdateSummary "INFO: Removing all devices"
 pgset "rem_device_all"
 
 # Change to the name of nic
-LogMsg "Adding $nic"
-UpdateSummary "Adding $nic"
+LogMsg "INFO: Adding $nic"
+UpdateSummary "INFO: Adding $nic"
 pgset "add_device $nic"
 
 # Setting max_before_softirq
-LogMsg "Setting max_before_softirq 10000"
-UpdateSummary "Setting max_before_softirq 10000"
+LogMsg "INFO: Setting max_before_softirq 10000"
+UpdateSummary "INFO: Setting max_before_softirq 10000"
 pgset "max_before_softirq 10000"
 
 # Device config
@@ -110,12 +113,12 @@ CLONE_SKB="clone_skb 1000000"
 PKT_SIZE="pkt_size 60"
 
 # COUNT 0 means forever
-# COUNT="count 0"
 COUNT="count 10000000"
 DELAY="delay 0"
 PGDEV=/proc/net/pktgen/$nic
-LogMsg "Configuring $PGDEV"
-UpdateSummary "Configuring $PGDEV"
+
+LogMsg "INFO: Configuring $PGDEV"
+UpdateSummary "INFO: Configuring $PGDEV"
 pgset "$COUNT"
 pgset "$CLONE_SKB"
 pgset "$PKT_SIZE"
@@ -126,22 +129,23 @@ pgset "dst_mac $hwadd" # MAC address of the name of NIC you want to test, such a
 
 # Time to run
 PGDEV=/proc/net/pktgen/pgctrl
-LogMsg "Running... ctrl^C to stop"
-UpdateSummary "Running... ctrl^C to stop"
+LogMsg "INFO: Running... ctrl^C to stop"
+UpdateSummary "INFO: Running... ctrl^C to stop"
 pgset "start"
-LogMsg "Done"
-UpdateSummary "Done"
-LogMsg "Result is stored in /proc/net/pktgen/$nic"
-UpdateSummary "Result is stored in /proc/net/pktgen/$nic"
+LogMsg "INFO: Done"
+UpdateSummary "INFO: Done"
+
+LogMsg "INFO: Result is stored in /proc/net/pktgen/$nic"
+UpdateSummary "INFO: Result is stored in /proc/net/pktgen/$nic"
 
 
 # Check the result
 cat /proc/net/pktgen/$nic | grep "Result: OK"
 if [ $? -eq 0 ]
     then
-		LogMsg "PASS: case passed"
-		UpdateSummary "PASS: case passed"
-		SetTestStateCompleted
+	LogMsg "PASS: case passed"
+	UpdateSummary "PASS: case passed"
+	SetTestStateCompleted
         exit 0
 else
 	LogMsg "FAIL: cases failed"
@@ -149,3 +153,4 @@ else
 	SetTestStateFailed
 	exit 1
 fi
+

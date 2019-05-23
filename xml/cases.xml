@@ -36,6 +36,7 @@
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
+                <suiteTest>go_check_GUI_driver</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -230,28 +231,27 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Cloud-init Total Cases: 2 -->
-            <suiteName>cloud-init</suiteName>
-            <suiteTests>
-                <suiteTest>cloud-init_yum_install</suiteTest>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- GT-cloud-init Total Cases: 1 -->
-            <suiteName>gt-cloud-init</suiteName>
-            <suiteTests>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
             <!-- GT-libmspack Total Cases: 2 -->
             <suiteName>gt-libmspack</suiteName>
             <suiteTests>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+            </suiteTests>
+        </suite>        
+        <suite>
+            <!-- Cloud-init Total Cases: 2 -->
+            <suiteName>cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- GT-cloud-init Total Cases: 2 -->
+            <suiteName>gt-cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -293,16 +293,6 @@
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
-                <suiteTest>go_reboot_100_times</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -431,12 +421,23 @@
                 <suiteTest>libmspack_check_status</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_check_GUI_driver</testName>
+            <testID>ESX-GO-019</testID>
+            <testScript>testscripts\go_check_GUI_driver.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-170986</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>cloud-init_check_status</testName>
             <testID>ESX-cloud-init-003</testID>
@@ -518,7 +519,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
-                <param>redhat_7_standard_version=open-vm-tools-10.3.0-3.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.3.0-2.el7.x86_64</param>
                 <param>redhat_8_standard_version=open-vm-tools-10.3.0-2.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
@@ -799,7 +800,7 @@
                 <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-10.3.0-3.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-10.3.0-2.el7.x86_64</param>
                 <param>redhat_7_lower_version=open-vm-tools-10.2.5-2.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-10.2.5-2.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.2.5/2.el7/x86_64/open-vm-tools-desktop-10.2.5-2.el7.x86_64.rpm</param>
@@ -826,15 +827,15 @@
                 <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-debuginfo-10.3.0-3.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-debuginfo-10.3.0-2.el7.x86_64</param>
+                <param>redhat_7_standard_rpm=10.3.0/2.el7/x86_64/open-vm-tools-debuginfo-10.3.0-2.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.2.5-2.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-debuginfo-10.2.5-2.el7.x86_64.rpm</param>
-                <param>redhat_7_standard_rpm=10.2.5/2.el7/x86_64/open-vm-tools-debuginfo-10.3.0-3.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
                 <param>redhat_8_standard_version=open-vm-tools-debuginfo-10.3.0-2.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=10.3.0/2.el8/x86_64/open-vm-tools-debuginfo-10.3.0-2.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.2.5-2.el8.x86_64</param>
                 <param>redhat_8_lower_rpm=10.2.5/2.el8/x86_64/open-vm-tools-debuginfo-10.2.5-2.el8.x86_64.rpm</param>
-                <param>redhat_8_standard_rpm=10.3.0/2.el8/x86_64/open-vm-tools-debuginfo-10.3.0-2.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1427,7 +1428,7 @@
                 <param>DiskType=IDE</param>
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=10</param>
-                <param>nfs=10.73.198.145:/mnt/ceph-block/esx</param>
+                <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
                 <param>TC_COVERED=RHEL634923-,RHEL7-50899</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
@@ -1447,7 +1448,7 @@
                 <param>DiskType=IDE</param>
                 <param>StorageFormat=Thin</param>
                 <param>CapacityGB=10</param>
-                <param>nfs=10.73.198.145:/mnt/ceph-block/esx</param>
+                <param>nfs=10.73.194.25:/vol/ldunfspnt0312206</param>
                 <param>TC_COVERED=RHEL-34931,RHEL7-50911</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>

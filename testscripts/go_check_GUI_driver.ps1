@@ -1,32 +1,20 @@
 ###############################################################################
 ##
 ## Description:
-## Reboot guet 100 times then check system status.
+## Check the vmware driver xorg-x11-drv-vmware exist in guest.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
+## V1.0.0 - ldu - 05/20/2019 - Check the vmware driver xorg-x11-drv-vmware exist in guest.
 ##
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Reboot guest 100 times.
+    Check the vmware driver xorg-x11-drv-vmware exist in guest.
 .Description
-<test>
-    <testName>go_reboot_100_times</testName>
-    <testID>ESX-GO-013</testID>
-    <testScript>testscripts\go_reboot_100_times.ps1</testScript>
-    <testParams>
-        <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>6000</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
 
 .Parameter vmName
     Name of the test VM.
@@ -124,7 +112,9 @@ if ($null -eq $logdir)
 	return $False
 }
 
+#
 # Source tcutils.ps1
+#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -140,50 +130,22 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
-#Reboot the guest 100 times.
-$round=0
-while ($round -lt 100)
+
+# Check the scsi timeout value in two files.
+$vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
+Write-Host -F Red "driver result is $vmware_driver"
+
+if ($vmware_driver -eq $null)
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-
-    Start-Sleep -seconds 6
-    
-    # Wait for VM booting
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ($ssh -ne $true)
-    {
-        Write-Output "ERROR: Failed to start VM,the round is $round"
-        Write-Host -F Red "ERROR: Failed to start VM,the round is $round"
-        return $Aborted
-    }
-
-    $round=$round+1
-    Write-Output "INFO: Round: $round "
-    Write-Host -F Red "INFO: Round: $round"
-}
-
-if ($round -eq 100)
-{
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'dmesg | grep "Call Trace"'
-    Write-Output "DEBUG: calltrace_check: $calltrace_check"
-    Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-
-    if ($null -eq $calltrace_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
-        Write-Output "INFO: After $round times booting, NO $calltrace_check found"
-    }
-    else{
-        Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
-    }
-
+	Write-Output "Failed:The no vmware gui related driver xorg-x11-drv-vmware found in guest.$vmware_driver"
 }
 else{
-    Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
-    Write-Output "ERROR: The guest not boot 100 times, only $round times"
+    Write-Output "passed, the vmware driver xorg-x11-drv-vmware exist, $vmware_driver."
+    $retVal = $Passed
 }
+
 
 DisconnectWithVIServer
 
 return $retVal
+
