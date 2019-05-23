@@ -311,14 +311,6 @@ if (-not $status) {
     return $Aborted
 }
 
-#load mod
-$result = SendCommandToVM $ipv4 $sshKey "modprobe -r vmw_pvrdma && modprobe vmw_pvrdma"
-if (-not $status) {
-    LogPrint "ERROR : reload modules vmw_pvrdma Failed"
-    
-    return $Aborted
-}
-
 #check the RoCE version
 $RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
 if ("RoCE V2" -eq $RoCE)
@@ -382,8 +374,6 @@ else
   write-host -F Red "$($Process1.id)"
 
   #Then run test on guest A, guest A as client.
-  $a = "touch /root/aa"
-  $status = SendCommandToVM $ipv4 $sshkey $a
   $status = SendCommandToVM $ipv4 $sshkey $commandA
   if (-not $status) {
       LogPrint "ERROR :  test $commandA test Failed"
