@@ -311,6 +311,34 @@ if (-not $status) {
     return $Aborted
 }
 
+#load mod
+$result = SendCommandToVM $ipv4 $sshKey "modprobe -r vmw_pvrdma && modprobe vmw_pvrdma"
+if (-not $status) {
+    LogPrint "ERROR : reload modules vmw_pvrdma Failed"
+    
+    return $Aborted
+}
+
+#check the RoCE version
+$RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
+if ("RoCE V2" -eq $RoCE)
+{
+    $gid=1
+	Write-Host -F Green "INFO: gid set to 1, RoCE version is $RoCE"
+    Write-Output "INFO: RoCE version is $RoCE"
+}
+elseif ("IB/RoCE v1" -eq $RoCE) {
+    $gid=0
+    Write-Host -F Red "INFO: gid set to 0, RoCE version is $RoCE"
+	Write-Output "INFO: RoCE version is $RoCE"
+}
+else
+{
+    Write-Host -F Red "Error: RoCE version is $RoCE"
+    Write-Output "Error: RoCE version is $RoCE"
+    return $Aborted
+}
+
 #check the test tools used for test.
 LogPrint "test is $tool"
 write-host -F Red "Test tool is $tool"
@@ -340,8 +368,8 @@ else
 {
   if ( $tool -eq "ibvrc" )
     {
-        $commandA = "ibv_rc_pingpong -s 1 -g 1 $IPAddr_guest_B"
-        $commandB = "ibv_rc_pingpong -s 1 -g 1"
+        $commandA = "ibv_rc_pingpong -s 1 -g $gid $IPAddr_guest_B"
+        $commandB = "ibv_rc_pingpong -s 1 -g $gid"
     }
   else
   {

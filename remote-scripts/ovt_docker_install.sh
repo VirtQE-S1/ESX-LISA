@@ -5,12 +5,12 @@
 ##
 ## Description:
 ##   This script checks
-##  Take snapshot after deadlock condiation.
+##  Take snapshot after install container in guest.
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - ldu - 23/07/2017 - Take snapshot after deadlock condiation.
+## v1.0 - ldu - 23/07/2017 - Take snapshot after install container in guest.
 ##
 ###############################################################################
 
@@ -34,52 +34,21 @@ if [[ $DISTRO == "redhat_6" ]]; then
     exit
 fi
 
-#Install docker CE package
-command=`yum install -y yum-utils`
-sleep 1
-command=`yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
-sleep 1
-if [[ $DISTRO == "redhat_8" ]]; then
-    commnad=`yum install -y docker`
-else
-    commnad=`yum install -y docker-ce`
-fi
+#Install podman package
 
-sleep 1
-command=`systemctl enable docker`
-systemctl start docker
+yum install podman -y
 if [[ $? == 0 ]]; then
-    LogMsg "Test Successfully. Docker service start successfully"
-    UpdateSummary "Test Successfully. Docker service start successfully."
+    LogMsg "Test Successfully. podman installed successfully"
+    UpdateSummary "Test Successfully.podman installed successfully."
 else
-    LogMsg "Test failed. Docker service start failed."
-    UpdateSummary "Test Failed.  Docker service start failed."
+    LogMsg "Test failed.podman installed failed."
+    UpdateSummary "Test Failed.  podman installed failed."
     SetTestStateAborted
     exit 1
 fi 
 
-service=$(systemctl status docker |grep running -c)
-
-
-if [[ $DISTRO == "redhat_8" ]]; then
-    num=2
-else
-    num=1
-fi
-
-if [ "$service" = "$num" ]; then
-  LogMsg $service
-  UpdateSummary "Test Successfully. service docker is running."
-
-else
-  LogMsg "Info : The service docker is not running'"
-  UpdateSummary "Test failed. The service docker is not running."
-  SetTestStateAborted
-  exit 1
-fi
-
 #start a network container
-docker run -d -P --name web training/webapp python app.py
+podman run -P -d nginx:latest
 if [[ $? == 0 ]]; then
     LogMsg "Test Successfully. The container run successfully"
     UpdateSummary "Test Successfully. The container run successfully."
@@ -88,17 +57,8 @@ if [[ $? == 0 ]]; then
 else
     LogMsg "Test failed. The container web app run failed."
     UpdateSummary "Test Failed. The container web app run failed."
-    #Run another image
-    docker run -P -d nginx:latest
-    if [[ $? == 0 ]]; then
-        LogMsg "Test Successfully. The container run successfully"
-        UpdateSummary "Test Successfully. The container run successfully."
-        SetTestStateCompleted
-        exit 0
-    else
-        SetTestStateFailed
-        exit 1
-    fi
+    SetTestStateFailed
+    exit 1
 fi
 
 

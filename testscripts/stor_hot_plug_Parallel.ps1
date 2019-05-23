@@ -146,6 +146,11 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 $hd_size = Get-Random -Minimum 1 -Maximum 5
 # New-HardDisk -VM $GuestB -CapacityGB $hd_size -StorageFormat "Thin" | New-ScsiController -Type VirtualLsiLogic
 $GuestB | New-HardDisk -CapacityGB $hd_size -StorageFormat "Thin" | New-ScsiController -Type VirtualLsiLogic
+if (-not $?) {
+    LogPrint "ERROR : Cannot add disk to VMB"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 # Start GuestB
 Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
@@ -165,7 +170,7 @@ if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
 LogPrint "INFO: Ready SSH"
 
 
-# Get another VM IP addr
+# Get VMB IP addr
 $ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName 
 
@@ -173,7 +178,11 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 #hot add LSI Logic Parallel scsi disk
 $hd_size = Get-Random -Minimum 6 -Maximum 10
 New-HardDisk -VM $GuestB -CapacityGB $hd_size -StorageFormat "Thin" -Controller "SCSI Controller 0"
-
+if (-not $?) {
+    LogPrint "ERROR : Cannot hot add disk to VMB"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 #
 # Check the disk number of the guest.
