@@ -83,6 +83,15 @@ if [ $? -ne 0 ]; then
 	LogMsg "ERROR: Try to install kernel-module-internal failed"        
 	UpdateSummary "ERROR: Try to install kernel-module-internal failed"        
         exit 1
+    else
+	LogMsg "INFO: Try modprobe pktgen again after installation" 
+	UpdateSummary "INFO: Try modprobe pktgen again after installation" 
+	modprobe pktgen
+        if [ $? -ne 0 ]; then
+	    LogMsg "ERROR: Modprobe pktgen failed after installation" 
+	    UpdateSummary "ERROR: Modprobe pktgen failed after installation" 
+            exit 1
+	fi
     fi
 fi 
 
