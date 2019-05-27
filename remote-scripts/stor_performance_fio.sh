@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 ###############################################################################
@@ -150,9 +151,14 @@ else
 	UpdateSummary "mount nfs successfully."
 fi
 
+
+
+basepath=`ls /mnt | grep ${base}_${DiskType}_${FS}_ | sed -n '$p'`
+
+
 #Create fio test result path.
-path="/mnt/${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
-mkdir -p $path
+path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
+mkdir -p /mnt/$path
 
 #Download fio python scripts from github.
 cd /root
@@ -165,7 +171,7 @@ if [[ $FS == raw ]]; then
 else
 	filename="/test/test"
 fi
-./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path
+./RunFioTest.py --backend $backend --driver $DiskType --rounds 1 --fs $FS --filename $filename --log_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
 	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
@@ -177,7 +183,7 @@ else
 fi
 
 # Generate Fio test report
-./GenerateTestReport.py --result_path $path
+./GenerateTestReport.py --result_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
 	UpdateSummary "Test report generate failed"
@@ -189,12 +195,12 @@ else
 fi
 
 #Generate benchmark Report
-basepath=`ls /mnt | grep ${base}_${DiskType}_${FS}_`
 
-./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  ${path}/fio_report.csv --report_csv /mnt/${base}VS${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}.csv
+
+./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
-	UpdateSummary "Test result benchmark failed"
+	UpdateSummary "Test result benchmark failed, $basepath and $path"
 	SetTestStateFailed
 	exit 1
 else

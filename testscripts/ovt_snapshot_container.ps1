@@ -152,24 +152,22 @@ $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 #Install docker and start one network container on guest.
-$scripts = "ovt_docker_install.sh"
-# Run remote test scripts
-$sts =  RunRemoteScript $scripts
-if( -not $sts[-1] )
-{
-    Write-Host -F Red "ERROR:  docker container run failed"
-    Write-Output "ERROR: docker container run failed"
-    return $Aborted
-}
-else
-{
-    Write-Host -F Red "Info :docker container run successfully"
-    Write-Output "Info : docker container run successfully"
+$sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
+if (-not $sts) {
+    LogPrint "ERROR : YUM cannot install podman packages"
+    DisconnectWithVIServer
+    return $Failed
 }
 
-#
+#Run a container in guest
+$sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
+if (-not $sts) {
+    LogPrint "ERROR : run container nginx failed in guest"
+    DisconnectWithVIServer
+    return $Failed
+}
+
 # Take snapshot and select quiesce option
-#
 $snapshotTargetName = "snapcontainer"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
