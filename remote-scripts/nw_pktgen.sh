@@ -64,7 +64,26 @@ modprobe pktgen
 if [ $? -ne 0 ]; then
     LogMsg "ERROR: Before RHEL8.1.0 DISTRO, modprobe pktgen directlly. After RHEL8.1.0, it has been moved to kernel self test package, should install kernel-module-internal package from brew"
     UpdateSummary "ERROR: Before RHEL8.1.0 DISTRO, modprobe pktgen directlly. After RHEL8.1.0, it has been moved to kernel self test package, should install kernel-module-internal package from brew"
-    exit 1
+    
+    LogMsg "INFO: Try to install a kernel-module-internal in RHEL-8.1.0 or later"
+    UpdateSummary "INFO: Try to install a kernel-module-internal in RHEL-8.1.0 or later"
+
+    #//download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/kernel/4.18.0/94.el8/x86_64/kernel-modules-internal-4.18.0-94.el8.x86_64.rpm
+    url_pre="http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/kernel"
+    ver=`uname -r | awk -F "-" {'print $1'}`
+    rel1=`uname -r | awk -F "-" {'print $2'} | awk -F "." {'print $1'}`
+    rel2=`uname -r | awk -F "-" {'print $2'} | awk -F "." {'print $2'}`
+    arch=`uname -r | awk -F "-" {'print $2'} | awk -F "." {'print $3'}`
+    url="${url_pre}/${ver}/${rel1}.${rel2}/${arch}/kernel-modules-internal-${ver}-${rel1}.${rel2}.${arch}.rpm"
+    LogMsg "DEBUG: url: $url"
+    UpdateSummary "DEBUG: url: $url"
+
+    yum -y install $url
+    if [ $? -ne 0 ]; then
+	LogMsg "ERROR: Try to install kernel-module-internal failed"        
+	UpdateSummary "ERROR: Try to install kernel-module-internal failed"        
+        exit 1
+    fi
 fi 
 
 
