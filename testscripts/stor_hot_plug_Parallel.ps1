@@ -205,17 +205,17 @@ else
     return $Aborted
 }
 
-$result = SendCommandToVM $ipv4Addr_B $sshKey "rescan-scsi-bus.sh -a && ls /dev/sdc"
+$result = SendCommandToVM $ipv4Addr_B $sshKey "rescan-scsi-bus.sh -a && sleep 3 && ls /dev/sdc"
 if (-not $result)
 {
-	Write-Host -F Red "FAIL: Failed to detect new add LSILogicParallel scsi disk."
-	Write-Output "FAIL: Failed to detect new add LSILogicParallel scsi disk"
+	Write-Host -F Red "FAIL: Failed to detect new add LSILogicParallel scsi disk.$result"
+	Write-Output "FAIL: Failed to detect new add LSILogicParallel scsi disk $result"
 	$retVal = $Failed
 }
 else
 {
-	Write-Host -F Green "PASS: new add LSILogicParallel scsi disk could be detected."
-    Write-Output "PASS: new add LSILogicParallel scsi disk could be detected."
+	Write-Host -F Green "PASS: new add LSILogicParallel scsi disk could be detected.$result"
+    Write-Output "PASS: new add LSILogicParallel scsi disk could be detected.$result"
     $retVal = $Passed
 }
 
