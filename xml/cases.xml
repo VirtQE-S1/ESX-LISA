@@ -188,6 +188,7 @@
                 <suiteTest>rdma_perf_test_same_host</suiteTest>
                 <suiteTest>rdma_rping_test_same_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_reboot_kernel-debug</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -403,6 +404,7 @@
                 <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
+                <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>sriov_boot_check</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
@@ -426,6 +428,21 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>rdma_reboot_kernel-debug</testName>
+            <testID>ESX-RDMA-010</testID>
+            <setupScript>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_reboot_kernel-debug.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-170987</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_check_GUI_driver</testName>
             <testID>ESX-GO-019</testID>
@@ -969,7 +986,6 @@
             <testID>ESX-OVT-033</testID>
             <testScript>testscripts/ovt_snapshot_container.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/ovt_docker_install.sh</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
             </testParams>
