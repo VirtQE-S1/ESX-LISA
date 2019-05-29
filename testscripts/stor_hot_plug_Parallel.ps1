@@ -7,7 +7,7 @@
 ##
 ## Revision:
 ## v1.0.0 - ldu - 03/29/2019 - Hot add LSILogicParallel scsi disk.
-##
+## v1.0.1 - ldu - 05/28/2019 - add VMB power status check, if power on, will power off it.
 ## 
 ###############################################################################
 
@@ -142,6 +142,16 @@ $GuestBName = $GuestBName -join "-"
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
+# If the VM is not stopped, try to stop it
+if ($GuestB.PowerState -ne "PoweredOff") {
+    LogPrint "Info : $($GuestBName) is not in a stopped state - stopping VM"
+    $outStopVm = Stop-VM -VM $GuestB -Confirm:$false -Kill
+    if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") {
+        LogPrint "Error : ResetVM is unable to stop VM $($GuestBName). VM has been disabled"
+        return $Aborted
+    }
+}
+
 # Add LSI Logic Parallel for Guest B
 $hd_size = Get-Random -Minimum 1 -Maximum 5
 # New-HardDisk -VM $GuestB -CapacityGB $hd_size -StorageFormat "Thin" | New-ScsiController -Type VirtualLsiLogic
@@ -151,6 +161,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: add LSI logic Parallel scsi controller and disk completed when vmb power off"
 
 # Start GuestB
 Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
@@ -159,7 +170,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-
+LogPrint "INFO: Power on VMB completed."
 
 # Wait for GuestB SSH ready
 if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
@@ -184,9 +195,8 @@ if (-not $?) {
     return $Aborted
 }
 
-#
+
 # Check the disk number of the guest.
-#
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 $diskList =  Get-HardDisk -VM $GuestB
@@ -205,6 +215,7 @@ else
     return $Aborted
 }
 
+#Rescan new add parallel scsi disk in guest.
 $result = SendCommandToVM $ipv4Addr_B $sshKey "rescan-scsi-bus.sh -a && sleep 3 && ls /dev/sdc"
 if (-not $result)
 {
