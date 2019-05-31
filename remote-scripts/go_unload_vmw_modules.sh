@@ -9,6 +9,7 @@
 ## Revision:
 ##  v1.0.0 - ldu - 03/30/2018 - Draft script for case ESX-OVT-009
 ##  v1.0.1 - boyang - 05/15/2018 - Support all $DISTRO and multi modules
+##  v1.0.2 - boyang - 05/31/2019 - Incorrect VAR names
 ##
 ###############################################################################
 
@@ -39,15 +40,19 @@ UtilsInit
 # Main script body
 #
 #######################################################################
-
+LogMsg "INFO: The Current OS: $DISTRO"
+UpdateSummary "INFO: The Current OS: $DISTRO"
 
 # Unload the driver vmw_balloon for an hour
 current_time=`date +%s`
+LogMsg "INFO: The Start Time: $current_time"
 UpdateSummary "INFO: The Start Time: $current_time"
-end_time=$[current_time+3600]
 
+end_time=$[current_time+900]
+LogMsg "DEBUG: end_time: $end_time"
+UpdateSummary "DEBUG: end_time: $end_time"
 
-# Get different $DISTROs moudles list
+# Get different $DISTROs moudles list. CURRENLTY. ONLY balloon is supported
 modules_in_distro=`cat constants.sh | grep $DISTRO | awk -F "=" '{print $2}'`
 LogMsg "DEBUG: modules_in_distro: $modules_in_distro"
 UpdateSummary "DEBUG: modules_in_distro: $modules_in_distro"
@@ -58,10 +63,8 @@ if [ -z $modules_in_distro ]; then
     exit 1
 fi
 
-
 # Convert list to modules arrary
 modules_arr=$(echo $modules_in_distro | tr "," "\n")
-
 
 # Modprobe and modprobe -r all modules an hour
 while [ $current_time -lt $end_time ]
@@ -69,21 +72,21 @@ do
     # Modprobe and modprobe -r all modules in one cycle
     for m in $modules_arr
     do
-        LogMsg "INFO: The Current OS: $DISTRO"
-        UpdateSummary "INFO: The Current OS: $DISTRO"
         modprobe -r $m
         ret_remove=$?
-        call_trace=`dmesg |grep "CallTrace"|wc -l`
-        if [ $add -eq 1 -o $call_trace -ne 0 ]
+        call_trace=`dmesg | grep "CallTrace" | wc -l`
+        if [ $ret_remove -ne 0 -o $call_trace -ne 0 ]
         then
             SetTestStateFailed
             exit 1
         fi
 
+	dmesg -c
+
         modprobe $m
         ret_add=$?
-        call_trace=`dmesg |grep "CallTrace" |wc -l`
-        if [ $add -eq 1 -o $call_trace -ne 0 ]
+        call_trace=`dmesg | grep "CallTrace" | wc -l`
+        if [ $ret_add -eq 1 -o $call_trace -ne 0 ]
         then
             SetTestStateFailed
             exit 1
@@ -91,6 +94,7 @@ do
     done
 
     current_time=`date +%s`
+
 done
 
 SetTestStateCompleted
