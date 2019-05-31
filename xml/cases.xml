@@ -1153,7 +1153,7 @@
                 <param>TC_COVERED=RHEL6-47863,RHEL7-87238</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1800</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1177,7 +1177,7 @@
                 <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3600</timeout>
+            <timeout>1800</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1222,7 +1222,7 @@
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>6000</timeout>
+            <timeout>3600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>

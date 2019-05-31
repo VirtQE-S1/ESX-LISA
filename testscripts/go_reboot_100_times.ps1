@@ -1,46 +1,35 @@
 ###############################################################################
 ##
 ## Description:
-## Reboot guet 100 times then check system status.
-##
-###############################################################################
+##	Reboot guet 100 times then check system status.
 ##
 ## Revision:
-## V1.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
+#	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
 ##
 ##
 ###############################################################################
+
 
 <#
 .Synopsis
     Reboot guest 100 times.
+
 .Description
-<test>
-    <testName>go_reboot_100_times</testName>
-    <testID>ESX-GO-013</testID>
-    <testScript>testscripts\go_reboot_100_times.ps1</testScript>
-    <testParams>
-        <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>6000</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+    Reboot guest 100 times.
 
 .Parameter vmName
     Name of the test VM.
+
 .Parameter hvServer
     Name of the VIServer hosting the VM.
+
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -58,14 +47,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -87,9 +74,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -132,16 +118,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
-
 $retVal = $Failed
 
-#Reboot the guest 100 times.
-$round=0
+# Reboot the guest 100 times.
+$round = 0
 while ($round -lt 100)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
@@ -174,12 +160,14 @@ if ($round -eq 100)
         Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
         Write-Output "INFO: After $round times booting, NO $calltrace_check found"
     }
-    else{
+    else
+    {
         Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
     }
 
 }
-else{
+else
+{
     Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
     Write-Output "ERROR: The guest not boot 100 times, only $round times"
 }
