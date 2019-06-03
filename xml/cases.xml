@@ -291,9 +291,7 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- PUT UNSTABLE CASES HERE FOR EACV -->
-                <suiteTest>ovt_check_build_version</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>go_check_modules</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -2468,7 +2466,7 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>libmspack_uninstall</testName>
+            <testName>libmspack_yum_install</testName>
             <testID>ESX-lib-001</testID>
             <testScript>lib_yum_install_libmspack.sh</testScript>
             <files>remote-scripts/lib_yum_install_libmspack.sh</files>
