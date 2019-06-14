@@ -1,16 +1,13 @@
 #!/bin/bash
 
 
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  check guest status when doing function tracing.
+##  	Check guest status when doing function tracing.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 06/10/2019 - Draft script for case ESX-GO-018
-##  
-##
-###############################################################################
+##  	v1.0.0 - ldu - 06/10/2019 - Draft script for case ESX-GO-018
+########################################################################################
 
 
 dos2unix utils.sh
@@ -39,33 +36,31 @@ UtilsInit
 # Main script body
 #
 #######################################################################
-
-
-# mount ftracing
+# Mount ftracing. By default debugfs has been mounted
 mount -t debugfs nodev /sys/kernel/debug
 
-#Do function tracing
+# Do function tracing
 echo function > /sys/kernel/debug/tracing/current_tracer
 if [[ $? == 0 ]]; then
-    LogMsg "Test successfully. The function tracing works."
-    UpdateSummary "Test successfully.The function tracing works."
+    LogMsg "INFO: Test successfully. The function tracing works"
+    UpdateSummary "INFO: Test successfully.The function tracing works"
 else
-    LogMsg "Test Failed. The function tracing not work ."
-    UpdateSummary "Test failed. The function tracing not work."
+    LogMsg "ERROR: Test Failed. The function tracing not work"
+    UpdateSummary "ERROR: Test Failed. The function tracing not work"
     SetTestStateAborted
     exit 1
 fi
 
-#Check the ftrac log, make sure there is no vmware_sched_clock log.
-cat /sys/kernel/debug/tracing/trace |grep vmware_sched_clock
+# Check the ftrac log, make sure there is no vmware_sched_clock log
+cat /sys/kernel/debug/tracing/trace | grep vmware_sched_clock
 if [[ $? == 0 ]]; then
-    LogMsg "Test Failed. there is vmware_sched_clock log in ftrace "
-    UpdateSummary "Test failed. there is vmware_sched_clock log in ftrace ."
+    LogMsg "ERROR: Test Failed. There is vmware_sched_clock log in ftrace"
+    UpdateSummary "ERROR: Test Failed. There is vmware_sched_clock log in ftrace"
     SetTestStateFailed
     exit 1
 else
-    LogMsg "Test successfully.there isn't vmware_sched_clock log in ftrace."
-    UpdateSummary "Test successfully.there isn't vmware_sched_clock log in ftrace."
+    LogMsg "INFO: Test successfully. There isn't vmware_sched_clock log in ftrace"
+    UpdateSummary "INFO: Test successfully. There isn't vmware_sched_clock log in ftrace"
     SetTestStateCompleted
     exit 0
 fi
