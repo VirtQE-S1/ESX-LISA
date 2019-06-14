@@ -37,6 +37,8 @@
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -426,6 +428,34 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_cpupower_frequency</testName>
+            <testID>ESX-GO-019</testID>
+            <testScript>go_cpupower_frequency.sh</testScript>
+            <files>remote-scripts/go_cpupower_frequency.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152273</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_ftracing_check</testName>
+            <testID>ESX-GO-018</testID>
+            <testScript>go_ftracing.sh</testScript>
+            <files>remote-scripts/go_ftracing.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152732</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>rdma_reboot_kernel-debug</testName>
             <testID>ESX-RDMA-010</testID>
