@@ -7,7 +7,7 @@
 ##  check guest status when doing function tracing.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 04/10/2019 - Draft script for case ESX-GO-018
+##  v1.0.0 - ldu - 06/10/2019 - Draft script for case ESX-GO-018
 ##  
 ##
 ###############################################################################
@@ -42,7 +42,7 @@ UtilsInit
 
 
 # mount ftracing
-mount -t debugfs nodev /sys/lernel/debug
+mount -t debugfs nodev /sys/kernel/debug
 
 #Do function tracing
 echo function > /sys/kernel/debug/tracing/current_tracer

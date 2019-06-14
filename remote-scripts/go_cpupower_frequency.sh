@@ -45,10 +45,10 @@ UtilsInit
 yum install -y kernel-tools
 
 #check kernel-tools installed 
-kernel_ver=$(rpm -qa kernel-tools)
-LogMsg "DEBUG: ovt_ver: $kernel_ver"
-UpdateSummary "DEBUG: ovt_ver: $kernel_ver"
-if [ -z $kernel_ver ]; then
+kernel_tools_ver=$(rpm -qa kernel-tools)
+LogMsg "DEBUG: kernel_tools_ver: $kernel_tools_ver"
+UpdateSummary "DEBUG: ovt_ver: $kernel_tools_ver"
+if [ -z $kernel_tools_ver ]; then
     LogMsg "ERROR: The kernel-tools is not installed"
     UpdateSummary "ERROR: Test Failed,kernel-tools is not installed"
     SetTestStateAborted
