@@ -293,7 +293,8 @@
             <suiteName>eacv</suiteName>
             <suiteTests>
                 <!-- PUT UNSTABLE CASES HERE FOR EACV -->
-                <suiteTest>go_check_modules</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTest>
             </suiteTests>
         </suite>
         <suite>
