@@ -851,10 +851,10 @@
                 <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-10.2.5-2.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.2.5/2.el7/x86_64/open-vm-tools-desktop-10.2.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-10.3.0-2.el8.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-10.2.5-2.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.2.5/2.el8/x86_64/open-vm-tools-10.2.5-2.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=10.2.5/2.el8/x86_64/open-vm-tools-desktop-10.2.5-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.3.10-2.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-10.3.0-2.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=10.3.0/2.el8/x86_64/open-vm-tools-10.3.0-2.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=10.3.0/2.el8/x86_64/open-vm-tools-desktop-10.3.0-2.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -878,10 +878,10 @@
                 <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.2.5-2.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.2.5/2.el7/x86_64/open-vm-tools-debuginfo-10.2.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-debuginfo-10.3.0-2.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=10.3.0/2.el8/x86_64/open-vm-tools-debuginfo-10.3.0-2.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.2.5-2.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.2.5/2.el8/x86_64/open-vm-tools-debuginfo-10.2.5-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-debuginfo-10.3.10-2.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=10.3.10/2.el8/x86_64/open-vm-tools-debuginfo-10.3.10-2.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.3.0-2.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=10.3.0/2.el8/x86_64/open-vm-tools-debuginfo-10.3.0-2.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1509,7 +1509,7 @@
             <testScript>testscripts\stor_check_cd_file.ps1</testScript>
             <testParams>
                 <param>cd_num=2</param>
-                <param>iso=[trigger] tmp/cloud-init.iso</param>
+                <param>iso=[trigger] user-data.iso</param>
                 <param>TC_COVERED=RHEL6-49145,RHEL7-111400</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
