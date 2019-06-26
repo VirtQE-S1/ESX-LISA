@@ -8,6 +8,7 @@
 ## Revision:
 ##
 ## V1.0 - ldu - 08/01/2018 - Add CD driver to guest and check the cd file in guest.
+## V1.1 - ldu - 06/26/2019 - update cd file name
 ##
 ###############################################################################
 
