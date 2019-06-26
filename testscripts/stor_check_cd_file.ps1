@@ -171,7 +171,7 @@ else
     return $Aborted
 }
 
-$result = SendCommandToVM $ipv4 $sshKey "mount /dev/cdrom /mnt && cat /mnt/user-data"
+$result = SendCommandToVM $ipv4 $sshKey "mount /dev/cdrom /mnt && cat /mnt/user-data.txt"
 if (-not $result)
 {
 	Write-Host -F Red "FAIL: Failed to execute cat /mnt/user-data in VM"
