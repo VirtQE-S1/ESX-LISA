@@ -114,6 +114,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
+                <suiteTest>stor_largest_size</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -429,6 +430,21 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>stor_largest_size</testName>
+            <testID>ESX-Stor-020</testID>
+            <testScript>testscripts\stor_largest_size.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/stor_hot_plug_scsi_disk.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL0000,RHEL7-80179</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_cpupower_frequency</testName>
             <testID>ESX-GO-019</testID>
