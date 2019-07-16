@@ -131,7 +131,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-# Check the scsi timeout value in two files.
+# Check the vmware driver xorg-x11-drv-vmware exist.
 $vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
 Write-Host -F Red "driver result is $vmware_driver"
 
