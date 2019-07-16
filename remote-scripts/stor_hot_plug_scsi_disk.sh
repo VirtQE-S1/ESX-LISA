@@ -65,7 +65,7 @@ sleep 6
 
 # Format with file system
 disk="/dev/sdb1"
-mkfs.ext4 $disk
+mkfs.xfs $disk
 UpdateSummary "format with $FS filesystem"
 #Mount  disk to /$disk.
 mkdir /test
