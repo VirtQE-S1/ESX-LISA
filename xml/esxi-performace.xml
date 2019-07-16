@@ -45,7 +45,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -54,6 +54,7 @@
                 <param>FS=xfs</param>
                 <param>backend=NVMe</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
+                <param>base=</param>
                 <param>TC_COVERED=RHEL6-0000,RHEL-144405</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
@@ -76,7 +77,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -84,6 +85,7 @@
                 <param>disk=nvme0n1</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-0000,RHEL-144406</param>
             </testParams>
@@ -107,7 +109,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -115,6 +117,7 @@
                 <param>disk=sdb</param>
                 <param>FS=xfs</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34977,RHEL7-61578</param>
             </testParams>
@@ -138,7 +141,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -146,6 +149,7 @@
                 <param>disk=sdb</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34979,RHEL7-61580</param>
             </testParams>
@@ -169,7 +173,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -177,6 +181,7 @@
                 <param>disk=sdb</param>
                 <param>FS=ext4</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34978,RHEL7-61579</param>
             </testParams>
@@ -200,7 +205,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -208,6 +213,7 @@
                 <param>disk=sdb</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34980,RHEL7-61918</param>
             </testParams>
