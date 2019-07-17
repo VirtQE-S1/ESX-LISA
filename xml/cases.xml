@@ -199,6 +199,8 @@
             <suiteName>vsock</suiteName>
             <suiteTests>
                 <suiteTest>vsock_version</suiteTest>
+                <suiteTest>vsock_host_as_server</suiteTest>
+                <suiteTest>vsock_guest_as_server</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -408,6 +410,8 @@
                 <suiteTest>rdma_hot_remove</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <suiteTest>vsock_version</suiteTest>
+                <suiteTest>vsock_host_as_server</suiteTest>
+                <suiteTest>vsock_guest_as_server</suiteTest>                
                 <suiteTest>sriov_boot_check</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_move_host_supported</suiteTest -->
@@ -1975,6 +1979,38 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>vsock_host_as_server</testName>
+            <testID>ESX-VSOCK-002</testID>
+            <testScript>testscripts\voscket_host_as_server.ps1</testScript>
+            <files>remote-scripts/vsocket_host_as_server_cid.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <files>bin/client</files>
+            <files>bin/server</files>            
+            <testParams>
+                <param>TC_COVERED=RHEL6-47890,RHEL7-93082</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>vsock_guest_as_server</testName>
+            <testID>ESX-VSOCK-003</testID>
+            <testScript>testscripts\voscket_guest_as_server.ps1</testScript>
+            <files>remote-scripts/vsocket_guest_as_server_cid.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <files>bin/client</files>
+            <files>bin/server</files>   
+            <testParams>
+                <param>TC_COVERED=RHEL6-47891,RHEL7-93083</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
