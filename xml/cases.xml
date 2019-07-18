@@ -582,7 +582,7 @@
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <param>redhat_7_standard_version=open-vm-tools-10.3.0-2.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-10.3.0-2.el8.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-10.3.10-2.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -886,7 +886,6 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <!-- RHELs NO OVT -->
-                <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
                 <param>redhat_7_standard_version=open-vm-tools-debuginfo-10.3.0-2.el7.x86_64</param>
