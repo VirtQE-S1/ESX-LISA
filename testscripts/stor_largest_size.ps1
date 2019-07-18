@@ -151,6 +151,7 @@ else
     return $Aborted
 }
 
+#run shell scripts stor_hot_plug_scsi_disk.sh to format new disk.
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix stor_hot_plug_scsi_disk.sh && chmod u+x stor_hot_plug_scsi_disk.sh && ./stor_hot_plug_scsi_disk.sh"
 if (-not $result)
 {
