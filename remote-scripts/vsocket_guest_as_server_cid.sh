@@ -43,12 +43,6 @@ else
     url=http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/sshpass/1.06/1.el6/x86_64/sshpass-1.06-1.el6.x86_64.rpm
 fi
 yum install -y $url
-if [[ $? -ne 0 ]]; then
-    LogMsg "ERROR: Install sshpass failed"
-    UpdateSummary "ERROR: Install sshpass failed"
-    SetTestStateFailed
-    exit 1
-fi
 
 # SCP client bin to hv server
 LogMsg "INFO: SCP client file to $hv_server"
@@ -76,8 +70,8 @@ LogMsg "DEBUG: ports: $ports"
 UpdateSummary "DEBUG: ports: $ports"
 
 # Execute it in hv server as a guest
-LogMsg "INFO: Execute client file in VM"
-UpdateSummary "INFO: Execute client file in VM"
+LogMsg "INFO: Execute client file in Server"
+UpdateSummary "INFO: Execute client file in Server"
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "/tmp/client $ports"
 if [[ $? -eq 0 ]]; then
     LogMsg "INFO: ESXi Host as a guest communicates with VM as a server well"

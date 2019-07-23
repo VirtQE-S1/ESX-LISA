@@ -61,7 +61,7 @@ sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /t
 # Execute it in ESXi Host as a server
 LogMsg "INFO: Execute server file in Host"
 UpdateSummary "INFO: Execute server file in Host"
-sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "/tmp/server" &
+sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "cd /tmp/ && ./server" &
 ports=`sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "cat /tmp/port.txt"`
 LogMsg "DEBUG: ports: $ports"
 UpdateSummary "DEBUG: ports: $ports"
