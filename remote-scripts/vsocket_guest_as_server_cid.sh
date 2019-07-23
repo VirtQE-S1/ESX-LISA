@@ -50,19 +50,34 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# SCP server bin to hv server
+# SCP client bin to hv server
+LogMsg "INFO: SCP client file to $hv_server"
+UpdateSummary "INFO: SCP client file to $hv_server"
 sshpass -p 123qweP scp -o StrictHostKeyChecking=no /root/client root@$hv_server:/tmp/
-sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /tmp/client"
-# TODO. HERE. Test its scp result
 
-# Execute it in VM as a server
+# CHMOD client bin in hv server
+LogMsg "INFO: CHMOD client file in $hv_server"
+UpdateSummary "INFO: CHMOD client file in $hv_server"
+sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /tmp/client"
+# TODO. HERE. Test its chmod result
+
+# CHMOD server bin in VM
+LogMsg "INFO: CHMOD server file in VM"
+UpdateSummary "INFO: CHMOD server file in VM"
 chmod a+x /root/server
+
+# Execute server in VM as a server
+LogMsg "INFO: Execute server file in VM"
+UpdateSummary "INFO: Execute server file in VM"
 /root/server &
+sleep 6
 ports=`cat /root/port.txt`
 LogMsg "DEBUG: ports: $ports"
 UpdateSummary "DEBUG: ports: $ports"
 
 # Execute it in hv server as a guest
+LogMsg "INFO: Execute client file in VM"
+UpdateSummary "INFO: Execute client file in VM"
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "/tmp/client $ports"
 if [[ $? -eq 0 ]]; then
     LogMsg "INFO: ESXi Host as a guest communicates with VM as a server well"
