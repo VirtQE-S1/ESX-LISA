@@ -55,10 +55,7 @@ if (-not $testParams)
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
-$crashkernel = $null
 $logdir = $null
-$nmi = $null
-$tname = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params) 
@@ -69,10 +66,7 @@ foreach ($p in $params)
 		"rootDir"		{ $rootDir = $fields[1].Trim() }
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
-		"crashkernel"	{ $crashkernel = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-		"NMI"			{ $nmi = $fields[1].Trim()}
-		"TName"			{ $tname = $fields[1].Trim()}		
 		default			{}
     }
 }
@@ -107,23 +101,9 @@ if ($null -eq $ipv4)
 	return $Aborted
 }
 
-if ($null -eq $crashkernel)
-{
-	"FAIL: Test parameter crashkernel was not specified"
-	return $Aborted
-}
-
 if ($null -eq $logdir)
 {
 	"FAIL: Test parameter logdir was not specified"
-	return $Aborted
-}
-
-# NMI is not supports now
-
-if ($null -eq $tname)
-{
-	"FAIL: Test parameter tname was not specified"
 	return $Aborted
 }
 
