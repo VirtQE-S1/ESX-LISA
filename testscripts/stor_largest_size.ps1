@@ -130,7 +130,7 @@ $retVal = $Failed
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-#hot add two scsi disk
+#hot add one scsi disk with largest size 62TB. RHEL8 and RHEL7 with Thin size as not have enough space wiht Thick size.
 $disk = New-HardDisk -CapacityGB 63488 -VM $vmObj -StorageFormat "Thin" -ErrorAction SilentlyContinue
 
 
@@ -151,6 +151,7 @@ else
     return $Aborted
 }
 
+#run shell scripts stor_hot_plug_scsi_disk.sh to format new disk.
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix stor_hot_plug_scsi_disk.sh && chmod u+x stor_hot_plug_scsi_disk.sh && ./stor_hot_plug_scsi_disk.sh"
 if (-not $result)
 {
@@ -160,6 +161,7 @@ if (-not $result)
 }
 else
 {
+	
 	Write-Host -F Green "PASS: new add scsi disk could be formated and read,write."
     Write-Output "PASS: new add scsi disk could be formated and read,write."
     $retVal = $Passed

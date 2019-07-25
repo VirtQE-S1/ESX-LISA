@@ -1,19 +1,19 @@
 ###############################################################################
 ##
 ## Description:
-## Check the vmware driver xorg-x11-drv-vmware exist in guest.
+##  Check the file under /dev/snapshot,if open it, no crash.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0.0 - ldu - 05/20/2019 - Check the vmware driver xorg-x11-drv-vmware exist in guest.
+## V1.0.0 - ldu - 07/05/2019 - Check the file under /dev/snapshot.
 ##
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Check the vmware driver xorg-x11-drv-vmware exist in guest.
+    Check the file under /dev/snapshot,if open it, no crash.
 .Description
 
 .Parameter vmName
@@ -131,19 +131,30 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-# Check the vmware driver xorg-x11-drv-vmware exist.
-$vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
-Write-Host -F Red "driver result is $vmware_driver"
-
-if ($vmware_driver -eq $null)
+# Check the scsi timeout value in two files.
+$vmwgfx = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep vmwgfx"
+if (-not $vmwgfx)
 {
-	Write-Output "Failed:The no vmware gui related driver xorg-x11-drv-vmware found in guest.$vmware_driver"
+	Write-Output "ERROR:vmwgfx not load."
+	return $Aborted
+}
+else
+{
+	Write-Output "ERROR:vmwgfx loaded."
+}
+
+#open file /dev/snapshot then check guest status and log message.
+$open_file = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /dev/snapshot"
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+if ($null -eq $calltrace_check)
+{
+    $retVal = $Passed
+    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
 }
 else{
-    Write-Output "passed, the vmware driver xorg-x11-drv-vmware exist, $vmware_driver."
-    $retVal = $Passed
+    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
 }
-
 
 DisconnectWithVIServer
 

@@ -151,13 +151,17 @@ else
 	UpdateSummary "mount nfs successfully."
 fi
 
-
-
-basepath=`ls /mnt | grep ${base}_${DiskType}_${FS}_ | sed -n '$p'`
-
+#set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
+if [ ! ${base} ]; then
+	basepath=`ls -lt /mnt | grep ${DISTRO}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+    UpdateSummary "set basepath $basepath from latest one in folder $base"
+else
+    basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	UpdateSummary "set basepath $basepath from xml kernel version $base"
+fi
 
 #Create fio test result path.
-path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
+path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
 mkdir -p /mnt/$path
 
 #Download fio python scripts from github.
@@ -165,16 +169,18 @@ cd /root
 git clone https://github.com/SCHEN2015/virt-perf-scripts.git
 cd /root/virt-perf-scripts/block
 
-# Execute fio test
+# set filename dependecy raw or filesystem disk 
 if [[ $FS == raw ]]; then
 	filename="/dev/${disk}"
 else
 	filename="/test/test"
 fi
-./RunFioTest.py --backend $backend --driver $DiskType --rounds 1 --fs $FS --filename $filename --log_path /mnt/$path
+# Execute fio test
+
+./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
-	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
 	SetTestStateFailed
 	exit 1
 else
@@ -197,10 +203,10 @@ fi
 #Generate benchmark Report
 
 
-./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/${basepath}_VS_${path}.csv
+./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
-	UpdateSummary "Test result benchmark failed, $basepath and $path"
+	UpdateSummary "Test result benchmark failed, basepath is $basepath and path is $path"
 	SetTestStateFailed
 	exit 1
 else
