@@ -7,6 +7,7 @@
 ##
 ## Revision:
 ##  	v1.0.0 - boyang - 06/12/2019 - Draft script
+##  	v1.0.1 - boyang - 06/12/2019 - Setenforce 0 when VM as a Server
 ########################################################################################
 
 
@@ -30,7 +31,20 @@ UtilsInit
 
 # Get target Host IP where VM installed
 hv_server=$1
-# TODO. HERE. Test $1
+if [ ! $hv_server ]; then
+    LogMsg "ERROR: Can't get hv server IP or it is null"
+    UpdateSummary "ERROR: Can't get hv server IP or it is null"
+    SetTestStateAborted
+    exit 1
+else
+       ping $hv_server -c 1 -W 3
+       if [ $? -ne 0 ]; then
+            LogMsg "ERROR: Can't ping this IP - $hv_server"
+            UpdateSummary "ERROR: Can't ping this IP - $hv_server"
+            SetTestStateAborted
+            exit 1
+       fi
+fi
 
 # Install sshpass with git
 LogMsg "INFO: Will install sshpass in $DISTRO"
@@ -54,6 +68,9 @@ LogMsg "INFO: CHMOD client file in $hv_server"
 UpdateSummary "INFO: CHMOD client file in $hv_server"
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /tmp/client"
 # TODO. HERE. Test its chmod result
+
+# Setenforce 0
+setenforce 0
 
 # CHMOD server bin in VM
 LogMsg "INFO: CHMOD server file in VM"
