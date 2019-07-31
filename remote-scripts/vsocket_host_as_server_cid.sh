@@ -3,10 +3,11 @@
 
 ########################################################################################
 ## Description:
-##	    A VM as a Server communicates to a ESXi Host as a Client with CID
+##	    A VM as a Client communicates to a ESXi Host as a Server with CID
 ##
 ## Revision:
 ##  	v1.0.0 - boyang - 06/12/2019 - Draft script
+##  	v1.0.1 - boyang - 06/12/2019 - Setenforce 0 when VM as a Client
 ########################################################################################
 
 
@@ -32,7 +33,20 @@ UtilsInit
 
 # Get target Host IP where VM installed
 hv_server=$1
-# TODO. HERE. Test $1
+if [ ! $hv_server ]; then
+    LogMsg "ERROR: Can't get hv server IP or it is null"
+    UpdateSummary "ERROR: Can't get hv server IP or it is null"
+    SetTestStateAborted
+    exit 1
+else
+       ping $hv_server -c 1 -W 3
+       if [ $? -ne 0 ]; then
+            LogMsg "ERROR: Can't ping this IP - $hv_server"
+            UpdateSummary "ERROR: Can't ping this IP - $hv_server"
+            SetTestStateAborted
+            exit 1
+       fi
+fi
 
 # Install sshpass with git
 LogMsg "INFO: Will install sshpass in $DISTRO"
@@ -56,7 +70,6 @@ sshpass -p 123qweP scp -o StrictHostKeyChecking=no /root/server root@$hv_server:
 LogMsg "INFO: CHMOD server file in $hv_server"
 UpdateSummary "INFO: CHMOD server file in $hv_server"
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /tmp/server"
-# TODO. HERE. Test its scp result
 
 # Execute it in ESXi Host as a server
 LogMsg "INFO: Execute server file in Host"
@@ -67,6 +80,9 @@ LogMsg "DEBUG: ports: $ports"
 UpdateSummary "DEBUG: ports: $ports"
 
 sleep 6
+
+# Setenforce 0
+setenforce 0
 
 # Execute it in a VM as a guest
 LogMsg "INFO: CHMOD client file in VM"
