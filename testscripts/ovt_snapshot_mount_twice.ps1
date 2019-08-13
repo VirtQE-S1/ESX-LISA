@@ -1,28 +1,27 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot after mount one disk twice.
+## Take snapshot when container running.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 08/12/2019 - Take snapshot after mount one disk twice.
+## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
 ##
 ###############################################################################
 
 <#
 .Synopsis
-
+    Take snapshot when container running.
 .Description
 <test>
-    <testName>ovt_deadlock_condition</testName>
-    <testID>ESX-OVT-032</testID>
-    <testScript>testscripts/ovt_deadlock_condition.ps1</testScript  >
+    <testName>ovt_snapshot_container</testName>
+    <testID>ESX-OVT-033</testID>
+    <testScript>testscripts/ovt_snapshot_container.ps1</testScript  >
     <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/ovt_check_deadlock.sh</files>
-    <files>remote-scripts/ovt_loop.sh</files>
+    <files>remote-scripts/ovt_docker_install.sh</files>
     <testParams>
-        <param>TC_COVERED=RHEL6-47886,RHEL7-94309</param>
+        <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
     </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
     <timeout>600</timeout>
@@ -152,20 +151,28 @@ $retVal = $Failed
 #
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-$scripts = "ovt_mount_twice.sh"
-# Run remote test scripts
-$sts =  RunRemoteScript $scripts
-if( -not $sts[-1] ){
+#Install docker and start one network container on guest.
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix ovt_mount.sh && chmod u+x ovt_mount.sh && ./ovt_mount.sh"
+if( -not $result ){
     Write-Host -F Red "ERROR: mount twice with loop device failed"
     Write-Output "ERROR: mount twice with loop device failed"
+    DisconnectWithVIServer
     return $Aborted
 }  else {
     Write-Host -F Red "Info : mount twice with loop device successfully"
     Write-Output "Info : mount twice with loop device successfully"
 }
 
+#Run a container in guest
+# $sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
+# if (-not $sts) {
+#     LogPrint "ERROR : run container nginx failed in guest"
+#     DisconnectWithVIServer
+#     return $Failed
+# }
+
 # Take snapshot and select quiesce option
-$snapshotTargetName = "snapmount_twice"
+$snapshotTargetName = "snapshot"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"
@@ -182,11 +189,12 @@ if ($new_sp)
         Write-Output "The snapshot $newSPName with Quiesce is created Failed"
     }
 }
-
+sleep 3
 #
 # Remove SP created
 #
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
+sleep 3
 $snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
 if ($snapshots -eq $null)
 {

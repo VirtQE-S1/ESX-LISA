@@ -1,19 +1,19 @@
 #!/bin/bash
 
-
 ###############################################################################
 ##
-##  Description:
-##      mount one disk twice.
-##
-##  Revision:
-##      v1.0.0 - ldu - 08/12/2019 - Build the script
+## Description:
+##   This script checks
+##  Take snapshot after deadlock condiation.
 ##
 ###############################################################################
-
+##
+## Revision:
+## v1.0 - ldu - 23/07/2017 - Take snapshot after deadlock condiation.
+##
+###############################################################################
 
 dos2unix utils.sh
-
 
 # Source utils.sh
 . utils.sh || {
@@ -21,24 +21,17 @@ dos2unix utils.sh
     exit 1
 }
 
-
-# Source constants.sh to get all paramters from XML <testParams>
-. constants.sh || {
-    echo "Error: unable to source constants.sh!"
-    exit 1
-}
-
-
 # Source constants file and initialize most common variables
 UtilsInit
 
+#
+# Start the testing
+#
 
-###############################################################################
-##
-## Main Body
-##
-###############################################################################
-
+if [[ $DISTRO == "redhat_6" ]]; then
+    SetTestStateSkipped
+    exit
+fi
 
 yum -y install nfs-utils
 #Create logical volume with new added disk_name
@@ -51,10 +44,12 @@ p
 w
 EOF
 
+#create first logical device
 pvcreate /dev/sdb1
 vgcreate vg01 /dev/sdb1
 lvcreate -n lvdata01 -L 5GB vg01
-mkfs.xfs /dev/vg01/lvdata01 /var
+mkfs.xfs /dev/vg01/lvdata01
+mount /dev/vg01/lvdata01 /var
 if [ ! "$?" -eq 0 ]
 then
     LogMsg "ERROR: mount logical volume 01 failed"
@@ -93,7 +88,7 @@ if [ ! "$?" -eq 0 ]
 then
     LogMsg "ERROR: mount again logical volume 01 failed"
     UpdateSummary "ERROR: mount again logical volume 01 failed"
-    SetTestStateAborted
+    SetTestStateFailed
     exit 1
 else
     LogMsg "INFO: mount again logical volume 01 successfully"
@@ -101,6 +96,3 @@ else
     SetTestStateCompleted
     exit 0
 fi
-
-check_mount= `mount | egrep "lvdata01 | vg02-lvdata01"`
-UpdateSummary "the check mount result $check_mount"
