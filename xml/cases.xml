@@ -31,14 +31,14 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <suiteTest>go_reboot_100_times</suiteTest>
+                <!-- suiteTest>go_reboot_100_times</suiteTest -->
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
-                <suiteTest>go_check_GUI_driver</suiteTest>
-                <suiteTest>go_cpupower_frequency</suiteTest>
-                <suiteTest>go_ftracing_check</suiteTest>
+                <!-- suiteTest>go_check_GUI_driver</suiteTest -->
+                <!-- suiteTest>go_cpupower_frequency</suiteTest -->
+                <!-- suiteTest>go_ftracing_check</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -88,6 +88,7 @@
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
+                <!-- suiteTest>ovt_100_containers</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -123,7 +124,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
-                <suiteTest>stor_largest_size</suiteTest>
+                <!-- suiteTest>stor_largest_size</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -135,7 +136,7 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <suiteTest>nw_remove_vmxnet3</suiteTest>
+                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -146,7 +147,7 @@
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
-                <suiteTest>nw_live_migration</suiteTest>
+                <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
@@ -162,47 +163,24 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- PERF STORAGE Total Cases: 8 -->
-            <suiteName>perf_stor</suiteName>
-            <suiteTests>
-                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
-                <suiteTest>perf_stor_max_num_disk</suiteTest>
-                <suiteTest>perf_stor_iozone_stress</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
-            <!-- PERF NETWORK Total Cases: 4 -->
-            <suiteName>perf_nw</suiteName>
-            <suiteTests>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
-            </suiteTests>
-        </suite>
-        <suite>
             <!-- RDMA Total Cases: 14 -->
             <suiteName>rdma</suiteName>
             <suiteTests>
                 <suiteTest>rdma_boot_check</suiteTest>
-                <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
+                <!-- suiteTest>rdma_reload_vmx_pvrdma</suiteTest -->
                 <suiteTest>rdma_hot_add_nic</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest>
+                <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
+                <!-- suiteTest>rdma_perf_test_same_host</suiteTest -->
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
-                <suiteTest>rdma_perf_test_same_host</suiteTest>
-                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_diff_host</suiteTest>
-                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+                <!-- suiteTest>rdma_rping_test_same_host</suiteTest -->
+                <!-- suiteTest>rdma_rping_test_diff_host</suiteTest -->
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
+                <!-- suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest -->
+                <!-- suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest -->
+                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -215,17 +193,24 @@
             </suiteTests>
         </suite>
         <suite>
+            <!-- VMWGFX Total Cases: 1 -->
+            <suiteName>vsock</suiteName>
+            <suiteTests>
+                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+            </suiteTests>
+        </suite>
+        <suite>
             <!-- SRIOV Total Cases: 8 -->
             <suiteName>sriov</suiteName>
             <suiteTests>
                 <suiteTest>sriov_boot_check</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
                 <suiteTest>sriov_manual_mac</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
                 <suiteTest>sriov_maximum_nics</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
+                <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
+                <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
+                <!-- suiteTest>sriov_mtu_check</suiteTest -->
+                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
+                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -239,11 +224,12 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Cloud-init Total Cases: 2 -->
+            <!-- Cloud-init Total Cases: 3 -->
             <suiteName>cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -299,16 +285,21 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <!-- <suiteTest>go_reboot_100_times</suiteTest> -->
+                <!-- suiteTest>go_reboot_100_times</suiteTest -->
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
+                <!-- suiteTest>go_check_GUI_driver</suiteTest -->
+                <!-- suiteTest>go_cpupower_frequency</suiteTest -->
+                <!-- suiteTest>go_ftracing_check</suiteTest -->
+
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
@@ -341,7 +332,9 @@
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
-                <suiteTest>stor_hotadd_scsi_dynamic</suiteTest>
+                <!-- suiteTest>ovt_100_containers</suiteTest -->
+
+                <suiteTest>stor_hot_plug_scsi</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
                 <suiteTest>stor_hotadd_scsi_dynamic_2t</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
@@ -361,12 +354,14 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
+                <!-- suiteTest>stor_largest_size</suiteTest -->
+
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <!-- <suiteTest>nw_remove_vmxnet3</suiteTest> -->
+                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -381,37 +376,52 @@
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
+
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
-                <!-- HERE PERFORMANCE 11 CASES WHICH CAN'T BE RUN -->
+
                 <suiteTest>rdma_boot_check</suiteTest>
-                <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
+                <!-- suiteTest>rdma_reload_vmx_pvrdma</suiteTest -->
                 <suiteTest>rdma_hot_add_nic</suiteTest>
                 <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
+                <suiteTest>rdma_perf_test_diff_host</suiteTest>
+                <!-- suiteTest>rdma_perf_test_same_host</suiteTest -->
+                <suiteTest>rdma_reload_vmxnet3</suiteTest>
+                <!-- suiteTest>rdma_rping_test_same_host</suiteTest -->
+                <!-- suiteTest>rdma_rping_test_diff_host</suiteTest -->
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
+                <!-- suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest -->
+                <!-- suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest -->
+                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>vsock_host_as_server</suiteTest>
                 <suiteTest>vsock_guest_as_server</suiteTest>                
+
                 <suiteTest>sriov_boot_check</suiteTest>
-                <!-- suiteTest>sriov_mtu_check</suiteTest -->
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
                 <suiteTest>sriov_manual_mac</suiteTest>
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
                 <suiteTest>sriov_maximum_nics</suiteTest>
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
+                <!-- suiteTest>sriov_mtu_check</suiteTest -->
+                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
+                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+
                 <suiteTest>dpdk_compile</suiteTest>
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
                 <suiteTest>dpdk_kni</suiteTest>
+
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
