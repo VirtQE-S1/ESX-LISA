@@ -16,16 +16,27 @@
 
     <testSuites>
         <suite>
-            <!-- PERF Total Cases: 7 -->
+            <!-- PERF Total Cases: 8 -->
             <suiteName>storage_performance_suite</suiteName>
             <suiteTests>
-                <suiteTest>perf_stor_iozone_stress</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
+                <suiteTest>perf_stor_iozone_stress</suiteTest> 
+                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest> 
+                <suiteTest>perf_stor_fio_IDE_FS</suiteTest> 
+                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest> 
+                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest> 
+                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest> 
+                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest> 
+                <!-- suiteTest>perf_stor_max_num_disk</suiteTest --> 
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- PERF NETWORK Total Cases: 4 -->
+            <suiteName>network_performance_suite</suiteName>
+            <suiteTests>
+                <suiteTest>perf_nw_ipv4_udp</suiteTest>
+                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
+                <suiteTest>perf_nw_ipv6_udp</suiteTest>
+                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -40,7 +51,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -72,7 +83,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -104,7 +115,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -136,7 +147,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -168,7 +179,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
@@ -200,7 +211,7 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
