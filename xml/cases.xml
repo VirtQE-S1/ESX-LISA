@@ -31,14 +31,14 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <!-- suiteTest>go_reboot_100_times</suiteTest -->
+                <!-- <suiteTest>go_reboot_100_times</suiteTest> -->
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
-                <!-- suiteTest>go_check_GUI_driver</suiteTest -->
-                <!-- suiteTest>go_cpupower_frequency</suiteTest -->
-                <!-- suiteTest>go_ftracing_check</suiteTest -->
+                <suiteTest>go_check_GUI_driver</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTes>
             </suiteTests>
         </suite>
         <suite>
@@ -88,7 +88,7 @@
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
-                <!-- suiteTest>ovt_100_containers</suiteTest -->
+                <suiteTest>ovt_100_containers</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -124,7 +124,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
-                <!-- suiteTest>stor_largest_size</suiteTest -->
+                <suiteTest>stor_largest_size</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -136,7 +136,7 @@
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -167,20 +167,19 @@
             <suiteName>rdma</suiteName>
             <suiteTests>
                 <suiteTest>rdma_boot_check</suiteTest>
-                <!-- suiteTest>rdma_reload_vmx_pvrdma</suiteTest -->
+                <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
-                <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
+                <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
-                <!-- suiteTest>rdma_perf_test_same_host</suiteTest -->
+                <suiteTest>rdma_perf_test_same_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
-                <!-- suiteTest>rdma_rping_test_same_host</suiteTest -->
-                <!-- suiteTest>rdma_rping_test_diff_host</suiteTest -->
+                <suiteTest>rdma_rping_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_diff_host</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <!-- suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest -->
-                <!-- suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest -->
-                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -196,7 +195,7 @@
             <!-- VMWGFX Total Cases: 1 -->
             <suiteName>vsock</suiteName>
             <suiteTests>
-                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+                <uiteTest>vmwgfx_check_file_snapshot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -256,7 +255,7 @@
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
-        </suite>        
+        </suite>
         <suite>
             <!-- DSK Total Cases: 6 -->
             <suiteName>dsk</suiteName>
@@ -285,14 +284,14 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <!-- suiteTest>go_reboot_100_times</suiteTest -->
+                <!-- <suiteTest>go_reboot_100_times</suiteTest> -->
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
-                <!-- suiteTest>go_check_GUI_driver</suiteTest -->
-                <!-- suiteTest>go_cpupower_frequency</suiteTest -->
-                <!-- suiteTest>go_ftracing_check</suiteTest -->
+                <suiteTest>go_check_GUI_driver</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTes>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -332,7 +331,7 @@
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
-                <!-- suiteTest>ovt_100_containers</suiteTest -->
+                <suiteTest>ovt_100_containers</suiteTest>
 
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
                 <suiteTest>stor_vhdx_mount_nfs_server</suiteTest>
@@ -354,14 +353,14 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
-                <!-- suiteTest>stor_largest_size</suiteTest -->
+                <suiteTest>stor_largest_size</suiteTest>
 
                 <suiteTest>nw_ping</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_arping</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
-                <!-- suiteTest>nw_remove_vmxnet3</suiteTest -->
+                <suiteTest>nw_remove_vmxnet3</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -382,24 +381,25 @@
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
 
                 <suiteTest>rdma_boot_check</suiteTest>
-                <!-- suiteTest>rdma_reload_vmx_pvrdma</suiteTest -->
+                <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
-                <!-- suiteTest>rdma_ping_diff_host</suiteTest -->
+                <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
                 <suiteTest>rdma_hot_remove</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
-                <!-- suiteTest>rdma_perf_test_same_host</suiteTest -->
+                <suiteTest>rdma_perf_test_same_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
-                <!-- suiteTest>rdma_rping_test_same_host</suiteTest -->
-                <!-- suiteTest>rdma_rping_test_diff_host</suiteTest -->
+                <suiteTest>rdma_rping_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_diff_host</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <!-- suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest -->
-                <!-- suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest -->
-                <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
 
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>vsock_host_as_server</suiteTest>
-                <suiteTest>vsock_guest_as_server</suiteTest>                
+                <suiteTest>vsock_guest_as_server</suiteTest>
 
                 <suiteTest>sriov_boot_check</suiteTest>
                 <suiteTest>sriov_manual_mac</suiteTest>
@@ -467,21 +467,6 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>rdma_reboot_kernel-debug</testName>
-            <testID>ESX-RDMA-010</testID>
-            <setupScript>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_reboot_kernel-debug.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL-170987</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1022,6 +1007,7 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
+
         <test>
             <testName>ovt_snapshot_container</testName>
             <testID>ESX-OVT-033</testID>
@@ -1029,6 +1015,19 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_100_containers</testName>
+            <testID>ESX-OVT-007</testID>
+            <testScript>testscripts/ovt_100_containers.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-171563</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1200</timeout>
@@ -1901,7 +1900,7 @@
             <testParams>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
+                <param>dstHost6.0=10.73.196.234,10.73.196.232</param>
                 <param>dstDatastore=nfs-ceph</param>
                 <param>TC_COVERED=RHEL7-50929</param>
             </testParams>
@@ -1982,7 +1981,7 @@
             <files>remote-scripts/vsocket_host_as_server_cid.sh</files>
             <files>remote-scripts/utils.sh</files>
             <files>bin/client</files>
-            <files>bin/server</files>            
+            <files>bin/server</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-47890,RHEL7-93082</param>
             </testParams>
@@ -1998,7 +1997,7 @@
             <files>remote-scripts/vsocket_guest_as_server.sh</files>
             <files>remote-scripts/utils.sh</files>
             <files>bin/client</files>
-            <files>bin/server</files>   
+            <files>bin/server</files>
             <testParams>
                 <param>TC_COVERED=RHEL6-47891,RHEL7-93083</param>
             </testParams>
@@ -2397,6 +2396,105 @@
             <noReboot>False</noReboot>
         </test>
         <test>
+            <testName>rdma_perf_test_diff_host</testName>
+            <testID>ESX-RDMA-007</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=perf</param>
+                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_reload_vmxnet3</testName>
+            <testID>ESX-RDMA-008</testID>
+            <setupScript>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_reload_vmxnet3.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL-149060</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>900</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_perf_test_same_host</testName>
+            <testID>ESX-RDMA-009</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=perf</param>
+                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_ibv_rc_pingpong_test_same_host</testName>
+            <testID>ESX-RDMA-010</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=ibvrc</param>
+                <param>TC_COVERED=RHEL-145303,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_rping_test_same_host</testName>
+            <testID>ESX-RDMA-011</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=perf</param>
+                <param>tool=rping</param>
+                <param>TC_COVERED=RHEL-145304,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
             <testName>rdma_rping_test_diff_host</testName>
             <testID>ESX-RDMA-012</testID>
             <setupScript>
@@ -2443,89 +2541,32 @@
             <noReboot>False</noReboot>
         </test>
         <test>
-            <testName>rdma_perf_test_diff_host</testName>
-            <testID>ESX-RDMA-007</testID>
+            <testName>rdma_reboot_kernel-debug</testName>
+            <testID>ESX-RDMA-014</testID>
             <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
                 <file>setupscripts\add_pvrdma.ps1</file>
             </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testScript>testscripts\rdma_reboot_kernel-debug.ps1</testScript>
             <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>tool=perf</param>
-                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-170987</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-        <test>
-            <testName>rdma_rping_test_same_host</testName>
-            <testID>ESX-RDMA-011</testID>
-            <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>tool=perf</param>
-                <param>tool=rping</param>
-                <param>TC_COVERED=RHEL-145304,RHEL6-0000</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>rdma_ibv_rc_pingpong_test_same_host</testName>
-            <testID>ESX-RDMA-010</testID>
-            <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>tool=ibvrc</param>
-                <param>TC_COVERED=RHEL-145303,RHEL6-0000</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>rdma_perf_test_same_host</testName>
-            <testID>ESX-RDMA-009</testID>
-            <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>tool=perf</param>
-                <param>TC_COVERED=RHEL-138982,RHEL6-0000</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+       <test>
+           <testName>vmwgfx_check_file_snapshot</testName>
+           <testID>ESX-Vmwgfx-001</testID>
+           <testScript>testscripts\vmwgfx_check_file_snapshot.ps1</testScript  >
+           <testParams>
+               <param>TC_COVERED=RHEL0000,RHEL7-171566</param>
+           </testParams>
+           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+           <timeout>600</timeout>
+           <onError>Continue</onError>
+           <noReboot>False</noReboot>
+       </test>        
         <test>
             <testName>libmspack_check_status</testName>
             <testID>ESX-lib-003</testID>
