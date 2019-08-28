@@ -195,7 +195,7 @@
             <!-- VMWGFX Total Cases: 1 -->
             <suiteName>vsock</suiteName>
             <suiteTests>
-                <uiteTest>vmwgfx_check_file_snapshot</suiteTest>
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -291,7 +291,7 @@
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_cpupower_frequency</suiteTest>
-                <suiteTest>go_ftracing_check</suiteTes>
+                <suiteTest>go_ftracing_check</suiteTest>
 
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
@@ -2555,18 +2555,18 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-       <test>
-           <testName>vmwgfx_check_file_snapshot</testName>
-           <testID>ESX-Vmwgfx-001</testID>
-           <testScript>testscripts\vmwgfx_check_file_snapshot.ps1</testScript  >
-           <testParams>
-               <param>TC_COVERED=RHEL0000,RHEL7-171566</param>
-           </testParams>
-           <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-           <timeout>600</timeout>
-           <onError>Continue</onError>
-           <noReboot>False</noReboot>
-       </test>        
+        <test>
+            <testName>vmwgfx_check_file_snapshot</testName>
+            <testID>ESX-Vmwgfx-001</testID>
+            <testScript>testscripts\vmwgfx_check_file_snapshot.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL0000,RHEL7-171566</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>libmspack_check_status</testName>
             <testID>ESX-lib-003</testID>
