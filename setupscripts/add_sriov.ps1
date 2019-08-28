@@ -1,14 +1,14 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Add sriov nic 
+##  Add sriov nic 
 ##
-###############################################################################
 ##
 ## Revision:
-## V1.0.0 - ruqin - 8/8/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 08/08/2018 - Build the script
+##  v1.0.1 - boyang - 08/28/209 - Add debug info
+########################################################################################
+
+
 <#
 .Synopsis
     Add sriov nic
@@ -33,10 +33,11 @@
     
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
+
+
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
@@ -51,14 +52,12 @@ if (-not $testParams) {
     Throw "Error: No test parameters specified"
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse the test parameters
-#
 $rootDir = $null
 $sriovNum = $null
 $mtuChange = $null
@@ -98,9 +97,7 @@ else {
     $mtuChange = [System.Convert]::ToBoolean($mtuChange)
 }
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -109,36 +106,39 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
+
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
 
-
 $retVal = $Failed
-
 
 # Check host version
 $hvHost = Get-VMHost -Name $hvServer
 if ($hvHost.Version -lt "6.5.0") {
-    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
+    LogPrint "ERROR: Current vSphere version < 6.5.0. It doesn't support SRIOV"
     return $Skipped
 }
 
-
-# disable memory reserve
+# Disable memory reserve
+LogPrint "INFO: Disable memory reserver before add a SRIOV"
 DisableMemoryReserve $vmName $hvServer
-# Use function to add new sriov nic
+# HERE. NO checking of action
+
+# Add a new sriov nic
 for ($i = 0; $i -lt $sriovNum; $i++) {
     $status = AddSrIOVNIC $vmName $hvServer $mtuChange
-    if ( -not $status[-1] ) {
-        # disable memory reserve
+    LogPrint "DEBUG: status: $status"
+    if (-not $status[-1]) {
+        LogPrint "INFO: Disable memory reserver after add a SRIOV failed"
         DisableMemoryReserve $vmName $hvServer
+        # HERE. NO checking of action
+        
         return $Failed
     }
 }
-
 
 $retVal = $Passed
 return $retVal
