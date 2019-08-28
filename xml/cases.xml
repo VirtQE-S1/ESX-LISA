@@ -38,7 +38,7 @@
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_cpupower_frequency</suiteTest>
-                <suiteTest>go_ftracing_check</suiteTes>
+                <suiteTest>go_ftracing_check</suiteTest>
             </suiteTests>
         </suite>
         <suite>

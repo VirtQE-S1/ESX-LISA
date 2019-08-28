@@ -19,14 +19,14 @@
             <!-- PERF Total Cases: 8 -->
             <suiteName>storage_performance_suite</suiteName>
             <suiteTests>
-                <suiteTest>perf_stor_iozone_stress</suiteTest> 
-                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest> 
-                <suiteTest>perf_stor_fio_IDE_FS</suiteTest> 
-                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest> 
-                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest> 
-                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest> 
-                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest> 
-                <!-- suiteTest>perf_stor_max_num_disk</suiteTest --> 
+                <suiteTest>perf_stor_iozone_stress</suiteTest>
+                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
+                <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
+                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
+                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest>
+                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
+                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
+                <suiteTest>perf_stor_max_num_disk</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -42,6 +42,24 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>perf_stor_max_num_disk</testName>
+            <testID>ESX-PERF-011</testID>
+            <setupScript>setupscripts\add_hard_disk1.ps1</setupScript>
+            <testScript>testscripts\stor_hot_add_max_num_scsi.ps1</testScript>
+            <testParams>
+                <param>Count=3</param>
+                <param>DiskType=SCSIController</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=1</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-93075</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>perf_stor_fio_NVMe_FS</testName>
             <testID>ESX-PERF-010</testID>
@@ -234,10 +252,9 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>perf_stor_iozone_stress</testName>
-            <testID>ESX-PERF-011</testID>
+            <testID>ESX-PERF-012</testID>
             <setupScript>
                 <file>SetupScripts\change_memory.ps1</file>
             </setupScript>
