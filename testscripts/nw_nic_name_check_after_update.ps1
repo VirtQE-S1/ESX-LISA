@@ -205,10 +205,13 @@ if ($DISTRO -eq "RedHat8")
 # Before update, how many kernels
 $orginal_kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 
+# Check the default kernel version.
+$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
+Write-Output "DEBUG: default_kernel: $default_kernel"
 
 # Update the Guest
 $update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
-# Maybe yum update failed, kernel count also is one. Need check $update_guest
 if ($update_guest[-1] -ne "True")
 {
     Write-Host -F Red "ERROR: Yum update failed"
@@ -216,24 +219,21 @@ if ($update_guest[-1] -ne "True")
     return $Aborted
 }
 
-# Check kernels counts to identify 'yum update' passed or not
+Start-Sleep -seconds 6
+
+# Check the new kernel installed or not.
 $kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 Write-Host -F Red "DEBUG: kernel_num: $kernel_num"
 Write-Output "DEBUG: kernel_num: $kernel_num"
 if ($kernel_num -eq $orginal_kernel_num)
 {
-    write-Output "no new kernel installed,no new compose for update."
+    write-Output "ERROR: NO new kernel installed,no new compose for update."
     return $Skipped
 }
 else
 {
-    write-Output "Installed a new kernel,The guest updated successfully."
+    write-Output "INFO: Installed a new kernel,The guest updated successfully."
 }
-
-# Check the default kernel version
-$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
-Write-Output "DEBUG: default_kernel: $default_kernel"
 
 # CReboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
@@ -254,15 +254,9 @@ $new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
 Write-Host -F red "INFO: After reboot the current kernel is $new_kernel."
 write-Output "INFO: After reboot the current kernel is $new_kernel."
 
-if ($default_kernel -eq $new_kernel)
-{
-	Write-Host -F Red "ERROR: The new kernel boot failed in guest."
-	Write-Output "ERROR: The new kernel boot failed in guest."
-	return $Aborted
-}
-
 $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
 Write-Host -F Red "DEBUG: calltrace_check: $calltrace_check"
+Write-Output "DEBUG: calltrace_check: $calltrace_check"
 if ($null -eq $calltrace_check)
 {
 	Write-Host -F Red "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
@@ -270,8 +264,8 @@ if ($null -eq $calltrace_check)
 }
 else
 {
-	Write-Host -F Red "FAIL: After booting, FOUND call trace $calltrace_check in demsg."
-	Write-Output "FAIL: After booting, FOUND call trace $calltrace_check in demsg."
+    Write-Host -F Red "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
+    Write-Output "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
 	return $Aborted
 }
 
@@ -279,13 +273,14 @@ else
 $new_eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
 if ($eth -eq $new_eth)
 {
-	Write-Host -F Red "INFO: PASS: No call trace and NIC name no chage after update."
-	Write-Output "INFO: PASS: No call trace and NIC name no change after update."
+	Write-Host -F Red "INFO: PASS. NIC keep the orignal anme after update."
+	Write-Output "INFO: PASS. NIC keep the orignal anme after update."
 	$retVal = $Passed
 }
 else
 {
-	Write-Output "ERROR: FAIL: Have call trace or NIC name has been chagned."
+	Write-Host -F Red "ERROR: FAIL. NIC name has been chagned."
+	Write-Output "ERROR: FAIL. NIC name has been chagned."
 }
 
 DisconnectWithVIServer

@@ -202,10 +202,13 @@ if ($DISTRO -eq "RedHat8")
 # Before update, how many kernels.
 $orginal_kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 
+# Check the default kernel version.
+$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
+Write-Output "DEBUG: default_kernel: $default_kernel"
+
 # Update the whole guest to new version with yum command.
 $update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
-
-# Maybe yum update failed, kernel count also is one. Need check $update_guest.
 if ($update_guest[-1] -ne "True")
 {
     Write-Host -F Red "ERROR: Yum update failed"
@@ -213,7 +216,9 @@ if ($update_guest[-1] -ne "True")
     return $Aborted
 }
 
-#Check the new kernel installed or not.
+Start-Sleep -seconds 6
+
+# Check the new kernel installed or not.
 $kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 Write-Host -F Red "DEBUG: kernel_num: $kernel_num"
 Write-Output "DEBUG: kernel_num: $kernel_num"
@@ -226,11 +231,6 @@ else
 {
     write-Output "Installed a new kernel,The guest updated successfully."
 }
-
-# Check the default kernel version.
-$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
-Write-Output "DEBUG: default_kernel: $default_kernel"
 
 # Reboot the guest.
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
@@ -245,36 +245,25 @@ if ($ssh -ne $true)
     Write-Output "ERROR: Failed to start VM."
     return $Aborted
 }
+
+# Check the kernel after reboot.
+$new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F Red "INFO: After reboot the current kernel is $new_kernel."
+write-Output "INFO: After reboot the current kernel is $new_kernel."
+
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+Write-Host -F Red "DEBUG: calltrace_check: $calltrace_check"
+Write-Output "DEBUG: calltrace_check: $calltrace_check"
+if ($null -eq $calltrace_check)
+{
+	Write-Host -F Red "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
+	Write-Output "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
+}
 else
 {
-    # Check the kernel after reboot.
-    $new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-    Write-Host -F Red "INFO: After reboot the current kernel is $new_kernel."
-    write-Output "INFO: After reboot the current kernel is $new_kernel."
-    
-    # compaire the new kernel whether boot in guest.
-    if ($default_kernel -eq $new_kernel)
-    {
-        Write-Host -F Red "ERROR: The new kernel boot failed in guest."
-        Write-Output "ERROR: The new kernel boot failed in guest."
-        return $Aborted
-    }
-    else
-    {
-        $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-        Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-        if ($null -eq $calltrace_check)
-        {
-            $retVal = $Passed
-            Write-Host -F Red "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
-            Write-Output "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
-        }
-        else
-        {
-            Write-Host -F Red "FAIL: After booting, FOUND call trace $calltrace_check in demsg."
-            Write-Output "FAIL: After booting, FOUND call trace $calltrace_check in demsg."
-        }
-    }
+    Write-Host -F Red "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
+    Write-Output "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
+	return $Aborted
 }
 
 DisconnectWithVIServer
