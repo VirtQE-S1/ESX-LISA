@@ -179,7 +179,7 @@ $orginal_kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kerne
 
 
 #Update the whole guest to new version with yum command.
-$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
+$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y --nobest && echo $?"
 # Maybe yum update failed, kernel count also is one. Need check $update_guest
 if ($update_guest[-1] -ne "True")
 {
@@ -190,7 +190,7 @@ if ($update_guest[-1] -ne "True")
 
 
 #Check the new kernel installed or not.
-$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel |wc -l"
+$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
 write-host -F red "The kernel number is $kernel_num"
 if ($kernel_num -eq $orginal_kernel_num)
 {

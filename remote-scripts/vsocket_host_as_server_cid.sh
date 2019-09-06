@@ -74,6 +74,7 @@ sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /t
 # Execute it in ESXi Host as a server
 LogMsg "INFO: Execute server file in Host"
 UpdateSummary "INFO: Execute server file in Host"
+sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 server" &
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "cd /tmp/ && ./server" &
 ports=`sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "cat /tmp/port.txt"`
 LogMsg "DEBUG: ports: $ports"
@@ -88,15 +89,21 @@ setenforce 0
 LogMsg "INFO: CHMOD client file in VM"
 UpdateSummary "INFO: CHMOD client file in VM"
 chmod a+x /root/client
+pkill -9 client
+sleep 1
 /root/client $ports
 if [[ $? -eq 0 ]]; then
     LogMsg "INFO: ESXi Host as a server communicates with VM as a clinet well"
     UpdateSummary "INFO: ESXi Host as a server communicates with VM as a clinet well"
     SetTestStateCompleted
+    sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 server" &
+    pkill -9 client
     exit 0
 else
     LogMsg "ERROR: ESXi Host as a server communicates with VM as a clinet failed"
     UpdateSummary "ERROR: ESXi Host as a server communicates with VM as a clinet failed"
     SetTestStateFailed
+    sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 server" &
+    pkill -9 client
     exit 1
 fi

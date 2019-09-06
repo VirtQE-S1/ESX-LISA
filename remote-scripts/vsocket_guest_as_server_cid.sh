@@ -66,6 +66,7 @@ sshpass -p 123qweP scp -o StrictHostKeyChecking=no /root/client root@$hv_server:
 # CHMOD client bin in hv server
 LogMsg "INFO: CHMOD client file in $hv_server"
 UpdateSummary "INFO: CHMOD client file in $hv_server"
+sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 client && sleep 1" &
 sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "chmod a+x /tmp/client"
 # TODO. HERE. Test its chmod result
 
@@ -80,6 +81,8 @@ chmod a+x /root/server
 # Execute server in VM as a server
 LogMsg "INFO: Execute server file in VM"
 UpdateSummary "INFO: Execute server file in VM"
+pkill -9 server
+sleep 1
 /root/server &
 sleep 6
 ports=`cat /root/port.txt`
@@ -94,10 +97,14 @@ if [[ $? -eq 0 ]]; then
     LogMsg "INFO: ESXi Host as a guest communicates with VM as a server well"
     UpdateSummary "INFO: ESXi Host as a guest communicates with VM as a server well"
     SetTestStateCompleted
+    sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 client && sleep 1" &
+    pkill -9 server
     exit 0
 else
     LogMsg "ERROR: ESXi Host as a guest communicates with VM as a server failed"
     UpdateSummary "ERROR: ESXi Host as a guest communicates with VM as a server failed"
     SetTestStateFailed
+    sshpass -p 123qweP ssh -o StrictHostKeyChecking=no root@$hv_server "pkill -9 client && sleep 1" &
+    pkill -9 server
     exit 1
 fi
