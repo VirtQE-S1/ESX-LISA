@@ -1,11 +1,11 @@
-###############################################################################################
+########################################################################################
 ## Description:
 ## 	Reboot guet with debugkernel installed  more then 10 times.
 ##
 ## Revision:
-## 	v1.0.0 - ldu - 03/02/2018 - Reboot guest more then 10 times with debugkernel installed
-##      v1.1.0 - boyang - 06/03/2019 - Fix send CMD format 
-###############################################################################################
+## 	v1.0.0 - ldu - 03/02/2018 - Reboot guest more then 10 times with debugkernel
+##  v1.1.0 - boyang - 06/03/2019 - Fix send CMD format 
+########################################################################################
 
 
 <#
@@ -118,11 +118,10 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################################
-#
-# Main Body
-#
-###############################################################################################
+########################################################################################
+## Main Body
+########################################################################################
+
 $retVal = $Failed
 
 # Install kerel-debug package in guest
@@ -143,7 +142,7 @@ else
 }
 
 # Check the OS distro.Then change the grub file to change boot order.
-$OS = GetLinuxDistro  $ipv4 $sshKey
+$OS = GetLinuxDistro $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
     # Change the boot sequence to debug kernel

@@ -245,7 +245,7 @@
             <suiteTests>
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest>
+                <!-- suiteTest>libmspack_check_status</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -417,7 +417,7 @@
 
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest>
+                <!-- suiteTest>libmspack_check_status</suiteTest -->
 
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
@@ -1217,7 +1217,7 @@
                 <param>TC_COVERED=RHEL6-49140,RHEL7-111696</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>3600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
