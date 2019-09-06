@@ -153,7 +153,7 @@ Write-Output "DONE. VM Power state is $state"
 #
 # Enable timesync
 #
-$enable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "vmware-toolbox-cmd timesync enable"
+$enable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl restart vmtoolsd && vmware-toolbox-cmd timesync enable"
 if ($enable -ne "Enabled")
 {
     Write-Error -Message "timesync enable failed" -Category ObjectNotFound -ErrorAction SilentlyContinue
