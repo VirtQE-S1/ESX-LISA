@@ -1994,7 +1994,7 @@
             <testName>vsock_guest_as_server</testName>
             <testID>ESX-VSOCK-003</testID>
             <testScript>testscripts\vsocket_guest_as_server.ps1</testScript>
-            <files>remote-scripts/vsocket_guest_as_server.sh</files>
+            <files>remote-scripts/vsocket_guest_as_server_cid.sh</files>
             <files>remote-scripts/utils.sh</files>
             <files>bin/client</files>
             <files>bin/server</files>
