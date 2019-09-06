@@ -1,6 +1,6 @@
 #!/bin/bash -
 
-###############################################################################
+########################################################################################
 ##
 ## ___________ _____________  ___         .____    .___  _________   _____
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
@@ -9,7 +9,7 @@
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/
 ##
-###############################################################################
+########################################################################################
 ##
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
@@ -17,18 +17,18 @@
 ## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
-###############################################################################
+########################################################################################
 ##
 ## Revision:
-## v1.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
-## v1.1 - xiaofwan - 1/12/2017 - Comment header upgrade
-## v1.2 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
+##  v1.0.0 - xiaofwan - 12/29/2016 - Fork from github.com/LIS/lis-test.
+##  v1.1.0 - xiaofwan - 1/12/2017 - Comment header upgrade
+##  v1.2.0 - xiaofwan - 1/25/2016 - Add a new result status - Skipped, which marks
 ##                               test case not applicable in current scenario.
-## v1.3 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
-## v1.4 - xuli - 02/10/2017 - add call trace check function CheckCallTrace()
-###############################################################################
+##  v1.3.0 - xiaofwan - 1/26/2016 - Remove TC_COVERED param due to useless any more
+##  v1.4.0 - xuli - 02/10/2017 - add call trace check function CheckCallTrace()
+########################################################################################
 
-###############################################################################
+########################################################################################
 ##
 ## Description:
 ## This script contains all distro-specific functions, as well as other common
@@ -37,7 +37,8 @@
 ## the bash built-in `declare' statement also restricts the variable's scope.
 ## Same for "private" functions.
 ##
-###############################################################################
+########################################################################################
+
 
 # Set IFS to space\t\n
 IFS=$' \t\n'
