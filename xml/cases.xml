@@ -228,7 +228,7 @@
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
+                <!-- suiteTest>cloud-init_check_status</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -245,7 +245,7 @@
             <suiteTests>
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <!-- suiteTest>libmspack_check_status</suiteTest -->
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -417,11 +417,11 @@
 
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <!-- suiteTest>libmspack_check_status</suiteTest -->
+                <suiteTest>libmspack_check_status</suiteTest>
 
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
+                <!-- suiteTest>cloud-init_check_status</suiteTest -->
             </suiteTests>
         </suite>
     </testSuites>
