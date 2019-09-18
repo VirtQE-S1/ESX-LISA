@@ -2,7 +2,7 @@
 ## Description:
 ##  Check Guest time sync with a clock server after reboot
 ## Revision:
-##  v1.0.0 - xinhu - 09/17/2019 - Build the script, this version don't configure to disable "Sync Guest Time"
+##  v1.0.0 - xinhu - 09/17/2019 - Build the script
 #######################################################################################
 
 
@@ -115,11 +115,10 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 #######################################################################################
-#
 # Main Body
-#
 #######################################################################################
 $retVal = $Failed
+# Current version doesn't support "Sync Guest Time" from Setting GUI
 
 # Target offset as 1 sec, after , offset should be less than $minOffset
 $minOffset = 1
@@ -152,26 +151,26 @@ function StopTimeService($linuxOS,${sshKey},${ipv4})
         $serviceName = 'chronyd'
     }    
 
-    $ntpStop = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl stop $serviceName ; echo $?"
-    $ntpDisable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl disable $serviceName ; echo $?"
+    $ntpStop = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl stop $serviceName ; echo `$? "
+    $ntpDisable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl disable $serviceName ; echo `$? "
     Write-Host -F Red "DEBUG: stop $serviceName status: $ntpStop"
     Write-Output "DEBUG: stop $serviceName status: $ntpStop"
-    if ($ntpStop -ne $True)
+    if ($ntpStop -ne 0)
     {
         Write-Host -F Red "ERROR: stop $serviceName failed"
         #Write-Output "ERROR: stop $serviceName failed"
         return "Aborted"
     }
-    Write-Host -F Green "INFO: stopped $serviceName"
-    Write-Output "INFO: stopped $serviceName"
+    Write-Host -F Green "INFO: Success to stop $serviceName"
+    Write-Output "INFO: Success to stop $serviceName"
 
-    if ($ntpDisable -ne $True)
+    if ($ntpDisable -ne 0)
     {
         Write-Host -F Red "ERROR: disable $serviceName failed"
         return $False
     }
-    Write-Host -F Green "INFO: Disable $serviceName"
-    Write-Output "INFO: Disable $serviceName"
+    Write-Host -F Green "INFO: Success to disable $serviceName"
+    Write-Output "INFO: Success to disable $serviceName"
     return $True
 }
 
@@ -182,17 +181,17 @@ function StartTimeService($linuxOS,${sshKey},${ipv4})
     if ($linuxOS -eq "RedHat6")
     {
         $serviceName = 'ntp'
-        $configNTP = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo clock.redhat.com > /etc/ntp/step-tickers;echo $?"
+        $configNTP = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo clock.redhat.com > /etc/ntp/step-tickers;echo `$?"
     }
     else
     {
         $serviceName = 'chronyd'
-        $configNTP = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo clock.redhat.com > server clock.redhat.com;echo $?"
+        $configNTP = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo server clock.redhat.com >> /etc/chrony.conf;echo `$?"
     }
     
-    Write-Host -F Red "DEBUG: $configNTP, Add clock server"
-    Write-Output "DEBUG: $configNTP, Add clock server"
-    if ($configNTP -eq $False)
+    Write-Host -F Red "DEBUG: Add clock server: $configNTP"
+    Write-Output "DEBUG: Add clock server: $configNTP"
+    if ($configNTP -ne 0)
     {
         Write-Host -F Red "ERROR: Add clock.server to $serviceName failed"
         Write-Output "ERROR: Add clock.server to $serviceName failed"
@@ -205,24 +204,23 @@ function StartTimeService($linuxOS,${sshKey},${ipv4})
     $startNtpdate = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl status $serviceName | grep running"
     $enableNtpdate = $enableNtpdate.Split(';')[1]
 
-    Write-Host -F Red "DEBUG: Start $serviceName : $startNtpdate"
-    Write-Output "DEBUG: Start $serviceName : $startNtpdate"
-
     if (!$startNtpdate)
     {
         Write-Host -F Red "ERROR: start $serviceName failed"
         Write-Output "ERROR: start $serviceName failed"
         return $False
     }
+    Write-Host -F Green "INFO: Success to start $serviceName : $startNtpdate"
+    Write-Output "INFO: Success to start $serviceName : $startNtpdate"
 
-    Write-Host -F Red "DEBUG: Enable $serviceName : $enableNtpdate"
-    Write-Output "DEBUG: Enable $serviceName : $enableNtpdate"
     if ($enableNtpdate -ne " enabled")
     {
         Write-Host -F Red "ERROR: enable $serviceName failed"
         Write-Output "ERROR: enable $serviceName failed"
         return $False
     }
+    Write-Host -F Green "INFO: Success to enable $serviceName : $enableNtpdate"
+    Write-Output "INFO: Success to enable $serviceName : $enableNtpdate"
     return $True
 }
 
@@ -276,7 +274,6 @@ if ($result[-1] -eq $False)
     return $Aborted
 }
 
-
 Write-Host -F Green "INFO: stop time sync"
 Write-Output "INFO: stop time sync"
 $result = StopTimeService $linuxOS ${sshKey} ${ipv4}
@@ -287,7 +284,6 @@ if ($result[-1] -eq $False)
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 Write-Host -F Green "INFO: restart time sync"
 Write-Output "INFO: restart time sync"
