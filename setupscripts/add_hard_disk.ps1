@@ -14,6 +14,7 @@
 ## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
 ## v1.5.0 - ldu   - 04/02/2019 - support add LSILogicSAS and LSI Logic Parallel scsi disk
 ## v1.5.0 - ldu   - 07/20/2019 - support add SCSIController with one disk
+## v1.6.0 - ldu   - 09/20/2019 - support add RDM disk to guest.
 ###############################################################################
 <#
 .Synopsis
