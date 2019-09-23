@@ -32,8 +32,11 @@ if [[ $DISTRO == "redhat_6" ]]; then
         SetTestStateSkipped
         exit
 fi
+
+
 version=$(rpm -qa cloud-init)
-LogMsg "$version"
+LogMsg "INFO: Cloud-init version is $version"
+UpdateSummary "INFO: Cloud-init version is $version"
 if [ -n "$version" ]; then
         LogMsg "cloud-init installed successfully."
         UpdateSummary " cloud-init installed successfully."
@@ -42,6 +45,20 @@ if [ -n "$version" ]; then
 else
         LogMsg "The cloud-init not install when guest install"
         UpdateSummary "Test Failed. The cloud-init not install."
-        SetTestStateFailed
-        exit 1
+
+        yum install -y cloud-init
+        version=$(rpm -qa cloud-init)
+        LogMsg "INFO: Cloud-init version is $version"
+        UpdateSummary "INFO: Cloud-init version is $version"
+        if [ -n "$version" ]; then
+            LogMsg "cloud-init installed successfully."
+            UpdateSummary " cloud-init installed successfully."
+            SetTestStateCompleted
+            exit 0
+        else
+            LogMsg "ERROR: After new install, still failed"
+            UpdateSummary "ERROR: After new install, still failed"
+            SetTestStateFailed
+            exit 1
+        fi
 fi
