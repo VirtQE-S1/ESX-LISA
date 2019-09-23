@@ -1,33 +1,20 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot when container running.
+## Check guest vmware-vmsvc.log, dmesg log when 100 containers running.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
+## V1.0 - ldu - 07/28/2018 - Check guest vmware-vmsvc.log, dmesg log when 100 containers running..
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Take snapshot when container running.
+    Check guest vmware-vmsvc.log, dmesg log when 100 containers running..
 .Description
-<test>
-    <testName>ovt_snapshot_container</testName>
-    <testID>ESX-OVT-033</testID>
-    <testScript>testscripts/ovt_snapshot_container.ps1</testScript  >
-    <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/ovt_docker_install.sh</files>
-    <testParams>
-        <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
@@ -154,54 +141,44 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 #Install docker and start one network container on guest.
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
 if (-not $sts) {
-    LogPrint "ERROR : YUM cannot install podman packages"
+    LogPrint "ERROR : YUM install podman packages failed"
     DisconnectWithVIServer
     return $Failed
 }
 
-#Run a container in guest
-$sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
-if (-not $sts) {
-    LogPrint "ERROR : run container nginx failed in guest"
-    DisconnectWithVIServer
-    return $Failed
+#Run 100 containers in guest
+for ($i = 0; $i -le 100; $i++)
+{
+    $sts = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
+    if (-not $sts) {
+        LogPrint "ERROR : run container centos failed in guest"
+        DisconnectWithVIServer
+        return $Failed
+    }
 }
 
-# Take snapshot and select quiesce option
-$snapshotTargetName = "snapcontainer"
-$new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
-$newSPName = $new_sp.Name
-write-host -f red "$newSPName"
-if ($new_sp)
+Start-Sleep -S 30
+#check the /var/log/vmware-vmsvc.log log file
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /var/log/vmware-vmsvc.log | grep 'NIC limit (16) reached'"
+if ($null -eq $calltrace_check)
 {
-    if ($newSPName -eq $snapshotTargetName)
-    {
-        Write-Host -F Red "The snapshot $newSPName with Quiesce is created successfully"
-        Write-Output "The snapshot $newSPName with Quiesce is created successfully"
-        $retVal = $Passed
-    }
-    else
-    {
-        Write-Output "The snapshot $newSPName with Quiesce is created Failed"
-    }
+    Write-host -F Red "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached log found"
+    Write-Output "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached found"
 }
-sleep 3
-#
-# Remove SP created
-#
-$remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-sleep 3
-$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
-if ($snapshots -eq $null)
-{
-    Write-Host -F Red "The snapshot has been removed successfully"
-    Write-Output "The snapshot has been removed successfully"
+else{
+    Write-Output "ERROR: After, FOUND NIC limit (16) reached in /var/log/vmware-vmsvc.log. "
 }
-else
+
+#check the call trace in dmesg file
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+if ($null -eq $calltrace_check)
 {
-    Write-Host -F Red "The snapshot removed failed"
-    Write-Output "The snapshot removed failed"
-    return $Aborted
+    $retVal = $Passed
+    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+}
+else{
+    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
 }
 
 DisconnectWithVIServer

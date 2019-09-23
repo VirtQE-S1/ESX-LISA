@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 ###############################################################################
@@ -9,6 +10,7 @@
 ##
 ## Revision:
 ## v1.0.0 - ldu - 8/20/2018 - Build the script
+## v2.0.0 - ldu - 04/02/2019 - add new function, could benchmark test result.
 ##
 ###############################################################################
 
@@ -42,11 +44,13 @@ if [[ $DISTRO != "redhat_8" ]]; then
 	pip install click pandas numpy scipy PyYAML
 	UpdateSummary "For rhel6 and rhel7, python2.x use pip"
 else
-	#For tree rhel8.0-20180824.2,only have pip3.6
-	pip3.6 install click pandas numpy scipy PyYAML
-	#For RHEL8, manually create soft link python point to python3.
-	# ln -s /usr/bin/python3 /usr/bin/python
+	#For RHEL8, manually create soft link python point to python3
 	ln -s /usr/libexec/platform-python /usr/bin/python
+	#install pip3.6 for RHEL8
+	curl https://bootstrap.pypa.io/get-pip.py | python
+	
+	#install modules with pip command
+	pip3.6 install click pandas numpy scipy PyYAML
 	UpdateSummary "For rhel8, use pip3.6 install modules"
 fi
 
@@ -135,25 +139,48 @@ else
 
 fi
 
+# #mount one nfs disk to store the test result.
+ mount -t nfs $nfs /mnt -o vers=3
+if [ $? -ne 0 ]; then
+	LogMsg "Test Failed. mount nfs failed."
+	UpdateSummary "Test failed. mount nfs failed"
+	SetTestStateFailed
+	exit 1
+else
+	LogMsg "mount nfs successfully."
+	UpdateSummary "mount nfs successfully."
+fi
+
+#set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
+if [ ! ${base} ]; then
+	basepath=`ls -lt /mnt | grep ${DISTRO}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+    UpdateSummary "set basepath $basepath from latest one in folder $base"
+else
+    basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	UpdateSummary "set basepath $basepath from xml kernel version $base"
+fi
+
 #Create fio test result path.
-path="/root/log/${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)/"
-mkdir -p $path
+path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
+mkdir -p /mnt/$path
 
 #Download fio python scripts from github.
 cd /root
 git clone https://github.com/SCHEN2015/virt-perf-scripts.git
 cd /root/virt-perf-scripts/block
 
-# Execute fio test
+# set filename dependecy raw or filesystem disk 
 if [[ $FS == raw ]]; then
 	filename="/dev/${disk}"
 else
 	filename="/test/test"
 fi
-./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path
+# Execute fio test
+
+./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
-	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path $path"
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
 	SetTestStateFailed
 	exit 1
 else
@@ -162,7 +189,7 @@ else
 fi
 
 # Generate Fio test report
-./GenerateTestReport.py --result_path $path
+./GenerateTestReport.py --result_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
 	UpdateSummary "Test report generate failed"
@@ -172,17 +199,19 @@ else
 	LogMsg "Test report generate successfully."
 	UpdateSummary "Test report generate successfully."
 fi
-#mount one nfs disk to store the test result.
-mount -t nfs $nfs /mnt -o vers=3
-cp -a $path /mnt
+
+#Generate benchmark Report
+
+
+./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
-	LogMsg "Test result copy failed"
-	UpdateSummary "Test result copy failed"
+	LogMsg "Test result benchmark failed,"
+	UpdateSummary "Test result benchmark failed, basepath is $basepath and path is $path"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg "Test result copy successfully."
-	UpdateSummary "Test result copy successfully."
+	LogMsg "Test result benchmark successfully."
+	UpdateSummary "Test result benchmark successfully."
 	SetTestStateCompleted
 	exit 0
 fi

@@ -1,14 +1,12 @@
 ###############################################################################
 ##
 ## Description:
-## Check NIX's RX and TX current value, Check MAX value
-## Resize NIC's RX and TX to MAX value
-##
-###############################################################################
+##  Check NIX's RX and TX current value, Check MAX value
+##  Resize NIC's RX and TX to MAX value
 ##
 ## Revision:
-## V1.0 - boyang - 03/22/2017 - Build script
-## V1.1 - boyang - 11/22/2017 - Update logical check
+##  v1.0.0 - boyang - 03/22/2017 - Build script
+##  v1.1.0 - boyang - 11/22/2017 - Update logical check
 ##
 ###############################################################################
 

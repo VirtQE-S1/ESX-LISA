@@ -1,33 +1,38 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot when container running.
+## Take snapshot after mount one disk twice.
+##
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
+## V1.0 - ldu - 08/13/2019 - Take snapshot after mount one disk twice.
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Take snapshot when container running.
+    Take snapshot  after mount one disk twice.
 .Description
-<test>
-    <testName>ovt_snapshot_container</testName>
-    <testID>ESX-OVT-033</testID>
-    <testScript>testscripts/ovt_snapshot_container.ps1</testScript  >
-    <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/ovt_docker_install.sh</files>
-    <testParams>
-        <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+    <test>
+            <testName>ovt_snapshot_mount_twice</testName>
+            <testID>ESX-OVT-035</testID>
+            <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_mount.sh</files>
+            <testParams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=7</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-174817</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+    </test>
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
@@ -152,23 +157,19 @@ $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 #Install docker and start one network container on guest.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
-if (-not $sts) {
-    LogPrint "ERROR : YUM cannot install podman packages"
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix ovt_mount_twice.sh && chmod u+x ovt_mount_twice.sh && ./ovt_mount_twice.sh"
+if( -not $result ){
+    Write-Host -F Red "ERROR: mount twice with loop device failed"
+    Write-Output "ERROR: mount twice with loop device failed"
     DisconnectWithVIServer
-    return $Failed
-}
-
-#Run a container in guest
-$sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
-if (-not $sts) {
-    LogPrint "ERROR : run container nginx failed in guest"
-    DisconnectWithVIServer
-    return $Failed
+    return $Aborted
+}  else {
+    Write-Host -F Red "Info : mount twice with loop device successfully"
+    Write-Output "Info : mount twice with loop device successfully"
 }
 
 # Take snapshot and select quiesce option
-$snapshotTargetName = "snapcontainer"
+$snapshotTargetName = "snapshot"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"

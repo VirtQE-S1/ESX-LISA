@@ -16,20 +16,50 @@
 
     <testSuites>
         <suite>
+            <!-- PERF Total Cases: 8 -->
             <suiteName>storage_performance_suite</suiteName>
             <suiteTests>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
                 <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
+                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_RAW</suiteTest>
                 <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
                 <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
+                <suiteTest>perf_stor_max_num_disk</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- PERF NETWORK Total Cases: 4 -->
+            <suiteName>network_performance_suite</suiteName>
+            <suiteTests>
+                <suiteTest>perf_nw_ipv4_udp</suiteTest>
+                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
+                <suiteTest>perf_nw_ipv6_udp</suiteTest>
+                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>perf_stor_max_num_disk</testName>
+            <testID>ESX-PERF-011</testID>
+            <setupScript>setupscripts\add_hard_disk1.ps1</setupScript>
+            <testScript>testscripts\stor_hot_add_max_num_scsi.ps1</testScript>
+            <testParams>
+                <param>Count=3</param>
+                <param>DiskType=SCSIController</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=1</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-93075</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>perf_stor_fio_NVMe_FS</testName>
             <testID>ESX-PERF-010</testID>
@@ -39,12 +69,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -53,6 +83,7 @@
                 <param>FS=xfs</param>
                 <param>backend=NVMe</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
+                <param>base=</param>
                 <param>TC_COVERED=RHEL6-0000,RHEL-144405</param>
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
@@ -70,12 +101,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=NVMe</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -83,6 +114,7 @@
                 <param>disk=nvme0n1</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-0000,RHEL-144406</param>
             </testParams>
@@ -101,12 +133,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -114,6 +146,7 @@
                 <param>disk=sdb</param>
                 <param>FS=xfs</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34977,RHEL7-61578</param>
             </testParams>
@@ -132,12 +165,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -145,6 +178,7 @@
                 <param>disk=sdb</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34979,RHEL7-61580</param>
             </testParams>
@@ -163,12 +197,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -176,6 +210,7 @@
                 <param>disk=sdb</param>
                 <param>FS=ext4</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34978,RHEL7-61579</param>
             </testParams>
@@ -194,12 +229,12 @@
                 <file>SetupScripts\add_hard_disk.ps1</file>
                 <file>SetupScripts\change_cpu.ps1</file>
             </setupScript>
-            <testScript>stor_performance_fio.sh</testScript  >
+            <testScript>stor_performance_fio.sh</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
-                <param>StorageFormat=Thick</param>
+                <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
                 <param>VMMemory=8GB</param>
@@ -207,6 +242,7 @@
                 <param>disk=sdb</param>
                 <param>FS=raw</param>
                 <param>backend=NVMe</param>
+                <param>base=</param>
                 <param>nfs=10.73.194.25:/vol/s13rd/public/fio</param>
                 <param>TC_COVERED=RHEL6-34980,RHEL7-61918</param>
             </testParams>
@@ -216,10 +252,9 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>perf_stor_iozone_stress</testName>
-            <testID>ESX-PERF-011</testID>
+            <testID>ESX-PERF-012</testID>
             <setupScript>
                 <file>SetupScripts\change_memory.ps1</file>
             </setupScript>

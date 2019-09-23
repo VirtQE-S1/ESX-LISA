@@ -1,4 +1,4 @@
-###############################################################################
+#######################################################################################
 ## Description:
 ##	Push and execute kdump_config.sh, kdump_execute.sh in a VM
 ##	Trigger kdump successfully and get vmcore
@@ -17,7 +17,7 @@
 ## 	v2.0.0 - boyang - 10/12/2017 - Start-Process places the service to trigger
 ## 	v2.1.0 - boyang - 08/23/2018 - Remove disconnect / connect again after trigger
 ##	v2.1.1 - boyang - 08/28/2018 - Sleep after trigger to aviod to detect VM
-###############################################################################
+#######################################################################################
 
 
 <#

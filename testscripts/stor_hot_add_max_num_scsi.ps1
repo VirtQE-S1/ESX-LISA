@@ -1,38 +1,18 @@
 ###############################################################################
 ##
 ## Description:
-## Add CD driver to guest and check the cd file in guest.
+## Test guest works well when hot add  scsi disks at max number .
 ##
 ###############################################################################
 ##
 ## Revision:
+## v1.0.0 - ldu - 07/21/2019 - Hot add  scsi disk wit max number.
 ##
-## V1.0 - ldu - 08/01/2018 - Add CD driver to guest and check the cd file in guest.
-## V1.1 - ldu - 06/26/2019 - update cd file name
-##
+## 
 ###############################################################################
 
 <#
 .Synopsis
-    Add CD driver to guest and check the cd file in guest.
-.Description
-<test>
-    <testName>stor_check_cd_file</testName>
-    <testID>ESX-Stor-016</testID>
-    <setupScript>setupscripts\add_CDDrive.ps1</setupScript>
-    <testScript>testscripts\stor_check_cd_file.ps1</testScript>
-    <testParams>
-        <param>cd_num=2</param>
-        <param>iso=[trigger] tmp/cloud-init.iso</param>
-        <param>TC_COVERED=RHEL6-49145,RHEL7-111400</param>
-    </testParams>
-    <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
-
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
@@ -75,6 +55,8 @@ $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
 $logdir = $null
+$count = $null
+$diskType = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params)
@@ -85,11 +67,16 @@ foreach ($p in $params)
 		"rootDir"		{ $rootDir = $fields[1].Trim() }
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
-		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "cd_num"        { $cd_num = $fields[1].Trim() }
+		"TestLogDir"	{ $logdir = $fields[1].Trim() }
+        "Count"         { $count = $fields[1].Trim() }
+        "DiskType"      { $diskType = $fields[1].Trim() }
+        "StorageFormat" { $storageFormat = $fields[1].Trim() }
+        "CapacityGB"    { $capacityGB = $fields[1].Trim() }
+        "DiskDataStore" { $diskDataStore = $fields[1].Trim() }
 		default			{}
     }
 }
+
 
 #
 # Check all parameters are valid
@@ -146,47 +133,55 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 $retVal = $Failed
 
-
-
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-# $cd = Set-CDDrive -CD $a -ISOPath "[trigger] tmp/cloud-init.iso" -Connected:true
-
-#
-# Check the CD number of the guest.
-#
-$CDList =  Get-CDDrive -VM $vmObj
-$CDLength = $CDList.Length
-
-if ($CDLength -eq $cd_num)
+#Hot add scsi disk with max number to each scsi controllor
+Write-Host -F Red "Count is $count"
+for ($i = 0; $i -le $count; $i++)
 {
-    write-host -F Red "The cd count is $CDLength "
-    Write-Output "Add cd successfully"
+    write-host -F red "i is $i"
+    for ($j = 0; $j -lt 63; $j++)
+    {   
+        #add scsi disk to each controllor
+        write-host -F red "j is $j" 
+        $hd_size = Get-Random -Minimum 1 -Maximum 5
+        $disk = New-HardDisk -CapacityGB $hd_size -VM $vmObj -StorageFormat "Thin" -Controller "SCSI Controller $i" -ErrorAction SilentlyContinue
+        Start-Sleep -seconds 1
+        Write-Output "INFO: Round: $j "
+        Write-Host -F Red "INFO: Round: $j"
+    }
+    
+}
+
+
+# Check the disk number of the guest.
+$diskList =  Get-HardDisk -VM $vmObj
+$diskLength = $diskList.Length
+
+if ($diskLength -eq 256)
+{
+    write-host -F Red "The disk numbers is $diskLength."
+    Write-Output "Add max number scsi disk successfully, The disk numbers is $diskLength."
 }
 else
 {
-    write-host -F Red "The cd count is $CDLength "
-    Write-Output "Add cd during setupScript Failed, only $CDLength cd in guest."
+    write-host -F Red "Error: The disk numbers is $diskLength."
+    Write-Output "Error: Add max number disk Failed, only $diskLength disk in guest."
     DisconnectWithVIServer
     return $Aborted
 }
 
-$result = SendCommandToVM $ipv4 $sshKey "mount /dev/cdrom /mnt && cat /mnt/user-data.txt"
-if (-not $result)
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+if ($null -eq $calltrace_check)
 {
-	Write-Host -F Red "FAIL: Failed to execute cat /mnt/user-data in VM"
-	Write-Output "FAIL: Failed to execute cat /mnt/user-data in VM"
-	DisconnectWithVIServer
-	return $Aborted
-}
-else
-{
-	Write-Host -F Green "PASS: Execute cat /mnt/user-data in VM successfully"
-	Write-Output "PASS: Execute cat /mnt/user-data in VM successfully"
     $retVal = $Passed
+    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
 }
-
+else{
+    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
+}
 
 DisconnectWithVIServer
 

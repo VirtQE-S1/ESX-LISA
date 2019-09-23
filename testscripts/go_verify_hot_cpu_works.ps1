@@ -1,5 +1,4 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ## 	Enable Hot cpu and verify it works
 ##
@@ -7,8 +6,7 @@
 ## 	v1.0.0 - boyang - 10/12/2017 - Build the script
 ## 	v1.0.1 - boyang - 05/14/2018 - Enhance the script
 ## 	v1.1.0 - boyang - 05/28/2018 - Not supported in ESXi6.7
-##
-###############################################################################
+########################################################################################
 
 
 <#
@@ -27,11 +25,7 @@
 
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-#
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
@@ -50,15 +44,11 @@ if (-not $testParams)
 }
 
 
-#
 # Checking the input arguments
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -81,10 +71,7 @@ foreach ($p in $params)
     }
 }
 
-
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -102,9 +89,7 @@ else
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -114,21 +99,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 				  
 				  
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
-   
- 
+########################################################################################
+## Main Body
+########################################################################################
 $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName."
+    Write-Output "ERROR: Unable to Get-VM with $vmName."
     DisconnectWithVIServer
 	return $Aborted
 }
@@ -138,8 +119,8 @@ if (-not $vmObj)
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ($DISTRO -eq "RedHat6")
 {
-    Write-Host -F Red "ERROR: CPU hot-plugin failed in $DISTRO in BZ is NOTABUG"
-    Write-Output "ERROR: CPU hot-plugin failed in $DISTRO in BZ is NOTABUG"    
+    Write-Host -F Red "ERROR: CPU hot-plugin failed in $DISTRO in BZ status is NOTABUG."
+    Write-Output "ERROR: CPU hot-plugin failed in $DISTRO in BZ is status NOTABUG."    
     DisconnectWithVIServer
     return $Skipped
 }
@@ -159,10 +140,8 @@ if ($host_ver -ge "6.7.0")
 }
 
 
-#
 # $cpuNum is from xml(it is 1) which mustn't be -eq VM's default cpu number(2)
 # So, this will void default cpu number(2) is -eq $cpuAfter, that verify hot cpu
-#
 $vmCPUNum = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grep processor /proc/cpuinfo | wc -l"
 if ($vmCPUNum -ne $cpuNum)
 {
@@ -170,16 +149,14 @@ if ($vmCPUNum -ne $cpuNum)
     Write-Output "ERROR: VM's cpu number $vmCPUNum -ne $cpuNum in setup phrase"    
     return $Aborted
 }
-Write-Host -F Red "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"
-Write-Output "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase"
+Write-Host -F Red "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase."
+Write-Output "INFO: VM's cpu number $vmCPUNum -eq $cpuNum in setup phrase."
 
 
-#
 # Hot CPU to set the VM cpu number to VCPU_After
-#
 $ret = Set-VM -VM $vmObj -NumCpu $cpuAfter -Confirm:$False
-Write-Host -F Red "DEBUG: ret: $ret"
-Write-Output "DEBUG: ret: $ret"
+Write-Host -F Red "DEBUG: ret: $ret."
+Write-Output "DEBUG: ret: $ret."
 
 
 # Confirm the new cpu number after hot add
@@ -215,4 +192,3 @@ else
 
 DisconnectWithVIServer
 return $retVal
-

@@ -1,35 +1,34 @@
 ###############################################################################
 ##
 ## Description:
-##	Reboot guet 100 times then check system status.
+##  Check the file under /dev/snapshot,if open it, no crash.
+##
+###############################################################################
 ##
 ## Revision:
-#	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
+## V1.0.0 - ldu - 07/05/2019 - Check the file under /dev/snapshot.
 ##
 ##
 ###############################################################################
 
-
 <#
 .Synopsis
-    Reboot guest 100 times.
-
+    Check the file under /dev/snapshot,if open it, no crash.
 .Description
-    Reboot guest 100 times.
 
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
-
-# Checking the input arguments
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+#
+# Checking the input arguments
+#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -47,12 +46,14 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-
+#
 # Output test parameters so they are captured in log file
+#
 "TestParams : '${testParams}'"
 
-
+#
 # Parse test parameters
+#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -74,8 +75,9 @@ foreach ($p in $params)
     }
 }
 
-
+#
 # Check all parameters are valid
+#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -110,7 +112,9 @@ if ($null -eq $logdir)
 	return $False
 }
 
+#
 # Source tcutils.ps1
+#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -118,60 +122,41 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
+
 $retVal = $Failed
 
-# Reboot the guest 100 times.
-$round = 0
-while ($round -lt 100)
+
+# Check the scsi timeout value in two files.
+$vmwgfx = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep vmwgfx"
+if (-not $vmwgfx)
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-
-    Start-Sleep -seconds 6
-    
-    # Wait for VM booting
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ($ssh -ne $true)
-    {
-        Write-Output "ERROR: Failed to start VM,the round is $round"
-        Write-Host -F Red "ERROR: Failed to start VM,the round is $round"
-        return $Aborted
-    }
-
-    $round=$round+1
-    Write-Output "INFO: Round: $round "
-    Write-Host -F Red "INFO: Round: $round"
-}
-
-if ($round -eq 100)
-{
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'dmesg | grep "Call Trace"'
-    Write-Output "DEBUG: calltrace_check: $calltrace_check"
-    Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-
-    if ($null -eq $calltrace_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
-        Write-Output "INFO: After $round times booting, NO $calltrace_check found"
-    }
-    else
-    {
-        Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
-    }
-
+	Write-Output "ERROR:vmwgfx not load."
+	return $Aborted
 }
 else
 {
-    Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
-    Write-Output "ERROR: The guest not boot 100 times, only $round times"
+	Write-Output "ERROR:vmwgfx loaded."
+}
+
+#open file /dev/snapshot then check guest status and log message.
+$open_file = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /dev/snapshot"
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
+if ($null -eq $calltrace_check)
+{
+    $retVal = $Passed
+    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+}
+else{
+    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
 }
 
 DisconnectWithVIServer
 
 return $retVal
+

@@ -1,47 +1,35 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## update the guest with new kernel, only new kernel.
+##  Update the guest with new kernel, only new kernel.
 ##
-###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 03/28/2018 - update the guest with new kernel, only new kernel.
-##
-##
-###############################################################################
+##  v1.0.0 - ldu - 03/28/2018 - Draft the script
+##  v2.0.0 - boyang - 09/06/2019 - Rebuild whole script
+########################################################################################
+
 
 <#
 .Synopsis
-    update the guest with new kernel, only new kernel.
+    Update the guest with new kernel, only new kernel.
+
 .Description
-<test>
-    <testName>go_upgrade_kernel</testName>
-    <testID>ESX-GO-0015</testID>
-    <testScript>testscripts\go_upgrade_kernel.ps1</testScript>
-    <files>remote-scripts/utils.sh</files>
-    <testParams>
-        <param>TC_COVERED=RHEL6-38512,RHEL7-80221</param>
-    </testParams>
-    <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-    <timeout>600</timeout>
-    <onError>Continue</onError>
-    <noReboot>False</noReboot>
-</test>
+    Update the guest with new kernel, only new kernel.
 
 .Parameter vmName
     Name of the test VM.
+
 .Parameter hvServer
     Name of the VIServer hosting the VM.
+
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -59,14 +47,11 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -88,9 +73,7 @@ foreach ($p in $params)
     }
 }
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -125,9 +108,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -135,107 +117,153 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
+
+########################################################################################
+## Main Body
+########################################################################################
 
 $retVal = $Failed
 
-#The latest repo for rhel.
-$rhel6_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-6.*/compose/Server/x86_64/os/"
-$rhel7_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-7.*/compose/Server/x86_64/os/"
-$rhel8_repo = "http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/latest-RHEL-8.*/compose/Server/x86_64/os/"
+# The nightly / latest repo for rhel6, NO extra or optional repo.
+$rhel6_repo = "http://download.eng.pek2.redhat.com/pub/nightly/rhel-6/latest-RHEL-6/compose/Server/x86_64/os/"
 
-#Check the guest os version.
-$DISTRO = ""
+# The nightly / latest repo for rhel7.
+$rhel7_repo = "http://download.eng.pek2.redhat.com/pub/nightly/latest-RHEL-7/compose/Server/x86_64/os/"
+$rhel7_optional_repo = "http://download.eng.pek2.redhat.com/pub/nightly/latest-RHEL-7/compose/Server-optional/x86_64/os/"
+$rhel7_extra_repo = "http://download-node-02.eng.bos.redhat.com/rhel-7/rel-eng/EXTRAS-7/latest-EXTRAS-7-RHEL-7/compose/Server/x86_64/os/"
+
+# The nightly / latest repo for rhel8, the same extra repo to rhel7.
+$rhel8_repo_appstream = "http://download.eng.pek2.redhat.com/pub/nightly/latest-RHEL-8/compose/AppStream/x86_64/os/"
+$rhel8_repo_baseos = "http://download.eng.pek2.redhat.com/pub/nightly/latest-RHEL-8/compose/BaseOS/x86_64/os/"
+$rhel8_extra_repo = "http://download-node-02.eng.bos.redhat.com/rhel-7/rel-eng/EXTRAS-7/latest-EXTRAS-7-RHEL-7/compose/Server/x86_64/os/"
+
+Write-Host -F Red "INFO: Move repo files under /etc/yum.repos.d/ to /tmp/"
+Write-Output "INFO: Move repo files under /etc/yum.repos.d/ to /tmp/"
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "mv /etc/yum.repos.d/* /tmp/"
+
+Write-Host -F Red "INFO: Creat a new nightly repor for Yum Update"
+Write-Output "INFO: Creat a new nightly repor for Yum Update"
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /etc/yum.repos.d/rhel_nightly.repo"
+
+# Check the guest os big version.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-if ( $DISTRO -eq "RedHat6" )
+Write-Host -F Red "INFO: Guest OS: $DISTRO"
+Write-Output "INFO: Guest OS: $DISTRO"
+if ($DISTRO -eq "RedHat6")
 {
-    #change the repo to lastest repo.
-    $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel6_repo' /etc/yum.repos.d/rhel_new.repo"
-    write-host -F red "The guest os is rhel6"
-    write-output "The guest os is rhel6"
-
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx] > /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel6_repo >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
 }
-else
+if ($DISTRO -eq "RedHat7")
 {
-    if ( $DISTRO -eq "RedHat7" )
-    {
-        #change the repo to lastest repo.
-        $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel7_repo' /etc/yum.repos.d/rhel_new.repo"
-        write-host -F red "The guest os is rhel7"
-        write-output "The guest os is rhel7"
-    }
-    else
-    {
-        #change the repo to lastest repo.
-        $change_repo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i '3c\baseurl=$rhel8_repo' /etc/yum.repos.d/rhel_new.repo"
-        write-host -F red "The guest os is rhel8"
-        write-output "The guest os is rhel8"
-    }
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx] > /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel7_repo >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
 
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx-optional] > /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx-optional >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel7_optional_repo >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
+
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx-extra] > /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx-extra >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel7_extra_repo >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
+}
+if ($DISTRO -eq "RedHat8")
+{
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx] > /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel8_repo_baseos >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
+
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [appstream] >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=appstream >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel8_repo_appstream >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
+
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo [rhelx-extra] >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo name=rhelx-extra >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo baseurl=$rhel8_extra_repo >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo enabled=1 >> /etc/yum.repos.d/rhel_nightly.repo"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
 }
 
-#Update the guest to new version with yum command.
-$update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum upgrade kernel -y"
+# Check the default kernel version.
+$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
+Write-Output "DEBUG: default_kernel: $default_kernel"
 
-#Check how many kernel installed in guest, if have two kernel,then new kernel installed.
-$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel |wc -l"
-write-host -F red "The kernel number is $kernel_num"
+# Update the guest to new version with yum command.
+$upgrade_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum upgrade kernel -y  && echo $?"
+if ($upgrade_kernel[-1] -ne "True")
+{
+    Write-Host -F Red "ERROR: Yum upgrade kernel failed"
+    Write-Output "ERROR: Yum upgrade kernel failed"
+    return $Aborted
+}
+
+Start-Sleep -seconds 6
+
+# Check how many kernel installed, if two kernels, the new kernel has been installed.
+$kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
+Write-Host -F Red "DEBUG: kernel_num: $kernel_num"
+Write-Output "DEBUG: kernel_num: $kernel_num"
 if ($kernel_num -eq "1")
 {
-    write-Output "no new kernel installed,no new compose for update."
+    Write-Host -F Red "INFO: NO new kernel installed,no new compose for update."
+    write-Output "INFO: NO new kernel installed,no new compose for update."
     return $Skipped
 }
 else
 {
-    write-Output "Installed a new kernel,The guest update successfully."
+    Write-Host -F Red "INFO: Installed a new kernel,The guest update successfully."
+    write-Output "INFO: Installed a new kernel,The guest update successfully."
 }
 
-#check the default kernel version.
-$default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-write-host -F red "The default kernel is $default_kernel. "
-write-Output "The default kernel is $default_kernel."
-#Reboot the guest
+# Reboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
 Start-Sleep -seconds 6
-# wait for vm to Start
+
+# Wait for vm to Start
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
 if ( $ssh -ne $true )
 {
-    Write-Output "Failed: Failed to start VM."
+    Write-Host -F Red "ERROR: Failed to start VM."
+    Write-Output "ERROR: Failed to start VM."
     return $Aborted
+}
+
+# Check the new kernel after reboot guest.
+$new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
+Write-Host -F red "INFO: After reboot the current kernel is $new_kernel."
+write-Output "INFO: After reboot the current kernel is $new_kernel."
+
+$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep Call 'Trace'"
+Write-Host -F Red "DEBUG: calltrace_check: $calltrace_check"
+Write-Output "DEBUG: calltrace_check: $calltrace_check"
+if ($null -eq $calltrace_check)
+{
+    $retVal = $Passed
+    Write-Host -F Red "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
+    Write-Output "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
 }
 else
 {
-    #check the new kernel after reboot guest.
-    $new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
-    Write-Host -F red "After reboot the current kernel is $new_kernel."
-    write-Output "After reboot the current kernel is $new_kernel."
-    if ($default_kernel -eq $new_kernel)
-    {
-        Write-Output "The new kernel boot failed in guest."
-        return $Aborted
-    }
-    else
-    {
-        #check call trace after new kernel boot in guest.
-        $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg |grep "Call Trace""
-        Write-Host -F red "The call trace check result is $calltrace_check"
-        if ($null -eq $calltrace_check)
-        {
-            $retVal = $Passed
-            Write-host -F Red "The guest could reboot with new kernel with no crash, no Call Trace "
-            Write-Output "PASS: After booting with new kernel $current_kernel, NO call trace $calltrace_check found"
-        }
-        else
-        {
-            Write-Output "FAIL: After booting, FOUND call trace $calltrace_check in demsg"
-        }
-    }
+    Write-Host -F Red "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
+    Write-Output "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
 }
+
 
 DisconnectWithVIServer
 

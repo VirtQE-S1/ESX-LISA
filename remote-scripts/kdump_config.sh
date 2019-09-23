@@ -89,20 +89,6 @@ Config_Kdump(){
 			UpdateSummary "SUCCESS: Updated the path to $dump_path"
 		fi
 
-		# Modify default action as reboot after crash
-		sed -i '/^default/ s/default/#default/g' $kdump_conf
-		grep -iq "^#default" $kdump_conf
-		if [ $? -ne 0 ]
-		then
-			LogMsg "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed"
-			UpdateSummary "ERROR: Failed to comment default action in /etc/kdump.conf. Probably kdump is not installed"
-			exit 1
-		else
-			echo "default reboot" >> $kdump_conf
-			LogMsg "SUCCESS: Updated the default action reboot after kdump"
-			UpdateSummary "SUCCESS: Updated the default action reboot after kdump"
-		fi
-
 		# Modify vmcore collection method and level
 		sed -i '/^core_collector/ s/core_collector/#core_collector/g' $kdump_conf
 		grep -iq "^#core_collector" $kdump_conf

@@ -12,7 +12,8 @@
 ## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
 ## v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
 ## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
-##
+## v1.5.0 - ldu   - 04/02/2019 - support add LSILogicSAS and LSI Logic Parallel scsi disk
+## v1.5.0 - ldu   - 07/20/2019 - support add SCSIController with one disk
 ###############################################################################
 <#
 .Synopsis
@@ -33,7 +34,7 @@
         StorageFormat - The format of new hard disk, can be (Thin, Thick, EagerZeroedThick) (IDE doesn't support this parameter)
         DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
-        DiskNum - The number of disk that we need to add during setup scripts
+        Count - The number of disk that we need to add during setup scripts
 
     A typical XML definition for this test case would look similar
     to the following:
@@ -44,7 +45,7 @@
             <param>StorageFormat=Thin</param>
             <param>DiskDataStore=DataStore-97</param>
             <param>CapacityGB=3</param>
-            <param>DiskNum=1</param>
+            <param>Count=1</param>
         </testparams>
 
 OR
@@ -55,7 +56,7 @@ OR
             <param>StorageFormat=Thin,Thin,Thin</param>
             <param>DiskDataStore=DataStore-97,DataStore-97,NVMe</param>
             <param>CapacityGB=3,5,6</param>
-            <param>DiskNum=3</param>
+            <param>Count=3</param>
         </testparams>
 
 
@@ -110,9 +111,9 @@ $diskType = $null
 $storageFormat = $null
 $capacityGB = $null
 $diskDataStore = $null
-$diskNum = $null
+$Count = $null
 $multipleParams = $false
-
+$type = $null
 
 $params = $testParams.Split(";")
 foreach ($p in $params) {
@@ -123,7 +124,8 @@ foreach ($p in $params) {
         "StorageFormat" { $storageFormat = $fields[1].Trim() }
         "CapacityGB" { $capacityGB = $fields[1].Trim() }
         "DiskDataStore" { $diskDataStore = $fields[1].Trim() }
-        "DiskNum" { $diskNum = $fields[1].Trim() }
+        "Count" { $Count = $fields[1].Trim() }
+        "Type" { $type = $fields[1].Trim() }
         default {}
     }
 }
@@ -143,8 +145,8 @@ else {
 
 
 # If not set this para, the default value is 1
-if ($null -eq $diskNum) {
-    $diskNum = 1
+if ($null -eq $Count) {
+    $Count = 1
 }
 
 
@@ -168,7 +170,7 @@ if ($diskType -like "*,*" -or $capacityGB -like "*,*" -or $diskDataStore -like "
     $diskDataStoreList = $diskDataStore.Split(',')
     $storageFormatList = $storageFormat.Split(',')
     # Check the number of params
-    if ($diskTypeList.count -ne $diskNum -or $capacityGBList.count -ne $diskNum -or $diskDataStoreList.count -ne $diskNum) {
+    if ($diskTypeList.count -ne $Count -or $capacityGBList.count -ne $Count -or $diskDataStoreList.count -ne $Count) {
         LogPrint "ERROR: The number of params is not fit the number fo disk"
         return $Failed
     }
@@ -192,9 +194,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 ###############################################################################
 
-
+write-host -F red "count is $Count"
 $retVal = $Failed
-for ($i = 0; $i -lt $diskNum; $i++) {
+for ($i = 0; $i -lt $Count; $i++) {
     # If we have multiple opition for params
     if ($multipleParams) {
         $diskType = $diskTypeList[$i] 
@@ -212,7 +214,7 @@ for ($i = 0; $i -lt $diskNum; $i++) {
 
 
     # Check Disk Type params
-    if (@("IDE", "SCSI", "NVMe") -notcontains $diskType) {
+    if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
@@ -227,7 +229,26 @@ for ($i = 0; $i -lt $diskNum; $i++) {
     $vmDataStore = $vmObj.VMHost | Get-Datastore -Name "*$diskDataStore*"
     $diskDataStore = $vmDataStore.Name
     LogPrint "INFO: Target Datastore is $diskDataStore"
-
+    
+    # Add SCSI controller
+    if ($diskType -eq "SCSIController") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        if ($null -eq $diskDataStore) {
+            $controller = New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat | New-ScsiController -Type ParaVirtual -ErrorAction SilentlyContinue
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            $controller = New-HardDisk -CapacityGB $capacityGB -VM $vmObj -StorageFormat $storageFormat | New-ScsiController -Type ParaVirtual -ErrorAction SilentlyContinue
+        }
+        if (-not $?) {
+            Throw "Error : Cannot add new controller to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add SCSI controller done."
+        }
+    }
 
     # Add SCSI disk
     if ($diskType -eq "SCSI") {
@@ -249,6 +270,45 @@ for ($i = 0; $i -lt $diskNum; $i++) {
         }
     }
 
+#Add LSI Logic SAS scsi disk
+    if ($diskType -eq "SAS") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        if ($null -eq $diskDataStore) {
+            $vmObj | New-HardDisk -CapacityGB $capacityGB  -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogicSAS
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -Datastore $dataStore -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogicSAS
+        }
+        if (-not $?) {
+            Throw "Error : Cannot add new hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add LSI Logic SAS SCSI disk done."
+        }
+    }
+
+#Add LSI Logic Parallel scsi disk
+    if ($diskType -eq "Parallel") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        if ($null -eq $diskDataStore) {
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -StorageFormat $storageFormat | New-ScsiController -Type VirtualLsiLogic -ErrorAction SilentlyContinue
+        }
+        else {
+            LogPrint "Target datastore $diskDataStore"
+            $dataStore = Get-Datastore -Name $diskDataStore -VMHost $vmObj.VMHost
+            $vmObj | New-HardDisk -CapacityGB $capacityGB -StorageFormat $storageFormat -Datastore $dataStore | New-ScsiController -Type VirtualLsiLogic -ErrorAction SilentlyContinue
+        }
+        if (-not $?) {
+            Throw "Error : Cannot add new  LSI Logic Parallel SCSI hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add LSI Logic Parallel SCSI disk done."
+        }
+    }
 
     # Add IDE disk
     if ($diskType -eq "IDE") {

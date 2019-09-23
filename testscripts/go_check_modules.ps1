@@ -1,4 +1,4 @@
-###############################################################################
+########################################################################################
 ##
 ## Description:
 ##  Check modules in the VM
@@ -7,9 +7,8 @@
 ##  v1.0.0 - hhei - 1/6/2017 - Check modules in the VM
 ##  v1.0.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
 ##  v1.0.2 - boyang - 05/10/2018 - Enhance the script and exit 100 if false
-##  v1.1.0 - ruqin - 7/6/2018 - Change Passed Condition Make sure all module pass and then test passes
-##
-###############################################################################
+##  v1.1.0 - boyang - 07/06/2018 - Change Passed Condition to Make sure all module pass
+########################################################################################
 
 
 <#
@@ -29,10 +28,7 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-
-#
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
@@ -51,15 +47,10 @@ if (-not $testParams)
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -80,10 +71,7 @@ foreach ($p in $params)
     }
 }
 
-
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -102,9 +90,7 @@ else
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -114,11 +100,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
+########################################################################################
+## Main Body
+########################################################################################
 
 
 $retVal = $Failed
@@ -137,8 +121,8 @@ if (-not $vmObj)
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
-Write-Output "DEBUG: DISTRO: $DISTRO"
+Write-Host -F Red "INFO: Guest OS version is $DISTRO"
+Write-Output "INFO: Guest OS version is $DISTRO"
 if (-not $DISTRO)
 {
     Write-Host -F Red "ERROR: Guest OS version is NULL"
@@ -146,9 +130,6 @@ if (-not $DISTRO)
     DisconnectWithVIServer
 	return $Aborted
 }
-Write-Host -F Red "INFO: Guest OS version is $DISTRO"
-Write-Output "INFO: Guest OS version is $DISTRO"
-
 
 # Different Guest DISTRO, different modules
 if ($DISTRO -eq "RedHat6")
@@ -176,12 +157,12 @@ else
 foreach ($m in $modules_array)
 {
     $module = $m.Trim()
-    Write-Host -F Red "DEBUG: go_check_modules.ps1: module: $module"
-    Write-Output "DEBUG: go_check_modules.ps1: module: $module"
+    Write-Host -F Red "DEBUG: module: $module"
+    Write-Output "DEBUG: module: $module"
 
     $ret = CheckModule $ipv4 $sshKey $module
-    Write-Host -F Red "DEBUG: go_check_modules.ps1: ret: $ret"
-    Write-Output "DEBUG: go_check_modules.ps1: ret: $ret"	
+    Write-Host -F Red "DEBUG: ret: $ret"
+    Write-Output "DEBUG: ret: $ret"	
     if ($ret -ne $true)
     {
         Write-Host -F Red "FAIL: The check of $module failed"
@@ -194,7 +175,9 @@ foreach ($m in $modules_array)
         Write-Host -F Red "PASS: Complete the check of $module"
         Write-Output "PASS: Complete the check of $module"
     }
-        $retVal = $Passed
+    
+    # Here, means all modules have been checked
+    $retVal = $Passed
 }
 
 

@@ -168,7 +168,7 @@ LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
@@ -311,14 +311,34 @@ if (-not $status) {
     return $Aborted
 }
 
+#check the RoCE version
+$RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
+if ("RoCE V2" -eq $RoCE)
+{
+    $gid=1
+	Write-Host -F Green "INFO: gid set to 1, RoCE version is $RoCE"
+    Write-Output "INFO: RoCE version is $RoCE"
+}
+elseif ("IB/RoCE v1" -eq $RoCE) {
+    $gid=0
+    Write-Host -F Red "INFO: gid set to 0, RoCE version is $RoCE"
+	Write-Output "INFO: RoCE version is $RoCE"
+}
+else
+{
+    Write-Host -F Red "Error: RoCE version is $RoCE"
+    Write-Output "Error: RoCE version is $RoCE"
+    return $Aborted
+}
+
 #check the test tools used for test.
 LogPrint "test is $tool"
 write-host -F Red "Test tool is $tool"
 if ( $tool -eq "perf" )
 {
   #array for perftest command
-  $perf_guestB = @("ib_send_lat -x 0 -a","ib_send_bw -x 0 -a","ib_read_lat -x 0 -a","ib_read_bw -x 0 -a","ib_write_lat -x 0 -a","ib_write_bw -x 0 -a" )
-  $perf_guestA = @("ib_send_lat -x 0 -a $IPAddr_guest_B","ib_send_bw -x 0 -a $IPAddr_guest_B","ib_read_lat -x 0 -a $IPAddr_guest_B","ib_read_bw -x 0 -a $IPAddr_guest_B","ib_write_lat -x 0 -a $IPAddr_guest_B","ib_write_bw -x 0 -a $IPAddr_guest_B" )
+  $perf_guestB = @("ib_send_lat -a","ib_send_bw -a","ib_read_lat -a","ib_read_bw -a","ib_write_lat -a","ib_write_bw -a" )
+  $perf_guestA = @("ib_send_lat -a $IPAddr_guest_B","ib_send_bw -a $IPAddr_guest_B","ib_read_lat -a $IPAddr_guest_B","ib_read_bw -a $IPAddr_guest_B","ib_write_lat -a $IPAddr_guest_B","ib_write_bw -a $IPAddr_guest_B" )
 
   foreach($i in $perf_guestB)
   {
@@ -340,8 +360,8 @@ else
 {
   if ( $tool -eq "ibvrc" )
     {
-        $commandA = "ibv_rc_pingpong -s 1 -g 1 $IPAddr_guest_B"
-        $commandB = "ibv_rc_pingpong -s 1 -g 1"
+        $commandA = "ibv_rc_pingpong -s 1 -g $gid $IPAddr_guest_B"
+        $commandB = "ibv_rc_pingpong -s 1 -g $gid"
     }
   else
   {
@@ -354,8 +374,6 @@ else
   write-host -F Red "$($Process1.id)"
 
   #Then run test on guest A, guest A as client.
-  $a = "touch /root/aa"
-  $status = SendCommandToVM $ipv4 $sshkey $a
   $status = SendCommandToVM $ipv4 $sshkey $commandA
   if (-not $status) {
       LogPrint "ERROR :  test $commandA test Failed"

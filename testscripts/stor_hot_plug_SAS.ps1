@@ -1,35 +1,34 @@
 ###############################################################################
 ##
 ## Description:
-##	Reboot guet 100 times then check system status.
-##
-## Revision:
-#	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
-##
+## Test disks works well when hot add LSILogicSAS scsi disks.
 ##
 ###############################################################################
-
+##
+## Revision:
+## v1.0.0 - ldu - 03/28/2019 - Hot add LSILogicSAS scsi disk.
+##
+## 
+###############################################################################
 
 <#
 .Synopsis
-    Reboot guest 100 times.
-
+    Hot add two scsi disk.
 .Description
-    Reboot guest 100 times.
 
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
-
-# Checking the input arguments
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+
+#
+# Checking the input arguments
+#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -47,12 +46,14 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-
+#
 # Output test parameters so they are captured in log file
+#
 "TestParams : '${testParams}'"
 
-
+#
 # Parse test parameters
+#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -68,14 +69,13 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "VMMemory"     { $mem = $fields[1].Trim() }
-        "standard_diff"{ $standard_diff = $fields[1].Trim() }
 		default			{}
     }
 }
 
-
+#
 # Check all parameters are valid
+#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -110,7 +110,9 @@ if ($null -eq $logdir)
 	return $False
 }
 
+#
 # Source tcutils.ps1
+#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -118,58 +120,52 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-
 ###############################################################################
 #
 # Main Body
 #
 ###############################################################################
+
 $retVal = $Failed
 
-# Reboot the guest 100 times.
-$round = 0
-while ($round -lt 100)
+# Get the VM
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+#hot add LSI Logic scsi disk
+$hd_size = Get-Random -Minimum 5 -Maximum 10
+#$disk =  New-HardDisk -CapacityGB $hd_size -VM $vmObj -StorageFormat "Thin" -Controller "SCSI Controller 1"
+New-HardDisk -VM $vmObj -CapacityGB $hd_size -StorageFormat "Thin" -Controller "SCSI Controller 1"
+
+#
+# Check the disk number of the guest.
+#
+$diskList =  Get-HardDisk -VM $vmObj
+$diskLength = $diskList.Length
+
+if ($diskLength -eq 3)
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-
-    Start-Sleep -seconds 6
-    
-    # Wait for VM booting
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ($ssh -ne $true)
-    {
-        Write-Output "ERROR: Failed to start VM,the round is $round"
-        Write-Host -F Red "ERROR: Failed to start VM,the round is $round"
-        return $Aborted
-    }
-
-    $round=$round+1
-    Write-Output "INFO: Round: $round "
-    Write-Host -F Red "INFO: Round: $round"
-}
-
-if ($round -eq 100)
-{
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'dmesg | grep "Call Trace"'
-    Write-Output "DEBUG: calltrace_check: $calltrace_check"
-    Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-
-    if ($null -eq $calltrace_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
-        Write-Output "INFO: After $round times booting, NO $calltrace_check found"
-    }
-    else
-    {
-        Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
-    }
-
+    write-host -F Red "The disk count is $diskLength."
+    Write-Output "Hot plug LSILogicSAS disk successfully, The disk count is $diskLength."
 }
 else
 {
-    Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
-    Write-Output "ERROR: The guest not boot 100 times, only $round times"
+    write-host -F Red "The disk count is $diskLength."
+    Write-Output "Hot plug LSILogicSAS disk Failed, only $diskLength disk in guest."
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+$result = SendCommandToVM $ipv4 $sshKey "rescan-scsi-bus.sh -a && ls /dev/sdc"
+if (-not $result)
+{
+	Write-Host -F Red "FAIL: Failed to detect new add LSILogicSAS scsi disk."
+	Write-Output "FAIL: Failed to detect new add LSILogicSAS scsi disk"
+	$retVal = $Failed
+}
+else
+{
+	Write-Host -F Green "PASS: new add LSILogicSAS scsi disk could be detected."
+    Write-Output "PASS: new add LSILogicSAS scsi disk could be detected."
+    $retVal = $Passed
 }
 
 DisconnectWithVIServer

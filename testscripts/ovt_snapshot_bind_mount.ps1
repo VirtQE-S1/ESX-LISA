@@ -1,27 +1,25 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot when container running.
+## Take snapshot when guest has a bind mount.
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
+## V1.0.0 - ldu - 09/16/2019 - Take snapshot when guest has a bind mount
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Take snapshot when container running.
+    Take snapshot when guest has a bind mount
 .Description
 <test>
-    <testName>ovt_snapshot_container</testName>
-    <testID>ESX-OVT-033</testID>
-    <testScript>testscripts/ovt_snapshot_container.ps1</testScript  >
-    <files>remote-scripts/utils.sh</files>
-    <files>remote-scripts/ovt_docker_install.sh</files>
+    <testName>ovt_snapshot_bind_mount</testName>
+    <testID>ESX-OVT-036</testID>
+    <testScript>testscripts/ovt_snapshot_bind_mount.ps1</testScript  >
     <testParams>
-        <param>TC_COVERED=RHEL6-51216,RHEL7-135106</param>
+        <param>TC_COVERED=RHEL6-00000,RHEL-171567</param>
     </testParams>
     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
     <timeout>600</timeout>
@@ -151,24 +149,21 @@ $retVal = $Failed
 #
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-#Install docker and start one network container on guest.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
-if (-not $sts) {
-    LogPrint "ERROR : YUM cannot install podman packages"
+#create a bind mout point on guest.
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && mkdir /var/lib/test && touch /var/lib/test/bind && mount -o bind /dev/log /var/lib/test/bind"
+if( -not $result ){
+    Write-Host -F Red "ERROR: bind mount failed"
+    Write-Output "ERROR: bind mount failed"
     DisconnectWithVIServer
-    return $Failed
+    return $Aborted
+}  else {
+    Write-Host -F Red "Info :bind mount successfully"
+    Write-Output "Info :bind mount successfully"
 }
 
-#Run a container in guest
-$sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
-if (-not $sts) {
-    LogPrint "ERROR : run container nginx failed in guest"
-    DisconnectWithVIServer
-    return $Failed
-}
 
 # Take snapshot and select quiesce option
-$snapshotTargetName = "snapcontainer"
+$snapshotTargetName = "snapbind"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
 write-host -f red "$newSPName"
