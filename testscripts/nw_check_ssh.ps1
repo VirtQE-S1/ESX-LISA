@@ -13,9 +13,12 @@
 .Description
     Check ssh connection from other VM and Host
     <test>
-            <testName>check_ssh</testName>
+            <testName>nw_check_ssh</testName>
             <testID>ESX-NW-022</testID>
             <testScript>testscripts/nw_check_ssh.ps1</testScript>
+            <testParams>
+                <param>HostIP=10.73.196.33</param>
+            </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>360</timeout>
             <onError>Continue</onError>
@@ -61,6 +64,7 @@ $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
 $logdir = $null
+$HostIP = $null
 
 
 $params = $testParams.Split(";")
@@ -71,6 +75,7 @@ foreach ($p in $params) {
         "sshKey" { $sshKey = $fields[1].Trim() }
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "TestLogDir"	{ $logdir = $fields[1].Trim()}
+        "HostIP" {$HostIP = $fields[1].Trim()}
         default {}
     }
 }
@@ -117,35 +122,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 ## Main Body
 ###############################################################################
-# Current version only execute ssh by dhcp ip.
-
+# Current version only install sshpass by rpm link
 $retValdhcp = $False
-#$retValsta = $False
 
- 
+
 # Function to ssh Host and BVM
-function checkssh(${sshKey},${ipv4},$hvServer,${BvmIP},$linuxOS)
+function checkssh(${sshKey},${ipv4},$HostIP,$linuxOS)
 {
     $SSH1 = $False
-    $SSH2 = $False
     bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -i http://download.eng.bos.redhat.com/brewroot/vol/rhel-$linuxOS/packages/sshpass/1.06/2.el$linuxOS/x86_64/sshpass-1.06-2.el$linuxOS.x86_64.rpm"
-    #bin\plink.exe -i ssh\${sshKey} root@${ipv4} "wget https://jaist.dl.sourceforge.net/project/sshpass/1.06/sshpass-1.06.tar.gz"
-    #bin\plink.exe -i ssh\${sshKey} root@${ipv4} "tar -zxf sshpass-1.06.tar.gz && sshpass-1.06.tar.gz"
-    #bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./configure && make && make install"
     $SshHost = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sshpass -p '123qweP' ssh -o StrictHostKeyChecking=no root@$hvServer ls;echo `$? "
-    $SshVM = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ssh -i .ssh/id_rsa_private -o StrictHostKeyChecking=no root@${BvmIP} ls; echo `$? "
-
-    Write-Host -F Red "DEBUG: Using DHCP IP SSH $BvmName : $SshVM"
-    Write-Output "DEBUG: Using DHCP IP SSH $BvmName : $SshVM"
-    if ($SshVM[-1] -ne 0)
-    {
-        Write-Host -F Red "ERROR: Using DHCP IP SSH $BvmName Failed"
-        Write-Output "ERROR: Using DHCP IP SSH $BvmName Failed"
-    }
-    else
-    {
-        $SSH1 = $True
-    }
 
     Write-Host -F Red "DEBUG: Using DHCP IP SSH $hvServer : $SshHost"
     Write-Output "DEBUG: Using DHCP IP SSH $hvServer : $SshHost"
@@ -154,45 +140,13 @@ function checkssh(${sshKey},${ipv4},$hvServer,${BvmIP},$linuxOS)
         Write-Host -F Red "ERROR: Using DHCP IP SSH $hvServer Failed"
         Write-Output "ERROR: Using DHCP IP SSH $hvServer Failed"
     }
-    else{$SSH2 = $True}
-    return $SSH1 -and $SSH2
+    else{$SSH1 = $True}
+    return $SSH1
 }
-
 
 $linuxOS = GetLinuxDistro $ipv4 $sshKey
 $linuxOS = $linuxOS[-1]
-Write-Host -F Red "DEBUG: Using $linuxOS"
-Write-Output "DEBUG: Using $linuxOS"
-
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$BvmName = $vmName -replace 'A',"B"
-$BvmOut = Get-VMHost -Name $hvServer | Get-VM -Name $BvmName
-if (-not $BvmOut) {
-    LogPrint "ERROR: Unable to Get-VM with $BvmName"
-    DisconnectWithVIServer
-    return $Aborted
-}
-Write-Host -F Red "DEBUG: Rebooting...: $BvmName"
-Write-Output "DEBUG: Rebooting...: $BvmName"
-$reboot = Start-VM -VM $BvmOut -Confirm:$False
-
-# WaitForVMSSHReady
-$ret = WaitForVMSSHReady $BvmName $hvServer ${sshKey} 300
-
-$BvmOut = Get-VMHost -Name $hvServer | Get-VM -Name $BvmName
-$state = $BvmOut.PowerState
-Write-Host -F Red "DEBUG: state: $state"
-Write-Output "DEBUG: state: $state"
-if ($state -ne "PoweredOn")
-{
-    Write-Error -Message "ABORTED: $BvmOut is not poweredOn, power state is $state" -Category ObjectNotFound -ErrorAction SilentlyContinue
-    DisconnectWithVIServer
-    return $Aborted
-} 
-
-$BvmIP = $BvmOut.Guest.IPAddress[0]
-Write-Host -F Red "DEBUG: vmName: $vmName, vmIP: ${ipv4}; BvmName: $BvmName, BvmIP: $BvmIP"
-Write-Output "DEBUG: vmName: $vmName, vmIP: ${ipv4}; BvmName: $BvmName, BvmIP: $BvmIP"
 
 # Confirm the vmxnet3 nic and get nic name
 $Command = 'lspci | grep -i Ethernet | grep -i vmxnet3' 
@@ -208,7 +162,7 @@ if (!$IsNIC)
 }
 
 # Set dhcp ip and check ssh 
-$result = checkssh ${sshKey} ${ipv4} $hvServer ${BvmIP} $linuxOS
+$result = checkssh ${sshKey} ${ipv4} $HostIP $linuxOS
 Write-Host -F Red "DEBUG: DHCP SSH result is $result"
 Write-Output "DEBUG: DHCP SSH result is $result"
 $retValdhcp = $result[-1]

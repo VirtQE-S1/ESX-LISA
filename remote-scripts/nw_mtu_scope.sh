@@ -4,6 +4,17 @@
 #######################################################################################
 ## Description:
 ##  Check mtu value scope scripts
+##      <test>
+##            <testName>nw_mtu_scope</testName>
+##            <testID>ESX-NW-021</testID>
+##            <testScript>nw_mtu_scope.sh</testScript>
+##            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+##            <files>remote-scripts/nw_mtu_scope.sh</files>
+##            <files>remote-scripts/utils.sh</files>
+##            <timeout>600</timeout>
+##            <onError>Continue</onError>
+##            <noReboot>False</noReboot>
+##        </test>
 #######################################################################################
 ## Revision:
 ##  v1.0.0 - xinhu - 09/11/2019 - Build script, current version won't test ifup / ifdown
@@ -123,30 +134,25 @@ SetValidMtu 9000 ${NIC}
 CheckIpv4 9000 ${NIC}
 ResetMtu ${NIC}
 
-
 # Set MTU value = 60, and check if ip will lost soon
 SetValidMtu 60 ${NIC}
 CheckIpv4 60 ${NIC}
 ResetMtu ${NIC}
-
 
 # Set invalid MTU value = 9001
 SetInvalidMtu 9001 ${NIC}
 # Set invalid MTU value = 59
 SetInvalidMtu 59 ${NIC}
 
-
 # Set MTU value = 67, and check if ip will lost soon
 SetValidMtu 67 ${NIC}
 CheckIpv4 67 ${NIC}
 ResetMtu ${NIC}
 
-
 # Set MTU value = 68, and check if ip exits
 SetValidMtu 68 ${NIC}
 CheckIpv4 68 ${NIC}
 ResetMtu ${NIC}
-
 
 SetTestStateCompleted
 exit 0
