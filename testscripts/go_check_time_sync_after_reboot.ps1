@@ -8,10 +8,19 @@
 
 <#
 .Synopsis
-    Check Guest time drift with clock server after suspend
+    Check Guest time sync with a clock server after reboot
 
 .Description
-    Check Guest time drift with clock server after suspend
+    Check Guest time sync with a clock server after reboot
+    <test>
+            <testName>go_check_time_sync</testName>
+            <testID>ESX-GO-021</testID>
+            <testScript>testscripts/go_check_time_sync_after_reboot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+    </test>
     
 .Parameter vmName
     Name of the test VM.
