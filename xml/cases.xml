@@ -13,10 +13,9 @@
             <smtpServer>mysmtphost.mycompany.com</smtpServer>
         </email>
     </global>
-
     <testSuites>
         <suite>
-            <!-- GO Total Cases: 20 -->
+            <!-- GO: 21 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -31,7 +30,7 @@
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
-                <!-- <suiteTest>go_reboot_100_times</suiteTest> -->
+                <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_upgrade_kernel</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
@@ -39,10 +38,11 @@
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
+                <suiteTest>go_check_time_sync</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Kdump Total Cases: 5 -->
+            <!-- Kdump: 5 -->
             <suiteName>kdump</suiteName>
             <suiteTests>
                 <suiteTest>kdump_crash_single_core</suiteTest>
@@ -53,7 +53,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT Total Cases: 33 -->
+            <!-- OVT: 35 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -89,10 +89,12 @@
                 <suiteTest>ovt_deadlock_condition</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
+                <suiteTest>ovt_snapshot_bind_mount</suiteTest>
+                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Gating-ovt Total Cases: 3 -->
+            <!-- OVT-GT: 3 -->
             <suiteName>gt-ovt</suiteName>
             <suiteTests>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
@@ -101,7 +103,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Storage Total Cases: 21 -->
+            <!-- STORAGE: 21 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -128,7 +130,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Network Total Cases: 20 -->
+            <!-- NETWORK: 22 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -147,14 +149,16 @@
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_nic_name_check_after_update</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
-                <!-- suiteTest>nw_live_migration</suiteTest -->
+                <suiteTest>nw_live_migration</suiteTest>
                 <suiteTest>nw_check_lro_status_ethtool</suiteTest>
                 <suiteTest>nw_check_nic_name</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
+                <suiteTest>nw_check_mtu_scope</suiteTest>
+                <suiteTest>nw_check_ssh</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Balloon Total Cases: 3 -->
+            <!-- BALLOON: 3 -->
             <suiteName>balloon</suiteName>
             <suiteTests>
                 <suiteTest>bl_add_memory_low_to_high</suiteTest>
@@ -163,7 +167,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- RDMA Total Cases: 14 -->
+            <!-- RDMA: 14 -->
             <suiteName>rdma</suiteName>
             <suiteTests>
                 <suiteTest>rdma_boot_check</suiteTest>
@@ -183,7 +187,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- VSOCK Total Cases: 3 -->
+            <!-- VSOCK: 3 -->
             <suiteName>vsock</suiteName>
             <suiteTests>
                 <suiteTest>vsock_version</suiteTest>
@@ -192,28 +196,28 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- VMWGFX Total Cases: 1 -->
+            <!-- VMWGFX: 1 -->
             <suiteName>vsock</suiteName>
             <suiteTests>
                 <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- SRIOV Total Cases: 8 -->
+            <!-- SRIOV: 8 -->
             <suiteName>sriov</suiteName>
             <suiteTests>
                 <suiteTest>sriov_boot_check</suiteTest>
                 <suiteTest>sriov_manual_mac</suiteTest>
                 <suiteTest>sriov_maximum_nics</suiteTest>
-                <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
-                <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-                <!-- suiteTest>sriov_mtu_check</suiteTest -->
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+                <suiteTest>sriov_ipv4_throughtput</suiteTest>
+                <suiteTest>sriov_ipv6_throughtput</suiteTest>
+                <suiteTest>sriov_mtu_check</suiteTest>
+                <suiteTest>sriov_move_host_supported</suiteTest>
+                <suiteTest>sriov_ping_diff_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- DPDK Total Cases: 4 -->
+            <!-- DPDK: 4 -->
             <suiteName>dpdk</suiteName>
             <suiteTests>
                 <suiteTest>dpdk_compile</suiteTest>
@@ -223,16 +227,16 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Cloud-init Total Cases: 3 -->
+            <!-- CLOUD-INIT: 3 -->
             <suiteName>cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <!-- suiteTest>cloud-init_check_status</suiteTest -->
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Gating-cloud-init Total Cases: 2 -->
+            <!-- CLOUD-INIT-GT: 2 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_uninstall</suiteTest>
@@ -240,7 +244,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Libmspac Total Cases: 3 -->
+            <!-- LIBMSPACK: 3 -->
             <suiteName>libmspack</suiteName>
             <suiteTests>
                 <suiteTest>libmspack_yum_install</suiteTest>
@@ -249,7 +253,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Gating-libmspack Total Cases: 2 -->
+            <!-- LIBMSPACK-GT: 2 -->
             <suiteName>gt-libmspack</suiteName>
             <suiteTests>
                 <suiteTest>libmspack_uninstall</suiteTest>
@@ -257,18 +261,6 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- DSK / USK: 6 -->
-            <suiteName>dsk</suiteName>
-            <suiteTests>
-                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>go_check_modules</suiteTest>
-                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
-                <suiteTest>nw_ping</suiteTest>
-                <suiteTest>vsock_version</suiteTest>
-                <suiteTest>bl_add_memory_low_to_high</suiteTest>
-            </suiteTests>
-        </suite>
-         <suite>
             <!-- Tier3: 27 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
@@ -276,7 +268,7 @@
                 <suiteTest>dpdk_bindadapter</suiteTest>
                 <suiteTest>dpdk_helloworld</suiteTest>
                 <suiteTest>dpdk_kni</suiteTest>
-                <!-- <suiteTest>go_reboot_100_times</suiteTest> -->
+                <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
@@ -298,7 +290,7 @@
                 <suiteTest>perf_nw_ipv4_udp</suiteTest>
                 <suiteTest>perf_nw_ipv4_tcp</suiteTest>
                 <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>                        
+                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -308,7 +300,7 @@
                 <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
-                <!-- <suiteTest>go_check_time_sync</suiteTest> -->
+                <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
@@ -339,8 +331,8 @@
                 <suiteTest>ovt_scsi_timeout</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
-                <!-- suiteTest>ovt_snapshot_bind_mount</suiteTest -->
-                <!-- suiteTest>ovt_snapshot_bind_two_mount</suiteTest -->
+                <suiteTest>ovt_snapshot_bind_mount</suiteTest>
+                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -368,8 +360,9 @@
                 <suiteTest>nw_pktgen</suiteTest>
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
                 <suiteTest>nw_hot_plug_e1000</suiteTest>
-                <!-- suiteTest>nw_mtu_range</suiteTest -->
+                <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
+                <suiteTest>nw_check_ssh</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
@@ -437,8 +430,69 @@
             </suiteTests>
         </suite>
     </testSuites>
-
     <testCases>
+        <test>
+            <testName>ovt_snapshot_mount_twice</testName>
+            <testID>ESX-OVT-034</testID>
+            <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <files>remote-scripts/utils.sh</files>
+            <files>remote-scripts/ovt_mount.sh</files>
+            <testParams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thin</param>
+                <param>CapacityGB=7</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-174817</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_snapshot_bind_mount</testName>
+            <testID>ESX-OVT-035</testID>
+            <testScript>testscripts/ovt_snapshot_bind_mount.ps1</testScript>
+            <testParams>
+                <param>TC_COVERED=RHEL6-00000,RHEL-171567</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_time_sync</testName>
+            <testID>ESX-GO-021</testID>
+            <testScript>testscripts/go_check_time_sync_after_reboot.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>240</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_mtu_scope</testName>
+            <testID>ESX-NW-021</testID>
+            <testScript>nw_mtu_scope.sh</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <files>remote-scripts/nw_mtu_scope.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_ssh</testName>
+            <testID>ESX-NW-022</testID>
+            <testScript>testscripts/nw_check_ssh.ps1</testScript>
+            <testParams>
+                <param>HostIP=10.73.196.33</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>stor_largest_size</testName>
             <testID>ESX-Stor-020</testID>
@@ -1019,7 +1073,6 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
         <test>
             <testName>ovt_snapshot_container</testName>
             <testID>ESX-OVT-033</testID>
@@ -2622,7 +2675,6 @@
             <noReboot>False</noReboot>
         </test>
     </testCases>
-
     <VMs>
         <vm>
             <hvServer>ESXI_HOST_IPADDRESS</hvServer>
