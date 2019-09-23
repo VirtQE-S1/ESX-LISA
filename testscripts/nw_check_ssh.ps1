@@ -1,6 +1,6 @@
 ###############################################################################
 ## Description:
-##  Check ssh 
+##  Check ssh connection from other VM and Host
 ## Revision:
 ##  v1.0.0 - xinhu - 09/19/2019 - Build the script
 ###############################################################################
@@ -8,20 +8,16 @@
 
 <#
 .Synopsis
-    Check NIC operstate when ifup / ifdown
+    Check ssh connection from other VM and Host
 
 .Description
-    Check NIC operstate when ifup / ifdown, operstate owns up / down states
-
-     <test>
-            <testName>nw_check_operstate</testName>
-            <testID>ESX-NW-009</testID>
-            <testScript>testscripts\nw_check_operstate.ps1</testScript>
+    Check ssh connection from other VM and Host
+    <test>
+            <testName>check_ssh</testName>
+            <testID>ESX-NW-022</testID>
+            <testScript>testscripts/nw_check_ssh.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <testParams>
-                <param>TC_COVERED=RHEL6-34937,RHEL7-50917</param>
-            </testParams>
+            <timeout>360</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
     </test>
@@ -122,10 +118,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ## Main Body
 ###############################################################################
 # Current version only execute ssh by dhcp ip.
+
 $retValdhcp = $False
 #$retValsta = $False
 
-
+ 
 # Function to ssh Host and BVM
 function checkssh(${sshKey},${ipv4},$hvServer,${BvmIP},$linuxOS)
 {
