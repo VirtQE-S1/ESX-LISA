@@ -342,7 +342,7 @@ if ( $tool -eq "perf" )
 
   foreach($i in $perf_guestB)
   {
-      $Process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${i}" -PassThru -WindowStyle Hidden
+      $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${i}" -PassThru -WindowStyle Hidden
       write-host -F Red "the process1 id is $($Process.id) and $i"
       $index = $perf_guestB.IndexOf($i)
       $commandA = $perf_guestA[$index]
@@ -370,7 +370,7 @@ else
   }
 
   #Run test on guest B first,because guest B is test as server.
-  $Process1 = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${commandB}" -PassThru -WindowStyle Hidden
+  $Process1 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${commandB}" -PassThru -WindowStyle Hidden
   write-host -F Red "$($Process1.id)"
 
   #Then run test on guest A, guest A as client.

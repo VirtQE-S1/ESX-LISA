@@ -14,6 +14,7 @@
 ## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
 ## v1.5.0 - ldu   - 04/02/2019 - support add LSILogicSAS and LSI Logic Parallel scsi disk
 ## v1.5.0 - ldu   - 07/20/2019 - support add SCSIController with one disk
+## v1.6.0 - ldu   - 09/20/2019 - support add RDM disk to guest.
 ###############################################################################
 <#
 .Synopsis
@@ -214,7 +215,7 @@ for ($i = 0; $i -lt $Count; $i++) {
 
 
     # Check Disk Type params
-    if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "NVMe") -notcontains $diskType) {
+    if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "RawPhysical", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
@@ -267,6 +268,21 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
         else {
             LogPrint "INFO: Add SCSI disk done."
+        }
+    }
+
+# Add RawPhysical disk
+    if ($diskType -eq "RawPhysical") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        # $vmhost = Get-VMHost -Name $hvServer
+        $deviceName = (Get-ScsiLun -VMHost $hvserver -CanonicalName "naa.600*")[0].ConsoleDeviceName
+        New-HardDisk -VM $vmObj -DiskType RawPhysical -DeviceName $deviceName
+        if (-not $?) {
+            Throw "Error : Cannot add RawPhysical hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add RawPhysical disk done."
         }
     }
 

@@ -1,23 +1,23 @@
 ###############################################################################
 ##
 ## Description:
-## Take snapshot after mount one disk twice.
+## [open-vm-tools]Take snapshot when mount a disk to two mount point
 ##
 ##
 ###############################################################################
 ##
 ## Revision:
-## V1.0 - ldu - 08/13/2019 - Take snapshot after mount one disk twice.
+## V1.0.0 - ldu - 08/13/2019 - Build scripts.
 ##
 ###############################################################################
 
 <#
 .Synopsis
-    Take snapshot  after mount one disk twice.
+    [open-vm-tools]Take snapshot when mount a disk to two mount point
 .Description
     <test>
             <testName>ovt_snapshot_mount_twice</testName>
-            <testID>ESX-OVT-035</testID>
+            <testID>ESX-OVT-036</testID>
             <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <files>remote-scripts/utils.sh</files>
