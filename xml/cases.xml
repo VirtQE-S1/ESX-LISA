@@ -103,7 +103,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- STORAGE: 21 -->
+            <!-- STORAGE: 22 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -127,10 +127,11 @@
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
                 <suiteTest>stor_largest_size</suiteTest>
+                <suiteTest>stor_add_RDM_disk</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- NETWORK: 22 -->
+            <!-- NETWORK: 23 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -155,6 +156,7 @@
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
                 <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
+                <suiteTest>nw_check_ipv6</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -294,7 +296,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 77 -->
+            <!-- Tier2: 80 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -348,6 +350,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
+                <suiteTest>stor_add_RDM_disk</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -363,6 +366,7 @@
                 <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
+                <suiteTest>nw_check_ipv6</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
@@ -431,6 +435,33 @@
         </suite>
     </testSuites>
     <testCases>
+        <test>
+            <testName>nw_check_ipv6</testName>
+            <testID>ESX-NW-023</testID>
+            <testScript>testscripts/nw_check_ipv6.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_RDM_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-022</testID>
+            <testScript>testscripts\stor_add_RDM_disk.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh
+        </files>
+            <!-- <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript> -->
+            <testParams>
+                <param>DiskType=RawPhysical</param>
+                <param>TC_COVERED=RHEL-111401</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>900</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>ovt_snapshot_mount_twice</testName>
             <testID>ESX-OVT-034</testID>
