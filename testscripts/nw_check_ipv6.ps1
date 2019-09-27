@@ -141,10 +141,9 @@ function ping-VM(${sshKey},${ipv4},$choice,$IPv6_B,$packages)
         return $False
     }
 
-    #$debug1 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl restart NetworkManager"
     # Wait for completing switch ipv6 
     Sleep -seconds 6
-    $result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ping6 $IPv6_B -c 4;echo `$?"
+    $result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ping6 $IPv6_B -c $packages;echo `$?"
     Write-Host -F Red "DEBUG: ping6 $IPv6_B result: $result"
     return $result
 }
@@ -190,12 +189,13 @@ if ( $ret -ne $true )
     DisconnectWithVIServer
     return $Aborted
 }
+# Refresh status
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 $IPADDB = $vmObjB.Guest.IPAddress
 Write-Host -F Red "DEBUG: IP address of VM_B: $IPADDB"
 Write-Output "DEBUG: IP address of VM_B: $IPADDB"
 
-#fe80 IPV6 add are not valid
+# Current version get ipv6 method, (fe80 IPV6 add are not valid to ping6)
 if ($IPADDB[1].contains("fe80"))
 {
     $IPv6_B = $IPADDB[2]
@@ -229,9 +229,9 @@ else
 }
 
  
-#Enable ipv6 for VM_A
+# Enable ipv6 for VM_A
 $Enable = 0
-$Enresult = ping-VM ${sshKey} ${ipv4} 0 $IPv6_B 4
+$Enresult = ping-VM ${sshKey} ${ipv4} $Enable $IPv6_B $packages
 Write-Host -F Green "DEBUG: Get result is $Enresult"
 Write-Output "DEBUG: set enable ipv6 result: $Enresult"
 if ($Enresult[-1] -eq $False) 
@@ -251,7 +251,7 @@ else
 }
 
 
-#Stop-VM $vmObjB -Confirm:$False
+Stop-VM $vmObjB -Confirm:$False -RunAsync:$true -ErrorAction SilentlyContinue
 DisconnectWithVIServer
 if ($retVal1 -and $retval2)
 {
