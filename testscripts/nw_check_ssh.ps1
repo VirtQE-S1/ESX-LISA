@@ -1,9 +1,10 @@
-###############################################################################
+#######################################################################################
 ## Description:
 ##  Check ssh connection from other VM and Host
 ## Revision:
 ##  v1.0.0 - xinhu - 09/19/2019 - Build the script
-###############################################################################
+##  v1.0.1 - xinhu - 10/10/2019 - Update the script of way to install sshpass
+#######################################################################################
 
 
 <#
@@ -127,10 +128,10 @@ $retValdhcp = $False
 
 
 # Function to ssh Host and BVM
-function checkssh(${sshKey},${ipv4},$HostIP,$linuxOS)
+function checkssh(${sshKey},${ipv4},$HostIP)
 {
     $SSH1 = $False
-    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -i http://download.eng.bos.redhat.com/brewroot/vol/rhel-$linuxOS/packages/sshpass/1.06/2.el$linuxOS/x86_64/sshpass-1.06-2.el$linuxOS.x86_64.rpm"
+    bin\plink.exe -i ssh\${sshKey} root@${ipv4} "wget http://sourceforge.net/projects/sshpass/files/latest/download -O sshpass.tar.gz && tar -xvf sshpass.tar.gz && cd sshpass-* && ./configure && make install"
     $SshHost = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sshpass -p '123qweP' ssh -o StrictHostKeyChecking=no root@$hvServer ls;echo `$? "
 
     Write-Host -F Red "DEBUG: Using DHCP IP SSH $hvServer : $SshHost"
@@ -162,7 +163,7 @@ if (!$IsNIC)
 }
 
 # Set dhcp ip and check ssh 
-$result = checkssh ${sshKey} ${ipv4} $HostIP $linuxOS
+$result = checkssh ${sshKey} ${ipv4} $HostIP
 Write-Host -F Red "DEBUG: DHCP SSH result is $result"
 Write-Output "DEBUG: DHCP SSH result is $result"
 $retValdhcp = $result[-1]
