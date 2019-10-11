@@ -296,11 +296,11 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 80 -->
+            <!-- Tier2: 82 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
-                <!-- suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
@@ -351,6 +351,8 @@
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
                 <suiteTest>stor_add_RDM_disk</suiteTest>
+                <suiteTest>stor_reset_scsi</suiteTest>
+                <suiteTest>stor_scsi_domain_validation</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -372,20 +374,20 @@
                 <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-                <!-- suiteTest>libmspack_yum_install</suiteTest>
+                <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest -->
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <!-- Tier1: 46 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
-                <!-- suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
@@ -415,10 +417,10 @@
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
-                <suiteTest>nw_hot_plug_unplug</suiteTest -->
+                <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_nic_name</suiteTest>
-                <!-- suiteTest>bl_add_memory_low_to_high</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
@@ -430,11 +432,46 @@
                 <suiteTest>sriov_boot_check</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest -->
+                <suiteTest>cloud-init_check_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
     <testCases>
+        <test>
+            <testName>stor_reset_scsi</testName>
+            <testID>ESX-Stor-038</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts\stor_reset_scsi.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/stor_reset_scsi_disk.sh</files>
+            <testParams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thick</param>
+                <param>Count=1</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152733</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_scsi_domain_validation</testName>
+            <testID>ESX-Stor-037</testID>
+            <testScript>testscripts\stor_scsi_domain_validation.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_domain_validation.sh
+        </files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-173219</param>
+            </testParams>
+            <cleanupScript>SetupScripts\revert_guest_B.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>nw_check_ipv6</testName>
             <testID>ESX-NW-023</testID>
