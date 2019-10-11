@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-## check guest status when reset SCSI adapter
+## check guest status when reset SCSI adapter.
 ##
 ###############################################################################
 ##
@@ -14,9 +14,27 @@
 
 <#
 .Synopsis
-    
+    check guest status when reset SCSI adapter.
 .Description
-
+<test>
+        <testName>stor_reset_scsi</testName>
+        <testID>ESX-Stor-038</testID>
+        <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+        <testScript>testscripts\stor_reset_scsi.ps1</testScript>
+        <files>remote-scripts/utils.sh,remote-scripts/stor_reset_scsi_disk.sh</files>
+        <testParams>
+            <param>DiskType=SCSI</param>
+            <param>StorageFormat=Thick</param>
+            <param>Count=1</param>
+            <param>CapacityGB=10</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-152733</param>
+        </testParams>
+        <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        <timeout>3600</timeout>
+        <onError>Continue</onError>
+        <noReboot>False</noReboot>
+    </test>
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
