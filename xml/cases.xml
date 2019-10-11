@@ -300,7 +300,7 @@
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
-                <suiteTest>go_cpupower_frequency</suiteTest>
+                <!-- suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_reboot_12G_memory</suiteTest>
@@ -372,20 +372,20 @@
                 <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-                <suiteTest>libmspack_yum_install</suiteTest>
+                <!-- suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest>
+                <suiteTest>libmspack_check_status</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
             <!-- Tier1: 46 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
-                <suiteTest>go_suspend_vm</suiteTest>
+                <!-- suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
@@ -415,10 +415,10 @@
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
-                <suiteTest>nw_hot_plug_unplug</suiteTest>
+                <suiteTest>nw_hot_plug_unplug</suiteTest -->
                 <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_nic_name</suiteTest>
-                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+                <!-- suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
@@ -430,7 +430,7 @@
                 <suiteTest>sriov_boot_check</suiteTest>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest -->
             </suiteTests>
         </suite>
     </testSuites>
