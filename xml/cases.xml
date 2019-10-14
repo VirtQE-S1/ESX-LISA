@@ -308,7 +308,7 @@
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
-                <suiteTest>go_reboot_debugkernel_10_times</suiteTest -->
+                <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
@@ -334,8 +334,8 @@
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
-                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
-                <!-- suiteTest>stor_check_cd_file</suiteTest>
+                <suiteTest>ovt_snapshot_mount_twice</suiteTest -->
+                <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
                 <suiteTest>stor_largest_size</suiteTest>
@@ -353,7 +353,7 @@
                 <suiteTest>stor_add_RDM_disk</suiteTest>
                 <suiteTest>stor_reset_scsi</suiteTest>
                 <suiteTest>stor_scsi_domain_validation</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <!-- suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
