@@ -353,7 +353,7 @@
                 <suiteTest>stor_add_RDM_disk</suiteTest>
                 <suiteTest>stor_reset_scsi</suiteTest>
                 <suiteTest>stor_scsi_domain_validation</suiteTest>
-                <suiteTest>nw_scp_mtu_9000</suiteTest -->
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -368,7 +368,7 @@
                 <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
-                <suiteTest>nw_check_ipv6</suiteTest>
+                <suiteTest>nw_check_ipv6</suiteTest -->
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
