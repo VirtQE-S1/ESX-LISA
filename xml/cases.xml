@@ -334,7 +334,7 @@
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
-                <suiteTest>ovt_snapshot_mount_twice</suiteTest -->
+                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -353,7 +353,7 @@
                 <suiteTest>stor_add_RDM_disk</suiteTest>
                 <suiteTest>stor_reset_scsi</suiteTest>
                 <suiteTest>stor_scsi_domain_validation</suiteTest>
-                <!-- suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest -->
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
                 <suiteTest>nw_check_operstate</suiteTest>
@@ -374,13 +374,13 @@
                 <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-                <!-- suiteTest>libmspack_yum_install</suiteTest>
+                <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest -->
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
