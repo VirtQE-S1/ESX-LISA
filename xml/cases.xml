@@ -309,7 +309,7 @@
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
-                <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <!-- suiteTest>kdump_crash_mixed_disk</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
@@ -374,13 +374,13 @@
                 <suiteTest>rdma_ping_diff_host</suiteTest>
                 <suiteTest>rdma_reload_vmxnet3</suiteTest>
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-                <suiteTest>libmspack_yum_install</suiteTest>
+                <!-- suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest>
+                <suiteTest>libmspack_check_status</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
