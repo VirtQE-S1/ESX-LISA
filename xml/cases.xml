@@ -371,8 +371,8 @@
                 <suiteTest>nw_check_ipv6</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest -->
-                <suiteTest>rdma_reload_vmxnet3</suiteTest>
+                <suiteTest>rdma_ping_diff_host</suiteTest>
+                <suiteTest>rdma_reload_vmxnet3</suiteTest -->
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <!-- suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
 
