@@ -299,7 +299,7 @@
             <!-- Tier2: 82 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
-                <!-- suiteTest>go_check_cpu</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
@@ -371,18 +371,16 @@
                 <suiteTest>nw_check_ipv6</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
-                <suiteTest>rdma_ping_diff_host</suiteTest -->
-                <suiteTest>rdma_reload_vmxnet3</suiteTest>
-                <!-- suiteTest>rdma_reboot_kernel-debug</suiteTest>
-                <suiteTest>vmwgfx_check_file_snapshot</suiteTest -->
-
+                <suiteTest>rdma_ping_diff_host</suiteTest>
+                <!-- suiteTest>rdma_reload_vmxnet3</suiteTest -->
+                <suiteTest>rdma_reboot_kernel-debug</suiteTest>
+                <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
                 <!-- suiteTest>sriov_ipv4_throughtput</suiteTest -->
                 <!-- suiteTest>sriov_ipv6_throughtput</suiteTest -->
-
-                <!-- suiteTest>libmspack_yum_install</suiteTest>
+                <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
-                <suiteTest>libmspack_check_status</suiteTest -->
+                <suiteTest>libmspack_check_status</suiteTest>
             </suiteTests>
         </suite>
         <suite>
