@@ -3,9 +3,9 @@
 ##  Boot a Guest with RDMA NIC and reload vmxnet3 module
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 11/8/2018 - Build the script
+##  v1.0.0 - ruqin - 11/8/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
-
 
 <#
 .Synopsis
@@ -113,6 +113,13 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName

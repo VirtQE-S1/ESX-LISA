@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##   Test with ibv_rc_pingpong, perf and rping between 2 Guests on the different Hosts
 ##
 ## Revision:
-##  v1.0.0 - ldu - 11/15/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ldu - 11/15/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -44,15 +43,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -76,9 +71,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -118,9 +111,7 @@ if (-not $dstHost6_7 -or -not $dstHost6_5) {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -130,13 +121,22 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
+########################################################################################
 #
 # Main Body
-# ############################################################################### 
+######################################################################################## 
 
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -309,7 +309,7 @@ else {
 }
 
 
-#For RHEL8 and RHEL7 install different package.
+# For RHEL8 and RHEL7 install different package.
 if ($DISTRO -eq "RedHat8") {
     $command1 = "yum install -y opensm rdma libibverbs librdmacm librdmacm-utils ibacm libibverbs-utils infiniband-diags perftest qperf libcxgb4 libmlx4 libmlx5 rdma-core"
 }
@@ -317,13 +317,13 @@ else {
     $command1 = "yum install -y opensm rdma libibverbs librdmacm librdmacm-utils ibacm libibverbs-utils infiniband-diags ibutils perftest qperf infinipath-psm libcxgb3 libcxgb4 libehca libipathverbs libmthca libmlx4 libmlx5 libnes libocrdma dapl dapl-devel dapl-utils dapl dapl-devel dapl-utils"
 }
 
-#install dependency package on guest B.
+# Install dependency package on guest B.
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command1
 if (-not $status) {
     LogPrint "ERROR : install package Failed"
     return $Aborted
 }
-#load ib related modules
+# Load ib related modules
 $command2 = "modprobe ib_umad"
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command2
 if (-not $status) {
@@ -332,7 +332,7 @@ if (-not $status) {
     return $Aborted
 }
 
-#install dependency package on guest A.
+# Install dependency package on guest A.
 $status = SendCommandToVM $ipv4 $sshkey $command1
 if (-not $status) {
     LogPrint "ERROR : install package Failed"
@@ -340,7 +340,7 @@ if (-not $status) {
     return $Aborted
 }
 
-#load ib related modules
+# Load ib related modules
 $status = SendCommandToVM $ipv4 $sshkey $command2
 if (-not $status) {
     LogPrint "ERROR : load modules Failed"
@@ -348,7 +348,7 @@ if (-not $status) {
     return $Aborted
 }
 
-#check the RoCE version
+# Check the RoCE version
 $RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
 if ("RoCE V2" -eq $RoCE)
 {
@@ -368,12 +368,12 @@ else
     return $Aborted
 }
 
-#check the test tools used for test.
+# Check the test tools used for test.
 LogPrint "test is $tool"
 write-host -F Red "Test tool is $tool"
 if ( $tool -eq "perf" )
 {
-  #array for perftest command
+  # Array for perftest command
   $perf_guestB = @("ib_send_lat -a","ib_send_bw -a","ib_read_lat -a","ib_read_bw -a","ib_write_lat -a","ib_write_bw -a" )
   $perf_guestA = @("ib_send_lat -a $IPAddr_guest_B","ib_send_bw -a $IPAddr_guest_B","ib_read_lat -a $IPAddr_guest_B","ib_read_bw -a $IPAddr_guest_B","ib_write_lat -a $IPAddr_guest_B","ib_write_bw -a $IPAddr_guest_B" )
 
@@ -409,11 +409,11 @@ else
   }
 
 
-  #Run test on guest B first,because guest B is test as server.
+  # Run test on guest B first,because guest B is test as server.
   $Process1 = Start-Process bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${commandB}" -PassThru -WindowStyle Hidden
   write-host -F Red "$($Process1.id)"
 
-  #Then run test on guest A, guest A as client.
+  # Then run test on guest A, guest A as client.
   $status = SendCommandToVM $ipv4 $sshkey $commandA
   if (-not $status) 
   {

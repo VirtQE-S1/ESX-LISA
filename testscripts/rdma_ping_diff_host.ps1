@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Ping successfully between 2 Guests on the different Hosts
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/21/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 8/21/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -48,9 +47,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -66,15 +63,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -97,9 +90,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -139,9 +130,7 @@ if (-not $dstHost6_7 -or -not $dstHost6_5) {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -151,13 +140,21 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-# ############################################################################### 
+########################################################################################
 
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"

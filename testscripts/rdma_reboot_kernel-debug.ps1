@@ -1,12 +1,13 @@
-###############################################################################################
+########################################################################################
 ##
 ## Description:
 ## 	Reboot guet with debugkernel installed.
 ##
 ## Revision:
-## 	v1.0.0 - ldu - 05/27/2019 - Reboot guest with debugkernel installed
-## 	v1.1.0 - boyang - 06/03/2019 - Fix send CMD format 
-###############################################################################################
+## 	v1.0.0 - ldu - 05/27/2019 - Reboot guest with debugkernel installed.
+## 	v1.1.0 - boyang - 06/03/2019 - Fix send CMD format.
+##  v1.2.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -119,12 +120,21 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################################
+########################################################################################
+
+
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 # Get new add RDMA NIC
 $nics = FindAllNewAddNIC $ipv4 $sshKey
 if ($null -eq $nics) 
@@ -161,6 +171,7 @@ if (-not $sts)
 $Command = "modprobe ib_umad"
 $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
+
 # Make sure the ibstat is active 
 $Command = "ibstat |grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
@@ -173,6 +184,7 @@ if ($ibstat -eq 0)
 
 # Install kerel-debug package in guest
 $kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
+
 
 #check the kernel-debug installed successfully or not.
 $kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
@@ -188,6 +200,7 @@ else
     Write-Output "INFO: The kernel debug $kerneldebug_check installed successfully"
 }
 
+
 # Check the OS distro.Then change the grub file to change boot order
 $OS = GetLinuxDistro  $ipv4 $sshKey
 if ($OS -eq "RedHat6")
@@ -202,9 +215,11 @@ else
     $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
 }
 
+
 # Reboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 Start-Sleep -seconds 6
+
 
 # Wait for vm to Start
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
@@ -226,6 +241,7 @@ else
     }
 }
 
+
 # Check call trace
 $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
 Write-Output "DEBUG: calltrace_check: $calltrace_check"
@@ -240,6 +256,6 @@ else{
     Write-Output "ERROR: After booting with debug kernel, FOUND $calltrace_check Call Trace in demsg"
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal
