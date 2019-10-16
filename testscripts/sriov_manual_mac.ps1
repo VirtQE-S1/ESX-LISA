@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Boot a Guest with SR-IOV NIC which owns a manual MAC address
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 09/05/2018 - Build the script
-##
-###############################################################################
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -124,6 +123,15 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
