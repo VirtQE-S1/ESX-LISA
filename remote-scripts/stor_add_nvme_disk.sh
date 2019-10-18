@@ -11,28 +11,7 @@
 ## v1.0.0 - ldu - 8/28/2018 - Build the script
 ##
 ###############################################################################
-# <test>
-#     <testName>stor_add_nvme_disk</testName>
-#     <testID>ESX-Stor-017</testID>
-#     <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-#     <testScript>stor_add_nvme_disk.sh</testScript  >
-#     <files>remote-scripts/utils.sh</files>
-#     <files>remote-scripts/stor_add_nvme_disk.sh</files>
-#     <testParams>
-#         <param>DiskType=NVMe</param>
-#         <param>StorageFormat=Thick</param>
-#         <param>DiskDataStore=NVMe</param>
-#         <param>CapacityGB=5</param>
-#         <param>disk=/dev/nvme0n1</param>
-#         <param>FS=ext4</param>
-#         <param>TC_COVERED=RHEL6-0000,RHEL-144415</param>
-#     </testParams>
-#     <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
-#     <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-#     <timeout>600</timeout>
-#     <onError>Continue</onError>
-#     <noReboot>False</noReboot>
-# </test>
+
 
 dos2unix utils.sh
 
