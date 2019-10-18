@@ -1,7 +1,7 @@
 ###############################################################################
 ##
 ## Description:
-## Test disks works well when stor_add_nvme_disk
+## Test disks works well when add a NVMe controller and disk to the Guest
 ##
 ###############################################################################
 ##
@@ -13,7 +13,7 @@
 
 <#
 .Synopsis
-    stor_add_nvme_disk
+     [virtual storage]Add a NVMe controller and disk to the Guest
 .Description
         <test>
             <testName>stor_add_nvme_disk</testName>
