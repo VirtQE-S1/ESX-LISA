@@ -2489,14 +2489,13 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     $host_obj = Get-VMHost -Name $hvServer
     $host_ver = $host_obj.version
     Write-Host -F Red "DEBUG: host_ver: $host_ver"
-    Write-Output "DEBUG: host_ver: $host_ver"
+
     $processer_type =  $host_obj.ProcessorType
     Write-Host -F Red "DEBUG: processer_type: $processer_type"
-    Write-Output "DEBUG: processer_type: $processer_type"
     if($processer_type.Contains("AMD"))
     {
         $host_ver = $host_ver + "-amd"
-        echo "INFO: AMD Machine: $host_ver"
+        Write-Host -F Red "INFO: AMD Machine: $host_ver"
     }
 
     # Confirm hosts want to be skipped match automation hardware ENV.
@@ -2505,7 +2504,6 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
         if($automation_hosts -notcontains $i)
         {
             Write-Host -F Red "ERROR: Host want to be skipped isn't in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
-            Write-Output "ERROR: Host want to be skipped isn't in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
             return $false
         }
     }
@@ -2514,13 +2512,11 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     if($skip_hosts -contains $host_ver)
     {
         Write-Host -F Red "INFO: Host $host_ver belongs to skip list, skip all test"
-        Write-Output "INFO: Host $host_ver belongs to skip list, skip all test"    
         return $true
     }
     else
     {
         Write-Host -F Red "INFO: Host $host_ver DOESN'T belongs to hosts list want to be skipped. Keep going below testing."
-        Write-Output "INFO: Host $host_ver DOESN'T belongs to hosts list want to be skipped. Keep going below testing."    
         return $false
     }
 }
