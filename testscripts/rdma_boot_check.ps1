@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 08/15/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.1.0 - boyang - 10/16/2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 

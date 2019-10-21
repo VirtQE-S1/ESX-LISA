@@ -1,15 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Test disks works well when add a NVMe controller and disk to the Guest
-##
-###############################################################################
+##  Test disks works well when add a NVMe controller and disk to the Guest
 ##
 ## Revision:
-## v1.0.0 - ldu - 10/17/2019 - Build scripts.
-##
-## 
-###############################################################################
+##  v1.0.0 - ldu - 10/17/2019 - Build scripts.
+##  v1.1.0 - boyang - 10/21/2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -45,11 +42,9 @@
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -67,14 +62,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -94,9 +87,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -131,9 +123,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -141,21 +132,27 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
+
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 
-#
 # Check the disk number of the guest.
-#
 $diskList =  Get-HardDisk -VM $vmObj
 $diskLength = $diskList.Length
 
@@ -186,6 +183,6 @@ else
     $retVal = $Passed
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal
