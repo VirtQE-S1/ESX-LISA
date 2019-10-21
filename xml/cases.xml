@@ -1666,7 +1666,7 @@
             <testName>stor_add_nvme_disk</testName>
             <testID>ESX-Stor-017</testID>
             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <testScript>stor_add_nvme_disk.sh</testScript>
+            <testScript>testscripts\stor_add_nvme_disk.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_add_nvme_disk.sh</files>
             <testParams>
