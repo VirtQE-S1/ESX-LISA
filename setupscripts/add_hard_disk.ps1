@@ -341,6 +341,13 @@ for ($i = 0; $i -lt $Count; $i++) {
 
     # Add NVMe disk
     if ($diskType -eq "NVMe") {
+        # Check host version
+        $skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+        if($skip)
+        {
+            return $Skipped
+        }
+
         $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB $storageFormat
         if ($sts[-1]) {
             LogPrint "INFO: Add NVMe disk done. $vmName"
