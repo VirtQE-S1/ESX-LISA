@@ -115,7 +115,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-$skip = SkipTestInHost $hvServer "6.0.0","6.5.0","6.7.0"
+$skip = SkipTestInHost $hvServer "6.0.0"
 if($skip)
 {
     return $Skipped
