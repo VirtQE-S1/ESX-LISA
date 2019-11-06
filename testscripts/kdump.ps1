@@ -209,7 +209,7 @@ while ($timeout -gt 0)
 # Trigger the kernel panic with subprocess
 Write-Host -F Red "INFO: Start a new process to triger kdump"
 Write-Output "INFO: Start a new process to triger kdump"
-$tmpCmd = "echo c > /proc/sysrq-trigger 2>/dev/null &"
+$tmpCmd = "echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger 2>/dev/null &"
 Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" -WindowStyle Hidden
 
 # Confirm enough time to complete vmcore save and reboot
