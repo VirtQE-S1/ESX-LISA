@@ -382,6 +382,10 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+
+                <!-- Below cases belong to Tier1 -->
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>ovt_check_build_version</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -404,9 +408,7 @@
                 <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
