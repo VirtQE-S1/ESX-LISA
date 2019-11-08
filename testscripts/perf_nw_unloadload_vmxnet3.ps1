@@ -19,7 +19,7 @@
         <files>remote-scripts/load_unload_vmxnet3.sh</files>
         <files>remote-scripts/ping.sh</files>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>6000</timeout>
+        <timeout>3600</timeout>
         <testParams>
             <param>TC_COVERED=RHEL7-50932</param>
         </testParams>
@@ -122,7 +122,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #######################################################################################
 ## Main Body
 #######################################################################################
-# Current version only install sshpass by rpm link
 $retValdhcp = $Failed
 
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -159,26 +158,12 @@ $IPB = GetIPv4ViaPowerCLI $vmNameB $hvServer
 Write-Host -F Red "DEBUG: IP address of VM_B: ${IPB}"
 Write-Output "DEBUG: IP address of VM_B: ${IPB}"
 
-# Confirm the vmxnet3 nic and get nic name
-$Command = 'lspci | grep -i Ethernet | grep -i vmxnet3' 
-$IsNIC = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-Write-Host -F Red "DEBUG: Info of NIC: $IsNIC"
-Write-Output "DEBUG: Info of NIC: $IsNIC"
-if (!$IsNIC)
-{
-    Write-Host -F Red "ERROR: NIC is not vmxnets"
-    Write-Output "ERROR: NIC is not vmxnets"
-    DisconnectWithVIServer
-    return $Aborted
-}
 
-# dos2unix ping.sh load_unload_vmxnet3.sh
+# Function dos2unix ping.sh and load_unload_vmxnet3.sh
 $result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cd /root && sleep 1 && dos2unix ping.sh && chmod u+x ping.sh && sleep 1 && dos2unix load_unload_vmxnet3.sh && chmod u+x load_unload_vmxnet3.sh"
 
-# Ping -f VMB from VMA for one hour
-$during = 3600
-bin\plink.exe -i ssh\${sshKey} root@${ipv4} "wget http://sourceforge.net/projects/sshpass/files/latest/download -O sshpass.tar.gz && tar -xvf sshpass.tar.gz && cd sshpass-* && ./configure && make install"
-$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sshpass -p '123qweP' scp -o StrictHostKeyChecking=no root@${IPB} ping.sh /root/ping.sh;echo `$? "
+# SCP ping.sh from VMA to VMB
+$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "scp -i `$HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no ping.sh root@${IPB}:/root/;echo `$? "
 if (!$result)
 {
     Write-Host -F Red "ERROR: SCP ping from ${ipv4} to ${IPB} Failed"
@@ -188,21 +173,25 @@ if (!$result)
 }
 Write-Host -F Red "DEBUG: Start to ping -f ${ipv4}"
 Write-Output "DEBUG: Start to ping -f ${ipv4}"
+$during = 3000
+# Ping -f VMA from VMB for $during s.
 $PING = Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IPB} bash ping.sh $during ${ipv4}" -PassThru -WindowStyle Hidden
 
 # Load/Unload vmxnets
 $time=Get-date
-Write-Host -F Red "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, ${time}"
-Write-Output "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, ${time}"
+Write-Host -F Red "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, at ${time}"
+Write-Output "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, at ${time}"
 $Startload = "bash /root/load_unload_vmxnet3.sh $during"
 $load= .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Startload
 $time=Get-date
 Write-Host -F Red "DEBUG: During $during s flood ping, load and unload vmxnet3, $load, $time"
 Write-Output "DEBUG: During $during s flood ping, load and unload vmxnet3, $load, $time"
 
+
+# Check the NIC works whell after long time load/unload vmxnet3
 $IsNet = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ping ${IPB} -c 1;echo `$?"
-Write-Host -F Red "DEBUG: During one hour flood ping, load and unload vmxnet3, result is $IsNet"
-Write-Output "DEBUG: During one hour flood ping, load and unload vmxnet3, result is $IsNet"
+Write-Host -F Red "DEBUG: During $during s flood ping, load and unload vmxnet3, result is $IsNet"
+Write-Output "DEBUG: During $during s flood ping, load and unload vmxnet3, result is $IsNet"
 if ($($IsNet[-1]) -ne 0)
 {
     Write-Host -F Red "ERROR: During one hour flood ping, load and unload vmxnet3, result is $IsNet, failed"
@@ -211,6 +200,7 @@ if ($($IsNet[-1]) -ne 0)
     return $retValdhcp
 }
 $retValdhcp = $Passed
+
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 Stop-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 DisconnectWithVIServer
