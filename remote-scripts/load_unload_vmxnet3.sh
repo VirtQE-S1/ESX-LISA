@@ -6,15 +6,15 @@
 ## Revision:
 ##   v1.0.0 - xinhu - 01/09/2017 - Draft script for load/unload vmxnet3 for 1 hour. 
 #######################################################################################
-start=$(date "+%s")
-time=$[$(date "+%s")-$start]
-while [ $time -lt $1 ]
+estart=$(date "+%s")
+etime=$[ $(date "+%s") - $estart ]
+while [ $etime -lt $1 ]
 do
-modprobe -r vmxnet3
-modprobe vmxnet3
-time=$[$(date "+%s")-$start]
-#echo "DEBUG: have execute $time s"
+    modprobe -r vmxnet3
+    modprobe vmxnet3
+    etime=$[ $(date "+%s") - $estart ]
+    #echo "DEBUG: have execute $time s"
 done
-echo "DEBUG: execute $time s from $start"
+echo "DEBUG: execute $etime s from $estart"
 systemctl restart NetworkManager
-Sleep 6
+Sleep 6 

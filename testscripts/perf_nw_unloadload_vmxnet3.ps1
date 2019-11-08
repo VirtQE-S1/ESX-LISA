@@ -3,6 +3,7 @@
 ##  Upload/load vmxnet3 module during flood ping
 ## Revision:
 ##  v1.0.0 - xinhu - 10/18/2019 - Build the script
+##  v1.0.1 - xinhu - 11/08/2019 - Update the parameters of script 
 #######################################################################################
 
 
@@ -11,16 +12,20 @@
     Upload/load vmxnet3 module during flood ping
 
 .Description
-<test>
-        <testName>perf_unloadload_vmxnet3</testName>
+    <test>
+        <testName>perf_nw_unloadload_vmxnet3</testName>
         <testID>ESX-PERF-013</testID>
-        <testScript>testscripts/perf_unloadload_vmxnet3.ps1</testScript>
+        <testScript>testscripts/perf_nw_unloadload_vmxnet3.ps1</testScript>
         <files>remote-scripts/load_unload_vmxnet3.sh</files>
+        <files>remote-scripts/ping.sh</files>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>6000</timeout>
+        <testParams>
+            <param>TC_COVERED=RHEL7-50932</param>
+        </testParams>
         <onError>Continue</onError>
-        <noReboot>False</noReboot>
-</test>
+        <noReboot>False</noReboot> 
+    </test>
 
 .Parameter vmName
     Name of the test VM.
@@ -61,7 +66,6 @@ $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
 $logdir = $null
-$HostIP = $null
 
 
 $params = $testParams.Split(";")
@@ -72,7 +76,6 @@ foreach ($p in $params) {
         "sshKey" { $sshKey = $fields[1].Trim() }
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "HostIP" {$HostIP = $fields[1].Trim()}
         default {}
     }
 }
@@ -122,8 +125,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Current version only install sshpass by rpm link
 $retValdhcp = $Failed
 
-$linuxOS = GetLinuxDistro $ipv4 $sshKey
-$linuxOS = $linuxOS[-1]
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $vmNameB = $vmName -replace "A","B"
 Write-Host -F Red "INFO: RevertSnap $vmNameB..."
@@ -171,9 +172,13 @@ if (!$IsNIC)
     return $Aborted
 }
 
+# dos2unix ping.sh load_unload_vmxnet3.sh
+$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cd /root && sleep 1 && dos2unix ping.sh && chmod u+x ping.sh && sleep 1 && dos2unix load_unload_vmxnet3.sh && chmod u+x load_unload_vmxnet3.sh"
+
 # Ping -f VMB from VMA for one hour
 $during = 3600
-$result = bin\pscp.exe -i ssh\${sshKey} remote-scripts/ping.sh root@${IPB}:/root/
+bin\plink.exe -i ssh\${sshKey} root@${ipv4} "wget http://sourceforge.net/projects/sshpass/files/latest/download -O sshpass.tar.gz && tar -xvf sshpass.tar.gz && cd sshpass-* && ./configure && make install"
+$result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sshpass -p '123qweP' scp -o StrictHostKeyChecking=no root@${IPB} ping.sh /root/ping.sh;echo `$? "
 if (!$result)
 {
     Write-Host -F Red "ERROR: SCP ping from ${ipv4} to ${IPB} Failed"
@@ -183,16 +188,17 @@ if (!$result)
 }
 Write-Host -F Red "DEBUG: Start to ping -f ${ipv4}"
 Write-Output "DEBUG: Start to ping -f ${ipv4}"
-$command = "ping ${ipv4}"
-Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk  root@${IPB} $command " -PassThru -WindowStyle Hidden
-$PING = Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk  root@${IPB} bash ping.sh $during" -PassThru -WindowStyle Hidden
+$PING = Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IPB} bash ping.sh $during ${ipv4}" -PassThru -WindowStyle Hidden
 
 # Load/Unload vmxnets
-Write-Host -F Red "DEBUG: Start to load/unload vmxnet3 of ${ipv4}"
-Write-Output "DEBUG: Start to load/unload vmxnet3 of ${ipv4}"
+$time=Get-date
+Write-Host -F Red "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, ${time}"
+Write-Output "DEBUG: Start to load/unload vmxnet3 of ${ipv4}, ${time}"
 $Startload = "bash /root/load_unload_vmxnet3.sh $during"
 $load= .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Startload
-Write-Host -F Red "DEBUG: During one hour flood ping, load and unload vmxnet3, $load"
+$time=Get-date
+Write-Host -F Red "DEBUG: During $during s flood ping, load and unload vmxnet3, $load, $time"
+Write-Output "DEBUG: During $during s flood ping, load and unload vmxnet3, $load, $time"
 
 $IsNet = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ping ${IPB} -c 1;echo `$?"
 Write-Host -F Red "DEBUG: During one hour flood ping, load and unload vmxnet3, result is $IsNet"
