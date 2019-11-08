@@ -157,6 +157,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
     return $Skipped
 }
 
+
 $scripts = "stor_add_disk_ide.sh"
 # Run remote test scripts
 RunRemoteScript $scripts | Write-Output -OutVariable sts

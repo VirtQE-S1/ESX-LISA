@@ -1,14 +1,13 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Add pvRDMA nic 
-##
-###############################################################################
+##  Add pvRDMA nic 
 ##
 ## Revision:
-## V1.0.0 - ruqin - 8/13/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 08/13/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16/2019 - Skip test in these hosts hw NO support.
+########################################################################################
+
+
 <#
 .Synopsis
     Add sriov nic
@@ -27,10 +26,11 @@
 
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
+
+
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
@@ -45,14 +45,12 @@ if (-not $testParams) {
     Throw "Error: No test parameters specified"
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse the test parameters
-#
 $rootDir = $null
 
 $params = $testParams.Split(";")
@@ -78,9 +76,7 @@ else {
 
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -89,18 +85,19 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
+
+
 $retVal = $Failed
 
 
 # Check host version
-$hvHost = Get-VMHost -Name $hvServer
-if ($hvHost.Version -lt "6.5.0") {
-    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
+$skip = SkipTestInHost $hvServer "6.0.0"
+if($skip)
+{
     return $Skipped
 }
 

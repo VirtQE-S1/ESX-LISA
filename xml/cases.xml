@@ -263,7 +263,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier3: 27 -->
+            <!-- Tier3: 28 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
                 <suiteTest>dpdk_compile</suiteTest>
@@ -272,15 +272,10 @@
                 <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
-                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
-                <suiteTest>rdma_perf_test_diff_host</suiteTest>
-                <suiteTest>rdma_perf_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_diff_host</suiteTest>
-                <suiteTest>sriov_maximum_nics</suiteTest>
-                <suiteTest>sriov_manual_mac</suiteTest>
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+                <suiteTest>perf_nw_ipv4_udp</suiteTest>
+                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
+                <suiteTest>perf_nw_ipv6_udp</suiteTest>
+                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
                 <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
@@ -289,14 +284,20 @@
                 <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
                 <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
                 <suiteTest>perf_stor_max_num_disk</suiteTest>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_perf_test_diff_host</suiteTest>
+                <suiteTest>rdma_perf_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_diff_host</suiteTest>
+                <suiteTest>sriov_maximum_nics</suiteTest>
+                <suiteTest>sriov_manual_mac</suiteTest>
+                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
+                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 80 -->
+            <!-- Tier2: 84 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -310,6 +311,8 @@
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
@@ -351,6 +354,8 @@
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
                 <suiteTest>stor_add_RDM_disk</suiteTest>
+                <suiteTest>stor_reset_scsi</suiteTest>
+                <suiteTest>stor_scsi_domain_validation</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -370,7 +375,7 @@
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
-                <suiteTest>rdma_reload_vmxnet3</suiteTest>
+                <!-- suiteTest>rdma_reload_vmxnet3</suiteTest -->
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
@@ -382,7 +387,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 46 -->
+            <!-- Tier1: 43 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
                 <suiteTest>go_suspend_vm</suiteTest>
@@ -395,30 +400,27 @@
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
-                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_check_build_version</suiteTest>
-                <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
-                <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
+                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_add_nvme_disk</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_nic_name</suiteTest>
-                <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
@@ -435,6 +437,41 @@
         </suite>
     </testSuites>
     <testCases>
+        <test>
+            <testName>stor_reset_scsi</testName>
+            <testID>ESX-Stor-038</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts\stor_reset_scsi.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/stor_reset_scsi_disk.sh</files>
+            <testParams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thick</param>
+                <param>Count=1</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152733</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_scsi_domain_validation</testName>
+            <testID>ESX-Stor-037</testID>
+            <testScript>testscripts\stor_scsi_domain_validation.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_domain_validation.sh
+        </files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-173219</param>
+            </testParams>
+            <cleanupScript>SetupScripts\revert_guest_B.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>nw_check_ipv6</testName>
             <testID>ESX-NW-023</testID>
@@ -1629,7 +1666,7 @@
             <testName>stor_add_nvme_disk</testName>
             <testID>ESX-Stor-017</testID>
             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <testScript>stor_add_nvme_disk.sh</testScript>
+            <testScript>testscripts\stor_add_nvme_disk.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_add_nvme_disk.sh</files>
             <testParams>

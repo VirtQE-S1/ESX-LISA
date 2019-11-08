@@ -2,10 +2,10 @@
 ## Description:
 ##  Add sriov nic 
 ##
-##
 ## Revision:
 ##  v1.0.0 - ruqin - 08/08/2018 - Build the script
 ##  v1.0.1 - boyang - 08/28/209 - Add debug info
+##  v1.1.0 - boyang - 10/16/2019 - Skip test in these hosts hw NO support.
 ########################################################################################
 
 
@@ -107,25 +107,27 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
+
 
 $retVal = $Failed
 
+
 # Check host version
-$hvHost = Get-VMHost -Name $hvServer
-if ($hvHost.Version -lt "6.5.0") {
-    LogPrint "ERROR: Current vSphere version < 6.5.0. It doesn't support SRIOV"
+$skip = SkipTestInHost $hvServer "6.0.0","6.7.0"
+if($skip)
+{
     return $Skipped
 }
+
 
 # Disable memory reserve
 LogPrint "INFO: Disable memory reserver before add a SRIOV"
 DisableMemoryReserve $vmName $hvServer
 # HERE. NO checking of action
+
 
 # Add a new sriov nic
 for ($i = 0; $i -lt $sriovNum; $i++) {
@@ -139,6 +141,7 @@ for ($i = 0; $i -lt $sriovNum; $i++) {
         return $Failed
     }
 }
+
 
 $retVal = $Passed
 return $retVal

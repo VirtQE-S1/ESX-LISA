@@ -201,6 +201,8 @@ if ($($IsNet[-1]) -ne 0)
 }
 $retValdhcp = $Passed
 
+
+# Stop VMB
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 Stop-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 DisconnectWithVIServer

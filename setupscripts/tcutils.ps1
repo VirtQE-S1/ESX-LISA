@@ -1,4 +1,4 @@
-###############################################################################
+########################################################################################
 ##
 ## ___________ _____________  ___         .____    .___  _________   _____
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
@@ -7,7 +7,7 @@
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/
 ##
-###############################################################################
+########################################################################################
 ##
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
@@ -15,18 +15,19 @@
 ## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
-###############################################################################
+########################################################################################
 ##
 ## Revision:
-## v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test
-## v1.1.0 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
-## v1.2.0 - xiaofwan - 01/06/2017 - Add PowerCLIImport; DisconnectWithVIServer
-## v1.3.0 - hhei     - 01/10/2017 - Add CheckModule function
-## v1.4.0 - xiaofwan - 01/25/2016 - Add four test result states
-## v1.5.0 - xiaofwan - 02/28/2016 - Add WaitForVMSSHReady
-## v1.5.1 - ruqin    - 07/06/2018  - Add GetModuleVersion
-## v1.5.2 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
-###############################################################################
+##  v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test
+##  v1.1.0 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
+##  v1.2.0 - xiaofwan - 01/06/2017 - Add PowerCLIImport; DisconnectWithVIServer
+##  v1.3.0 - hhei     - 01/10/2017 - Add CheckModule function
+##  v1.4.0 - xiaofwan - 01/25/2016 - Add four test result states
+##  v1.5.0 - xiaofwan - 02/28/2016 - Add WaitForVMSSHReady
+##  v1.6.0 - ruqin    - 07/06/2018  - Add GetModuleVersion
+##  v1.7.0 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
+##  v1.8.0 - boyang    - 10/15/2019 - Add SkipTestInHost
+########################################################################################
 
 
 <#
@@ -1413,7 +1414,6 @@ function ConvertStringToDecimal([string] $str)
 # LogPrint()
 #
 ########################################################################
-
 function LogPrint([string] $msg) {
 
     $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
@@ -2414,7 +2414,7 @@ function resetGuestSRIOV {
     <#
     .Synopsis
         Help to reset guest to origin host
-    .Description
+    .Description[String] $hvServer
         Help to reset guest to origin host, mainly for migration cases
     .Parameter vmName
         Name of the VM
@@ -2473,4 +2473,50 @@ function resetGuestSRIOV {
         return $Aborted
     }
     LogPrint "INFO: In reset function, VM already started"
+}
+
+
+########################################################################
+#
+# SkipTestInHost()
+#
+########################################################################
+function SkipTestInHost([String] $hvServer, [Array] $skip_hosts) 
+{
+    # Define 3RD-ESXi team automatiuon hardware ENV.
+    $automation_hosts = ("6.0.0", "6.5.0", "6.7.0", "6.7.0-amd")
+
+    $host_obj = Get-VMHost -Name $hvServer
+    $host_ver = $host_obj.version
+    Write-Host -F Red "DEBUG: host_ver: $host_ver"
+
+    $processer_type =  $host_obj.ProcessorType
+    Write-Host -F Red "DEBUG: processer_type: $processer_type"
+    if($processer_type.Contains("AMD"))
+    {
+        $host_ver = $host_ver + "-amd"
+        Write-Host -F Red "INFO: AMD Machine: $host_ver"
+    }
+
+    # Confirm hosts want to be skipped match automation hardware ENV.
+    foreach ($i in $skip_hosts)
+    {
+        if($automation_hosts -notcontains $i)
+        {
+            Write-Host -F Red "ERROR: Host want to be skipped isn't in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
+            return $false
+        }
+    }
+
+    # Skip test if current host match hosts list want to be skipped.
+    if($skip_hosts -contains $host_ver)
+    {
+        Write-Host -F Red "INFO: Host $host_ver belongs to skip list, skip all test"
+        return $true
+    }
+    else
+    {
+        Write-Host -F Red "INFO: Host $host_ver DOESN'T belongs to hosts list want to be skipped. Keep going below testing."
+        return $false
+    }
 }

@@ -1,19 +1,18 @@
 #!/bin/bash
 
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##   This script unintall the cloud-init.
 ##   The cloud-init should be uninstalled successfully.
 ##
-###############################################################################
-##
 ## Revision:
-##  v1.0 - ldu - 03/20/2019 - Draft script for case ESX-cloud-init-002.
-##
-###############################################################################
+##  v1.0.0 - ldu - 03/20/2019 - Draft script for case ESX-cloud-init-002.
+##  v1.1.0 - boyang - 10/15/2019 - Check yum install or pass this case even it fails
+########################################################################################
+
 
 dos2unix utils.sh
+
 
 # Source utils.sh
 . utils.sh || {
@@ -21,20 +20,20 @@ dos2unix utils.sh
     exit 1
 }
 
+
 # Source constants file and initialize most common variables
 UtilsInit
 
-#
-# Start the testing
-#
 
+# Skip RHEL6
 if [[ $DISTRO == "redhat_6" ]]; then
         SetTestStateSkipped
         exit
 fi
 
+
 version=$(rpm -qa cloud-init)
-LogMsg "$version"
+LogMsg "DEBUG: version: $version"
 if [ -n "$version" ]; then
         yum erase -y cloud-init
         version=$(rpm -qa cloud-init)
@@ -50,21 +49,28 @@ if [ -n "$version" ]; then
                 exit 0
         fi
 else
+        LogMsg "INFO: VM haven't cloud-init, install it firstly."
+        UpdateSummary "INFO: VM haven't cloud-init, install it firstly."
         yum install -y cloud-init
-        LogMsg "the cloud-init not installed, install it with yum"
-        UpdateSummary "cloud-init not installed,so install it first."
+        if [ $? -ne 0 ]; then
+                LogMsg "ERROR: Yum install cloud-init failed."
+                UpdateSummary "ERROR: Yum install cloud-init failed."
+                SetTestStateFailed
+                exit 1
+        fi
 fi
+
 
 yum erase -y cloud-init
 version=$(rpm -qa cloud-init)
 if [ -n "$version" ]; then
-        LogMsg "Unistall the cloud-init Failed"
-        UpdateSummary "Test Failed. Unistall the cloud-init Failed."
+        LogMsg "ERROR: Unistall the cloud-init Failed"
+        UpdateSummary "ERROR: Test Failed. Unistall the cloud-init Failed."
         SetTestStateFailed
         exit 1
  else
-        LogMsg "Unistall the cloud-init"
-        UpdateSummary "Test Successfully. Unistall the cloud-init."
+        LogMsg "INFO: Unistall the cloud-init successfully."
+        UpdateSummary "INFO: Unistall the cloud-init successfully."
         SetTestStateCompleted
         exit 0
 fi

@@ -9,21 +9,15 @@
                 <to>myself@mycompany.com</to>
             </recipients>
             <sender>myself@mycompany.com</sender>
-            <subject>ESX Automation Test</subject>
+            <subject>ESX demo Test</subject>
             <smtpServer>mysmtphost.mycompany.com</smtpServer>
         </email>
     </global>
 
     <testSuites>
         <suite>
-            <suiteName>general_operation</suiteName>
+            <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>nw_live_migration</suiteTest>
-                <suiteTest>sriov_ipv4_throughtput</suiteTest>
-                <suiteTest>sriov_ipv6_throughtput</suiteTest>
-                <suiteTest>sriov_move_host_supported</suiteTest>
-                <suiteTest>sriov_mtu_check</suiteTest>
-                <suiteTest>sriov_ping_diff_host</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>nw_mtu_scope</suiteTest>
@@ -34,156 +28,6 @@
     </testSuites>
 
     <testCases>
-        <test>
-            <testName>nw_live_migration</testName>
-            <testID>ESX-NW-017</testID>
-            <setupScript>SetupScripts\revert_guest_B.ps1</setupScript>
-            <testScript>testscripts\nw_live_migration.ps1</testScript>
-            <cleanupScript>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstHost6.0=10.73.196.234,10.73.196.236</param>
-                <param>dstDatastore=nfs-ceph</param>
-                <param>TC_COVERED=RHEL7-50929</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2000</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>sriov_mtu_check</testName>
-            <testID>ESX-SRIOV-002</testID>
-            <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>SetupScripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\shutdown_guest_B.ps1</file>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_mtu_check.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-113877,RHEL6-49164</param>
-                <param>mtuChange=True</param>
-                <param>mtu=9000</param>
-                <param>memoryReserve=true</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>sriov_move_host_supported</testName>
-            <testID>ESX-SRIOV-003</testID>
-            <setupScript>
-                <file>setupscripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1500</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>sriov_ping_diff_host</testName>
-            <testID>ESX-SRIOV-005</testID>
-            <setupScript>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\shutdown_guest_B.ps1</file>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>memoryReserve=True</param>
-                <param>TC_COVERED=RHEL-113884,RHEL6-49171</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1500</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>sriov_ipv4_throughtput</testName>
-            <testID>ESX-SRIOV-007</testID>
-            <setupScript>
-                <file>SetupScripts\change_cpu.ps1</file>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\shutdown_guest_B.ps1</file>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>memoryReserve=True</param>
-                <param>VCPU=8</param>
-                <param>VMMemory=4GB</param>
-                <param>NetworkBandWidth=10</param>
-                <param>TC_COVERED=RHEL-113880,RHEL6-49167</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>sriov_ipv6_throughtput</testName>
-            <testID>ESX-SRIOV-008</testID>
-            <setupScript>
-                <file>SetupScripts\change_cpu.ps1</file>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\revert_guest_B.ps1</file>
-                <file>setupscripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\shutdown_guest_B.ps1</file>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_ipv6_throughtput.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>memoryReserve=True</param>
-                <param>VCPU=8</param>
-                <param>VMMemory=4GB</param>
-                <param>NetworkBandWidth=10</param>
-                <param>TC_COVERED=RHEL-113881,RHEL6-49168</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
         <test>
             <testName>nw_check_ssh</testName>
             <testID>ESX-NW-022</testID>
@@ -252,13 +96,14 @@
     </testCases>
 
     <VMs>
-        <vm>
+	    <vm>
             <hvServer>ESXI_HOST_IPADDRESS</hvServer>
             <vmName>VM_NAME</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
-            <suite>open_vm_tools</suite>
+            <suite>EACV</suite>
         </vm>
     </VMs>
+
 </config>
