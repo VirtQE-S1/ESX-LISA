@@ -161,7 +161,7 @@ if ([String]::IsNullOrEmpty(${NIC}))
 }
 
 # Get ipv6 addr of VM_B
-$vmNameB = $vmName -replace "A","B"
+$vmNameB = $vmName -creplace ("-A$"),"-B"
 Write-Host -F Red "INFO: RevertSnap $vmNameB..."
 Write-Output "INFO: RevertSnap $vmNameB..."
 $result = RevertSnapshotVM $vmNameB $hvServer

@@ -18,9 +18,6 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>nw_check_ssh</suiteTest>
-                <suiteTest>go_check_time_sync</suiteTest>
-                <suiteTest>nw_mtu_scope</suiteTest>
                 <suiteTest>nw_check_ipv6</suiteTest>
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
             </suiteTests>
@@ -28,45 +25,6 @@
     </testSuites>
 
     <testCases>
-        <test>
-            <testName>nw_check_ssh</testName>
-            <testID>ESX-NW-022</testID>
-            <testScript>testscripts/nw_check_ssh.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-149711</param>
-                <param>HostIP=10.73.196.33</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>go_check_time_sync</testName>
-            <testID>ESX-GO-021</testID>
-            <testScript>testscripts/go_check_time_sync_after_reboot.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <testParams>
-                <param>TC_COVERED=RHEL7-98591</param>
-            </testParams>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>nw_mtu_scope</testName>
-            <testID>ESX-NW-021</testID>
-            <testScript>nw_mtu_scope.sh</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <files>remote-scripts/nw_mtu_scope.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <timeout>600</timeout>
-            <testParams>
-                <param>TC_COVERED=RHEL-111408</param>
-            </testParams>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
         <test>
             <testName>nw_check_ipv6</testName>
             <testID>ESX-NW-023</testID>
