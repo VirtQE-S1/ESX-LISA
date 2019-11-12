@@ -12,9 +12,11 @@ while [ $etime -lt $1 ]
 do
     modprobe -r vmxnet3
     modprobe vmxnet3
+    systemctl restart NetworkManager
+    sleep 6
     etime=$[ $(date "+%s") - $estart ]
     #echo "DEBUG: have execute $time s"
 done
 echo "DEBUG: execute $etime s from $estart"
 systemctl restart NetworkManager
-Sleep 6 
+sleep 6 
