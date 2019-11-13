@@ -173,7 +173,7 @@ if (!$result)
 }
 Write-Host -F Red "DEBUG: Start to ping -f ${ipv4}"
 Write-Output "DEBUG: Start to ping -f ${ipv4}"
-$during = 3000
+$during = 2400
 # Ping -f VMA from VMB for $during s.
 $PING = Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IPB} bash ping.sh $during ${ipv4}" -PassThru -WindowStyle Hidden
 
