@@ -18,55 +18,26 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
-                <suiteTest>go_check_hyperv_drivers</suiteTest>
-                <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>perf_nw_unloadload_vmxnet3</testName>
-            <testID>ESX-PERF-013</testID>
-            <testScript>testscripts/perf_nw_unloadload_vmxnet3.ps1</testScript>
-            <files>remote-scripts/load_unload_vmxnet3.sh</files>
-            <files>remote-scripts/ping.sh</files>
+            <testName>nw_check_vmxnet3_multiqueue</testName>
+            <testID>ESX-NW_24</testID>
+            <setupScript>setupscripts\change_cpu.ps1</setupScript>
+            <testScript>testscripts/nw_check_vmxnet3_multiqueue.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>3600</timeout>
             <testParams>
-                <param>TC_COVERED=RHEL7-50932</param>
+                <param>VCPU=4</param>
+                <param>TC_COVERED=RHEL7-50933</param>
             </testParams>
             <onError>Continue</onError>
-            <noReboot>False</noReboot>
+            <noReboot>False</noReboot> 
         </test>
-        <test>
-            <testName>go_check_hyperv_drivers</testName>
-            <testID>ESX-GO-022</testID>
-            <testScript>testscripts/go_check_hyperv_drivers.ps1</testScript>
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL-178654</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>go_check_logs</testName>
-            <testID>ESX-GO-023</testID>
-            <testScript>testscripts/go_check_logs.ps1</testScript  >
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL-149710</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-
     </testCases>
 
     <VMs>
