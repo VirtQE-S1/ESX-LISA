@@ -147,7 +147,8 @@ if ($null -eq $status -or -not $status[-1]) {
     return $Failed
 }
 
-$fail_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep -v 'failed to assign' |grep -E 'fail|backtrace|error'"
+#check failed, backtrace, error logs in dmesg 
+$fail_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep -v 'failed to assign \|Ignore above error' | grep -E 'fail|backtrace|error'"
 if ($null -eq $fail_check)
 {
     $retVal = $Passed
