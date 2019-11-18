@@ -19,6 +19,7 @@
             <suiteName>EACV</suiteName>
             <suiteTests>
                 <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
+                <suiteTest>go_check_logs</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -38,6 +39,19 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot> 
         </test>
+        <test>
+            <testName>go_check_logs</testName>
+            <testID>ESX-GO-023</testID>
+            <testScript>testscripts/go_check_logs.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-149710</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>				
     </testCases>
 
     <VMs>
