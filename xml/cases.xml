@@ -284,6 +284,7 @@
                 <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
                 <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
                 <suiteTest>perf_stor_max_num_disk</suiteTest>
+                <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
@@ -310,6 +311,7 @@
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
+                <suiteTest>go_check_hyperv_drivers</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
@@ -396,6 +398,7 @@
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
+                <suiteTest>go_check_logs</suiteTest>
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
@@ -437,6 +440,46 @@
         </suite>
     </testSuites>
     <testCases>
+        <test>
+            <testName>perf_nw_unloadload_vmxnet3</testName>
+            <testID>ESX-PERF-013</testID>
+            <testScript>testscripts/perf_nw_unloadload_vmxnet3.ps1</testScript>
+            <files>remote-scripts/load_unload_vmxnet3.sh</files>
+            <files>remote-scripts/ping.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50932</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>			
+        <test>
+            <testName>go_check_hyperv_drivers</testName>
+            <testID>ESX-GO-022</testID>
+            <testScript>testscripts/go_check_hyperv_drivers.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-178654</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>			
+       <test>
+            <testName>go_check_logs</testName>
+            <testID>ESX-GO-023</testID>
+            <testScript>testscripts/go_check_logs.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-149710</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>stor_reset_scsi</testName>
             <testID>ESX-Stor-038</testID>
