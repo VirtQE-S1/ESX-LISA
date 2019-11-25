@@ -115,6 +115,24 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retValdhcp = $Failed
 $dir = "/boot/grub2/grub.cfg"
 
+
+# Get the Guest version
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+LogPrint "DEBUG: DISTRO: $DISTRO"
+if (-not $DISTRO) {
+    LogPrint "ERROR: Guest OS version is NULL"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Guest OS version is $DISTRO"
+# Current version will skip the RHEL6.x.x
+if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
 # Change the dir for changing crashkernel for EFI or BIOS on RHEL7/8
 $words = $vmName.split('-')
 if ($words[-2] -eq "EFI")
@@ -123,6 +141,7 @@ if ($words[-2] -eq "EFI")
 }
 Write-host -F Red "DEBUG: $vmName $dir"
 
+
 # Function to stop VMB and disconnect with VIserver
 Function StopVMB($hvServer,$vmNameB)
 {
@@ -130,6 +149,7 @@ Function StopVMB($hvServer,$vmNameB)
     Stop-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
     DisconnectWithVIServer
 }
+
 
 # Function to prepare VMB as NFS server
 Function PrepareNFSserver($sshKey,$IP_B,$IP_A)
@@ -202,7 +222,6 @@ if ($result[-1] -ne $true)
     DisconnectWithVIServer
     return $Aborted
 }
-
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 Write-Host -F Green "INFO: Starting $vmNameB..."
 Write-Output "INFO: Starting $vmNameB..."
@@ -267,9 +286,9 @@ foreach($ip in $ips)
 }
 
 
-Start to netperf from VMB to VMA(as server)
-Write-Host -F Green "INFO: Start to netperf from $IPB to $ipv4"
-Write-Output "INFO: Start to netperf from $IPB to $ipv4"
+# Start to netperf from VMB to VMA(as server)
+Write-Host -F Green "INFO: Start to netperf from ${IPB} to ${ipv4}"
+Write-Output "INFO: Start to netperf from $IPB to ${ipv4}"
 $StarS = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "netserver;echo `$?"
 if ($StarS[-1] -ne 0)
 {
@@ -281,13 +300,15 @@ if ($StarS[-1] -ne 0)
 Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IPB} netperf -t TCP_STREAM-H ${ipv4} -l 300" -PassThru -WindowStyle Hidden
 
 
+# Trigger the VMA, and check var/crash
 Write-Host -F Green "INFO: Trigger the $ipv4"
 Write-Output "INFO: Trigger the $ipv4"
 Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${ipv4} echo 1 > /proc/sys/kernel/sysrq && echo c > /proc/sysrq-trigger" -PassThru -WindowStyle Hidden
 sleep 120
 $crash = bin\plink.exe -i ssh\${sshKey} root@$IPB "du -h /export/tmp/var/crash/"
 Write-Host -F Green "DENUG: Show the result of nfs-server: $crash"
-if ($($crash[0]).Substring(0,2) -gt 20)
+$crash[0] -match "^\d{1,3}M\b"
+if ($($matches[0]).Substring(0,$matches[0].length-1) -gt 30)
 {
     Write-Host -F Green "INFO: $crash"
     $retValdhcp = $Passed
