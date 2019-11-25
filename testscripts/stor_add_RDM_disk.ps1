@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Add RDM disk to guest and boot check status.
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 09/20/2019 - Build the script
-##
-###############################################################################
+########################################################################################
+
 
 <#
 .Synopsis
@@ -43,9 +42,8 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -61,15 +59,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -86,9 +80,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -102,9 +94,7 @@ else {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -114,11 +104,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 
 
 $retVal = $Failed
@@ -164,8 +152,6 @@ RunRemoteScript $scripts | Write-Output -OutVariable sts
 if( -not $sts[-1] ){
     Write-Host -F Red "ERROR: Add RDM disk test script  failed"
     Write-Output "ERROR: Add RDM disk test script failed"
-    DisconnectWithVIServer
-    return $Aborted
 }  else {
     Write-Host -F Red "Info : Add RDM disk test script completed"
     Write-Output "Info : Add RDM disk test script completed"
