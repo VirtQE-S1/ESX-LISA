@@ -2380,8 +2380,8 @@ function CheckCallTrace {
         $status = CheckCallTrace $ipv4 $sshkey
     #>
 
-    $Command = '[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
-	content=$(grep -i "Call Trace" $logfile)
+    $Command = '[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"'
+	content = $(grep -i "Call Trace" $logfile)
 	if [[ -n $content ]]; then
 		LogMsg "Error: System get Call Trace in $logfile"
 		return 1
