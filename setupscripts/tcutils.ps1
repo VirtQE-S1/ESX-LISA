@@ -2379,20 +2379,12 @@ function CheckCallTrace {
     .Example
         $status = CheckCallTrace $ipv4 $sshkey
     #>
-
-    $Command = '[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"'
-	content = $(grep -i "Call Trace" $logfile)
-	if [[ -n $content ]]; then
-		LogMsg "Error: System get Call Trace in $logfile"
-		return 1
-	else
-		LogMsg "No Call Trace in $logfile"
-		return 0
-	fi'
+    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages'
+    
     $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-  
-    if (1 -eq $retVal) {
-       return $false 
+    Write-Output "DEBUG: retVal: $retVal"
+    if ($null -ne $retVal) {
+       return $false
     }else {
         return $true
     }
@@ -2503,7 +2495,7 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     {
         if($automation_hosts -notcontains $i)
         {
-            Write-Host -F Red "ERROR: Host want to be skipped isn't in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
+            Write-Host -F Red "ERROR: Host want to be skipped is not in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
             return $false
         }
     }
