@@ -16,7 +16,7 @@
         <testID>ESX-KDUMP_07</testID>
         <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>3000</timeout>
+        <timeout>2400</timeout>
         <testParams>
             <param>TC_COVERED=RHEL7-50873</param>
         </testParams>
@@ -241,9 +241,9 @@ Function TriggerVM($sshKey,${IP_A},${IP_B},$check_dir)
     {
         Write-Host -F Red "INFO: Check ${check_dir}: $crash"
         Write-Output "INFO: Check ${check_dir}: $crash"
-        return $passed
+        return $true
     }
-    return $Failed
+    return $false
 }
 
 
