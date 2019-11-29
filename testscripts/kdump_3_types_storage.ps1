@@ -2,7 +2,7 @@
 ## Description:
 ##  Trigger kernel core dump through NFS under network traffic
 ## Revision:
-##  v1.0.0 - xinhu - 11/25/2019 - Build the script
+##  v1.0.0 - xinhu - 11/28/2019 - Build the script
 #######################################################################################
 
 
@@ -12,13 +12,13 @@
 
 .Description
     <test>
-        <testName>kdump_trigger_nfs</testName>
-        <testID>ESX-KDUMP_06</testID>
-        <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
+        <testName>kdump_3_types_storage</testName>
+        <testID>ESX-KDUMP_07</testID>
+        <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>2400</timeout>
+        <timeout>3000</timeout>
         <testParams>
-            <param>TC_COVERED=RHEL7-50872</param>
+            <param>TC_COVERED=RHEL7-50873</param>
         </testParams>
         <onError>Continue</onError>
         <noReboot>False</noReboot> 
@@ -113,7 +113,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ## Main Body
 #######################################################################################
 $retValdhcp = $Failed
-$dir = "/boot/grub2/grub.cfg"
 
 
 # Get the Guest version
@@ -134,6 +133,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
 
 
 # Change the dir for changing crashkernel for EFI or BIOS on RHEL7/8
+$dir = "/boot/grub2/grub.cfg"
 $words = $vmName.split('-')
 if ($words[-2] -eq "EFI")
 {
@@ -153,6 +153,22 @@ Function StopVMB($hvServer,$vmNameB)
 
 # Function to prepare VMB as NFS server
 Function PrepareNFSserver($sshKey,$IP_B,$IP_A)
+{
+    Write-Host -F Green "INFO: Prepare $IP_B as NFS server"
+    Write-Output "INFO: Prepare $IP_B as NFS server"
+    $result = bin\plink.exe -i ssh\${sshKey} root@${IP_B} "mkdir -p /export/tmp/var/crash && chmod 777 /export/tmp/var/crash && echo '/export/tmp ${IP_A}(rw,sync)' > /etc/exports && systemctl start nfs-server && exportfs -arv && echo `$?"
+    if ($result[-1] -ne 0)
+    {
+        Write-Host -F Red "ERROR: Prepare $IP_B as NFS server failed: $result"
+        Write-Output "ERROR: Prepare $IP_B as NFS server failed: $result"
+        return $false
+    }
+    return $true
+}
+
+
+# Function to prepare VMB as SSH server
+Function PrepareSSHserver($sshKey,$IP_B,$IP_A)
 {
     Write-Host -F Green "INFO: Prepare $IP_B as NFS server"
     Write-Output "INFO: Prepare $IP_B as NFS server"
@@ -192,20 +208,42 @@ Function EnableNFS($sshKey,${IP_A},${IP_B})
 }
 
 
-# Function to install netperf on vms
-Function InstalNetperf(${sshKey},${ip})
+# Function to enable SSH method to store vmcore 
+Function EnableSSH($sshKey,${IP_A},${IP_B})
 {
-    Write-Host -F Green "INFO: Start to install netperf on ${ip}"
-    Write-Output "INFO: Start to install netperf on ${ip}"
-    # Current have a error "don't have command makeinfo" when install netperf, So cannot judge by echo $?
-    $result = bin\plink.exe -i ssh\${sshKey} root@${ip} "yum install -y automake && git clone https://github.com/HewlettPackard/netperf.git && cd netperf && ./autogen.sh && ./configure && make; make install; netperf -h; echo `$?"
-    if ($result[-1] -eq 127)
+    Write-Host -F Green "INFO: Prepare to enable SSH method to store vmcore on $IP_A"
+    Write-Output "INFO: Prepare to enable SSH method to store vmcore on ${IP_A}"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?nfs ${IP_B}?#nfs my.server.com?' /etc/kdump.conf"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#ssh user@my.server.com?ssh root@${IP_B}?' /etc/kdump.conf"  
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#sshkey /root/.ssh/kdump_id_rsa?sshkey /root/.ssh/id_rsa_private?' /etc/kdump.conf"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#core_collector makedumpfile -l --message-level -d 31?core_collector makedumpfile -F --message-level -d 31?' /etc/kdump.conf"
+    $result = bin\plink.exe -i ssh\${sshKey} root@$IP_A "systemctl restart kdump"
+    if ($result)
     {
-        Write-Host -F Red "ERROR: Install netperf failed: $result"
-        Write-Output "ERROR: Install netperf failed: $result"
+        Write-Host -F Red "ERROR: Restart kdump failed: $result"
+        Write-Output "ERROR: Restart kdump failed: $result"
         return $false
     }
     return $true
+}
+
+
+# Function to trigger VMA
+Function TriggerVM($sshKey,${IP_A},${IP_B},$check_dir)
+{
+    Write-Host -F Green "INFO: Trigger the $ipv4"
+    Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IP_A} echo 1 > /proc/sys/kernel/sysrq && echo c > /proc/sysrq-trigger" -PassThru -WindowStyle Hidden
+    sleep 120
+    $crash = bin\plink.exe -i ssh\${sshKey} root@$IPB "du -h ${check_dir}" 
+    Write-Host -F Green "DENUG: Show the result of nfs-server: $crash"
+    $crash[0] -match "^\d{1,3}M\b"
+    if ($($matches[0]).Substring(0,$matches[0].length-1) -gt 30)
+    {
+        Write-Host -F Red "INFO: Check ${check_dir}: $crash"
+        Write-Output "INFO: Check ${check_dir}: $crash"
+        return $passed
+    }
+    return $Failed
 }
 
 
@@ -238,18 +276,8 @@ if ($ret -ne $true)
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 $IPB = GetIPv4ViaPowerCLI $vmNameB $hvServer
 
-# Prepare VMB as NFS-server
-$result= PrepareNFSserver $sshKey $IPB $ipv4
-if ($result[-1] -ne $true)
-{
-    Write-Host -F Red "ERROR: Failed to prepare $IPB as NFS server: $result"
-    Write-Output "ERROR: Failed to prepare $IPB as NFS server: $result"
-    StopVMB $hvServer $vmNameB
-    return $Aborted
-}
 
-
-# Prepare the kdump store of VMA as NFS method
+# Change crashkernel
 Write-Host -F Green "INFO: Change the crashkernel = 512M of $ipv4"
 $result = bin\plink.exe -i ssh\${sshKey} root@$ipv4 "sed -i 's?crashkernel=auto?crashkernel=512M?' /etc/default/grub && grub2-mkconfig -o $dir && echo `$? "
 if ($result -ne 0)
@@ -260,6 +288,18 @@ if ($result -ne 0)
     return $Aborted
 }
 
+
+# Prepare VMB as NFS-server
+$result= PrepareNFSserver $sshKey $IPB $ipv4
+if ($result[-1] -ne $true)
+{
+    Write-Host -F Red "ERROR: Failed to prepare $IPB as NFS server: $result"
+    Write-Output "ERROR: Failed to prepare $IPB as NFS server: $result"
+    StopVMB $hvServer $vmNameB
+    return $Aborted
+}
+
+# Prepare the kdump store of VMA as NFS method
 $result = EnableNFS $sshKey $ipv4 $IPB
 if ($result[-1] -ne $true)
 {
@@ -269,50 +309,49 @@ if ($result[-1] -ne $true)
     return $Aborted
 }
 
-
-
-# Install Netperf on VMs
-$ips=@($ipv4,$IPB)
-foreach($ip in $ips)
+# Trigger the VMA through nfs storage, and check var/crash
+$check_dir = "/export/tmp/var/crash/"
+$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir
+if ($check_result[-1] -ne $true)
 {
-    $IsIns = InstalNetperf $sshKey ${ip}
-    if ($IsIns[-1] -ne $true)
-    { 
-            Write-Host -F Red "ERROR: Failed to install netperf on ${ip}: $IsIns"
-            Write-Output "ERROR: Failed to install netperf on ${ip}: $IsIns"
-            StopVMB $hvServer $vmNameB
-            return $Aborted
-    }
+    Write-Host -F Red "ERROR: Trigger kdump throght NFS store failed: $check_result"
+    Write-Output "ERROR: Trigger kdump throght NFS store failed: $check_result"
+    StopVMB $hvServer $vmNameB
+    return $retValdhcp
 }
 
+# Wait for VMA reboot
+sleep 180
 
-# Start to netperf from VMB to VMA(as server)
-Write-Host -F Green "INFO: Start to netperf from ${IPB} to ${ipv4}"
-Write-Output "INFO: Start to netperf from $IPB to ${ipv4}"
-$StarS = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "netserver;echo `$?"
-if ($StarS[-1] -ne 0)
+
+# Prepare the kdump store of VMA as SSH method
+$result = EnableSSH $sshKey ${ipv4} ${IPB}
+if ($result[-1] -ne $true)
 {
-    Write-Host -F Red "ERROR: Make ${ipv4} as netserver Failed: $StarS"
-    Write-Output "ERROR: Make ${ipv4} as netserver Failed;  $StarS"
+    Write-Host -F Red "ERROR: Enable kdump store as SSH method failed: $result"
+    Write-Output "ERROR: Enable kdump store as SSH method failed: $result"
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
-Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IPB} netperf -t TCP_STREAM-H ${ipv4} -l 300" -PassThru -WindowStyle Hidden
 
-
-# Trigger the VMA, and check var/crash
-Write-Host -F Green "INFO: Trigger the $ipv4"
-Write-Output "INFO: Trigger the $ipv4"
-Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${ipv4} echo 1 > /proc/sys/kernel/sysrq && echo c > /proc/sysrq-trigger" -PassThru -WindowStyle Hidden
-sleep 120
-$crash = bin\plink.exe -i ssh\${sshKey} root@$IPB "du -h /export/tmp/var/crash/"
-Write-Host -F Green "DENUG: Show the result of nfs-server: $crash"
-$crash[0] -match "^\d{1,3}M\b"
-if ($($matches[0]).Substring(0,$matches[0].length-1) -gt 30)
+# Trigger the VMA through ssh storage, and check var/crash
+$check_dir = "/var/crash/"
+$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir
+if ($check_result[-1] -ne $true)
 {
-    Write-Host -F Green "INFO: $crash"
-    $retValdhcp = $Passed
+    Write-Host -F Red "ERROR: Trigger kdump throght NFS store failed: $check_result"
+    Write-Output "ERROR: Trigger kdump throght NFS store failed: $check_result"
+    StopVMB $hvServer $vmNameB
+    return $retValdhcp
 }
 
+# Wait for VMA reboot
+sleep 180
+
+
+# Trigger the VMA through UUID storage, and check var/crash
+
+
+$retValdhcp = $Passed
 StopVMB $hvServer $vmNameB
 return $retValdhcp
