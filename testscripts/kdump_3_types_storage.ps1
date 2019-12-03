@@ -16,6 +16,8 @@
         <testID>ESX-KDUMP_07</testID>
         <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        <files>remote-scripts\utils.sh</files>
+        <files>remote-scripts\ssh_storage.sh</files>
         <timeout>2400</timeout>
         <testParams>
             <param>TC_COVERED=RHEL7-50873</param>
@@ -167,22 +169,6 @@ Function PrepareNFSserver($sshKey,$IP_B,$IP_A)
 }
 
 
-# Function to prepare VMB as SSH server
-Function PrepareSSHserver($sshKey,$IP_B,$IP_A)
-{
-    Write-Host -F Green "INFO: Prepare $IP_B as NFS server"
-    Write-Output "INFO: Prepare $IP_B as NFS server"
-    $result = bin\plink.exe -i ssh\${sshKey} root@${IP_B} "mkdir -p /export/tmp/var/crash && chmod 777 /export/tmp/var/crash && echo '/export/tmp ${IP_A}(rw,sync)' > /etc/exports && systemctl start nfs-server && exportfs -arv && echo `$?"
-    if ($result[-1] -ne 0)
-    {
-        Write-Host -F Red "ERROR: Prepare $IP_B as NFS server failed: $result"
-        Write-Output "ERROR: Prepare $IP_B as NFS server failed: $result"
-        return $false
-    }
-    return $true
-}
-
-
 # Function to enable NFS method to store vmcore 
 Function EnableNFS($sshKey,${IP_A},${IP_B})
 {
@@ -215,10 +201,27 @@ Function EnableSSH($sshKey,${IP_A},${IP_B})
     Write-Output "INFO: Prepare to enable SSH method to store vmcore on ${IP_A}"
     bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?nfs ${IP_B}?#nfs my.server.com?' /etc/kdump.conf"
     bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#ssh user@my.server.com?ssh root@${IP_B}?' /etc/kdump.conf"  
-    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#sshkey /root/.ssh/kdump_id_rsa?sshkey /root/.ssh/id_rsa_private?' /etc/kdump.conf"
-    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#core_collector makedumpfile -l --message-level -d 31?core_collector makedumpfile -F --message-level -d 31?' /etc/kdump.conf"
-    $result = bin\plink.exe -i ssh\${sshKey} root@$IP_A "systemctl restart kdump"
-    if ($result)
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?core_collector makedumpfile -l --message-level 1 -d 31?core_collector makedumpfile -F --message-level 1 -d 31?' /etc/kdump.conf"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "yum install -y expect && cd /root && dos2unix ssh_storage.sh && chmod u+x ssh_storage.sh && ./ssh_storage.sh"
+    $result = bin\plink.exe -i ssh\${sshKey} root@$IP_A "systemctl restart kdump ; echo `$?"
+    if ($result -ne 0)
+    {
+        Write-Host -F Red "ERROR: Restart kdump failed: $result"
+        Write-Output "ERROR: Restart kdump failed: $result"
+        return $false
+    }
+    return $true
+}
+
+Function EnableUUID($sshKey,$IP_A,$IP_B,$UUID,$UUID_type)
+{
+    Write-Host -F Green "INFO: Prepare to enable UUID method to store vmcore on $IP_A"
+    Write-Output "INFO: Prepare to enable UUID method to store vmcore on ${IP_A}"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?ssh root@${IP_B}?#ssh user@my.server.com?' /etc/kdump.conf"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?core_collector makedumpfile -F --message-level 1 -d 31?core_collector makedumpfile -l --message-level 1 -d 31?' /etc/kdump.conf"
+    bin\plink.exe -i ssh\${sshKey} root@$IP_A "echo $UUID_type $UUID >> /etc/kdump.conf"
+    $result = bin\plink.exe -i ssh\${sshKey} root@$IP_A "systemctl restart kdump ; echo `$?"
+    if ($result -ne 0)
     {
         Write-Host -F Red "ERROR: Restart kdump failed: $result"
         Write-Output "ERROR: Restart kdump failed: $result"
@@ -229,20 +232,29 @@ Function EnableSSH($sshKey,${IP_A},${IP_B})
 
 
 # Function to trigger VMA
-Function TriggerVM($sshKey,${IP_A},${IP_B},$check_dir)
+Function TriggerVM($sshKey,${IP_A},${IP_B},$check_dir,$storage)
 {
-    Write-Host -F Green "INFO: Trigger the $ipv4"
+    Write-Host -F Green "INFO: Trigger the $ipv4 by $storage storage"
     Start-Process ".\bin\plink.exe" "-i .\ssh\demo_id_rsa.ppk root@${IP_A} echo 1 > /proc/sys/kernel/sysrq && echo c > /proc/sysrq-trigger" -PassThru -WindowStyle Hidden
-    sleep 120
-    $crash = bin\plink.exe -i ssh\${sshKey} root@$IPB "du -h ${check_dir}" 
-    Write-Host -F Green "DENUG: Show the result of nfs-server: $crash"
-    $crash[0] -match "^\d{1,3}M\b"
-    if ($($matches[0]).Substring(0,$matches[0].length-1) -gt 30)
+    sleep 300
+    if ($storage -eq "UUID")
     {
-        Write-Host -F Red "INFO: Check ${check_dir}: $crash"
-        Write-Output "INFO: Check ${check_dir}: $crash"
+        $crash = bin\plink.exe -i ssh\${sshKey} root@$IP_A "du -h ${check_dir}"
+    }
+    else
+    {
+        $crash = bin\plink.exe -i ssh\${sshKey} root@$IP_B "du -h ${check_dir}"
+    }
+    Write-Host -F Green "DENUG: Show the result of server: $($crash[0])"
+    Write-Output "DENUG: Show the result of server: $($crash[0])"
+    $crash[0] -match "^\d{1,3}M\b"
+    $vmcore = $($matches[0]).Substring(0,$matches[0].length-1)
+    if ([int]$vmcore -gt 30)
+    {
         return $true
     }
+    Write-Host -F Red "ERROR: Trigger kdump throght $storage store failed: $check_result"
+    Write-Output "ERROR: Check ${check_dir}: $vmcore"
     return $false
 }
 
@@ -290,6 +302,7 @@ if ($result -ne 0)
 
 
 # Prepare VMB as NFS-server
+$storage = "NFS"
 $result= PrepareNFSserver $sshKey $IPB $ipv4
 if ($result[-1] -ne $true)
 {
@@ -311,20 +324,17 @@ if ($result[-1] -ne $true)
 
 # Trigger the VMA through nfs storage, and check var/crash
 $check_dir = "/export/tmp/var/crash/"
-$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir
+$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir $storage
 if ($check_result[-1] -ne $true)
 {
-    Write-Host -F Red "ERROR: Trigger kdump throght NFS store failed: $check_result"
     Write-Output "ERROR: Trigger kdump throght NFS store failed: $check_result"
     StopVMB $hvServer $vmNameB
     return $retValdhcp
 }
 
-# Wait for VMA reboot
-sleep 180
-
 
 # Prepare the kdump store of VMA as SSH method
+$storage = "SSH"
 $result = EnableSSH $sshKey ${ipv4} ${IPB}
 if ($result[-1] -ne $true)
 {
@@ -336,20 +346,42 @@ if ($result[-1] -ne $true)
 
 # Trigger the VMA through ssh storage, and check var/crash
 $check_dir = "/var/crash/"
-$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir
+$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir $storage
 if ($check_result[-1] -ne $true)
 {
-    Write-Host -F Red "ERROR: Trigger kdump throght NFS store failed: $check_result"
-    Write-Output "ERROR: Trigger kdump throght NFS store failed: $check_result"
+    Write-Output "ERROR: Trigger kdump throght SSH store failed: $check_result"
     StopVMB $hvServer $vmNameB
     return $retValdhcp
 }
 
-# Wait for VMA reboot
-sleep 180
 
+# Prepare the kdump store of VMA as UUID method 
+$storage = "UUID"
+$UUID_item = bin\plink.exe -i ssh\${sshKey} root@$ipv4 "cat /etc/fstab |grep UUID"
+$UUID_item = $UUID_item -split " ",3
+$UUID = $UUID_item[0]
+$UUID_dir = $UUID_item[1]
+$UUID_type = $($UUID_item[2].Trim() -split " ")[0]
+Write-Host -F Red "DEBUG: UUID_item: $UUID_item  UUID: $UUID UUID_dir: $UUID_dir UUID_type: $UUID_type "
+$UUID_item = bin\plink.exe -i ssh\${sshKey} root@$ipv4 "mkdir -p $UUID_dir/var/crash && chmod 777 $UUID_dir/var/crash"
+$result = EnableUUID $sshKey $ipv4 $IPB $UUID $UUID_type
+if ($result[-1] -ne $true)
+{
+    Write-Host -F Red "ERROR: Enable kdump store as UUID method failed: $result"
+    Write-Output "ERROR: Enable kdump store as UUID method failed: $result"
+    StopVMB $hvServer $vmNameB
+    return $Aborted
+}
 
 # Trigger the VMA through UUID storage, and check var/crash
+$check_dir = $UUID_dir + "/var/crash/"
+$check_result = TriggerVM $sshKey ${ipv4} ${IPB} $check_dir $storage
+if ($check_result[-1] -ne $true)
+{
+    Write-Output "ERROR: Trigger kdump throght SSH store failed: $check_result"
+    StopVMB $hvServer $vmNameB
+    return $retValdhcp
+}
 
 
 $retValdhcp = $Passed
