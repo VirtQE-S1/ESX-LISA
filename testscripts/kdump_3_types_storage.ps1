@@ -2,7 +2,7 @@
 ## Description:
 ##  Trigger kernel core dump through NFS under network traffic
 ## Revision:
-##  v1.0.0 - xinhu - 11/28/2019 - Build the script
+##  v1.0.0 - xinhu - 12/03/2019 - Build the script
 #######################################################################################
 
 
@@ -13,7 +13,7 @@
 .Description
     <test>
         <testName>kdump_3_types_storage</testName>
-        <testID>ESX-KDUMP_07</testID>
+        <testID>ESX-KDUMP-07</testID>
         <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <files>remote-scripts\utils.sh</files>

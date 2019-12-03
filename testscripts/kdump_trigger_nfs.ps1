@@ -13,7 +13,7 @@
 .Description
     <test>
         <testName>kdump_trigger_nfs</testName>
-        <testID>ESX-KDUMP_06</testID>
+        <testID>ESX-KDUMP-06</testID>
         <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>2400</timeout>

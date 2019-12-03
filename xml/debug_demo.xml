@@ -18,25 +18,12 @@
         <suite>
             <suiteName>debug_demo_suite</suiteName>
             <suiteTests>
-                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>debug_demo_case</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
-        
-        <test>
-            <testName>kdump_3_types_storage</testName>
-            <testID>ESX-KDUMP_07</testID>
-            <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
-            <testParams>
-                <param>TC_COVERED=RHEL7-50873</param>
-            </testParams>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot> 
-        </test>
         <test>
             <testName>debug_demo_case</testName>
             <testID>ESX-DEMO-001</testID>
@@ -53,8 +40,8 @@
 
     <VMs>
 	    <vm>
-            <hvServer>10.73.196.232</hvServer>
-            <vmName>RHEL-8.1.0-20191015.0-x86_64-BIOS-A</vmName>
+            <hvServer>ESXI_HOST_IPADDRESS</hvServer>
+            <vmName>VM_NAME</vmName>
             <os>Linux</os>
             <ipv4></ipv4>
             <sshKey>demo_id_rsa.ppk</sshKey>
