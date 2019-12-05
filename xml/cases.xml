@@ -431,11 +431,11 @@
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
-                <suiteTest>rdma_hot_remove</suiteTest>
+                <!-- suiteTest>rdma_hot_remove</suiteTest -->
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>vsock_host_as_server</suiteTest>
                 <suiteTest>vsock_guest_as_server</suiteTest>
-                <suiteTest>sriov_boot_check</suiteTest>
+                <!-- suiteTest>sriov_boot_check</suiteTest -->
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
