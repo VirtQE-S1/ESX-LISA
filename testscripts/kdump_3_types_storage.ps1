@@ -134,16 +134,6 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
 }
 
 
-# Change the dir for changing crashkernel for EFI or BIOS on RHEL7/8
-$dir = "/boot/grub2/grub.cfg"
-$words = $vmName.split('-')
-if ($words[-2] -eq "EFI")
-{
-    $dir = "/boot/efi/EFI/redhat/grub.cfg"
-}
-Write-host -F Red "DEBUG: $vmName $dir"
-
-
 # Function to stop VMB and disconnect with VIserver
 Function StopVMB($hvServer,$vmNameB)
 {
@@ -197,7 +187,7 @@ Function EnableNFS($sshKey,${IP_A},${IP_B})
 # Function to enable SSH method to store vmcore 
 Function EnableSSH($sshKey,${IP_A},${IP_B})
 {
-    Write-Host -F Green "INFO: Prepare to enable SSH method to store vmcore on $IP_A"
+    Write-Host -F Green "INFO: Prepare to enable SSH method to store vmcore on ${IP_A}"
     Write-Output "INFO: Prepare to enable SSH method to store vmcore on ${IP_A}"
     bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?nfs ${IP_B}?#nfs my.server.com?' /etc/kdump.conf"
     bin\plink.exe -i ssh\${sshKey} root@$IP_A "sed -i 's?#ssh user@my.server.com?ssh root@${IP_B}?' /etc/kdump.conf"  
@@ -212,6 +202,7 @@ Function EnableSSH($sshKey,${IP_A},${IP_B})
     }
     return $true
 }
+
 
 Function EnableUUID($sshKey,$IP_A,$IP_B,$UUID,$UUID_type)
 {
@@ -287,18 +278,6 @@ if ($ret -ne $true)
 # Refresh status
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 $IPB = GetIPv4ViaPowerCLI $vmNameB $hvServer
-
-
-# Change crashkernel
-Write-Host -F Green "INFO: Change the crashkernel = 512M of $ipv4"
-$result = bin\plink.exe -i ssh\${sshKey} root@$ipv4 "sed -i 's?crashkernel=auto?crashkernel=512M?' /etc/default/grub && grub2-mkconfig -o $dir && echo `$? "
-if ($result -ne 0)
-{
-    Write-Host -F Red "ERROR: Change crashkernel = 512M failed: $result"
-    Write-Output "ERROR: Change crashkernel = 512M failed: $result"
-    StopVMB $hvServer $vmNameB
-    return $Aborted
-}
 
 
 # Prepare VMB as NFS-server
