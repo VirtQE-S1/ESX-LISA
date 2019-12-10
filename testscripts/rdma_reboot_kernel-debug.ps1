@@ -1,5 +1,4 @@
 ########################################################################################
-##
 ## Description:
 ## 	Reboot guet with debugkernel installed.
 ##
@@ -123,8 +122,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -139,7 +136,7 @@ if($skip)
 $nics = FindAllNewAddNIC $ipv4 $sshKey
 if ($null -eq $nics) 
 {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC."
     DisconnectWithVIServer
     return $Failed
 }
@@ -147,25 +144,28 @@ else
 {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: New NIC is $rdmaNIC."
+
 
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
 if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) 
 {
-    LogPrint "ERROR : Config IP Failed"
+    LogPrint "ERROR: Config IP Failed."
     DisconnectWithVIServer
     return $Failed
 }
+
 
 # Install required packages
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
 if (-not $sts) 
 {
-    LogPrint "ERROR : YUM cannot install required packages"
+    LogPrint "ERROR: YUM cannot install required packages."
     DisconnectWithVIServer
     return $Failed
 }
+
 
 # Load mod ib_umad for ibstat check
 $Command = "modprobe ib_umad"
@@ -173,31 +173,32 @@ $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
 
 # Make sure the ibstat is active 
-$Command = "ibstat |grep Active | wc -l"
+$Command = "ibstat | grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 if ($ibstat -eq 0) 
 {
-    LogPrint "ERROR : the ibstat is not correctly"
+    LogPrint "ERROR: The ibstat is not correctly."
     DisconnectWithVIServer
     return $Failed
 }
 
-# Install kerel-debug package in guest
+
+# Install kerel-debug package in guest.
 $kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
 
 
-#check the kernel-debug installed successfully or not.
-$kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
-Write-Host -F Red "DEBUG: kerneldebug: $kerneldebug_check"
-Write-Output "DEBUG: kerneldebug: $kerneldebug_check"
-if ($null -eq $kerneldebug_check)
+# Check the kernel-debug installed successfully or not.
+$kernel_debug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
+Write-Host -F Red "DEBUG: kernel_debug_check: $kernel_debug_check"
+Write-Output "DEBUG: kernel_debug_check: $kernel_debug_check"
+if ($null -eq $kernel_debug_check)
 {
-    Write-Output "INFO: The kernel-debug installed failed in guest"
+    Write-Output "ERROR: Failed to install kernel-debug."
     return $Aborted
 }
 else
 {
-    Write-Output "INFO: The kernel debug $kerneldebug_check installed successfully"
+    Write-Output "INFO: Install kernel-debug $kernel_debug_check successfully."
 }
 
 
@@ -205,13 +206,13 @@ else
 $OS = GetLinuxDistro  $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
-    # Change the boot sequence to debug kernel
+    # Change the boot sequence to debug kernel.
     $change_EFI = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/efi/EFI/redhat/grub.conf"
     $change_bois = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/grub/grub.conf"
 }
 else
 {
-    # Change the boot sequence to debug kernel
+    # Change the boot sequence to debug kernel.
     $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
 }
 
@@ -225,35 +226,35 @@ Start-Sleep -seconds 6
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
 if ($ssh -ne $true)
 {
-    Write-host -F Red "ERROR: Failed to start VM"
-    Write-Output "ERROR: Failed to start VM"
+    Write-host -F Red "ERROR: Failed to start VM."
+    Write-Output "ERROR: Failed to start VM."
     return $Aborted
 }
 else
 {
     $current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r | grep debug"
-    Write-Host -F Red "INFO: After reboot the current kernel is $current_kernel"
-    Write-Output "INFO: After reboot the current kernel is $current_kernel"
+    Write-Host -F Red "INFO: After reboot the current kernel is $current_kernel."
+    Write-Output "INFO: After reboot the current kernel is $current_kernel."
     if ($null -eq $current_kernel)
     {
-        Write-Output "ERROR: The kernel-debug switch failed in guest"
+        Write-Output "ERROR: The kernel-debug switch failed in guest."
         return $Aborted
     }
 }
 
 
-# Check call trace
+# Check call trace.
 $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
 Write-Output "DEBUG: calltrace_check: $calltrace_check"
 Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
 if ($null -eq $calltrace_check)
 {
     $retVal = $Passed
-    Write-host -F Red "INFO: After booting with debug kernel, NO $calltrace_check Call Trace found"
-    Write-Output "INFO: After  booting with debug kernel, NO $calltrace_check Call Trace found"
+    Write-host -F Red "INFO: After booting with debug kernel, NO $calltrace_check Call Trace found."
+    Write-Output "INFO: After  booting with debug kernel, NO $calltrace_check Call Trace found."
 }
 else{
-    Write-Output "ERROR: After booting with debug kernel, FOUND $calltrace_check Call Trace in demsg"
+    Write-Output "ERROR: After booting with debug kernel, FOUND $calltrace_check Call Trace in demsg."
 }
 
 
