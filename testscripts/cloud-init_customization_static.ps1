@@ -1,9 +1,9 @@
 ########################################################################################
 ## Description:
-##  
+##  [cloud-init]Customize Guest uses static IP with cloud-init
 ##
 ## Revision:
-##  v1.0.0 - ldu - 12/01/2019 - Build the script
+##  v1.0.0 - ldu - 12/10/2019 - Build the script
 ##  
 ########################################################################################
 
@@ -11,9 +11,23 @@
 <#
 .Synopsis
    
-
+[cloud-init]Customize Guest uses static IP with cloud-init
 .Description
-
+<test>
+        <testName>cloud-init_customization_static</testName>
+        <testID>ESX-cloud-init-005</testID>
+        <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+        <testScript>testscripts/cloud-init_customization_static.ps1</testScript  >
+        <files>remote-scripts/utils.sh</files>
+        <testParams>
+            <param>nicName=auto-test</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-137083</param>
+        </testParams>
+        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+        <timeout>1800</timeout>
+        <onError>Continue</onError>
+        <noReboot>False</noReboot>
+    </test>
 
 .Parameter vmName
     Name of the test VM.
