@@ -244,19 +244,16 @@ else
 
 
 # Check call trace.
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-Write-Output "DEBUG: calltrace_check: $calltrace_check"
-Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-if ($null -eq $calltrace_check)
-{
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
+    Write-Output "ERROR: Found $(status[-2]) in msg."
+}
+else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
     $retVal = $Passed
-    Write-host -F Red "INFO: After booting with debug kernel, NO $calltrace_check Call Trace found."
-    Write-Output "INFO: After  booting with debug kernel, NO $calltrace_check Call Trace found."
 }
-else{
-    Write-Output "ERROR: After booting with debug kernel, FOUND $calltrace_check Call Trace in demsg."
-}
-
 
 DisconnectWithVIServer
 return $retVal

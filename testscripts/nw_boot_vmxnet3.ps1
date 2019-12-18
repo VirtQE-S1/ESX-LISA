@@ -1,14 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Target VM boot with vmxnet3 driver and works
 ##
-###############################################################################
-##
 ## Revision:
-## V1.0 - boyang - 07/19/2017 - Build script
-##
-###############################################################################
+## 	v1.0.0 - boyang - 07/19/2017 - Build script.
+## 	v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -29,9 +27,8 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -49,14 +46,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -76,9 +71,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -113,9 +107,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -123,18 +116,15 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 $nic_driver = "Vmxnet3"
 
-#
+
 # Tool ethtool checks NIC type
-#
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut)
 {
@@ -143,27 +133,27 @@ if (-not $vmOut)
 }
 
 $nic_type = (Get-NetworkAdapter -VM $vmOut).Type
-
 if ($nic_type -eq $nic_driver)
 {
-    $error_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-    if ($null -eq $error_check)
-    {
-        Write-Host -F red "PASS: VM's NIC is $nic_type, and NO call trace FOUND after boot"
-        Write-Output "PASS: VM's NIC is $nic_type, and NO call trace FOUND after boot"
-        $retVal = $Passed
-    }
-    else
-    {
-        Write-Output "FAIL: VM's NIC is $nic_type, and call trace FOUND after boot"
-        $retVal = $Failed
-    }
+	$status = CheckCallTrace $ipv4 $sshKey
+	if (-not $status[-1]) {
+	    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
+	    Write-Output "ERROR: Found $(status[-2]) in msg."
+	    DisconnectWithVIServer
+	    return $Failed
+	}
+	else {
+	    Write-Host -F Red "INFO: NO call trace found with vmxnet3."
+	    Write-Output "INFO: NO call trace found with vmxnet3."
+	    $retVal = $Passed
+	}
 }
 else
 {
     Write-Output "FAIL: VM's NIC is $nic_type, WON'T be covered in test scope"
     $retVal = $Failed
 }
+
 
 DisconnectWithVIServer
 return $retVal

@@ -1,13 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##	Reboot guet 100 times then check system status.
 ##
 ## Revision:
-#	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
-##
-##
-###############################################################################
+##	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
+##	v1.1.0 - boyang - 12/18/2019 - Improve call check scope with a function.
+########################################################################################
 
 
 <#
@@ -119,12 +117,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 $retVal = $Failed
+
 
 # Reboot the guest 100 times.
 $round = 0
@@ -148,30 +145,29 @@ while ($round -lt 100)
     Write-Host -F Red "INFO: Round: $round"
 }
 
+
+# Check rebooting times and error logs.
 if ($round -eq 100)
 {
-    $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'dmesg | grep "Call Trace"'
-    Write-Output "DEBUG: calltrace_check: $calltrace_check"
-    Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
+	$status = CheckCallTrace $ipv4 $sshKey
+	if (-not $status[-1]) {
+   		Write-Host -F Red "ERROR: Found $(status[-2]) in msg after 100 times rebooting."
+   	 	Write-Output "ERROR: Found $(status[-2]) in msg after 100 times rebooting."
 
-    if ($null -eq $calltrace_check)
-    {
-        $retVal = $Passed
-        Write-host -F Red "INFO: After $round times booting, NO $calltrace_check found"
-        Write-Output "INFO: After $round times booting, NO $calltrace_check found"
-    }
-    else
-    {
-        Write-Output "ERROR: After booting, FOUND $calltrace_check in demsg"
-    }
-
+	    DisconnectWithVIServer
+	    return $Failed
+	}
+	else {
+	    LogPrint "INFO: NOT found Call Trace in VM msg after 100 times rebooting."
+		$retVal = $Passed
+	}
 }
 else
 {
-    Write-host -F Red "ERROR: The guest not boot 100 times, only $round times"
-    Write-Output "ERROR: The guest not boot 100 times, only $round times"
+    Write-host -F Red "ERROR: The guest can't boot 100 times, only $round times."
+    Write-Output "ERROR: The guest can't boot 100 times, only $round times."
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal
