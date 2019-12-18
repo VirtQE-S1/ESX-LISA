@@ -123,6 +123,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ###############################################################################
 $retVal = $Failed
 
+
 # Check the VM
 $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vm_obj) {
@@ -131,6 +132,7 @@ if (-not $vm_obj) {
     DisconnectWithVIServer
     return $Aborted
 }
+
 
 # Confirm the VM power state should be on
 $state = $vm_obj.PowerState
@@ -177,20 +179,22 @@ else
         }
         else
         {
-            $error_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-            if ($null -eq $error_check)
-            {
-                Write-Output "INFO: After resume, NO call trace found"
-                $retVal = $Passed
-            }
-            else
-            {
-                Write-Output "INFO: After resume, FOUND call trace, PLEASE check it manually"
-            }
+		    $status = CheckCallTrace $ipv4 $sshKey
+		    if (-not $status[-1]) {
+			    Write-Host -F Red "ERROR: Found $(status[-2]) in msg after resume."
+			    Write-Output "ERROR: Found $(status[-2]) in msg after resume."
+
+		        DisconnectWithVIServer
+		        return $Failed
+		    }
+		    else {
+		        LogPrint "INFO: NOT found Call Trace in VM msg after resume."
+		        $retVal = $Passed
+		    }
         }
     }
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

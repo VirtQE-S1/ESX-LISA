@@ -1,14 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Check guest vmware-vmsvc.log, dmesg log when 100 containers running.
-##
-###############################################################################
+## 	Check guest vmware-vmsvc.log, dmesg log when 100 containers running.
 ##
 ## Revision:
-## V1.0 - ldu - 07/28/2018 - Check guest vmware-vmsvc.log, dmesg log when 100 containers running..
-##
-###############################################################################
+## 	v1.0.0 - ldu - 07/28/2018 - Check guest log when 100 containers running.
+## 	v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -23,11 +21,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -45,14 +43,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -72,9 +68,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -109,9 +104,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -119,26 +113,26 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
-#Skip RHEL6, as not support OVT on RHEL6.
+########################################################################################
+$retVal = $Failed
+
+
+# Skip RHEL6, as not support OVT on RHEL6.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" ){
     DisconnectWithVIServer
     return $Skipped
 }
 
-$retVal = $Failed
 
-#
 # Get the VM
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-#Install docker and start one network container on guest.
+
+# Install docker and start one network container on guest.
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
 if (-not $sts) {
     LogPrint "ERROR : YUM install podman packages failed"
@@ -146,7 +140,8 @@ if (-not $sts) {
     return $Failed
 }
 
-#Run 100 containers in guest
+
+# Run 100 containers in guest.
 for ($i = 0; $i -le 100; $i++)
 {
     $sts = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
@@ -157,30 +152,37 @@ for ($i = 0; $i -le 100; $i++)
     }
 }
 
+
 Start-Sleep -S 30
-#check the /var/log/vmware-vmsvc.log log file
+
+
+# Check the /var/log/vmware-vmsvc.log log file.
 $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /var/log/vmware-vmsvc.log | grep 'NIC limit (16) reached'"
 if ($null -eq $calltrace_check)
 {
-    Write-host -F Red "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached log found"
-    Write-Output "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached found"
+    Write-host -F Red "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached log found."
+    Write-Output "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached found."
 }
 else{
-    Write-Output "ERROR: After, FOUND NIC limit (16) reached in /var/log/vmware-vmsvc.log. "
+    Write-Output "ERROR: After, FOUND NIC limit (16) reached in /var/log/vmware-vmsvc.log."
+    return $Failed
 }
 
-#check the call trace in dmesg file
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-if ($null -eq $calltrace_check)
-{
+
+# Check the call trace in dmesg file
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
+    Write-Output "ERROR: Found $(status[-2]) in msg."
+    DisconnectWithVIServer
+    return $Failed
+}
+else {
+    Write-Host -F Red "INFO: NO call trace found after 100 containers."
+    Write-Output "INFO: NO call trace found after 100 containers."
     $retVal = $Passed
-    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
-    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
 }
-else{
-    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
-}
+
 
 DisconnectWithVIServer
-
 return $retVal

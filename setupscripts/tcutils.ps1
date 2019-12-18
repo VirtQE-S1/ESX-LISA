@@ -2379,8 +2379,12 @@ function CheckCallTrace {
     .Example
         $status = CheckCallTrace $ipv4 $sshkey
     #>
-    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages'
+    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages /var/log/dmesg.out'
     
+	# Put dmesg content into /var/log/dmesg.out.
+    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg > /var/log/dmesg.out"
+
+	# Execute search command.
     $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
     Write-Output "DEBUG: retVal: $retVal"
     if ($null -ne $retVal) {
