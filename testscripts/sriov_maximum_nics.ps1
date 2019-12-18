@@ -185,8 +185,8 @@ if ($null -eq $nics -or $nics.Count -ne $sriovNum) {
 # Check Call Trace
 $status = CheckCallTrace $ipv4 $sshKey
 if (-not $status[-1]) {
-    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
-    Write-Output "ERROR: Found $(status[-2]) in msg."
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
 }
 else {
     Write-Host -F Red "INFO: NO call trace found."

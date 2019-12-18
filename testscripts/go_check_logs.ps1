@@ -141,8 +141,8 @@ if (-not $vmObj)
 # Check Call Trace
 $status = CheckCallTrace $ipv4 $sshKey
 if (-not $status[-1]) {
-    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
-    Write-Output "ERROR: Found $(status[-2]) in msg."
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
     DisconnectWithVIServer
     return $Failed
 }

@@ -151,14 +151,11 @@ if ($round -eq 100)
 {
 	$status = CheckCallTrace $ipv4 $sshKey
 	if (-not $status[-1]) {
-   		Write-Host -F Red "ERROR: Found $(status[-2]) in msg after 100 times rebooting."
-   	 	Write-Output "ERROR: Found $(status[-2]) in msg after 100 times rebooting."
-
-	    DisconnectWithVIServer
-	    return $Failed
+   		Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+   	 	Write-Output "ERROR: Found $($status[-2]) in msg."
 	}
 	else {
-	    LogPrint "INFO: NOT found Call Trace in VM msg after 100 times rebooting."
+	    LogPrint "INFO: NOT found Call Trace in VM msg."
 		$retVal = $Passed
 	}
 }
