@@ -157,8 +157,8 @@ for ($i = 1; $i -le 10; $i++) {
     # Check system dmesg.
 	$status = CheckCallTrace $ipv4 $sshKey
 	if (-not $status[-1]) {
-	    Write-Host -F Red "ERROR: Found $(status[-2]) in msg."
-	    Write-Output "ERROR: Found $(status[-2]) in msg."
+	    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+	    Write-Output "ERROR: Found $($status[-2]) in msg."
         return $Failed
 	}
 	else {
