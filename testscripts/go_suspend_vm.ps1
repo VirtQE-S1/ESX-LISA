@@ -1,10 +1,10 @@
-###############################################################################
+########################################################################################
 ## Description:
 ##  Suspend and Resume the VM
 ##
 ## Revision:
-##  v1.0.0 - boyang - 09/06/2017 - Build script
-###############################################################################
+##  v1.0.0 - boyang - 09/06/2017 - Build script.
+########################################################################################
 
 
 <#
@@ -118,17 +118,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
+########################################################################################
 # Main Body
-###############################################################################
+########################################################################################
 $retVal = $Failed
 
 
 # Check the VM
 $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vm_obj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName."
+    Write-Output "ERROR: Unable to Get-VM with $vmName."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -136,56 +136,60 @@ if (-not $vm_obj) {
 
 # Confirm the VM power state should be on
 $state = $vm_obj.PowerState
+Write-Host -F Red "DEBUG: state: $state."
+Write-Output "DEBUG: state: $state."
 if ($state -ne "PoweredOn")
 {
-    Write-Output "CheckModules: Unable to create VM object for VM $vmName"
+    Write-Host -F Red "ERROR: VM power state should be powered on."
+    Write-Output "ERROR: VM power state should be powered on."
     return $Aborted
 }
 else
 {
-    Write-Output "INFO: VM Power state: [ $state ]"
-    
-    Write-Output "INFO: Will suspend the VM [ $vm_obj ]"
+	Write-Host -F Red "INFO: Will suspend the VM."
+    Write-Output "INFO: Will suspend the VM."
     $suspend = Suspend-VM -VM $vm_obj -Confirm:$false
 
 	# HERE. Hard Code. Hope all RHELs in ESXi Hosts complete the suspend in 180s
-    Start-sleep 180
+    Start-sleep 60
 
 	# After suspend, get the VM and its power state again
     $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     $state = $vm_obj.PowerState
+	Write-Host -F Red "DEBUG: state: $state."
+	Write-Output "DEBUG: state: $state."
     if ($state -ne "Suspended")
     {
-        Write-Output "ERROR: After suspend operation, the VM power state is incorrect"
+		Write-Host -F Red "ERROR: After suspend operation, the VM power state is incorrect."
+        Write-Output "ERROR: After suspend operation, the VM power state is incorrect."
         return $Aborted
     }
     else
     {
-        Write-Output "INFO: The VM power state [ $state ]"
-         
-        Write-Output "INFO: Will power on the VM [ $vm_obj ]"
+		Write-Host -F Red "INFO: Will power on the VM."
+    	Write-Output "INFO: Will power on the VM."
         $on = Start-VM -VM $vm_obj -Confirm:$false
 
 		# HERE. Hard Code. Hope all RHELs in ESXi Hosts complete the resume in 360s
-        Start-sleep 360
+        Start-sleep 60
 		
 		# After resume, get the VM and its power state again		
         $vm_obj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 		$state = $vm_obj.PowerState		
+		Write-Host -F Red "DEBUG: state: $state."
+		Write-Output "DEBUG: state: $state."
         if ($state -ne "PoweredOn")
         {
-            Write-Error -Message "ERROR: After power on operation, the VM power state is incorrect" -Category ObjectNotFound -ErrorAction SilentlyContinue
+			Write-Host -F Red "ERROR: After power on operation, the VM power state is incorrect."
+            Write-Out "ERROR: After power on operation, the VM power state is incorrect."
             return $Aborted
         }
         else
         {
 		    $status = CheckCallTrace $ipv4 $sshKey
 		    if (-not $status[-1]) {
-			    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
-			    Write-Output "ERROR: Found $($status[-2]) in msg."
-
-		        DisconnectWithVIServer
-		        return $Failed
+			    Write-Host -F Red "ERROR: Found somethings - $($status[-2])."
+			    Write-Output "ERROR: Found somethins - $($status[-2])."
 		    }
 		    else {
 		        LogPrint "INFO: NOT found Call Trace in VM msg after resume."
