@@ -18,40 +18,39 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
-                <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>kdump_trigger_nfs</suiteTest>
+                <suiteTest>kdump_3_types_storage</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>nw_check_vmxnet3_multiqueue</testName>
-            <testID>ESX-NW_24</testID>
-            <setupScript>setupscripts\change_cpu.ps1</setupScript>
-            <testScript>testscripts/nw_check_vmxnet3_multiqueue.ps1</testScript>
+            <testName>kdump_trigger_nfs</testName>
+            <testID>ESX-KDUMP-06</testID>
+            <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>3600</timeout>
+            <timeout>2400</timeout>
             <testParams>
-                <param>VCPU=4</param>
-                <param>TC_COVERED=RHEL7-50933</param>
+                <param>TC_COVERED=RHEL7-50872</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot> 
-        </test>
+        </test>	
         <test>
-            <testName>go_check_logs</testName>
-            <testID>ESX-GO-023</testID>
-            <testScript>testscripts/go_check_logs.ps1</testScript  >
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <param>TC_COVERED=RHEL6-0000,RHEL-149710</param>
-            </testParams>
+            <testName>kdump_3_types_storage</testName>
+            <testID>ESX-KDUMP-07</testID>
+            <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <files>remote-scripts\utils.sh</files>
+            <files>remote-scripts\ssh_storage.sh</files>
+            <timeout>2400</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50873</param>
+            </testParams>
             <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>				
+            <noReboot>False</noReboot> 
+        </test>		
     </testCases>
 
     <VMs>

@@ -1354,12 +1354,21 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
         Write-ERROR -Message "module name is null" -Category InvalidData -ERRORAction SilentlyContinue
         return $false
     }
+
     # get around plink questions
     Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
     $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
-    Write-Host -F Red "DEBUG: tcutils.ps1: vm_module: $vm_module"
-    if ( $vm_module.Trim() -eq $module.Trim() )
+    Write-Host -F Red "DEBUG: vm_module: $vm_module."
+
+	# If we can't check $vm_moudle is null or not, $vm_module.Trim() will throw error and skip if.
+    if ($null -eq $vm_module)
+    {
+        Write-Host -F Red "DEBUG: NO $module in VM."
+        return $false
+    }
+
+    if ($vm_module.Trim() -eq $module.Trim())
     {
         return $true
     }
@@ -1367,7 +1376,6 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
     {
         return $false
     }
-
 }
 
 
@@ -2379,8 +2387,12 @@ function CheckCallTrace {
     .Example
         $status = CheckCallTrace $ipv4 $sshkey
     #>
-    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages'
+    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages /var/log/dmesg.out'
     
+	# Put dmesg content into /var/log/dmesg.out.
+    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg > /var/log/dmesg.out"
+
+	# Execute search command.
     $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
     Write-Output "DEBUG: retVal: $retVal"
     if ($null -ne $retVal) {

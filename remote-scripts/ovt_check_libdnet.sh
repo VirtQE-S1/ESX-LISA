@@ -7,7 +7,7 @@
 ##
 ## Revision:
 ## 	v1.0.0 - ldu - 07/19/2017 - Draft script for case ESX-OVT-010.
-##
+## 	v1.1.0 - boyang - 12/10/2019 - Fix incorrect syntax of "-o".
 ########################################################################################
 
 
@@ -28,12 +28,13 @@ UtilsInit
 ########################################################################################
 ## Main Body
 ########################################################################################
-
-
-if [[ $DISTRO == "redhat_6" -o $DISTRO == "redhat_8" ]]; then
+if [ $DISTRO == "redhat_6" -o $DISTRO == "redhat_8" ]; then
+    LogMsg "INFO: Skip the test in $DISTRO."
+    UpdateSummary "INFO: Skip the test in $DISTRO."
     SetTestStateSkipped
     exit
 fi
+
 
 rpm -qR open-vm-tools | grep "libdnet"
 if [[ $? == 0 ]]; then

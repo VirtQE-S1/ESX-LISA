@@ -1,5 +1,4 @@
 ########################################################################################
-##
 ## Description:
 ##  Check modules in the VM
 ##
@@ -28,6 +27,7 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
+
 # Checking the input arguments
 if (-not $vmName)
 {
@@ -50,6 +50,7 @@ if (-not $testParams)
 # Output test parameters so they are captured in log file
 "TestParams : '${testParams}'"
 
+
 # Parse the test parameters
 $rootDir = $null
 $sshKey = $null
@@ -70,6 +71,7 @@ foreach ($p in $params)
     default        {}
     }
 }
+
 
 # Check all parameters are valid
 if (-not $rootDir)
@@ -103,8 +105,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 ## Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 $modules_array = ""
 
@@ -119,17 +119,18 @@ if (-not $vmObj)
 }
 
 
-# Get the Guest version
+# Get the Guest version.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 Write-Host -F Red "INFO: Guest OS version is $DISTRO"
 Write-Output "INFO: Guest OS version is $DISTRO"
-if (-not $DISTRO)
+if ($null -eq $DISTRO)
 {
     Write-Host -F Red "ERROR: Guest OS version is NULL"
     Write-Output "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
 	return $Aborted
 }
+
 
 # Different Guest DISTRO, different modules
 if ($DISTRO -eq "RedHat6")
@@ -146,8 +147,8 @@ elseif ($DISTRO -eq "RedHat8")
 }
 else
 {
-    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
+    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
 	return $Aborted
 }
@@ -165,20 +166,21 @@ foreach ($m in $modules_array)
     Write-Output "DEBUG: ret: $ret"	
     if ($ret -ne $true)
     {
-        Write-Host -F Red "FAIL: The check of $module failed"
-        Write-Output "FAIL: The check of $module failed"
+        Write-Host -F Red "ERROR: The check of $module failed."
+        Write-Output "ERROR: The check of $module failed."
         DisconnectWithVIServer
         return $retVal
     }
     else
     {
-        Write-Host -F Red "PASS: Complete the check of $module"
-        Write-Output "PASS: Complete the check of $module"
+        Write-Host -F Red "INFO: Complete the check of $module"
+        Write-Output "INFO: Complete the check of $module"
     }
-    
-    # Here, means all modules have been checked
-    $retVal = $Passed
 }
+
+
+# Set return value as $Passed as all moudles have been checked well.
+$retVal = $Passed
 
 
 DisconnectWithVIServer

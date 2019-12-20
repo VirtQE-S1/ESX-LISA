@@ -1,16 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ## Check SCSI domain validation deadlock status when a device's request queue is full.
 ##
-###############################################################################
-##
 ## Revision:
 ## v1.0.0 - ldu - 09/23/2019 - Build scripts.
-##
-##
-## 
-###############################################################################
+## v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -41,11 +37,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -63,14 +59,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -90,9 +84,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -127,9 +120,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -137,16 +129,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
+
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
 
 # Get the Guest B
 $GuestBName = $vmObj.Name.Split('-')
@@ -166,6 +158,7 @@ if ($GuestB.PowerState -ne "PoweredOff") {
     }
 }
 
+
 # Add LSI Logic Parallel for Guest B
 $hd_size = Get-Random -Minimum 10 -Maximum 15
 
@@ -176,6 +169,7 @@ if (-not $?) {
     return $Aborted
 }
 LogPrint "INFO: add LSI logic Parallel scsi controller and disk completed when vmb power off"
+
 
 # Start GuestB
 Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
@@ -188,6 +182,7 @@ else
 {
     LogPrint "INFO: Power on VMB completed."
 }
+
 
 # Wait for GuestB SSH ready
 if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
@@ -208,6 +203,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 # Check the disk number of the guest.
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
+
 $diskList =  Get-HardDisk -VM $GuestB
 $diskLength = $diskList.Length
 write-host -F Red "DEBUG diskLength: $diskLength."
@@ -225,7 +221,8 @@ else
     return $Aborted
 }
 
-#Rescan new add parallel scsi disk in guest.
+
+# Rescan new add parallel scsi disk in guest.
 $result = SendCommandToVM $ipv4B $sshKey "rescan-scsi-bus.sh -a && sleep 3 && ls /dev/sdb"
 if (-not $result)
 {
@@ -253,14 +250,13 @@ if (-not $result[-1])
 $result = SendCommandToVM $ipv4 $sshKey "scp -i `$HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no stor_domain_validation.sh utils.sh constants.sh root@${ipv4B}:/root"
 if (-not $result[-1])
 {
-    LogPrint "ERROR: Cannot scp file"
+    LogPrint "ERROR: Cannot scp file."
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 
-
-#Make filesystem and mount the new Parallel disk to /mnt.
+# Make filesystem and mount the new Parallel disk to /mnt.
 $result = SendCommandToVM $ipv4B $sshKey "cd /root && dos2unix stor_domain_validation.sh && bash stor_domain_validation.sh"
 if (-not $result)
 {
@@ -275,21 +271,23 @@ else
 }
 
 
-#Start running a heavy load of io to sdb，for example:
+# Start running a heavy load of io to sdb，for example:
 $workload = 'fio --filename=/mnt/test --time_based --direct=1 --rw=randrw --bs=4k --size=5G --numjobs=75 --runtime=300000 --name=test --ioengine=libaio --iodepth=64 --rwmixread=50'
 $process1 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4B} ${workload}" -PassThru -WindowStyle Hidden
 write-host -F Red "process1 id is $($process1.id)"
 
 
-#In a loop issue the revalidate command
+# In a loop issue the revalidate command
 $Command = "while true; do echo 1 > /sys/class/spi_transport/target2\:0\:0/revalidate; done"
 $process2 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4B} ${Command}" -PassThru -WindowStyle Hidden
 LogPrint "INFO: process2 id is $($process2.id)  revalidate while loop is running"
 
+
 # Loop runing for 10 mins
 Start-Sleep -Seconds 300
 
-#Check the fio tools running from the fio test file /mnt/test1
+
+# Check the fio tools running from the fio test file /mnt/test1
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4B} "ls /mnt/test"
 if ($null -eq $exist)
 {
@@ -305,7 +303,8 @@ else
 	Write-Output "Passed, fio tool run successfully,  file /mnt/test1 is exist: $exist "
 }
 
-#check loop revalidate command is running from dmesg log file
+
+# Check loop revalidate command is running from dmesg log file
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4B} "dmesg |grep 'Ending Domain Validation'"
 if ($null -eq $exist)
 {
@@ -321,21 +320,18 @@ else
 	Write-Output "Passed, revalidate command successfully,  Domain validation log is exist in dmesg: $exist "
 }
 
-#check the call trace in dmesg file
-if ( -not (CheckCallTrace $ipv4 $sshKey)) 
-{
-    LogPrint "error :Call Trace log found after run  domain validation"
-    disconnectwithviserver
-    return $Failed
+# Check the call trace in dmesg file.
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
 }
-else 
-{
-	Write-host -F Red "Passed:no Call Trace log after run domain validation"
-	Write-Output "Passed: no Call Trace log after run domain validation"
+else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
     $retVal = $Passed
 }
 
 
 DisconnectWithVIServer
-
 return $retVal

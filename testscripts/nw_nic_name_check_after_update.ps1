@@ -121,8 +121,8 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 ## Main Body
 ########################################################################################
-
 $retVal = $Failed
+
 
 # Confirm NIC interface types. RHELs has different NIC types, like "eth0" "ens192:" "enp0s25:"
 $eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
@@ -202,13 +202,16 @@ if ($DISTRO -eq "RedHat8")
     bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo gpgcheck=0 >> /etc/yum.repos.d/rhel_nightly.repo"
 }
 
+
 # Before update, how many kernels
 $orginal_kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
+
 
 # Check the default kernel version.
 $default_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
 Write-Host -F Red "DEBUG: default_kernel: $default_kernel"
 Write-Output "DEBUG: default_kernel: $default_kernel"
+
 
 # Update the Guest
 $update_guest = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum clean all && yum makecache && yum update -y && echo $?"
@@ -219,7 +222,9 @@ if ($update_guest[-1] -ne "True")
     return $Aborted
 }
 
+
 Start-Sleep -seconds 6
+
 
 # Check the new kernel installed or not.
 $kernel_num = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel | wc -l"
@@ -235,39 +240,42 @@ else
     write-Output "INFO: Installed a new kernel,The guest updated successfully."
 }
 
-# CReboot the guest
+
+# Reboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
+
 Start-Sleep -seconds 6
+
 
 # Wait for the VM
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
 if ($ssh -ne $true)
 {
-	Write-Host -F Red "ERROR: Failed to start VM"
-    Write-Output "ERROR: Failed to start VM"
+	Write-Host -F Red "ERROR: Failed to start VM."
+    Write-Output "ERROR: Failed to start VM."
     return $Aborted
 }
+
 
 # Check the new kernel version
 $new_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r"
 Write-Host -F red "INFO: After reboot the current kernel is $new_kernel."
 write-Output "INFO: After reboot the current kernel is $new_kernel."
 
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-Write-Host -F Red "DEBUG: calltrace_check: $calltrace_check"
-Write-Output "DEBUG: calltrace_check: $calltrace_check"
-if ($null -eq $calltrace_check)
-{
-	Write-Host -F Red "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
-	Write-Output "INFO: PASS. After booting with new kernel $current_kernel, NO call trace $calltrace_check found."
+
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
+    DisconnectWithVIServer
+    return $Failed
 }
-else
-{
-    Write-Host -F Red "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
-    Write-Output "ERROR: After booting, FOUND call trace $calltrace_check in demsg."
-	return $Aborted
+else {
+    Write-Host -F Red "INFO: NO call trace found with new kernel."
+    Write-Output "INFO: NO call trace found with new kernel."
 }
+
 
 # Check NIC name.
 $new_eth = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
@@ -283,6 +291,6 @@ else
 	Write-Output "ERROR: FAIL. NIC name has been chagned."
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

@@ -431,11 +431,11 @@
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
-                <suiteTest>rdma_hot_remove</suiteTest>
+                <!-- suiteTest>rdma_hot_remove</suiteTest -->
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>vsock_host_as_server</suiteTest>
                 <suiteTest>vsock_guest_as_server</suiteTest>
-                <suiteTest>sriov_boot_check</suiteTest>
+                <!-- suiteTest>sriov_boot_check</suiteTest -->
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
@@ -1070,7 +1070,7 @@
                 <param>redhat_7_lower_rpm=10.3.10/1.el7/x86_64/open-vm-tools-debuginfo-10.3.10-1.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
                 <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-2.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=10.3.10/3.el8/x86_64/open-vm-tools-debuginfo-11.0.0-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_rpm=11.0.0/2.el8/x86_64/open-vm-tools-debuginfo-11.0.0-2.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.3.10-3.el8.x86_64</param>
                 <param>redhat_8_lower_rpm=10.3.10/3.el8/x86_64/open-vm-tools-debuginfo-10.3.10-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>

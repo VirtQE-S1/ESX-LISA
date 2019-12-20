@@ -125,8 +125,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
-
 $retVal = $Failed
 
 
@@ -139,25 +137,30 @@ if (-not $vmObj)
 	return $Aborted
 }
 
+
 # Check Call Trace
 $status = CheckCallTrace $ipv4 $sshKey
-if ($null -eq $status -or -not $status[-1]) {
-    LogPrint "ERROR: Failed on dmesg Call Trace"
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
     DisconnectWithVIServer
     return $Failed
 }
 
-#check failed, backtrace, error logs in dmesg 
+
+# Check failed, backtrace, error logs in dmesg 
 $fail_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep -v 'failed to assign \|Ignore above error' | grep -E 'fail|backtrace|error'"
 if ($null -eq $fail_check)
 {
     $retVal = $Passed
-    Write-host -F Red "INFO: After boot, NO $fail_check failed log found"
-    Write-Output "INFO: After boot, NO $fail_check failed log found"
+    Write-Host -F Red "INFO: After boot, NO $fail_check failed log found."
+    Write-Output "INFO: After boot, NO $fail_check failed log found."
 }
 else{
-    Write-Output "ERROR: After boot, FOUND $fail_check failed log in demsg"
+    Write-Host -F Red "ERROR: After boot, FOUND $fail_check failed log in demsg."
+    Write-Output "ERROR: After boot, FOUND $fail_check failed log in demsg."
 }
+
 
 DisconnectWithVIServer
 return $retVal

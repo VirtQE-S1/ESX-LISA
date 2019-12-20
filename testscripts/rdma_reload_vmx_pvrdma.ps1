@@ -174,13 +174,14 @@ Start-Sleep -Seconds 600
 
 
 # Check System dmesg
-$Command = "dmesg | grep -i `"Call Trace`" | wc -l"
-$Error_Num = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
-if ($Error_Num -ne 0) {
-    LogPrint "ERROR: System has error during load and unload vmw_pvrdma module"
-    DisconnectWithVIServer
-    return $Failed
-}else{
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
+}
+else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
     $retVal = $Passed
 }
 
