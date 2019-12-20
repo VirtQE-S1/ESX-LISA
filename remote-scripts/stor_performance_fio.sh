@@ -168,6 +168,8 @@ mkdir -p /mnt/$path
 cd /root
 git clone https://github.com/SCHEN2015/virt-perf-scripts.git
 cd /root/virt-perf-scripts/block
+[ -r ${yamlFile:="../virt_perf_scripts.yaml"} ] && rm -f virt_perf_scripts.yaml \
+&& ln -s $yamlFile virt_perf_scripts.yaml && UpdateSummary "currently used $yamlFile yaml file"
 
 # set filename dependecy raw or filesystem disk 
 if [[ $FS == raw ]]; then
@@ -177,10 +179,10 @@ else
 fi
 # Execute fio test
 
-./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path
+/usr/bin/python ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
-	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
 	SetTestStateFailed
 	exit 1
 else
@@ -189,7 +191,7 @@ else
 fi
 
 # Generate Fio test report
-./GenerateTestReport.py --result_path /mnt/$path
+/usr/bin/python ./GenerateTestReport.py --result_path /mnt/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
 	UpdateSummary "Test report generate failed"
@@ -203,7 +205,7 @@ fi
 #Generate benchmark Report
 
 
-./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
+/usr/bin/python ./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
 	UpdateSummary "Test result benchmark failed, basepath is $basepath and path is $path"
