@@ -181,7 +181,7 @@ else
         if ($state -ne "PoweredOn")
         {
 			Write-Host -F Red "ERROR: After power on operation, the VM power state is incorrect."
-            Write-Out "ERROR: After power on operation, the VM power state is incorrect."
+            Write-Output "ERROR: After power on operation, the VM power state is incorrect."
             return $Aborted
         }
         else

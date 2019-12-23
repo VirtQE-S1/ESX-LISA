@@ -18,39 +18,71 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>kdump_trigger_nfs</suiteTest>
-                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
         <test>
-            <testName>kdump_trigger_nfs</testName>
-            <testID>ESX-KDUMP-06</testID>
-            <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>2400</timeout>
+            <testName>cloud-init_customization_DHCP</testName>
+            <testID>ESX-cloud-init-004</testID>
+            <testScript>testscripts/cloud-init_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>TC_COVERED=RHEL7-50872</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137082</param>
             </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
             <onError>Continue</onError>
-            <noReboot>False</noReboot> 
-        </test>	
+            <noReboot>False</noReboot>
+        </test>
         <test>
-            <testName>kdump_3_types_storage</testName>
-            <testID>ESX-KDUMP-07</testID>
-            <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <files>remote-scripts\utils.sh</files>
-            <files>remote-scripts\ssh_storage.sh</files>
-            <timeout>2400</timeout>
+            <testName>cloud-init_customization_static</testName>
+            <testID>ESX-cloud-init-005</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
             <testParams>
-                <param>TC_COVERED=RHEL7-50873</param>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137083</param>
             </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
             <onError>Continue</onError>
-            <noReboot>False</noReboot> 
-        </test>		
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_DHCP</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_static</testName>
+            <testID>ESX-ovt-037</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/ovt_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-180199</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
     </testCases>
 
     <VMs>

@@ -1,24 +1,19 @@
-###############################################################################
-#
+########################################################################################
 # Description:
 #	Config new vmxnet3 dynamic_ip
 #
 # Revision:
-# v1.0.0 - boyang - 01/18/2017 - Build script
-# v1.0.1 - boyang - 04/02/2018 - Comment in Notice
-# v1.0.2 - boyang - 04/03/2018 - Use $DISTRO to identify different operations
-# V2.0.0 - ruqin  - 08/28/2018 - Use powershell instead of bash shell
-#
-###############################################################################
-
+# 	v1.0.0 - boyang - 01/18/2017 - Build script
+# 	v1.0.1 - boyang - 04/02/2018 - Comment in Notice
+# 	v1.0.2 - boyang - 04/03/2018 - Use $DISTRO to identify different operations
+# 	v2.0.0 - ruqin  - 08/28/2018 - Use powershell instead of bash shell
+########################################################################################
 
 
 <#
 .Synopsis
-    Change the MTU of a SR-IOV
-
+	Config new vmxnet3 dynamic_ip
 .Description
-
          <test>
             <testName>nw_new_vmxnet3_dynamic_ip</testName>
             <testID>ESX-NW-014</testID>
@@ -32,11 +27,8 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
@@ -45,9 +37,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -63,15 +53,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -88,9 +74,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -114,10 +98,9 @@ if ($null -eq $ipv4) {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
+
 
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -131,9 +114,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
 # Main Body
 #
 ###############################################################################
-
-
 $retVal = $Failed
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -142,17 +125,19 @@ if (-not $vmObj) {
 }
 
 
-# Find new add vmxnet3 nic
+# Find new add vmxnet3 nic.
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+Write-Output "DEBUG: nics: $nics."
+Write-Host -F Red "DEBUG: nics: $nics."
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add NIC" 
+    LogPrint "ERROR: Cannot find new add NIC." 
     DisconnectWithVIServer
     return $Failed
 }
 else {
     $vmxnetNic = $nics[-1]
 }
-LogPrint "INFO: New NIC is $vmxnetNic"
+LogPrint "INFO: Found New NIC - ${vmxnetNic}."
 
 
 # Config new NIC
