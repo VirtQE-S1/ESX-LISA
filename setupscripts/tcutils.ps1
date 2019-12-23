@@ -1425,17 +1425,18 @@ function ConvertStringToDecimal([string] $str)
 function LogPrint([string] $msg) {
 
     $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
-    $color = "white"
+
     if ( $msg.StartsWith("ERROR")) {
-        $color = "red"
+        $color = "Red"
     }
-    elseif ($msg.StartsWith("Warn")) {
+    elseif ($msg.StartsWith("WARNING")) {
         $color = "Yellow"
     }
     else {
-        $color = "gray"
+        $color = "White"
     }
-    Write-Host -f $color ($now + $msg)
+
+    Write-Host -F $color ($now + $msg)
     Write-Output ($now + $msg)
 }
 
