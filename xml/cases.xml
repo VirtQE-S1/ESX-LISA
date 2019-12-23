@@ -566,7 +566,7 @@
             <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/ovt_mount.sh</files>
+            <files>remote-scripts/ovt_mount_twice.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
                 <param>StorageFormat=Thin</param>
