@@ -73,6 +73,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>DiskType=NVMe</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
@@ -106,6 +107,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=NVMe</param>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
@@ -138,6 +140,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
@@ -170,6 +173,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
@@ -202,6 +206,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>
@@ -234,6 +239,7 @@
             <files>remote-scripts/stor_performance_fio.sh</files>
             <testParams>
                 <param>DiskType=IDE</param>
+                <param>yamlFile=./tests/full.yaml</param>
                 <param>StorageFormat=EagerZeroedThick</param>
                 <param>DiskDataStore=NVMe</param>
                 <param>CapacityGB=20</param>

@@ -49,6 +49,23 @@ if (-not $testParams) {
 #
 "TestParams : '${testParams}'"
 
+# Parse the test parameters
+$rootDir = $null
+$sshKey = $null
+$ipv4 = $null
+
+$params = $testParams.Split(";")
+foreach ($p in $params) {
+    $fields = $p.Split("=")
+    switch ($fields[0].Trim()) {
+        "sshKey" { $sshKey = $fields[1].Trim() }
+        "rootDir" { $rootDir = $fields[1].Trim() }
+        "ipv4" { $ipv4 = $fields[1].Trim() }
+        "nicName" { $nicName = $fields[1].Trim() }
+        default {}
+    }
+}
+
 ###############################################################################
 #
 # Main Body
@@ -71,7 +88,7 @@ $old_nics = Get-NetworkAdapter -vm $vmOut
 #
 # Add a vmxnet3 NIC to VM
 #
-$new_vmxnet3 = New-NetworkAdapter -VM $vmOut -NetworkName "VM Network" -Type vmxnet3 -WakeOnLan -StartConnected -Confirm:$false
+$new_vmxnet3 = New-NetworkAdapter -VM $vmOut -NetworkName $nicName -Type vmxnet3 -WakeOnLan -StartConnected -Confirm:$false
 if ($new_vmxnet3) {
     Write-Host -F red "DONE: New-NetworkAdapter VMXNET3($new_vmxnet3) well"
     Write-Output "DONE: New-NetworkAdapter VMXNET3($new_vmxnet3) well"
