@@ -2164,12 +2164,9 @@ function AddNVMeDisk {
 }
 
 
-#######################################################################
-#
+########################################################################################
 # FindAllNewAddNIC()
-#
-#######################################################################
-
+########################################################################################
 function FindAllNewAddNIC {
     Param
     (
@@ -2191,23 +2188,28 @@ function FindAllNewAddNIC {
     .Example
         $nics = FindAllNewAddNIC $ipv4 $sshkey
     #>
+    
     # Get Old Adapter (SSH is using it) of VM
-    $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+    $Command = "ip a | grep `$(echo `$SSH_CONNECTION | awk '{print `$3}') | awk '{print `$(NF)}'"
     $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-    if ( $null -eq $Old_Adapter) {
-        LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
+	Write-Output "DEBUG: Old_Adapter: ${Old_Adapter}."
+	Write-Host -F Red "DEBUG: Old_Adapter: ${Old_Adapter}."
+
+    if ($null -eq $Old_Adapter) {
+        LogPrint "ERROR : Cannot get Server_Adapter from first adapter."
         return $null
     }
 
-
     # Get all other nics
     $retVal = $null
-    $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
+    $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter."
     $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+	Write-Output "DEBUG: nics: ${nics}."
+	Write-Host -F Red "DEBUG: nics: ${nics}."
     $retVal = ,$nics
     #  powershell  convert array to string if the array only has one element
-    if ( $null -eq $nics) {
-        LogPrint "ERROR : Cannot get any NIC other than default NIC from guest"
+    if ($null -eq $nics) {
+        LogPrint "ERROR : Cannot get any NIC other than default NIC from guest."
         return $null
     }else{
         return $retVal

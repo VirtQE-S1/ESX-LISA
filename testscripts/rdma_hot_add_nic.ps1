@@ -111,8 +111,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -160,7 +158,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 
 # Hot add RDMA nic
 $status = AddPVrdmaNIC $vmName $hvServer
-if ( -not $status ) {
+if (-not $status) {
     LogPrint "ERROR: Hot add RDMA nic failed"
     DisconnectWithVIServer
     return $Failed
@@ -169,21 +167,23 @@ if ( -not $status ) {
 
 # Find out new add RDMA nic
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+Write-Output "DEBUG: nics: ${nics}."
+Write-Host -F Red "DEBUG: nics: ${nics}."
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
+    LogPrint "ERROR: Cannot find new add RDMA NIC." 
     DisconnectWithVIServer
     return $Failed
 }
 else {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: Found the new NIC - ${rdmaNIC}."
 
 
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
 if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
-    LogPrint "ERROR : Config IP Failed maybe IP address conflit"
+    LogPrint "ERROR : Config IP Failed maybe IP address conflit."
     DisconnectWithVIServer
     return $Failed
 }
@@ -193,7 +193,7 @@ if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
 $Command = "ping $IPAddr -c 10 -W 15  | grep ttl > /dev/null"
 $status = SendCommandToVM $ipv4 $sshkey $command
 if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
+    LogPrint "ERROR : Ping test Failed."
     DisconnectWithVIServer
     return $Failed
 }
