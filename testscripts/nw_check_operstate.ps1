@@ -1,23 +1,19 @@
-###############################################################################
+########################################################################################
 ##  Description:
 ##      Check NIC operstate when ifup / ifdown
 ##
 ##  Revision:
-##      v1.0.0 - boyang - 08/31/2017 - Build the script
-##      v1.0.1 - boyang - 05/10/2018 - Enhance the script in debug info
-##      v2.0.0 - ruqin  - 09/03/2018 - Use powershell instead of bash
-##      v2.0.1 - boyang - 09/14/2018 - Increate time before check
-##
-###############################################################################
+##      v1.0.0 - boyang - 08/31/2017 - Build the script.
+##      v1.0.1 - boyang - 05/10/2018 - Enhance the script in debug info.
+##      v2.0.0 - ruqin  - 09/03/2018 - Use powershell instead of bash.
+##      v2.0.1 - boyang - 09/14/2018 - Increate time before check.
+########################################################################################
 
 
 <#
 .Synopsis
     Check NIC operstate when ifup / ifdown
-
 .Description
-    Check NIC operstate when ifup / ifdown, operstate owns up / down states
-
      <test>
             <testName>nw_check_operstate</testName>
             <testID>ESX-NW-009</testID>
@@ -30,13 +26,10 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
     </test>
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
@@ -129,6 +122,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 $new_network_name = "VM Network"
 
+
 # Confirm VM
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmOut) {
@@ -137,44 +131,49 @@ if (-not $vmOut) {
     return $Aborted
 }
 
+
 # NIC count before hot-plug a new NIC
 $all_nic_count_old = (Get-NetworkAdapter -VM $vmOut).Count
 
+
 # Hot plug a new NIC
-LogPrint "INFO: Adding a new NIC"
+LogPrint "INFO: Adding a new NIC."
 $new_nic_obj_x = New-NetworkAdapter -VM $vmOut -NetworkName $new_network_name -WakeOnLan -StartConnected -Confirm:$false
 LogPrint "DEBUG: new_nic_obj_x: [${new_nic_obj_x}]"
 
+
 # Confirm NIC count
 $all_nic_count_new = (Get-NetworkAdapter -VM $vmOut).Count
-LogPrint "DEBUG: all_nic_count: $all_nic_count"
+LogPrint "DEBUG: all_nic_count: $all_nic_count."
 if ($all_nic_count_new -le $all_nic_count_old) {
-    LogPrint "ERROR: Hot plug vmxnet3 failed"
+    LogPrint "ERROR: Hot plug vmxnet3 failed."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Complete the hot plug of vmxnet3"
+LogPrint "INFO: Complete the hot plug of vmxnet3."
+
 
 # Find a new add vmxnet3 nic
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add NIC" 
+    LogPrint "ERROR: Cannot find new add NIC." 
     DisconnectWithVIServer
     return $Aborted
 }
 else {
     $vmxnetNic = $nics[-1]
 }
-LogPrint "INFO: New NIC is $vmxnetNic"
+LogPrint "INFO: Found new NIC - ${vmxnetNic}."
+
 
 # Config the new NIC
 ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic | Write-Output -OutVariable status
 if ( -not $status[-1]) {
-    LogPrint "ERROR : Config IP Failed"
+    LogPrint "ERROR : Config IP Failed."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: vmxnet3 NIC IP setup successfully"
+LogPrint "INFO: vmxnet3 NIC IP setup successfully."
 
 
 for ($i = 0; $i -lt 10; $i++) {
@@ -183,7 +182,7 @@ for ($i = 0; $i -lt 10; $i++) {
     $operstate = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
     LogPrint "DEBUG: operstate: [${operstate}]"
     if ($operstate -ne "up") {
-        LogPrint "ERROR: NIC operstate is not correct on up" 
+        LogPrint "ERROR: NIC operstate is not correct on UP." 
         DisconnectWithVIServer
         return $Failed
     }
@@ -192,7 +191,7 @@ for ($i = 0; $i -lt 10; $i++) {
 
     # Set to down
     SendCommandToVM $ipv4 $sshKey "ifconfig $vmxnetNic down"
-    LogPrint "INFO: Set operstate down"
+    LogPrint "INFO: Set operstate down."
     
     Start-Sleep -Seconds 6
 
@@ -201,7 +200,7 @@ for ($i = 0; $i -lt 10; $i++) {
     $operstate = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
     LogPrint "DEBUG: operstate: [${operstate}]"
     if ($operstate -ne "down") {
-        LogPrint "ERROR: NIC operstate is not correct on down" 
+        LogPrint "ERROR: NIC operstate is not correct on DOWN." 
         DisconnectWithVIServer
         return $Failed
     }
@@ -210,7 +209,7 @@ for ($i = 0; $i -lt 10; $i++) {
 
     # Set to up
     SendCommandToVM $ipv4 $sshKey "ifconfig $vmxnetNic up"
-    LogPrint "INFO: Set operstate up"
+    LogPrint "INFO: Set operstate up."
 
     Start-Sleep -Seconds 6
 }
@@ -218,6 +217,6 @@ for ($i = 0; $i -lt 10; $i++) {
 
 $retVal = $Passed
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

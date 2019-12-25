@@ -1432,6 +1432,9 @@ function LogPrint([string] $msg) {
     elseif ($msg.StartsWith("WARNING")) {
         $color = "Yellow"
     }
+    elseif ($msg.StartsWith("DEBUG")) {
+        $color = "Yellow"
+    }
     else {
         $color = "White"
     }
@@ -1790,12 +1793,9 @@ function AddSrIOVNIC {
 }
 
 
-########################################################################
-# 
-# Config IP address for new add NIC
+########################################################################################
 # ConfigIPforNewDevice()
-# 
-########################################################################
+########################################################################################
 function ConfigIPforNewDevice {
     Param
     (
@@ -1829,33 +1829,30 @@ function ConfigIPforNewDevice {
     
     $retVal = $false
     if ($null -eq $deviceName) {
-        LogPrint "ERROR: No device name in param"
+        LogPrint "ERROR: No device name in param."
         return $false 
     }
 
-    # Get the Guest version
+    # Get the Guest version.
     $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
     LogPrint "DEBUG: DISTRO: $DISTRO"
     if (-not $DISTRO) {
-        LogPrint "ERROR: Guest OS version is NULL"
+        LogPrint "ERROR: Guest OS version is NULL."
         return $false
     }
-    LogPrint "INFO: Guest OS version is $DISTRO"
+    LogPrint "INFO: Guest OS version is $DISTRO."
 
-
-    # Different Guest DISTRO
+    # Different Guest DISTRO.
     if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
         LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
         return $false
     }
-
 
     # Setup default MTU value
     if ( -not $PSBoundParameters.ContainsKey("MTU")) {
         LogPrint "INFO: MTU set to default 1500"
         $MTU = 1500 
     }
-
     
     if ($DISTRO -eq "RedHat6") {
         # Start Specifc device
@@ -1872,12 +1869,12 @@ function ConfigIPforNewDevice {
             # Config DHCP for Device
             $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=dhcp`\nONBOOT=yes`\nMTU=$MTU"
             SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
-
         }
+
         # Restart Network service
         $status = SendCommandToVM $ipv4 $sshKey "ifdown $deviceName && ifup $deviceName"
         if (-not $status) {
-            LogPrint "Error: Cannot activate new nic config"
+            LogPrint "Error: Cannot activate new nic config."
             return $false
         } else {
             $retVal = $true
@@ -1895,50 +1892,46 @@ function ConfigIPforNewDevice {
             $status = SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet mtu $MTU" 
         }
 
-
         # Check results
         if (-not $status) {
             LogPrint "Error: Config new connection failed"
             return $false
         }
 
-
         # Restart NetworkManager
         $status = SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
-        # Start-Sleep -Seconds 1
+
+        Start-Sleep -Seconds 6
+
         # Restart Connection
         $Command = "nmcli con down $deviceName && nmcli con up $deviceName" 
         $status = SendCommandToVM $ipv4 $sshKey $Command
         if (-not $status) {
-            LogPrint "Error: Cannot activate new nic config"
+            LogPrint "Error: Cannot activate new nic config."
             return $false
         }
 
+        Start-Sleep -Seconds 6
 
         # Check current MTU
         $Command = "ip a | grep $deviceName | head -n 1 | awk '{print `$5}'"
         $Current_MTU = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
         if ($Current_MTU -ne $MTU) {
-           LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement" 
+           LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement." 
            return $false
         } else {
             $retVal = $true
         }
     }
-    LogPrint "INFO: IP config for new NIC succeeded"
-
+    LogPrint "INFO: IP config for new NIC succeeded."
 
     return $retVal
 }
 
 
-########################################################################
-# 
-# Add a new pvRDMA nic
-#
+########################################################################################
 # AddPVrdmaNIC()
-#
-########################################################################
+########################################################################################
 function AddPVrdmaNIC {
     param (
         [String] $vmName,
