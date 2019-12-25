@@ -1043,7 +1043,7 @@
                 <param>redhat_7_lower_rpm=10.3.10/1.el7/x86_64/open-vm-tools-10.3.10-1.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.3.10/1.el7/x86_64/open-vm-tools-desktop-10.3.10-1.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-11.0.0-2.el8.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
                 <param>redhat_8_lower_version=open-vm-tools-10.3.10-3.el8.x86_64</param>
                 <param>redhat_8_lower_rpm=10.3.10/3.el8/x86_64/open-vm-tools-10.3.10-3.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_dsk_rpm=10.3.10/3.el8/x86_64/open-vm-tools-desktop-10.3.10-3.el8.x86_64.rpm</param>
@@ -1069,8 +1069,8 @@
                 <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.3.10-1.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.3.10/1.el7/x86_64/open-vm-tools-debuginfo-10.3.10-1.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-2.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=11.0.0/2.el8/x86_64/open-vm-tools-debuginfo-11.0.0-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-3.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=11.0.0/3.el8/x86_64/open-vm-tools-debuginfo-11.0.0-3.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.3.10-3.el8.x86_64</param>
                 <param>redhat_8_lower_rpm=10.3.10/3.el8/x86_64/open-vm-tools-debuginfo-10.3.10-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>

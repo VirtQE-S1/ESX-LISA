@@ -1,20 +1,16 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Add one more vmxnet3 network adapter
-##
-###############################################################################
+## 	Add one more vmxnet3 network adapter.
 ##
 ## Revision:
-## V1.0.0 - boyang - 08/29/2017 - Build script
-## V1.1.0 - ruqin  - 08/28/2018 - Use NetworkManager instead of network
-##
-###############################################################################
+## 	v1.0.0 - boyang - 08/29/2017 - Build script.
+## 	v1.1.0 - ruqin  - 08/28/2018 - Use NetworkManager instead of network.
+########################################################################################
+
 
 <#
 .Synopsis
     Add one more vmxnet3 network adapter
-
 .Description
     <test>
             <testName>nw_mulit_vmxnet3</testName>
@@ -28,22 +24,16 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
     </test>
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-# Checking the input arguments
 if (-not $vmName) {
     "FAIL: VM name cannot be null!"
     exit 1
@@ -69,7 +59,6 @@ $sshKey = $null
 $ipv4 = $null
 $logdir = $null
 
-
 $params = $testParams.Split(";")
 foreach ($p in $params) {
     $fields = $p.Split("=")
@@ -81,7 +70,6 @@ foreach ($p in $params) {
         default {}
     }
 }
-
 
 # Check all parameters are valid
 if (-not $rootDir) {
@@ -121,15 +109,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-LogPrint "dfasdfasdf"
-
+########################################################################################
 $retVal = $Failed
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -138,37 +123,38 @@ if (-not $vmObj) {
 }
 
 
-# Hot plug two new NICs
+# Hot plug two new NICs.
 $networkName = "VM Network"
 $total_nics = 5
 $count = 1
 while ($count -le $total_nics) {
     $newNIC = New-NetworkAdapter -VM $vmObj -NetworkName $networkName -WakeOnLan -StartConnected -Confirm:$false
-    LogPrint "INFO: New Add NIC $newNIC"
+    LogPrint "INFO: New Add NIC $newNIC."
     $count++
 }
 
 
-# Check hot plug NIC
+# Check hot plug NIC.
 $all_nic_count = (Get-NetworkAdapter -VM $vmObj).Count
-LogPrint "INFO: All NICs count: $all_nic_count"
+LogPrint "INFO: All NICs count: $all_nic_count."
 if ($all_nic_count -eq ($total_nics + 1)) {
-    LogPrint "INFO: Hot plug vmxnet3 successfully"
+    LogPrint "INFO: Hot plug vmxnet3 successfully."
 }
 else {
-    LogPrint "FAIL: Unknow issue after hot plug adapter, check it manually"
+    LogPrint "ERROR: Unknow issue after hot plug adapter, check it manually."
     return $Aborted
 }
 
 
 # Find new add vmxnet3 nic
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+LogPrint "DEBUG: nics: $nics"
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add NIC" 
+    LogPrint "ERROR: Cannot find new add NIC." 
     DisconnectWithVIServer
     return $Failed
 }
-LogPrint "INFO: New NIC count is $($nics.Length)"
+LogPrint "INFO: New NIC count is $($nics.Length)."
 
 
 # Config new NIC

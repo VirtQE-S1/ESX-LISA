@@ -1,14 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Check Host and Guest time sync after suspend
-##
-###############################################################################
+## 	Check Host and Guest time sync after suspend.
 ##
 ## Revision:
-## V1.0 - ldu - 10/10/2017 - Build script
-##
-###############################################################################
+## 	v1.0.0 - ldu - 10/10/2017 - Build script.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -23,11 +20,8 @@
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
-# Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -45,14 +39,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -72,9 +64,7 @@ foreach ($p in $params)
     }
 }
 
-#
-# Check all parameters are valid
-#
+# Check all parameters are valid.
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -109,9 +99,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -119,17 +108,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 
-#
+
 # OVT is skipped in RHEL6
-#
 $OS = GetLinuxDistro  $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
@@ -137,22 +123,19 @@ if ($OS -eq "RedHat6")
     return $Skipped
 }
 
-#
+
 # Confirm the VM power state is PoweredOn
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $state = $vmObj.PowerState
+LogPrint "DEBUG: state: $state"
 if ($state -ne "PoweredOn")
 {
     Write-Error -Message "ABORTED: $vmObj is not poweredOn, power state is $state" -Category ObjectNotFound -ErrorAction SilentlyContinue
     return $Aborted
 }
-Write-Host -F Red "DONE. VM Power state is $state"
-Write-Output "DONE. VM Power state is $state"
 
-#
+
 # Enable timesync
-#
 $enable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl restart vmtoolsd && vmware-toolbox-cmd timesync enable"
 if ($enable -ne "Enabled")
 {
@@ -160,74 +143,61 @@ if ($enable -ne "Enabled")
     return $Aborted
 }
 
-#
+
 # Suspend the VM and confirm the power state
-#
-Write-Host -F Red "Now, will Suspend the VM......."
-Write-Output "Now, will Suspend the VM......."
 $suspend = Suspend-VM -VM $vmObj -Confirm:$False
+
+
 Start-Sleep -S 60
+
 
 # Get the new VM
 $vmObjSuspend = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $suspendState = $vmObjSuspend.PowerState
+LogPrint "DEBUG: suspendState: $suspendState"
 if ($suspendState -ne "Suspended")
 {
     Write-Error -Message "ABORTED: $vmObj is not Suspended, power state is $suspendState" -Category ObjectNotFound -ErrorAction SilentlyContinue
     return $Aborted
 }
-else
-{
-    Start-Sleep 120
-}
-Write-Host -F Red "DONE. VM Power state is $suspendState......."
-Write-Output "DONE. VM Power state is $suspendState"
 
-#
+
 # Power the VM, and confirm the power state
-#
-write-host -F Red "Now, will Power On the VM......."
-Write-Output "Now, will Power On the VM"
 $on = Start-VM -VM $vmObj -Confirm:$False
+
 
 # Debug below function
 $timeBefore = Get-Date
-Write-Host -F Red "$timeBefore"
+LogPrint "DEBUG: timeBefore: $timeBefore"
 $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ( $ret -eq $true )
+if ($ret -ne $true)
 {
     $timeAfter = Get-Date
-    Write-Host -F Red "$timeAfter"
-    $debug = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    $debugState = $debug.PowerState
-    write-host -F Red "vm status starts up, state is $debugState"
+	LogPrint "DEBUG: timeAfter: $timeAfter"
+
+    $vmON = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    $state = $vmOn.PowerState
+    LogPrint "DEBUG: state: $state"
+    LogPrint "ERROR: Wait for VM SSH ready failed."
 }
-else
-{
-    $timeAfter = Get-Date
-    Write-Host -F Red "$timeAfter"
-    $debug = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    $debugState = $debug.PowerState
-    write-host -F Red "vm status starts up, state is $debugState"
-    return $Aborted
-}
+
 
 # Get the new VM
 $vmObjOn = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $onState = $vmObjOn.PowerState
+LogPrint "DEBUG: onState: $onState"
 if ($onState -ne "PoweredOn")
 {
     Write-Error -Message "ABORTED: $vmObj is not poweredOn, power state is $state" -Category ObjectNotFound -ErrorAction SilentlyContinue
     return $Aborted
 }
 
-#
+
 # Execute the remote script to check the time sync after suspend
-#
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix ovt_check_suspend_timesync.sh && chmod u+x ovt_check_suspend_timesync.sh && ./ovt_check_suspend_timesync.sh"
 if (-not $result)
 {
-	Write-Output "FAIL: Failed to execute ovt_check_suspend_timesync.sh in VM."
+	LogPrint "ERROR: Failed to execute ovt_check_suspend_timesync.sh in VM."
 }
 else
 {
@@ -235,6 +205,4 @@ else
 }
 
 DisconnectWithVIServer
-
 return $retVal
-
