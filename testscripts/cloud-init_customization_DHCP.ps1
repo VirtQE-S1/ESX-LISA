@@ -166,6 +166,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 Start-VM -VM $cloneVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -174,23 +175,25 @@ if (-not $?) {
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 LogPrint "INFO: Ready SSH"
 
 
-# Get another VM IP addr
+# Get cloned VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
 
 #check the compter name info
-$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-001"
+$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-002"
 if ($null -eq $computerName)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
     Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -209,16 +212,8 @@ else
     Write-Output " Passed:  the customization gust passed with log $loginfo"
 }
 
-
-#Delete the cloned VM
-$outStopVm = Stop-VM -VM $cloneVM -Confirm:$false -Kill
-if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") 
-{
-    LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
-    return $Aborted
-}
-
-Remove-VM -VM $cloneVM -DeletePermanently -Confirm:$false -RunAsync | out-null
+#remove cloned vm
+RemoveVM -vmName $cloneName -hvServer $hvServer
 
 DisconnectWithVIServer
 return $retVal

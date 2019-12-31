@@ -153,7 +153,7 @@ fi
 
 #set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
 if [ ! ${base} ]; then
-	basepath=`ls -lt /mnt | grep ${DISTRO}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	basepath=`ls -lt /mnt | grep ${DISTRO}_${yamlFile}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
     UpdateSummary "set basepath $basepath from latest one in folder $base"
 else
     basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
@@ -161,7 +161,7 @@ else
 fi
 
 #Create fio test result path.
-path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
+path="${DISTRO}_${yamlFile}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
 mkdir -p /mnt/$path
 
 #Download fio python scripts from github.
@@ -212,8 +212,8 @@ if [ $? -ne 0 ]; then
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg "Test result benchmark successfully."
-	UpdateSummary "Test result benchmark successfully."
+	LogMsg "Test result benchmark successfully, basepath is $basepath and path is $path."
+	UpdateSummary "Test result benchmark successfully, basepath is $basepath and path is $path."
 	SetTestStateCompleted
 	exit 0
 fi

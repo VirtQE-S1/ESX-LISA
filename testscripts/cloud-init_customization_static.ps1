@@ -193,6 +193,7 @@ if ($null -eq $staticIP)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -202,6 +203,7 @@ if ($null -eq $computerName)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
     Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -222,14 +224,7 @@ else
 
 
 #Delete the cloned VM
-$outStopVm = Stop-VM -VM $cloneVM -Confirm:$false -Kill
-if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") 
-{
-    LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
-    return $Aborted
-}
-
-Remove-VM -VM $cloneVM -DeletePermanently -Confirm:$false -RunAsync | out-null
+RemoveVM -vmName $cloneName -hvServer $hvServer
 
 DisconnectWithVIServer
 return $retVal
