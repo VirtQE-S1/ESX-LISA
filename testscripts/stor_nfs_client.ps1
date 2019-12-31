@@ -1,19 +1,19 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##   This script will mount nfs path from assistant VM to local path.
-##
-###############################################################################
+##	Mount nfs path from assistant VM to local path.
 ##
 ## Revision:
-## v1.0 - xuli - 02/08/2017 - Draft script for mount nfs server to local path.
-##
-###############################################################################
+##	v1.0.0 - xuli - 02/08/2017 - Draft script.
+########################################################################################
+
+
 <#
 .Synopsis
-    This script will mount nfs server to local path.
+    Mount nfs server to local path.
 .Description
-    The script will set up nfs server for assistant VM, the assistant VM name gets by replacing current VM name "A" to "B", nfs path is /nfs_share, dd file under mount point, then umount path.
+    Setup nfs server for VM-B, 
+	nfs path is /nfs_share, 
+	dd file under mount point,
     unmount path.
     The .xml entry to specify this startup script would be:
 
@@ -33,22 +33,17 @@
         </test>
 .Parameter vmName
     Name of the VM to add disk.
-
 .Parameter hvServer
     Name of the ESXi server hosting the VM.
-
 .Parameter testParams
     Test data for this test case
-
 .Example
     setupScripts\stor_nfs_client
 #>
 
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
@@ -63,14 +58,12 @@ if (-not $testParams) {
     Throw "Error: No test parameters specified"
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -99,9 +92,8 @@ else {
     }
 }
 
-#
+
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -111,22 +103,25 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
+# Main
 $result = $Failed
 $sts = SendCommandToVM $ipv4 $sshkey "echo NFS_Path=10.73.196.210:/mnt/MainVolume/nfs-smb/esx/nfs_case >> ~/constants.sh"
 if (-not $sts) {
-    LogPrint "Error : Cannot send command to vm for setting NFS_Path"
+    LogPrint "ERROR: Cannot send command to vm for setting NFS_Path."
+	DisconnectWithVIServer
+	return $Failed
 }
 
 
 $remoteScript = "stor_lis_nfs.sh"
 $sta = RunRemoteScript $remoteScript
 if (-not $($sta[-1])) {
-    LogPrint "Error: Failed to run for $remoteScript"
+    LogPrint "Error: Failed to run for $remoteScript."
 }
 else {
+	LogPrint "Info : stor_nfs_client script completed."
     $result = $Passed
 }
-LogPrint "Info : stor_nfs_client script completed"
 
 
 DisconnectWithVIServer
