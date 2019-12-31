@@ -11,7 +11,6 @@
 <#
 .Synopsis
     Boot a Guest with RDMA NIC and check the IB stata.
-
 .Description
        <test>
             <testName>rdma_check_Ibstat</testName>
@@ -28,18 +27,14 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
 if (-not $vmName) {
     "Error: VM name cannot be null!"
@@ -114,8 +109,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -133,6 +126,7 @@ if (-not $vmObj) {
     return $Aborted
 }
 
+
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
@@ -141,7 +135,6 @@ if (-not $DISTRO) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
@@ -151,53 +144,56 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
     return $Skipped
 }
 
-#Get new add RDMA NIC.
+
+# Get new add RDMA NIC.
 $nics = FindAllNewAddNIC $ipv4 $sshKey
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+if ($null -eq $nics[-1]) {
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC." 
     DisconnectWithVIServer
     return $Failed
 }
 else {
     $rdmaNIC = $nics[-1]
+	LogPrint "INFO: New NIC: $rdmaNIC."
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
 
 
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
-if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
-    LogPrint "ERROR : Config IP Failed"
+if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
+    LogPrint "ERROR : Config IP Failed."
     DisconnectWithVIServer
     return $Failed
 }
 
+
 # Install required packages
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
 if (-not $sts) {
-    LogPrint "ERROR : YUM cannot install required packages"
+    LogPrint "ERROR : YUM cannot install required packages."
     DisconnectWithVIServer
     return $Failed
 }
+
 
 # Load mod ib_umad for ibstat check.
 $Command = "modprobe ib_umad"
 $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 
 
-# Make sure the ibstat is active 
-$Command = "ibstat |grep Active | wc -l"
+# Make sure the ibstat is active.
+$Command = "ibstat | grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 if ($ibstat -eq 0) {
-    LogPrint "ERROR : the ibstat is not correctly"
+    LogPrint "ERROR : the ibstat is not correctly."
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    
-    LogPrint "Pass :$ibstat the ibstat is correctly."
+    LogPrint "INFO: $ibstat the ibstat is correctly."
     $retVal = $Passed
 }
+
 
 DisconnectWithVIServer
 return $retVal
