@@ -149,7 +149,7 @@ else {
 # Find new add vmxnet3 nic
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
 LogPrint "DEBUG: nics: $nics"
-if ($null -eq $nics) {
+if ($null -eq $nics[-1]) {
     LogPrint "ERROR: Cannot find new add NIC." 
     DisconnectWithVIServer
     return $Failed

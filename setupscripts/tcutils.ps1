@@ -2186,7 +2186,6 @@ function FindAllNewAddNIC {
     # Get Old Adapter (SSH is using it) of VM
     $Command = "ip a | grep `$(echo `$SSH_CONNECTION | awk '{print `$3}') | awk '{print `$(NF)}'"
     $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-	Write-Output "DEBUG: Old_Adapter: ${Old_Adapter}."
 	Write-Host -F Red "DEBUG: Old_Adapter: ${Old_Adapter}."
 
     if ($null -eq $Old_Adapter) {
@@ -2196,13 +2195,12 @@ function FindAllNewAddNIC {
 
     # Get all other nics
     $retVal = $null
-    $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter."
-    $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-	Write-Output "DEBUG: nics: ${nics}."
-	Write-Host -F Red "DEBUG: nics: ${nics}."
-    $retVal = ,$nics
-    #  powershell  convert array to string if the array only has one element
-    if ($null -eq $nics) {
+    $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
+    $new_nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+	Write-Host -F Red "DEBUG: new_nics: ${new_nics}."
+    $retVal = ,$new_nics
+    # Powershell  convert array to string if the array only has one element
+    if ($null -eq $new_nics) {
         LogPrint "ERROR : Cannot get any NIC other than default NIC from guest."
         return $null
     }else{
@@ -2214,8 +2212,7 @@ function FindAllNewAddNIC {
 #######################################################################
 #
 # DisableMemoryReserve()
-#
-#######################################################################
+# #######################################################################
 
 function DisableMemoryReserve {
     param (
