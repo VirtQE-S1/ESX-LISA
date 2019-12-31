@@ -1,15 +1,14 @@
 #!/bin/bash
 
 
-###############################################################################
-##
+########################################################################################
 ##  Description:
-##      cp big files between different disk type.
+##      CP a big file between different disk types.
 ##
 ##  Revision:
-##      v1.0.0 - ldu - 7/26/2018 - Build the script
+##      v1.0.0 - ldu - 07/26/2018 - Build the script.
 ##      v1.0.1 - boyang - 05/10/2019 - Enhance debug info of script
-###############################################################################
+########################################################################################
 
 
 dos2unix utils.sh
@@ -60,8 +59,8 @@ fi
 # Copy a big file more than 5G to scsi type disk
 cp /nfs/bigfile /root
 if [ ! "$?" -eq 0 ]; then
-    LogMsg "ERROR: CP bigfile file to SCSI disk failed"
-    UpdateSummary "ERROR: CP bigfile file to SCSI disk failed"
+    LogMsg "ERROR: CP bigfile file to SCSI disk failed."
+    UpdateSummary "ERROR: CP bigfile file to SCSI disk failed."
     SetTestStateFailed
     exit 1
 else
@@ -106,13 +105,13 @@ kpartx /dev/"$disk_name"
 mkfs.ext4 /dev/${disk_name}1
 if [ ! "$?" -eq 0 ]
 then
-    LogMsg "ERROR: Format failed"
-    UpdateSummary "ERROR: Format failed"
+    LogMsg "ERROR: Format failed."
+    UpdateSummary "ERROR: Format failed."
     SetTestStateAborted
     exit 1
 else
-    LogMsg "INFO: Format successfully"
-    UpdateSummary "INFO: Format successfully"
+    LogMsg "INFO: Format successfully."
+    UpdateSummary "INFO: Format successfully."
 fi
 
 
@@ -120,13 +119,13 @@ fi
 mount /dev/"$disk_name"1 /mnt
 if [ ! "$?" -eq 0 ]
 then
-    LogMsg "ERROR: Mount Failed"
-    UpdateSummary "ERROR: Mount failed"
+    LogMsg "ERROR: Mount Failed."
+    UpdateSummary "ERROR: Mount failed."
     SetTestStateAborted
     exit 1
 else
-    LogMsg "INFO: Mount IDE disk successfully"
-    UpdateSummary "INFO: Mount IDE disk successfully"
+    LogMsg "INFO: Mount IDE disk successfully."
+    UpdateSummary "INFO: Mount IDE disk successfully."
 fi
 
 

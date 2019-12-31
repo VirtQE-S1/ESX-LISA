@@ -1,22 +1,18 @@
 #!/bin/bash
 
 
-###############################################################################
-##
+########################################################################################
 ## Description:
-## 	Test scrip test_pktgen.sh in VM
+## 	Test scrip test_pktgen.sh in the VM.
 ##
 ## Revision:
-## 	v1.0.0 - boyang - 03/09/2018 - Build script
-## 	v1.0.1 - boyang - 05/14/2019 - Get VM's IP dynamically
-##
-###############################################################################
-
-
-dos2unix utils.sh
+## 	v1.0.0 - boyang - 03/09/2018 - Build script.
+## 	v1.0.1 - boyang - 05/14/2019 - Get VM's IP dynamically.
+########################################################################################
 
 
 # Source utils.sh
+dos2unix utils.sh
 . utils.sh || {
 	echo "Error: unable to source utils.sh!"
 	exit 1
@@ -26,13 +22,9 @@ dos2unix utils.sh
 UtilsInit
 
 
-#######################################################################
-#
+########################################################################################
 # Main script body
-#
-#######################################################################
-
-
+########################################################################################
 # Get NIC interface
 nic=`ls /sys/class/net | grep ^e[tn][hosp]`
 LogMsg "DEBUG: nic: $nic"
@@ -47,6 +39,8 @@ UpdateSummary "INFO: hwadd is $hwadd"
 
 # NIC IP address
 ipadd=`ip -f inet add | grep $nic | grep inet | awk '{print $2}' | awk -F "/" '{print $1}'`
+LogMsg "DEBUG: ipadd: $ipadd"
+UpdateSummary "DEBUG: ipadd: $ipadd"
 if [ "x$ipadd" -eq "x" ]
     then
 	LogMsg "ERROR: Get VM's IP failed"
@@ -54,8 +48,6 @@ if [ "x$ipadd" -eq "x" ]
 	SetTestStateAborted
         exit 1
 fi
-LogMsg "INFO: ipadd is $ipadd"
-UpdateSummary "INFO: ipadd is $ipadd"
 
 
 LogMsg "INFO: Will modprobe pktgen"
@@ -112,10 +104,7 @@ function pg() {
 }
 
 
-#
 # Config Start Here
-#
-
 # Thread config
 # Each CPU has own thread. One CPU exammple. Add the name the guest nic, such as eth0
 PGDEV=/proc/net/pktgen/kpktgend_0
@@ -144,7 +133,6 @@ PKT_SIZE="pkt_size 60"
 COUNT="count 10000000"
 DELAY="delay 0"
 PGDEV=/proc/net/pktgen/$nic
-
 LogMsg "INFO: Configuring $PGDEV"
 UpdateSummary "INFO: Configuring $PGDEV"
 pgset "$COUNT"
@@ -159,7 +147,9 @@ pgset "dst_mac $hwadd" # MAC address of the name of NIC you want to test, such a
 PGDEV=/proc/net/pktgen/pgctrl
 LogMsg "INFO: Running... ctrl^C to stop"
 UpdateSummary "INFO: Running... ctrl^C to stop"
+
 pgset "start"
+
 LogMsg "INFO: Done"
 UpdateSummary "INFO: Done"
 
@@ -171,14 +161,13 @@ UpdateSummary "INFO: Result is stored in /proc/net/pktgen/$nic"
 cat /proc/net/pktgen/$nic | grep "Result: OK"
 if [ $? -eq 0 ]
     then
-	LogMsg "PASS: case passed"
-	UpdateSummary "PASS: case passed"
+	LogMsg "INFO: Case passed."
+	UpdateSummary "INFO: Case passed."
 	SetTestStateCompleted
-        exit 0
+    exit 0
 else
-	LogMsg "FAIL: cases failed"
-	UpdateSummary "FAIL: cases failed"
+	LogMsg "ERROR: Cases failed."
+	UpdateSummary "ERROR: Cases failed."
 	SetTestStateFailed
 	exit 1
 fi
-
