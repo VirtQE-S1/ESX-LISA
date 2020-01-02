@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 12/01/2019 - Build the script
-##  
+##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
 ########################################################################################
 
 
@@ -152,9 +152,10 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 $cloneName = $vmName + "-clone"
 $OSSpecs = Get-OSCustomizationSpec -Name "ldu-auto-dhcp"
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
-
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-# Start clone vm
+
+
+#Start clone vm
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
@@ -182,6 +183,7 @@ if ($null -eq $DNSinfo)
 {
     Write-Host -F Red "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
     Write-Output "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -192,6 +194,8 @@ if ($null -eq $loginfo)
 {
     Write-Host -F Red "failed: the customization gust failed with log $loginfo"
     Write-Output "failed: the customization gust failed with log $loginfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
 }
 else
 {
@@ -202,14 +206,12 @@ else
 
 
 #Delete the clone VM
-$outStopVm = Stop-VM -VM $cloneVM -Confirm:$false -Kill
-if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") 
-{
-    LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest"    
+    DisconnectWithVIServer
     return $Aborted
 }
-
-Remove-VM -VM $cloneVM -DeletePermanently -Confirm:$false -RunAsync | out-null
 
 DisconnectWithVIServer
 return $retVal

@@ -27,6 +27,7 @@
 ##  v1.6.0 - ruqin    - 07/06/2018  - Add GetModuleVersion
 ##  v1.7.0 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
 ##  v1.8.0 - boyang    - 10/15/2019 - Add SkipTestInHost
+##  v1.9.0 - ldu      - 01/02/2020 - add RemoveVM function
 ########################################################################################
 
 
@@ -2500,5 +2501,62 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     {
         Write-Host -F Red "INFO: Host $host_ver DOESN'T belongs to hosts list want to be skipped. Keep going below testing."
         return $false
+    }
+}
+
+#######################################################################
+#
+# RemoveVM()
+#
+#######################################################################
+function RemoveVM {
+    param (
+        [String] $vmName,
+        [String] $hvServer
+    )
+    <#
+    .Synopsis
+        Help to remove vm that not used
+    .Description
+        Help toremove vm that not used, mainly for cloned cases, such as cloud-init and ovt customization guest cases
+    .Parameter vmName
+        Name of the VM
+    .Parameter hvServer
+        Host of VM, original host
+    .Example
+        RemoveVM -vmName $vmName -hvServer $hvServer
+    #>
+    
+    LogPrint "WARN:Check the vm exist"
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        DisconnectWithVIServer
+        return $Aborted
+    } 
+
+
+    # Poweroff VM
+    $status = Stop-VM $vmObj -Confirm:$False
+    if (-not $?) {
+        LogPrint "ERROR: Cannot stop VM $vmName, $status"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+
+
+    # refresh VM
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
+
+    # Remove VM
+    $status = Remove-VM -VM $vmObj -DeletePermanently -Confirm:$false -RunAsync | out-null
+    if (-not $?) {
+        LogPrint "ERROR: Cannot remove VM $vmName, $status"
+        DisconnectWithVIServer
+        return $Aborted
+    }
+    else{
+        LogPrint "Passed:Remove vm successfully"
     }
 }
