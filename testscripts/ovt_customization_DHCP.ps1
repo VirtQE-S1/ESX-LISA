@@ -152,9 +152,10 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 $cloneName = $vmName + "-clone"
 $OSSpecs = Get-OSCustomizationSpec -Name "ldu-auto-dhcp"
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
-
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-Start clone vm
+
+
+#Start clone vm
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
