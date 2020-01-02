@@ -1,34 +1,33 @@
 ########################################################################################
 ## Description:
-##  
+##  [cloud-init]Reboot guest and check IP status after case RHEL-137083 Customize Guest uses static IP with cloud-init
 ##
 ## Revision:
-##  v1.0.0 - ldu - 12/09/2019 - Build the script
+##  v1.0.0 - ldu - 01/02/2020 - Build the script
 ##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
-##  
 ########################################################################################
 
 
 <#
 .Synopsis
    
-
+[cloud-init]Reboot guest and check IP status after case RHEL-137083 Customize Guest uses static IP with cloud-init
 .Description
 <test>
-        <testName>ovt_customization_static</testName>
-        <testID>ESX-ovt-037</testID>
-        <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
-        <testScript>testscripts/ovt_customization_static.ps1</testScript  >
-        <files>remote-scripts/utils.sh</files>
-        <testParams>
-            <param>nicName=auto-test</param>
-            <param>TC_COVERED=RHEL6-0000,RHEL-180199</param>
-        </testParams>
-        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>1800</timeout>
-        <onError>Continue</onError>
-        <noReboot>False</noReboot>
-    </test>
+            <testName>cloud-init_reboot_customization_static</testName>
+            <testID>ESX-cloud-init-006</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_reboot_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-153099</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
 .Parameter vmName
     Name of the test VM.
@@ -149,6 +148,15 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     return $Skipped
 }
 
+$Command = "yum install cloud-init -y"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : install cloud-init failed"
+    $retVal = $Aborted
+}
+else {
+       LogPrint "Pass : install cloud-init passed"
+}
 
 #clone vm
 $cloneName = $vmName + "-clone"
@@ -160,6 +168,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -168,6 +177,7 @@ if (-not $?) {
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -186,33 +196,63 @@ if ($null -eq $staticIP)
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
-}
-
-#check the compter name info
-$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-002"
-if ($null -eq $computerName)
-{
-    Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
-    Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
+    return $Aborted
 }
 
 
 # Check the log 
-$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
+$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Deployment for cloud-init succeeded'"
 if ($null -eq $loginfo)
 {
-    Write-Host -F Red "failed: the customization gust failed with log $loginfo"
-    Write-Output "failed: the customization gust failed with log $loginfo"
+    Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
+    Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
+}
+else
+{
+    Write-Host -F Red " Passed:  the customization gust passed with log $loginfo"
+    Write-Output " Passed:  the customization gust passed with log $loginfo"
+}
+
+#reboot cloned guest
+$reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} 'reboot'
+
+
+# Sleep for seconds to wait for the VM stopping firstly
+Start-Sleep -seconds 6
+
+# Wait for the VM booting
+$ret = WaitForVMSSHReady $cloneName $hvServer ${sshKey} 300
+if ($ret -eq $true)
+{
+    Write-Host -F Red "PASS: Complete the rebooting"
+    Write-Output "PASS: Complete the rebooting"
+}
+else
+{
+    Write-Host -F Red "FAIL: The rebooting failed"
+    Write-Output "FAIL: The rebooting failed"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Aborted
+}
+
+
+#Check the static IP after reboot guest
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.88'"
+if ($null -eq $staticIP)
+{
+    Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
+    Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
 }
 else
 {
     $retVal = $Passed
-    Write-Host -F Red "Passed:  the customization gust passed with log $loginfo"
-    Write-Output "Passed:  the customization gust passed with log $loginfo"
-}
+    Write-Host -F Red " Passed:  the customization gust passed with static IP for second NIC $staticIP"
+    Write-Output " Passed:  the customization gust passed withstatic IP for second NIC $staticIP"
+}    
 
 #Delete the clone VM
 $remove = RemoveVM -vmName $cloneName -hvServer $hvServer
@@ -221,7 +261,6 @@ if ($null -eq $remove) {
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 DisconnectWithVIServer
 return $retVal

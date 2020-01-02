@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 12/01/2019 - Build the script
-##  
+##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
 ########################################################################################
 
 
@@ -150,55 +150,57 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 
 #set clone vm name follow each host
 $cloneName = $vmName + "-clone"
-# $OSSpecs = Get-OSCustomizationSpec -Name "ldu-auto-dhcp"
-# $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
+$OSSpecs = Get-OSCustomizationSpec -Name "ldu-auto-dhcp"
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
 
-# $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-# Start clone vm
-# Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-# if (-not $?) {
-#     LogPrint "ERROR : Cannot start VM"
-#     DisconnectWithVIServer
-#     return $Aborted
-# }
+$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+Start clone vm
+Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+if (-not $?) {
+    LogPrint "ERROR : Cannot start VM"
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 
-# # Wait for clone VM SSH ready
-# if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
-#     LogPrint "ERROR : Cannot start SSH"
-#     DisconnectWithVIServer
-#     return $Aborted
-# }
-# LogPrint "INFO: Ready SSH"
+# Wait for clone VM SSH ready
+if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
+    LogPrint "ERROR : Cannot start SSH"
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Ready SSH"
 
 
 # Get another VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
-# #Check the DNS
-# $DNSinfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /etc/resolv.conf |grep '192.168.1.2'"
-# if ($null -eq $DNSinfo)
-# {
-#     Write-Host -F Red "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
-#     Write-Output "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
-#     RemoveVM -vmName $cloneName -hvServer $hvServer
-#     return $Failed
-# }
+#Check the DNS
+$DNSinfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /etc/resolv.conf |grep '192.168.1.2'"
+if ($null -eq $DNSinfo)
+{
+    Write-Host -F Red "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
+    Write-Output "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
+}
 
 
-# # Check the log for customization
-# $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
-# if ($null -eq $loginfo)
-# {
-#     Write-Host -F Red "failed: the customization gust failed with log $loginfo"
-#     Write-Output "failed: the customization gust failed with log $loginfo"
-# }
-# else
-# {
-#     $retVal = $Passed
-#     Write-Host -F Red "Passed:  the customization gust passed with log $loginfo"
-#     Write-Output "Passed:  the customization gust passed with log $loginfo"
+# Check the log for customization
+$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
+if ($null -eq $loginfo)
+{
+    Write-Host -F Red "failed: the customization gust failed with log $loginfo"
+    Write-Output "failed: the customization gust failed with log $loginfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
+}
+else
+{
+    $retVal = $Passed
+    Write-Host -F Red "Passed:  the customization gust passed with log $loginfo"
+    Write-Output "Passed:  the customization gust passed with log $loginfo"
 }
 
 

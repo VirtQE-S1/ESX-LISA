@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 12/10/2019 - Build the script
-##  
+##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
 ########################################################################################
 
 
@@ -188,12 +188,12 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
 
 #Check the static IP for second NIC
-$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.99'"
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.88'"
 if ($null -eq $staticIP)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
+    # RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -203,7 +203,7 @@ if ($null -eq $computerName)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
     Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
+    # RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -214,6 +214,8 @@ if ($null -eq $loginfo)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
     Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    # RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
 }
 else
 {
@@ -223,8 +225,13 @@ else
 }
 
 
-#Delete the cloned VM
-RemoveVM -vmName $cloneName -hvServer $hvServer
+#Delete the clone VM
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest"    
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 DisconnectWithVIServer
 return $retVal

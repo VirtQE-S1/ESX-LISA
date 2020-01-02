@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 12/09/2019 - Build the script
-##  
+##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
 ########################################################################################
 
 
@@ -188,7 +188,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
 
 #check the compter name info
-$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-002"
+$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-001"
 if ($null -eq $computerName)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
@@ -204,6 +204,8 @@ if ($null -eq $loginfo)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
     Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
 }
 else
 {
@@ -212,8 +214,13 @@ else
     Write-Output " Passed:  the customization gust passed with log $loginfo"
 }
 
-#remove cloned vm
-RemoveVM -vmName $cloneName -hvServer $hvServer
+#Delete the clone VM
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest"    
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 DisconnectWithVIServer
 return $retVal
