@@ -399,14 +399,22 @@ else
     {
         $commandA = "ibv_rc_pingpong -s 1 -g $gid $IPAddr_guest_B"
         $commandB = "ibv_rc_pingpong -s 1 -g $gid"
-        LogPrint "Test command use ibv_rc_pingpong"
     }
-  else
-  {
+  elseif ( $tool -eq "rping " )
+   {
       $commandA = "rping -c -a $IPAddr_guest_B -v -C 1"
       $commandB = "rping -s -v -V -C 1 -a $IPAddr_guest_B"
-      LogPrint "Test command use rping -c -a"
-  }
+   }
+  elseif( $tool -eq "srq" )
+   {
+      $commandA = "ibv_srq_pingpong -s 1 -g $gid $IPAddr_guest_B"
+      $commandB = "ibv_srq_pingpong -s 1 -g $gid"
+      LogPrint "Test command use ibv_${tool}_pingpong"
+   }
+  else
+   { 
+      LogPrint "Test command not right, not contain in our test"
+   }
 
 
   # Run test on guest B first,because guest B is test as server.
@@ -426,7 +434,6 @@ else
   }
   
 }
-
 # Clean up phase: Move back to old host
 
 
@@ -441,7 +448,8 @@ if (-not $vmObj) {
 
 # Move guest to old host
 $task = Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) -Datastore $oldDatastore -Confirm:$false
-if (-not $?) {
+if (-not $?) 
+{
     LogPrint "ERROR : Cannot move VM to required Host $hvServer and Datastore $oldDatastore"
     DisconnectWithVIServer
     return $Aborted

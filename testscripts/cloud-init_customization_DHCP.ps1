@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 12/09/2019 - Build the script
-##  
+##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
 ########################################################################################
 
 
@@ -166,6 +166,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 Start-VM -VM $cloneVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -174,13 +175,14 @@ if (-not $?) {
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 LogPrint "INFO: Ready SSH"
 
 
-# Get another VM IP addr
+# Get cloned VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
@@ -191,6 +193,7 @@ if ($null -eq $computerName)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
     Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
@@ -201,6 +204,8 @@ if ($null -eq $loginfo)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
     Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
 }
 else
 {
@@ -209,16 +214,13 @@ else
     Write-Output " Passed:  the customization gust passed with log $loginfo"
 }
 
-
-#Delete the cloned VM
-$outStopVm = Stop-VM -VM $cloneVM -Confirm:$false -Kill
-if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") 
-{
-    LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+#Delete the clone VM
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest"    
+    DisconnectWithVIServer
     return $Aborted
 }
-
-Remove-VM -VM $cloneVM -DeletePermanently -Confirm:$false -RunAsync | out-null
 
 DisconnectWithVIServer
 return $retVal
