@@ -203,7 +203,12 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
 
 #Delete the clone VM
-RemoveVM -vmName $cloneName -hvServer $hvServer
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest"    
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 DisconnectWithVIServer
 return $retVal
