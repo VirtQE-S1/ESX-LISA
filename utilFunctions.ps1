@@ -1,58 +1,51 @@
-###############################################################################
-##
+########################################################################################
 ## ___________ _____________  ___         .____    .___  _________   _____   
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
 ##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/ 
-##
-###############################################################################
-## 
+########################################################################################
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
 ## aspects of vSphere maagement, including network, storage, VM, guest OS and 
 ## more. This framework automates the tasks required to test the 
 ## Redhat Enterprise Linux Server on WMware ESX Server.
-## 
-###############################################################################
-##
+########################################################################################
 ## Revision:
-## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
+## v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
-## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
+## v1.1.0 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
-## v1.2 - xiaofwan - 1/25/2017 - Insert suite name into result dir name,
+## v1.2.0 - xiaofwan - 01/25/2017 - Insert suite name into result dir name,
 ##                               such as cases-open_vm_tools-20170120-141152
-## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
+## v1.3.0 - xiaofwan - 01/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
-## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
-## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+## v1.4.0 - xiaofwan - 02/03/2017 - $True will be $true and $False will be $false.
+## v1.5.0 - xiaofwan - 02/04/2017 - Test result can be exported as JUnix XML file.
 ##                              Correct some comment issues.
-## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
-## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
+## v1.6.0 - xiaofwan - 02/04/2017 - Remove Test-Admin function.
+## v1.7.0 - xiaofwan - 02/06/2017 - The <skipped/> section should be removed when
 ##                              case failed or aborted.
-## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
+## v1.8.0 - xiaofwan - 02/21/2017 - Two new functions to set XML result the kernel
 ##                               firmware and ESX version.
-## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
-## v2.0 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
-## v2.1 - xiaofwan - 2/21/2017 - Move case running time calculation into 
+## v1.9.0 - xiaofwan - 02/21/2017 - Iteration related code has been removed.
+## v2.0.0 - xiaofwan - 02/21/2017 - Add test case running date and time in XML.
+## v2.1.0 - xiaofwan - 02/21/2017 - Move case running time calculation into 
 ##                               SetRunningTime function.
-## v2.2 - xiaofwan - 3/17/2017 - Change case result timer from TotalMinutes to
+## v2.2.0 - xiaofwan - 03/17/2017 - Change case result timer from TotalMinutes to
 ##                               TotalSeconds to satisfy Jenkins and Polarion
-## v2.3 - xiaofwan - 7/18/2017 - Add a property in case result to save
+## v2.3.0 - xiaofwan - 07/18/2017 - Add a property in case result to save
 ##                               TC_COVERED info into result XML.
-##
-###############################################################################
+########################################################################################
+
 
 <#
 .Synopsis
     Helper functions for the Lisa automation.
-
 .Description
     The functions in this file are helper functions for the
     the lisa.ps1 and stateEngine.ps1 automation scripts.
-
 .Link
     None.
 #>
@@ -115,9 +108,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         ConnectToVIServer <visIpAddr> <visUsername> <visPassword> <visProtocol>
     #>
 
-    #
     # Verify the VIServer related environment variable existed.
-    #
     if (-not $visIpAddr) {
         "Error : vCenter IP address is not configured, it is required."
         exit
@@ -138,9 +129,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         exit
     }
 
-    #
     # Check the PowerCLI package installed
-    #
     Get-PowerCLIVersion | out-null
     if (-not $?) {
         "Error : Please install VMWare PowerCLI package."

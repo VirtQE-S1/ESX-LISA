@@ -80,11 +80,9 @@ function PowerCLIImport () {
 }
 
 
-###############################################################################
-#
+########################################################################################
 # Connect to VI Server
-#
-###############################################################################
+########################################################################################
 function ConnectToVIServer ([string] $visIpAddr,
                             [string] $visUsername,
                             [string] $visPassword,
@@ -112,10 +110,8 @@ function ConnectToVIServer ([string] $visIpAddr,
     .Example
         ConnectToVIServer <visIpAddr> <visUsername> <visPassword> <visProtocol>
     #>
-
-    #
+    
     # Verify the VIServer related environment variable existed.
-    #
     if (-not $visIpAddr)
     {
         "ERROR : vCenter IP address is not configured, it is required."
@@ -140,9 +136,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         exit
     }
 
-    #
     # Check the PowerCLI package installed
-    #
     Get-PowerCLIVersion | out-null
     if (-not $?)
     {
@@ -165,7 +159,7 @@ function ConnectToVIServer ([string] $visIpAddr,
             "and password $visPassword."
             exit
         }
-        "Debug : vCenter connected with " +
+        "DEBUG: vCenter connected with " +
         "session id $($global:DefaultVIServer.SessionId)"
     }
     else
@@ -176,11 +170,9 @@ function ConnectToVIServer ([string] $visIpAddr,
 }
 
 
-###############################################################################
-#
+########################################################################################
 # Disconnect with VI Server
-#
-###############################################################################
+########################################################################################
 function DisconnectWithVIServer ()
 {
     <#
@@ -206,11 +198,9 @@ function DisconnectWithVIServer ()
 }
 
 
-#######################################################################
-#
+########################################################################################
 # GetLinuxDsitro()
-#
-#######################################################################
+########################################################################################
 function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 {
     <#

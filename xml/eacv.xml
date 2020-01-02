@@ -19,14 +19,55 @@
             <suiteName>EACV</suiteName>
             <suiteTests>
                 <suiteTest>ovt_customization_static</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
                 <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+		<test>
+            <testName>rdma_ibv_srq_pingpong_test_diff_host</testName>
+            <testID>ESX-RDMA-013</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=srq</param>
+                <param>TC_COVERED=RHEL-182322,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_reboot_customization_static</testName>
+            <testID>ESX-cloud-init-006</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_reboot_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-153099</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
         <test>
             <testName>cloud-init_customization_DHCP</testName>
             <testID>ESX-cloud-init-004</testID>
