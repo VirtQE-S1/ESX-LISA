@@ -1,51 +1,45 @@
-###############################################################################
-##
+########################################################################################
 ## ___________ _____________  ___         .____    .___  _________   _____   
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
 ##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/ 
-##
-###############################################################################
-## 
+########################################################################################
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
 ## aspects of vSphere maagement, including network, storage, VM, guest OS and 
 ## more. This framework automates the tasks required to test the 
 ## Redhat Enterprise Linux Server on WMware ESX Server.
-##
-###############################################################################
-##
+########################################################################################
 ## Revision:
-## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
+## 	v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
-## v1.1 - xiaofwan - 11/28/2016 - Merge ApplyCheckpoint codes
+## 	v1.1.0 - xiaofwan - 11/28/2016 - Merge ApplyCheckpoint codes
 ##                                Merge bug fix from LISA
-## v1.2 - xiaofwan - 12/29/2016 - Fix snapshot checking issue found by @xuli.
-## v1.3 - xiaofwan - 1/9/2017 - Add new feature: snapshot auto-create if there's
-##                              no snapshot found in VM.
-## v1.4 - xiaofwan - 1/25/2017 - Add a new result status - Skipped, which marks
-##                               test case not applicable in current scenario.
-## v1.5 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
-##                               "Failed", "Skipped", "Aborted", and "none".
-## v1.6 - xiaofwan - 2/3/2017 - Add test case running time support.
-## v1.7 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
-## v1.8 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
-## v1.9 - xiaofwan - 2/21/2017 - ESX host version, kernel and firmware version
-##                               are visable in XML result.
-## v2.0 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
-## v2.1 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
-## v2.2 - xiaofwan - 2/21/2017 - Add SetRunningTime in ForceShutDown to support 
-##                               time calculation in force shut down scenario.
-## v2.3 - xiaofwan - 2/28/2017 - Remove summary log from emailSummary. 
-##
-###############################################################################
+## 	v1.2.0 - xiaofwan - 12/29/2016 - Fix snapshot checking issue found by @xuli.
+## 	v1.3.0 - xiaofwan - 01/9/2017 - Add new feature: snapshot auto-create if there's
+## 	                             no snapshot found in VM.
+## 	v1.4.0 - xiaofwan - 01/25/2017 - Add a new result status - Skipped, which marks
+## 	                              test case not applicable in current scenario.
+## 	v1.5.0 - xiaofwan - 01/25/2017 - $vm.testCaseResults only contains "Passed", 
+## 	                              "Failed", "Skipped", "Aborted", and "none".
+## 	v1.6.0 - xiaofwan - 02/3/2017 - Add test case running time support.
+## 	v1.7.0 - xiaofwan - 02/3/2017 - $True will be $true and $False will be $false.
+## 	v1.8.0 - xiaofwan - 02/4/2017 - Test result can be exported as JUnix XML file.
+## 	v1.9.0 - xiaofwan - 02/21/2017 - ESX host version, kernel and firmware version
+## 	                              are visable in XML result.
+## 	v2.0.0 - xiaofwan - 02/21/2017 - Iteration related code has been removed.
+## 	v2.1.0 - xiaofwan - 02/21/2017 - Add test case running date and time in XML.
+## 	v2.2.0 - xiaofwan - 02/21/2017 - Add SetRunningTime in ForceShutDown to support 
+## 	                              time calculation in force shut down scenario.
+## 	v2.3.0 - xiaofwan - 02/28/2017 - Remove summary log from emailSummary. 
+########################################################################################
+
 
 <#
 .Synopsis
     Functions that make up the Lisa state engine.
-
 .Description
     This PowerShell script implements the state engine which
     moves test VMs through the various states required to perform
@@ -194,17 +188,14 @@
     None.
 #>
 
-#
+
 # Source the other files we need
-#
 . .\utilFunctions.ps1 | out-null
 . .\OSAbstractions.ps1
 
-#
+
 # Constants
-#
 # States a VM can be in
-#
 New-Variable SystemDown          -value "SystemDown"          -option ReadOnly
 New-Variable ApplyCheckpoint     -value "ApplyCheckpoint"     -option ReadOnly
 New-variable RunSetupScript      -value "RunSetupScript"      -option ReadOnly
@@ -233,51 +224,39 @@ New-Variable PS1TestCompleted    -value "PS1TestCompleted"    -option ReadOnly
 New-Variable Finished            -value "Finished"            -option ReadOnly
 New-Variable Disabled            -value "Disabled"            -option ReadOnly
 
-#
 # test completion codes
-#
 New-Variable TestCompleted       -value "TestCompleted"       -option ReadOnly
 New-Variable TestSkipped         -value "TestSkipped"         -option ReadOnly
 New-Variable TestAborted         -value "TestAborted"         -option ReadOnly
 New-Variable TestFailed          -value "TestFailed"          -option ReadOnly
 
-#
 # test result codes
-#
 New-Variable Passed              -value "Passed"              -option ReadOnly
 New-Variable Skipped             -value "Skipped"             -option ReadOnly
 New-Variable Aborted             -value "Aborted"             -option ReadOnly
 New-Variable Failed              -value "Failed"              -option ReadOnly
 
-#
 # Supported OSs
-#
 New-Variable LinuxOS             -value "Linux"               -option ReadOnly
 New-Variable FreeBSDOS           -value "FreeBSD"             -option ReadOnly
 
-#
-# Import vmware.vimautomation.core module if it does not exist.
-#
-PowerCLIImport
 
-#
+# Import vmware.vimautomation.core module if it does not exist.
+PowerCLIImport
 # Connect with VSphere VI Server if connnect does not exist.
-#
 ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISUSERNAME `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-#
+
 # Generate an JUnit formated XML object to store case results.
-#
 $testResult = GetJUnitXML
 
-########################################################################
-#
+
+########################################################################################
 # RunICTests()
-#
-########################################################################
+########################################################################################
 function RunICTests([XML] $xmlConfig) {
     <#
     .Synopsis
@@ -300,9 +279,7 @@ function RunICTests([XML] $xmlConfig) {
 
     LogMsg 9 "Info : RunICTests($($vm.vmName))"
 
-    #
     # Verify the Putty utilities exist.  Without them, we cannot talk to the Linux VM.
-    #
     if (-not (Test-Path -Path ".\bin\pscp.exe")) {
         LogMsg 0 "Error : The putty utility .\bin\pscp.exe does not exist"
         return
@@ -313,15 +290,11 @@ function RunICTests([XML] $xmlConfig) {
         return
     }
 
-    #
     # Reset each VM to a known state
-    #
     foreach ($vm in $xmlConfig.config.VMs.vm) {
         LogMsg 5 "Info : RunICTests() processing VM $($vm.vmName)"
 
-        #
         # Add the state related xml elements to each VM xml node
-        #
         $xmlElementsToAdd = @("currentTest", "stateTimeStamp", "caseStartTime", "state", "emailSummary", "jobID", "testCaseResults", "isRebooted")
         foreach ($element in $xmlElementsToAdd) {
             if (-not $vm.${element}) {
@@ -2978,6 +2951,10 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         # Can't read all data from pipe. keep the last exit statu value passed / failed / aborted used by completed phrase to update result.
     	Write-Host -F Red "DEBUG: DoPS1TestRunning: Collect Powershell scripts log data."
         foreach ($line in $jobResults) {
+
+			Write-Host -F Yellow "DEBUG: line: $line"
+        	Start-Sleep -S 1
+
             if ($null -ne $line) {
                 $line | out-file -encoding ASCII -append -filePath $logFilename
             }
