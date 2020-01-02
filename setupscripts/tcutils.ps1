@@ -1102,18 +1102,16 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
 }
 
 
-#######################################################################
-#
+########################################################################################
 # Runs a remote script on the VM and returns the log.
-#
-#######################################################################
+########################################################################################
 function RunRemoteScript($remoteScript)
 {
-    $retValue = $false
+    $retValue 	   = $false
     $stateFile     = "state.txt"
     $TestCompleted = "TestCompleted"
     $TestAborted   = "TestAborted"
-    $TestFailed   = "TestFailed"
+    $TestFailed    = "TestFailed"
     $TestRunning   = "TestRunning"
     $timeout       = 6000
 
@@ -1155,7 +1153,7 @@ function RunRemoteScript($remoteScript)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
     if (-not $?)
     {
-        LogPrint "ERROR: Unable to chmod +x runtest.sh " -
+        LogPrint "ERROR: Unable to chmod +x runtest.sh"
         return $false
     }
 
@@ -1163,66 +1161,65 @@ function RunRemoteScript($remoteScript)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./runtest.sh"
 
     # Return the state file
-    while ($timeout -ne 0 )
+    while ($timeout -ne 0)
     {
-    .\bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
-    $sts = $?
-    if ($sts)
-    {
-        if (test-path $stateFile)
-        {
-            $contents = Get-Content -Path $stateFile
-            if ($null -ne $contents)
-            {
-                    if ($contents -eq $TestCompleted)
-                    {
-                        LogPrint "INFO : state file contains Testcompleted."
-                        $retValue = $true
-                        break
-                    }
+    	.\bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
+    	$sts = $?
+    	if ($sts)
+    	{
+    	    if (test-path $stateFile)
+    	    {
+    	        $contents = Get-Content -Path $stateFile
+    	        if ($null -ne $contents)
+    	        {
+    	        	if ($contents -eq $TestCompleted)
+    	            {
+    	                LogPrint "INFO : state file contains Testcompleted."
+    	                $retValue = $true
+    	                break
+    	            }
 
-                    if ($contents -eq $TestAborted)
-                    {
-                        LogPrint "INFO : State file contains TestAborted message."
-                         break
-                    }
-                    if ($contents -eq $TestFailed)
-                    {
-                        LogPrint "INFO : State file contains TestFailed message."
-                        break
-                    }
-                    $timeout--
+    	            if ($contents -eq $TestAborted)
+    	            {
+    	                LogPrint "INFO : State file contains TestAborted message."
+    	                 break
+    	            }
+    	            if ($contents -eq $TestFailed)
+    	            {
+    	                LogPrint "INFO : State file contains TestFailed message."
+    	                break
+    	            }
 
-                    if ($timeout -eq 0)
-                    {
-                        LogPrint "ERROR : Timed out on Test Running , Exiting test execution."
-                        break
-                    }
+    	            $timeout--
 
-            }
-            else
-            {
-                LogPrint "Warn : state file is empty"
-                break
-            }
-
-        }
-        else
-        {
-            LogPrint "Warn : ssh reported success, but state file was not copied"
-             break
-        }
-    }
-    else
-    {
-        LogPrint "ERROR : pscp exit status = $sts"
-        LogPrint "ERROR : unable to pull state.txt from VM."
-         break
-    }
+    	            if ($timeout -eq 0)
+    	            {
+    	                LogPrint "ERROR : Timed out on Test Running , Exiting test execution."
+    	                break
+    	            }
+    	        }
+    	        else
+    	        {
+    	            LogPrint "ERROR: state file is empty"
+    	            break
+    	        }
+    	    }
+    	    else
+    	    {
+    	        LogPrint "ERROR: ssh reported success, but state file was not copied"
+    	        break
+    	    }
+    	}
+    	else
+    	{
+    	    LogPrint "ERROR : pscp exit status = $sts"
+    	    LogPrint "ERROR : unable to pull state.txt from VM."
+    	    break
+    	}
     }
 
     # Get the logs
-    $remoteScriptLog = $remoteScript+".log"
+    $remoteScriptLog = $remoteScript + ".log"
 
     bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
     $sts = $?
@@ -1233,42 +1230,40 @@ function RunRemoteScript($remoteScript)
             $contents = Get-Content -Path $remoteScriptLog
             if ($null -ne $contents)
             {
-                    if ($null -ne ${TestLogDir})
-                    {
-                        Move-Item "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
-                    }
-
-                    else
-                    {
-                        LogPrint "INFO: $remoteScriptLog is copied in ${rootDir}"
-                    }
-
+                if ($null -ne ${TestLogDir})
+                {
+                    Move-Item "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
+                }
+                else
+                {
+                    LogPrint "INFO: $remoteScriptLog is copied in ${rootDir}"
+                }
             }
             else
             {
-                LogPrint "Warn: $remoteScriptLog is empty"
+                LogPrint "ERROR: $remoteScriptLog is empty"
             }
         }
         else
         {
-            LogPrint "Warn: ssh reported success, but $remoteScriptLog file was not copied"
+            LogPrint "ERROR: ssh reported success, but $remoteScriptLog file was not copied"
         }
     }
+	else
+	{
+    	LogPrint "ERROR: PSCP failed from remote VM."
+	}
 
     # Cleanup
     Remove-Item state.txt -ERRORAction "SilentlyContinue"
     Remove-Item runtest.sh -ERRORAction "SilentlyContinue"
-
     return $retValue
 }
 
 
-#######################################################################
-#
+########################################################################################
 # Check module version in vm.
-#
-#######################################################################
-
+########################################################################################
 function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
 {
     <#

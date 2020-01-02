@@ -1975,7 +1975,7 @@ function DoStartTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 # DoTestStarting()
 #
 ########################################################################
-function DoTestStarting([System.Xml.XmlElement] $vm, [XML] $xmlData) {
+function DoTestStarting ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
         Check to see if the test actually started
@@ -2028,12 +2028,11 @@ function DoTestStarting([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     Remove-Item $stateFile -ErrorAction "SilentlyContinue"
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoTestRunning()
-#
-########################################################################
-function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData) {
+########################################################################################
+function DoTestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
         Verify the test is still running on the VM
@@ -2102,24 +2101,24 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData) {
                     UpdateState $vm $CollectLogFiles
                 }
                 elseif ($contents -eq $TestAborted) {
-                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) aborted. See logfile for details"
+                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) aborted. See logfile for details."
                 }
                 elseif ($contents -eq $TestFailed) {
-                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) failed. See logfile for details"
+                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) failed. See logfile for details."
                     $vm.testCaseResults = $Failed
                 }
                 else {
-                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) has an unknown status of '$($contents)'"
+                    AbortCurrentTest $vm "$($vm.vmName) Test $($vm.currentTest) has an unknown status of '$($contents)'."
                 }
 
                 Remove-Item $stateFile -ErrorAction "SilentlyContinue"
             }
             else {
-                LogMsg 6 "Warn : $($vm.vmName) state file is empty"
+                LogMsg 6 "Warn : $($vm.vmName) state file is empty."
             }
         }
         else {
-            LogMsg 0 "Warn : $($vm.vmName) ssh reported success, but state file was not copied"
+            LogMsg 0 "Warn : $($vm.vmName) ssh reported success, but state file was not copied."
         }
     }
     else {
@@ -2127,12 +2126,11 @@ function DoTestRunning([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoCollectLogFiles()
-#
-########################################################################
-function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
+########################################################################################
+function DoCollectLogFiles ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
         Collect files from the VM
@@ -2148,6 +2146,7 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     .Example
         DoCollectLogFiles $testVM $xmlData
     #>
+    
     if (-not $vm -or $vm -isnot [System.Xml.XmlElement]) {
         LogMsg 0 "Error : DoCollectLogFiles received an bad vm parameter"
         return
@@ -2164,14 +2163,12 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
     $currentTest = $vm.currentTest
 
-    #
     # Update the e-mail summary
-    #
     if ( ($($vm.testCaseResults) -eq $Passed) -or ($($vm.testCaseResults) -eq $Skipped)) {
         $completionCode = $vm.testCaseResults
         $vm.individualResults = $vm.individualResults -replace ".$", "1"
     }
-    elseif ( ($($vm.testCaseResults) -eq $Failed) ) {
+    elseif (($($vm.testCaseResults) -eq $Failed)) {
         $completionCode = $Failed
     }
     else {
@@ -2183,20 +2180,17 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
     $vm.emailSummary += ("    Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
 
-    #
     # Collect test results
-    #
     $logFilename = "$($vm.vmName)_${currentTest}.log"
     LogMsg 4 "Info : $($vm.vmName) collecting logfiles"
     if (-not (GetFileFromVM $vm "${currentTest}.log" "${testDir}\${logFilename}") ) {
         LogMsg 0 "Error : $($vm.vmName) DoCollectLogFiles() is unable to collect ${logFilename}"
     }
 
-    #
     # Test case may optionally create a summary.log.
-    #
     $summaryLog = "${testDir}\$($vm.vmName)_${currentTest}_summary.log"
     Remove-Item $summaryLog -ErrorAction "SilentlyContinue"
+    Write-Host -F Red "DEBUG: DoCollectLogFiles: Collect shell log data." 
     GetFileFromVM $vm "summary.log" $summaryLog
 
     #
@@ -2215,13 +2209,10 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         }
     }
 
-    #
     # Also delete state.txt from the VM
-    #
     SendCommandToVM $vm "rm -f state.txt"
 
     LogMsg 0 "Info : $($vm.vmName) Status for test $currentTest - $completionCode"
-
 
     if ( $($testData.postTest) ) {
         UpdateState $vm $RunPostTestScript
@@ -2231,11 +2222,10 @@ function DoCollectLogFiles([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoRunPostTestScript()
-#
-########################################################################
+########################################################################################
 function DoRunPostTestScript([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -2836,11 +2826,10 @@ function DoDisabled([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     # }
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoStartPS1Test()
-#
-########################################################################
+########################################################################################
 function DoStartPS1Test([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -2890,40 +2879,38 @@ function DoStartPS1Test([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         UpdateState $vm $PS1TestCompleted
     }
     else {
-        #
         # Build a semicolon separated string of testParams
-        #
         $params = CreateTestParamString $vm $xmlData
         $params += "scriptMode=TestCase;"
         $params += "ipv4=$($vm.ipv4);sshKey=$($vm.sshKey);"
         $msg = "Creating Log File for : $testScript"
         $msg | out-file -encoding ASCII -append -filePath $logFilename
 
-        #
         # Start the PowerShell test case script
-        #
         LogMsg 3 "Info : $vmName Run PowerShell test case script $testScript"
         LogMsg 3 "Info : vmName: $vmName"
         LogMsg 3 "Info : hvServer: $hvServer"
         LogMsg 3 "Info : params: $params"
 
+		#
+		# HERE. Main script of case will be executed.
+		# 	
         $job = Start-Job -filepath $testScript -argumentList $vmName, $hvServer, $params
         if ($job) {
             $vm.jobID = [string] $job.id
             UpdateState $vm $PS1TestRunning
         }
         else {
-            LogMsg 0 "Error : $($vm.vmName) - Cannot start PowerShell job for test $currentTest"
+            LogMsg 0 "Error : $($vm.vmName) - Cannot start PowerShell job for test $currentTest."
             UpdateState $vm $PS1TestCompleted
         }
     }
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoPS1TestRunning()
-#
-########################################################################
+########################################################################################
 function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -2944,7 +2931,6 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
 
     LogMsg 9 "Info : DoPS1TestRunning($($vm.vmName))"
-
 
     if (-not $xmlData -or $xmlData -isnot [XML]) {
         LogMsg 0 "Error : DoPS1TestRunning received a null or bad xmlData parameter - disabling VM"
@@ -2969,17 +2955,15 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     if ($null -eq $jobStatus) {
         # We lost our job.  Fail the test and stop tests
         $vm.currentTest = "done"
-        AbortCurrentTest $vm "bad or incorrect jobId for test $($vm.currentTest)"
+        AbortCurrentTest $vm "ERROR: Bad or Incorrect jobId for test $($vm.currentTest)"
         return
     }
-
 
     # Collect log data
     if ($jobStatus.State -ne "Completed") {
         $vmName = $vm.vmName
         $currentTest = $vm.currentTest
         $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
-
 
         $jobResults = @(Receive-Job -id $jobID -ErrorAction SilentlyContinue)
         # Write-Output "DEBUG: jobResults: [$jobResults]"
@@ -2991,7 +2975,8 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             $error[0].Exception.Message | out-file -encoding ASCII -append -filePath $logFilename
         }
 
-        # Can't read all data from pipe. keep the last exit statu value passed / failed / aborted used by completed phrase to update result
+        # Can't read all data from pipe. keep the last exit statu value passed / failed / aborted used by completed phrase to update result.
+    	Write-Host -F Red "DEBUG: DoPS1TestRunning: Collect Powershell scripts log data."
         foreach ($line in $jobResults) {
             if ($null -ne $line) {
                 $line | out-file -encoding ASCII -append -filePath $logFilename
@@ -3002,17 +2987,15 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         }
     }
 
-
     if ($jobStatus.State -eq "Completed") {
         UpdateState $vm $PS1TestCompleted
     }
 }
 
-########################################################################
-#
+
+########################################################################################
 # DoPS1TestCompleted()
-#
-########################################################################
+########################################################################################
 function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -3045,13 +3028,11 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
     $vmName = $vm.vmName
     $currentTest = $vm.currentTest
-    Write-Host "DEBUG: currentTest: $($vm.currentTest)"
+    Write-Host -F Red "DEBUG: currentTest: $($vm.currentTest)"
     $logFilename = "${TestDir}\${vmName}_${currentTest}_ps.log"
     $summaryLog = "${vmName}_summary.log"
 
-    #
     # Collect log data
-    #
     $completionCode = $Failed
     $jobID = $vm.jobID
     LogMsg 0 "DEBUG: jobID: [$jobID]"
@@ -3063,10 +3044,10 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             $error[0].Exception.Message | out-file -encoding ASCII -append -filePath $logFilename
         }
 
-
         # Move $jobResults null if here.
         # In old version, if $jobResults is $null, all following code won't run, so case will 
         # automatically get a failed 
+    	Write-Host -F Red "DEBUG: DoPS1TestCompleted: Collect Powershell scripts log data."
         if ($jobResults) {
             foreach ($line in $jobResults) {
                 if ($null -ne $line) {
@@ -3080,7 +3061,6 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
         # Load whole log file in order to avoid sync issue
         $jobResults = Get-Content -Path $logFilename
-
 
         # The last object in the $jobResults array will be the boolean
         # value the script returns on exit.  See if it is true.
@@ -3118,9 +3098,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     $testID = GetTestID $currentTest $xmlData
     SetTestResult $currentTest $testID $completionCode
 
-    #
     # Update e-mail summary
-    #
     #$vm.emailSummary += "    Test $($vm.currentTest)   : $completionCode.<br />"
     $vm.emailSummary += ("    Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
     LogMsg 9 "Debug : summary log $summaryLog exists? $(test-path $summaryLog)"
