@@ -2095,6 +2095,7 @@
             <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34942,RHEL7-50922</param>
+                <param>nicName="VM Network"</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
@@ -2170,6 +2171,7 @@
             <testScript>testscripts\nw_check_nic_name.ps1</testScript>
             <testParams>
                 <param>TC_COVERED=RHEL-111702,RHEL6-99999</param>
+                <param>nicName="VM Network"</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>360</timeout>
