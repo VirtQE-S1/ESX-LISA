@@ -1,4 +1,4 @@
-#######################################################################################
+########################################################################################
 ## Description:
 ##	Push and execute kdump_config.sh, kdump_execute.sh in a VM
 ##	Trigger kdump successfully and get vmcore
@@ -17,7 +17,7 @@
 ## 	v2.0.0 - boyang - 10/12/2017 - Start-Process places the service to trigger
 ## 	v2.1.0 - boyang - 08/23/2018 - Remove disconnect / connect again after trigger
 ##	v2.1.1 - boyang - 08/28/2018 - Sleep after trigger to aviod to detect VM
-#######################################################################################
+########################################################################################
 
 
 <#
@@ -114,6 +114,7 @@ if ($null -eq $sshKey)
 	return $Aborted
 }
 
+write-host -f red "DEBUG: IP: $ipv4"
 if ($null -eq $ipv4) 
 {
 	"FAIL: Test parameter ipv4 was not specified"
@@ -150,50 +151,48 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 				  
-###############################################################################
+########################################################################################
 # Main Body
-###############################################################################
+########################################################################################
 $retVal = $Failed
 
+
 # kdump_config.sh: configures kdump.config / grub
-Write-Host -F Red "INFO: Start to execute kdump_config.sh in VM"
-Write-Output "INFO: Start to execute kdump_config.sh in VM"
+LogMsg 0 "INFO: Start to execute kdump_config.sh in VM"
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && sleep 1 && dos2unix kdump_config.sh && sleep 1 && chmod u+x kdump_config.sh && sleep 1 && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
-	Write-Host -F Red "ERROR: Failed to execute kdump_config.sh in VM"
-	Write-Output "ERROR: Failed to execute kdump_config.sh in VM"
+	LogMsg 0 "ERROR: Failed to execute kdump_config.sh in VM"
 	DisconnectWithVIServer
 	return $Aborted
 }
 
+
 # Rebooting the VM to apply the kdump settings
-Write-Host -F Red "INFO: Start to reboot VM after kdump and grub changed"
-Write-Output "INFO: Start to reboot VM after kdump and grub changed"
+LogMsg 0 "INFO: Start to reboot VM after kdump and grub changed"
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
 
 # Confirm enough time, below kdump_prepare.sh execution starts well after 60s
 # As the VM receives init 6, but its IP maybe still be detected
 # HERE. TODO. StopVMViaSSH, WaitForVMSSHReady
 Start-Sleep -S 120
 
+
 # kdump_prepare.sh: Confirms all configurations works
 $timeout = 180
 while ($timeout -gt 0)
 {
-	Write-Host -F Red "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
-	Write-Output "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
+	LogMsg 0 "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
 	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_prepare.sh && chmod u+x kdump_prepare.sh && ./kdump_prepare.sh"
 	if ($result)
 	{
-		Write-Host -F Red "INFO: Execute kdump_prepare.sh to VM"
-		Write-Output "INFO: Execute kdump_prepare.sh to VM"
+		LogMsg 0  "INFO: Execute kdump_prepare.sh to VM"
 		break
 	}
 	else
 	{
-    	Write-Host -F Gray "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
-		Write-Output "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
+		LogMsg 0 "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
 		Start-Sleep -S 18
 		$timeout = $timeout - 18
 		if ($timeout -eq 0)
@@ -206,43 +205,40 @@ while ($timeout -gt 0)
 	}
 }
 
+
 # Trigger the kernel panic with subprocess
-Write-Host -F Red "INFO: Start a new process to triger kdump"
-Write-Output "INFO: Start a new process to triger kdump"
+LogMsg 0 "INFO: Start a new process to triger kdump"
 $tmpCmd = "echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger 2>/dev/null &"
 Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" -WindowStyle Hidden
+
 
 # Confirm enough time to complete vmcore save and reboot
 # As maybe the VM IP still be detected and go to the next 120s while loop
 # HERE. TODO. Poweredoff
 Start-Sleep -S 60
 
+
 # Check vmcore after trigger complete and reboot
 $timeout = 180
 while ($timeout -gt 0)
 {
-	Write-Host -F Red "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"
-	Write-Output "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"
+	LogMsg 0 "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"
 	
 	$ret = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /var/crash/ -name vmcore -type f -size +10M"
 	if ($null -ne $ret)
 	{
-    	Write-Host -F Red "INFO: Generates vmcore in VM"
-		Write-Output "INFO: Generates vmcore in VM"
-		Write-Host -F Red "DEBUG:  ret: [ $ret ]"
+		LogMsg 0 "INFO: Generates vmcore in VM"
 		$retVal = $Passed
 		break	
 	}
 	else
 	{
-		Write-Host -F Gray "WARNING: Failed to get vmcore from VM, try again"    
-		Write-Output "WARNING: Failed to get vmcore from VM, try again"
+		LogMsg 0 "WARNING: Failed to get vmcore from VM, try again"
 		Start-Sleep -S 6
 		$timeout = $timeout - 6
 		if ($timeout -eq 0)
 		{
-			Write-Host -F Red "FAIL: After timeout, can't get vmcore"
-			Write-Output "FAIL: After timeout, can't get vmcore"
+			LogMsg 0 "FAIL: After timeout, can't get vmcore"
 			DisconnectWithVIServer			
 			$retVal = $Failed
 		}
@@ -251,5 +247,4 @@ while ($timeout -gt 0)
 
 
 DisconnectWithVIServer
-
 return $retVal

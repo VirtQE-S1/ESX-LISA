@@ -1,41 +1,30 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##   Change CPU of vm
-##
-###############################################################################
+##   Change CPU number of a vm.
 ##
 ## Revision:
-## v1.0 - hhei - 1/4/2017 - Change CPU of vm
-## v1.1 - hhei - 1/10/2017 - Update log info
-##
-###############################################################################
+##  v1.0.0 - hhei - 01/04/2017 - Change CPU of a vm.
+##  v1.1.0 - hhei - 01/10/2017 - Update log info.
+########################################################################################
+
+
 <#
 .Synopsis
     Modify the number of CPUs a VM has.
-
 .Descriptioin
     Modify the number of CPUs the VM has.
-
 .Parameter vmName
     Name of the VM to modify.
-
 .Parameter hvServer
     Name of the ESXi server hosting the VM.
-
 .Parameter testParams
     A semicolon separated list of test parameters.
-
 .Example
     .\change_cpu.ps1 "testVM" "localhost" "VCPU=2"
 #>
 
-param([string] $vmName, [string] $hvServer, [string] $testParams)
 
-$retVal = $false
-#
-# Check input arguments
-#
+param([string] $vmName, [string] $hvServer, [string] $testParams)
 if ($vmName -eq $null)
 {
     "Error: VM name is null"
@@ -54,11 +43,10 @@ if ($testParams -eq $null -or $testParams.Length -lt 3)
     return $retVal
 }
 
-#
-# Find the testParams we require.  Complain if not found
-#
-$numCPUs = 0
 
+# Find the testParams we require.  Complain if not found
+$retVal = $false
+$numCPUs = 0
 $params = $testParams.Split(";")
 foreach ($p in $params)
 {
@@ -71,9 +59,9 @@ foreach ($p in $params)
     }
 
 }
-#
-# do a sanity check on the value provided in the testParams
-#
+
+
+# Do a sanity check on the value provided in the testParams
 $maxCPUs = 0
 $procs = Get-VMHost -Name $hvServer | Select NumCpu
 if ($procs)
@@ -93,9 +81,8 @@ if (-not $vm)
     "Error: change_cpu: Unable to create VM object for VM $vmName"
     return $retVal
 }
-#
+
 # Update VCPU on the VM, this is the total vcpu number, check number of cores per socket
-#
 if ($numCPUs -ne 0)
 {
     Set-VM -VM $vm -NumCpu $numCPUs -Confirm:$False
@@ -106,12 +93,12 @@ if ($numCPUs -ne 0)
     }
     else
     {
-        write-host "Error: Unable to update CPU num"
+        write-host "Error: Unable to update CPU num."
         return $retVal
     }
 }
 else {
-    "Error : VCPU test parameter not found in testParams"
+    "Error : VCPU test parameter not found in testParams."
 }
 
 
