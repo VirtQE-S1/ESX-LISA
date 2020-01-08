@@ -2095,7 +2095,7 @@
             <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34942,RHEL7-50922</param>
-                <param>nicName="VM Network"</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
@@ -2261,6 +2261,7 @@
                 <param>VCPU=8</param>
                 <param>VMMemory=8GB</param>
                 <param>TC_COVERED=RHEL-136107,RHEL6-99999</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <timeout>600</timeout>
             <onError>Continue</onError>
