@@ -203,8 +203,7 @@ else
 fi
 
 #Generate benchmark Report
-
-
+ls /mnt/benchmark || mkdir /mnt/benchmark
 /usr/bin/python ./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
