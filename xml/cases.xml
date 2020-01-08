@@ -2171,7 +2171,7 @@
             <testScript>testscripts\nw_check_nic_name.ps1</testScript>
             <testParams>
                 <param>TC_COVERED=RHEL-111702,RHEL6-99999</param>
-                <param>nicName="VM Network"</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>360</timeout>
