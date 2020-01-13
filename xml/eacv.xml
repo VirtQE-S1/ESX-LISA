@@ -18,17 +18,54 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>ovt_customization_static</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
-                <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+
+		<test>
+            <testName>ovt_check_netiprouteconfigureinfo</testName>
+            <testID>ESX-OVT-037</testID>
+            <testScript>testscripts/ovt_check_netiprouteconfigureinfo.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50876</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_time_sync_disable_sync_with_host</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_check_time_sync_disable_sync_with_host.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL-173220</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+		<test>
+		        <testName>go_fips_enable</testName>
+		        <testID>ESX-go-021</testID>
+		        <testScript>testscripts/go_fips_enable.ps1</testScript>
+		        <files>remote-scripts/utils.sh</files>
+		        <testParams>
+		            <param>TC_COVERED=RHEL6-0000,RHEL-182794</param>
+		        </testParams>
+		        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+		        <timeout>1200</timeout>
+		        <onError>Continue</onError>
+		        <noReboot>False</noReboot>
+		</test>
+
 		<test>
             <testName>rdma_ibv_srq_pingpong_test_diff_host</testName>
             <testID>ESX-RDMA-013</testID>
