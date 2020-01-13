@@ -58,9 +58,9 @@ fi
 yum install nfs-utils make -y
 
 #install storage performance tool fio.
-wget https://github.com/axboe/fio/archive/fio-3.2.tar.gz
-tar -zxvf fio-3.2.tar.gz
-cd fio-fio-3.2
+wget https://github.com/axboe/fio/archive/fio-3.14.tar.gz
+tar -zxvf fio-3.14.tar.gz
+cd fio-fio-3.14
 make && make install
 if [ ! "$?" -eq 0 ]; then
 	LogMsg "ERROR:  install fio failed or make,nfs-utils install failed."
@@ -73,7 +73,7 @@ fi
 
 #Check the fio version.
 version=`fio --version`
-if [ $version == "fio-3.2" ]; then
+if [ $version == "fio-3.14" ]; then
 	LogMsg "fio version $version is correctly."
 	UpdateSummary "fio version $version is correctly."
 else
@@ -153,7 +153,7 @@ fi
 
 #set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
 if [ ! ${base} ]; then
-	basepath=`ls -lt /mnt | grep ${DISTRO}_${yamlFile}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	basepath=`ls -lt /mnt | grep ${DISTRO}_${yaml}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
     UpdateSummary "set basepath $basepath from latest one in folder $base"
 else
     basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
@@ -161,7 +161,7 @@ else
 fi
 
 #Create fio test result path.
-path="${DISTRO}_${yamlFile}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
+path="${DISTRO}_${yaml}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
 mkdir -p /mnt/$path
 
 #Download fio python scripts from github.
@@ -177,8 +177,8 @@ if [[ $FS == raw ]]; then
 else
 	filename="/test/test"
 fi
-# Execute fio test
 
+# Execute fio test
 /usr/bin/python ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
@@ -203,8 +203,7 @@ else
 fi
 
 #Generate benchmark Report
-
-
+ls /mnt/benchmark || mkdir /mnt/benchmark
 /usr/bin/python ./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
