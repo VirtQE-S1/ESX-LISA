@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- GO: 21 -->
+            <!-- GO: 24 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -40,10 +40,12 @@
                 <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
+                <suiteTest>go_check_hyperv_drivers</suiteTest>
+                <suiteTest>go_check_logs</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Kdump: 5 -->
+            <!-- Kdump: 7 -->
             <suiteName>kdump</suiteName>
             <suiteTests>
                 <suiteTest>kdump_crash_single_core</suiteTest>
@@ -51,10 +53,12 @@
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>kdump_trigger_nfs</suiteTest>                
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT: 35 -->
+            <!-- OVT: 39 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -92,6 +96,10 @@
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>                                                                                
             </suiteTests>
         </suite>
         <suite>
@@ -104,7 +112,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- STORAGE: 22 -->
+            <!-- STORAGE: 24 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -171,7 +179,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- RDMA: 14 -->
+            <!-- RDMA: 15 -->
             <suiteName>rdma</suiteName>
             <suiteTests>
                 <suiteTest>rdma_boot_check</suiteTest>
@@ -232,7 +240,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT: 3 -->
+            <!-- CLOUD-INIT: 6 -->
             <suiteName>cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
@@ -269,7 +277,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier3: 29 -->
+            <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
                 <suiteTest>dpdk_compile</suiteTest>
@@ -278,6 +286,7 @@
                 <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>perf_nw_ipv4_udp</suiteTest>
                 <suiteTest>perf_nw_ipv4_tcp</suiteTest>
                 <suiteTest>perf_nw_ipv6_udp</suiteTest>
@@ -293,6 +302,7 @@
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_perf_test_diff_host</suiteTest>
                 <suiteTest>rdma_perf_test_same_host</suiteTest>
                 <suiteTest>rdma_rping_test_same_host</suiteTest>
@@ -304,7 +314,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 86 -->
+            <!-- Tier2: 90 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -318,7 +328,10 @@
                 <suiteTest>go_install_ide_disk</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_check_hyperv_drivers</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>kdump_trigger_nfs</suiteTest>
                 <suiteTest>ovt_check_build_version</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
@@ -346,6 +359,7 @@
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
+                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -396,7 +410,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 44 -->
+            <!-- Tier1: 49 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
                 <suiteTest>go_suspend_vm</suiteTest>
@@ -443,11 +457,153 @@
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>kdump_trigger_nfs</testName>
+            <testID>ESX-KDUMP-06</testID>
+            <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50872</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>kdump_3_types_storage</testName>
+            <testID>ESX-KDUMP-07</testID>
+            <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <files>remote-scripts\utils.sh</files>
+            <files>remote-scripts\ssh_storage.sh</files>
+            <timeout>2400</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50873</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>ovt_check_netiprouteconfigureinfo</testName>
+            <testID>ESX-OVT-037</testID>
+            <testScript>testscripts/ovt_check_netiprouteconfigureinfo.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50876</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_time_sync_disable_sync_with_host</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_check_time_sync_disable_sync_with_host.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL-173220</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_fips_enable</testName>
+            <testID>ESX-go-021</testID>
+            <testScript>testscripts/go_fips_enable.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-182794</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>cloud-init_reboot_customization_static</testName>
+            <testID>ESX-cloud-init-006</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_reboot_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-153099</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>cloud-init_customization_DHCP</testName>
+            <testID>ESX-cloud-init-004</testID>
+            <testScript>testscripts/cloud-init_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137082</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_customization_static</testName>
+            <testID>ESX-cloud-init-005</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137083</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_DHCP</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_static</testName>
+            <testID>ESX-ovt-037</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/ovt_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-180199</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>rdma_ibv_srq_pingpong_test_diff_host</testName>
             <testID>ESX-RDMA-013</testID>
@@ -471,21 +627,8 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-        <test>
-            <testName>cloud-init_reboot_customization_static</testName>
-            <testID>ESX-cloud-init-006</testID>
-            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
-            <testScript>testscripts/cloud-init_reboot_customization_static.ps1</testScript  >
-            <files>remote-scripts/utils.sh</files>
-            <testParams>
-                <param>nicName=auto-test</param>
-                <param>TC_COVERED=RHEL6-0000,RHEL-153099</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+
+
         <test>
             <testName>nw_check_vmxnet3_multiqueue</testName>
             <testID>ESX-NW_24</testID>
@@ -513,7 +656,7 @@
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>			
+        </test>
         <test>
             <testName>go_check_hyperv_drivers</testName>
             <testID>ESX-GO-022</testID>
@@ -526,8 +669,8 @@
             <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
-        </test>			
-       <test>
+        </test>
+        <test>
             <testName>go_check_logs</testName>
             <testID>ESX-GO-023</testID>
             <testScript>testscripts/go_check_logs.ps1</testScript  >
@@ -565,7 +708,7 @@
             <testScript>testscripts\stor_scsi_domain_validation.ps1</testScript>
             <files>
                 remote-scripts/utils.sh,remote-scripts/stor_domain_validation.sh
-        </files>
+            </files>
             <testParams>
                 <param>TC_COVERED=RHEL6-0000,RHEL-173219</param>
             </testParams>
@@ -591,7 +734,7 @@
             <testScript>testscripts\stor_add_RDM_disk.ps1</testScript>
             <files>
                 remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh
-        </files>
+            </files>
             <!-- <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript> -->
             <testParams>
                 <param>DiskType=RawPhysical</param>
