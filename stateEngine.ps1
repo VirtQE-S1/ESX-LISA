@@ -2038,7 +2038,6 @@ function DoCollectLogFiles ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     # Test case may optionally create a summary.log.
     $summaryLog = "${testDir}\$($vm.vmName)_${currentTest}_summary.log"
     Remove-Item $summaryLog -ErrorAction "SilentlyContinue"
-    Write-Host -F Red "DEBUG: DoCollectLogFiles: Collect shell log data." 
     GetFileFromVM $vm "summary.log" $summaryLog
 
     #
@@ -2798,10 +2797,8 @@ function DoPS1TestRunning ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         }
 
         # Can't read all data from pipe. keep the last exit statu value passed / failed / aborted used by completed phrase to update result.
-    	Write-Host -F Red "DEBUG: DoPS1TestRunning: Collect Powershell scripts log data."
         foreach ($line in $jobResults) {
 
-			Write-Host -F Yellow "DEBUG: line: $line"
         	Start-Sleep -S 1
 
             if ($null -ne $line) {
@@ -2873,7 +2870,6 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         # Move $jobResults null if here.
         # In old version, if $jobResults is $null, all following code won't run, so case will 
         # automatically get a failed 
-    	Write-Host -F Red "DEBUG: DoPS1TestCompleted: Collect Powershell scripts log data."
         if ($jobResults) {
             foreach ($line in $jobResults) {
                 if ($null -ne $line) {
