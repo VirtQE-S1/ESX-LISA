@@ -144,7 +144,6 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 # Check the disk number of the guest.
 $diskList =  Get-HardDisk -VM $vmObj
 $diskLength = $diskList.Length
-
 if ($diskLength -eq 2)
 {
     LogPrint "INFO: Add two disks successfully, The disks count: $diskLength."
@@ -165,7 +164,7 @@ if (-not $result)
     DisconnectWithVIServer
 	return $Aborted
 }
-LogPrint Write-Output "INFO: New scsi disk could be formated and read, write."
+LogPrint "INFO: New scsi disk could be formated and read, write."
 
 
 # Reset scsi disk when coping files.
@@ -198,7 +197,7 @@ if (-not $result)
 }
 else
 {
-    Write-Output "PASS: copy file successfully."
+    Write-Output "INFO: Copy file successfully."
 }
 
 

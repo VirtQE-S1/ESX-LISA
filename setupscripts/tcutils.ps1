@@ -2504,11 +2504,10 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     }
 }
 
-#######################################################################
-#
+
+########################################################################################
 # RemoveVM()
-#
-#######################################################################
+########################################################################################
 function RemoveVM {
     param (
         [String] $vmName,
@@ -2527,36 +2526,37 @@ function RemoveVM {
         RemoveVM -vmName $vmName -hvServer $hvServer
     #>
     
-    LogPrint "WARN:Check the vm exist"
+    LogPrint "INFO: Check the vm exists."
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
-        LogPrint "ERROR: Unable to Get-VM with $vmName"
+        LogPrint "ERROR: Unable to Get-VM with $vmName."
         DisconnectWithVIServer
         return $Aborted
     } 
 
-
     # Poweroff VM
-    $status = Stop-VM $vmObj -Confirm:$False
-    if (-not $?) {
-        LogPrint "ERROR: Cannot stop VM $vmName, $status"
+    $off = Stop-VM $vmObj -Confirm:$False
+
+    Start-Sleep 6
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+	if ($vmObj.PowerState -ne "PoweredOff")
+    {
+        LogPrint "ERROR: Cannot stop VM $vmName, $status."
         DisconnectWithVIServer
         return $Aborted
     }
-
-
-    # refresh VM
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-
 
     # Remove VM
     $status = Remove-VM -VM $vmObj -DeletePermanently -Confirm:$false -RunAsync | out-null
-    if (-not $?) {
-        LogPrint "ERROR: Cannot remove VM $vmName, $status"
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+    	LogPrint "INFO: Remove vm successfully."
         DisconnectWithVIServer
         return $Aborted
-    }
-    else{
-        LogPrint "Passed:Remove vm successfully"
-    }
+    } 
+	else{
+        LogPrint "ERROR: Remove VM failed as find it again."
+	}
 }
+
