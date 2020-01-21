@@ -1,15 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## [open-vm-tools]Take snapshot when mount a disk to two mount point
-##
-##
-###############################################################################
+## 	[open-vm-tools]Take snapshot when mount a disk to two mount point
 ##
 ## Revision:
-## V1.0.0 - ldu - 08/13/2019 - Build scripts.
-##
-###############################################################################
+## 	v1.0.0 - ldu - 08/13/2019 - Build scripts.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -41,11 +37,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -63,14 +59,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -90,9 +84,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -127,9 +120,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -137,24 +129,24 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
-#
 # Main Body
-#
 ###############################################################################
+$retVal = $Failed
+
+
 #Skip RHEL6, as not support OVT on RHEL6.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-if ( $DISTRO -eq "RedHat6" ){
+if ($DISTRO -eq "RedHat6"){
     DisconnectWithVIServer
     return $Skipped
 }
 
-$retVal = $Failed
 
-#
 # Get the VM
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
 
 #Install docker and start one network container on guest.
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix ovt_mount_twice.sh && chmod u+x ovt_mount_twice.sh && ./ovt_mount_twice.sh"
@@ -164,9 +156,10 @@ if( -not $result ){
     DisconnectWithVIServer
     return $Aborted
 }  else {
-    Write-Host -F Red "Info : mount twice with loop device successfully"
-    Write-Output "Info : mount twice with loop device successfully"
+    Write-Host -F Red "INFO: mount twice with loop device successfully."
+    Write-Output "INFO: mount twice with loop device successfully."
 }
+
 
 # Take snapshot and select quiesce option
 $snapshotTargetName = "snapshot"
@@ -177,34 +170,41 @@ if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        Write-Host -F Red "The snapshot $newSPName with Quiesce is created successfully"
-        Write-Output "The snapshot $newSPName with Quiesce is created successfully"
+        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is created successfully."
+        Write-Output "INFO: The snapshot $newSPName with Quiesce is created successfully."
         $retVal = $Passed
     }
     else
     {
-        Write-Output "The snapshot $newSPName with Quiesce is created Failed"
+        Write-Output "ERROR: The snapshot $newSPName with Quiesce is created Failed"
     }
 }
+
+
 sleep 3
-#
+
+
 # Remove SP created
-#
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
+
+
 sleep 3
+
+
 $snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
 if ($snapshots -eq $null)
 {
-    Write-Host -F Red "The snapshot has been removed successfully"
-    Write-Output "The snapshot has been removed successfully"
+    Write-Host -F Red "INFO: The snapshot has been removed successfully."
+    Write-Output "INFO: The snapshot has been removed successfully."
 }
 else
 {
-    Write-Host -F Red "The snapshot removed failed"
-    Write-Output "The snapshot removed failed"
+    Write-Host -F Red "ERROR: The snapshot removed failed."
+    Write-Output "ERROR: The snapshot removed failed."
     return $Aborted
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal
+

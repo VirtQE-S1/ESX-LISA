@@ -101,11 +101,11 @@ while ($current_cd -lt $cd_num)
 {
     $add_cd=New-CDDrive -VM $vmObj -ISOPath "$iso" -StartConnected:$true -Confirm:$false -WarningAction SilentlyContinue
     $current_cd=$current_cd+1
-    LogPrint "DEBUG: $current_cd: $current_cd"
+    LogPrint "DEBUG: current_cd: $current_cd"
 }
 
 
-# Check the CD drive add successfully.
+# Check the CD drive add successfully
 $CDList =  Get-CDDrive -VM $vmObj
 $CDLength = $CDList.Length
 
