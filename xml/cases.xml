@@ -360,6 +360,8 @@
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -407,6 +409,9 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -457,11 +462,6 @@
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>
-                <suiteTest>ovt_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
