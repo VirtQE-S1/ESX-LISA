@@ -314,7 +314,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 90 -->
+            <!-- Tier2: 95 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -415,7 +415,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 49 -->
+            <!-- Tier1: 44 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
                 <suiteTest>go_suspend_vm</suiteTest>
