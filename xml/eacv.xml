@@ -18,9 +18,11 @@
         <suite>
             <suiteName>EACV</suiteName>
             <suiteTests>
-                <suiteTest>go_fips_enable</suiteTest>
-                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
-                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
