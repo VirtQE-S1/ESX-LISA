@@ -1271,88 +1271,90 @@ function DoDiagnoseHungSystem([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
 
     LogMsg 9 "Info : Entering DoDiagnoseHungSystem()"
+    LogMsg 0 "Info : After DoSlowSystemStarting(), VM's power state still can't be powered on. Will reset it."
+    ResetVM $vm $xmlData
 
-    $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
-    if (-not $vmObj) {
-        LogMsg 0 "Error : ResetVM cannot find the VM $($vm.vmName)"
-        $vm.emailSummary += "VM $($vm.vmName) cannot be found - no tests run on VM<br />"
-        UpdateState $vm $Disabled
-        return
-    }
-    
-    if (-not $xmlData -or $xmlData -isnot [XML]) {
-        LogMsg 0 "Error : DoDiagnoseHungSystem was passed a null or bad xmlData parameter - disabling VM"
-        $vm.emailSummary += "DoDiagnoseHungSystem received a null xmlData parameter - disabling VM<br />"
-        $vm.currentTest = "done"
-        UpdateState $vm $ForceShutdown
-    }
+    #$vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
+    #if (-not $vmObj) {
+    #    LogMsg 0 "Error : ResetVM cannot find the VM $($vm.vmName)"
+    #    $vm.emailSummary += "VM $($vm.vmName) cannot be found - no tests run on VM<br />"
+    #    UpdateState $vm $Disabled
+    #    return
+    #}
+    #
+    #if (-not $xmlData -or $xmlData -isnot [XML]) {
+    #    LogMsg 0 "Error : DoDiagnoseHungSystem was passed a null or bad xmlData parameter - disabling VM"
+    #    $vm.emailSummary += "DoDiagnoseHungSystem received a null xmlData parameter - disabling VM<br />"
+    #    $vm.currentTest = "done"
+    #    UpdateState $vm $ForceShutdown
+    #}
 
-    $currentTest = $vm.currentTest
-    Write-Host "DEBUG: currentTest: $currentTest"
-    $testID = GetTestID $currentTest $xmlData
-    # HERE. Debug value for testID
-    Write-Host "DEBUG: Debug above testID value($testID), if not suitable, will try to use 'done'"
-    $testID = "done"
+    #$currentTest = $vm.currentTest
+    #Write-Host "DEBUG: currentTest: $currentTest"
+    #$testID = GetTestID $currentTest $xmlData
+    ## HERE. Debug value for testID
+    #Write-Host "DEBUG: Debug above testID value($testID), if not suitable, will try to use 'done'"
+    #$testID = "done"
 
-    # Current behavior for this function is defined to just log some.
-    # Then try to stop and restart the VM again during $timeout.
-    LogMsg 0 "Warn : $($vm.vmName) never booted for test $($vm.currentTest) on first try"
+    ## Current behavior for this function is defined to just log some.
+    ## Then try to stop and restart the VM again during $timeout.
+    #LogMsg 0 "Warn : $($vm.vmName) never booted for test $($vm.currentTest) on first try"
 
-    # Proceed with restarting the VM.
-    $timeout = 120
-    Stop-VM -VM $vmObj -Kill -Confirm:$false -ErrorAction SilentlyContinue
-    while ($timeout -gt 0) {
-        $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
-        if ($vmObj.PowerState -eq "PoweredOff") {
-            LogMsg 0 "Warn : Now $($vm.vmName) is starting for the second time for test $($vm.currentTest)."
-            Start-VM -VM $vmObj -Confirm:$false -RunAsync | out-null
-            
-            $timeout_startVM = 120
-            while ($timeout_startVM -gt 0) {
-                $vmObj_2 = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
-                if ($vmObj_2.PowerState -eq "PoweredOn") {
-                    break
-                }
-                Start-Sleep -s 1
-                $timeout_startVM -= 1
-            }
-             
-            $ipv4 = $null
-            $hasBooted = $false
-            [int]$timeoutBoot = 60
-            while (($hasBooted -eq $false) -and ($timeoutBoot -ge 0)) {
-                Start-Sleep -s 6
-                $ipv4 = GetIPv4 $vm.vmName $vm.hvServer
-                LogMsg 9 "Debug: vm.ipv4 = $($vm.ipv4)"
-                if ($ipv4 -and ($vm.ipv4 -ne [String] $ipv4)) {
-                    LogMsg 9 "Updating VM IP from $($vm.ipv4) to ${ipv4}"
-                    $vm.ipv4 = [String] $ipv4
-                }
-                $sts = TestPort $vm.ipv4 -port 22 -timeout 6
-                if ($sts) {
-                    $hasBooted = $true
-                }
-                $timeoutBoot -= 6
-            }
-            
-            if ($hasBooted -eq $true) {
-                UpdateState $vm $SystemUp
-            }
-            else {
-                $completionCode = $Aborted
-                LogMsg 0 "Error: $($vm.vmName) could not boot after second try for test $($vm.currentTest)"
-                LogMsg 0 "Info : $($vm.vmName) Status for test $($vm.currentTest) = ${completionCode}"
+    ## Proceed with restarting the VM.
+    #$timeout = 120
+    #Stop-VM -VM $vmObj -Kill -Confirm:$false -ErrorAction SilentlyContinue
+    #while ($timeout -gt 0) {
+    #    $vmObj = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
+    #    if ($vmObj.PowerState -eq "PoweredOff") {
+    #        LogMsg 0 "Warn : Now $($vm.vmName) is starting for the second time for test $($vm.currentTest)."
+    #        Start-VM -VM $vmObj -Confirm:$false -RunAsync | out-null
+    #        
+    #        $timeout_startVM = 120
+    #        while ($timeout_startVM -gt 0) {
+    #            $vmObj_2 = Get-VMHost -Name $vm.hvServer | Get-VM -Name $vm.vmName
+    #            if ($vmObj_2.PowerState -eq "PoweredOn") {
+    #                break
+    #            }
+    #            Start-Sleep -s 1
+    #            $timeout_startVM -= 1
+    #        }
+    #         
+    #        $ipv4 = $null
+    #        $hasBooted = $false
+    #        [int]$timeoutBoot = 60
+    #        while (($hasBooted -eq $false) -and ($timeoutBoot -ge 0)) {
+    #            Start-Sleep -s 6
+    #            $ipv4 = GetIPv4 $vm.vmName $vm.hvServer
+    #            LogMsg 9 "Debug: vm.ipv4 = $($vm.ipv4)"
+    #            if ($ipv4 -and ($vm.ipv4 -ne [String] $ipv4)) {
+    #                LogMsg 9 "Updating VM IP from $($vm.ipv4) to ${ipv4}"
+    #                $vm.ipv4 = [String] $ipv4
+    #            }
+    #            $sts = TestPort $vm.ipv4 -port 22 -timeout 6
+    #            if ($sts) {
+    #                $hasBooted = $true
+    #            }
+    #            $timeoutBoot -= 6
+    #        }
+    #        
+    #        if ($hasBooted -eq $true) {
+    #            UpdateState $vm $SystemUp
+    #        }
+    #        else {
+    #            $completionCode = $Aborted
+    #            LogMsg 0 "Error: $($vm.vmName) could not boot after second try for test $($vm.currentTest)"
+    #            LogMsg 0 "Info : $($vm.vmName) Status for test $($vm.currentTest) = ${completionCode}"
 
-                SetTestResult $currentTest $testID $completionCode
-                $vm.emailSummary += ("Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
-                UpdateState $vm $ForceShutdown
-            }
-        }
-        else {
-            $timeout -= 1
-            Start-Sleep -S 1
-        }
-    }
+    #            SetTestResult $currentTest $testID $completionCode
+    #            $vm.emailSummary += ("Test {0,-25} : {1}<br />" -f $($vm.currentTest), $completionCode)
+    #            UpdateState $vm $ForceShutdown
+    #        }
+    #    }
+    #    else {
+    #        $timeout -= 1
+    #        Start-Sleep -S 1
+    #    }
+    #}
 }
 
 
