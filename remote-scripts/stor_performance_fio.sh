@@ -11,6 +11,7 @@
 ## Revision:
 ## v1.0.0 - ldu - 8/20/2018 - Build the script
 ## v2.0.0 - ldu - 04/02/2019 - add new function, could benchmark test result.
+## v2.1.0 - ldu - 02/06/2020 - update the test log name and folder.
 ##
 ###############################################################################
 
@@ -162,7 +163,7 @@ fi
 
 #Create fio test result path.
 path="${DISTRO}_${yaml}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
-mkdir -p /mnt/$path
+mkdir -p /home/$path
 
 #Download fio python scripts from github.
 cd /root
@@ -179,7 +180,7 @@ else
 fi
 
 # Execute fio test
-/usr/bin/python ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path 
+/usr/bin/python ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
 	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
@@ -191,7 +192,7 @@ else
 fi
 
 # Generate Fio test report
-/usr/bin/python ./GenerateTestReport.py --result_path /mnt/$path
+/usr/bin/python ./GenerateTestReport.py --result_path /home/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
 	UpdateSummary "Test report generate failed"
@@ -202,7 +203,10 @@ else
 	UpdateSummary "Test report generate successfully."
 fi
 
-#Generate benchmark Report
+#copy the test result to nfs folder
+cp -r /home/$path /mnt
+
+#Generate benchmark Report in nfs folder
 ls /mnt/benchmark || mkdir /mnt/benchmark
 /usr/bin/python ./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
