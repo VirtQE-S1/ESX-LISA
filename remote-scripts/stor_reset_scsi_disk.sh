@@ -81,7 +81,7 @@ else
 fi
 
 # Create test file in new added scsi disk.
-dd if=/dev/zero of=/test/3G bs=100M count=30
+dd if=/dev/zero of=/test/1G bs=100M count=10
 if [ $? -ne 0 ]; then
 	LogMsg "create and read test file failed"
 	UpdateSummary "create and read test file failed"

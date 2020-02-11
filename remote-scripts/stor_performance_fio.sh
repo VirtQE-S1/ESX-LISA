@@ -152,9 +152,10 @@ else
 	UpdateSummary "mount nfs successfully."
 fi
 
+
 #set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
 if [ ! ${base} ]; then
-	basepath=`ls -lt /mnt | grep ${DISTRO}_${yaml}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	basepath=`ls -lt /mnt | grep ${DISTRO}_${yamlFile##*/}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
     UpdateSummary "set basepath $basepath from latest one in folder $base"
 else
     basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
@@ -162,7 +163,7 @@ else
 fi
 
 #Create fio test result path.
-path="${DISTRO}_${yaml}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
+path="${DISTRO}_${yamlFile##*/}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
 mkdir -p /home/$path
 
 #Download fio python scripts from github.
@@ -172,6 +173,9 @@ cd /root/virt-perf-scripts/block
 [ -r ${yamlFile:="../virt_perf_scripts.yaml"} ] && rm -f virt_perf_scripts.yaml \
 && ln -s $yamlFile virt_perf_scripts.yaml && UpdateSummary "currently used $yamlFile yaml file"
 
+#run setup scripts
+./utils/setup.sh
+
 # set filename dependecy raw or filesystem disk 
 if [[ $FS == raw ]]; then
 	filename="/dev/${disk}"
@@ -180,14 +184,25 @@ else
 fi
 
 # Execute fio test
-/usr/bin/python ./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
+/usr/bin/python ./RunFioTest.py --numjobs 16 --rw_list read,write,rw  --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
 	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg " fio run successfully."
+	LogMsg " fio run for numjobs 16 successfully."
+	UpdateSummary "fio run successfully."
+fi
+
+/usr/bin/python ./RunFioTest.py --numjobs 1 --rw_list randread,randwrite,randrw --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path
+if [ $? -ne 0 ]; then
+	LogMsg "Test Failed. fio run failed."
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
+	SetTestStateFailed
+	exit 1
+else
+	LogMsg " fio run for numjobs 1 successfully."
 	UpdateSummary "fio run successfully."
 fi
 
