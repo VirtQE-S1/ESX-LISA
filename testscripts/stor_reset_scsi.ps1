@@ -164,7 +164,9 @@ if (-not $result)
     DisconnectWithVIServer
 	return $Aborted
 }
-LogPrint "INFO: New scsi disk could be formated and read, write."
+else {
+    LogPrint "INFO: New scsi disk could be formated and read, write."
+}
 
 
 # Reset scsi disk when coping files.
@@ -185,11 +187,14 @@ if ($null -eq $exist)
     DisconnectWithVIServer
 	return $Failed
 }
-LogPrint "INFO: Revalidate command successfully, found $exist in dmesg."
+else {
+    LogPrint "INFO: Revalidate command successfully, found $exist in dmesg."
+}
+
 
 
 # Copy a big file between two scsi disk, while run rest scsi disk.
-$result = SendCommandToVM $ipv4 $sshKey "cp /test/3G /tmp"
+$result = SendCommandToVM $ipv4 $sshKey "cp /test/1G /tmp"
 if (-not $result)
 {
 	LogPrint "ERROR: Failed to copy file in new scsi disk."
