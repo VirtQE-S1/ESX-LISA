@@ -314,7 +314,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 95 -->
+            <!-- Tier2: 91 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -329,6 +329,7 @@
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
                 <suiteTest>go_check_hyperv_drivers</suiteTest>
                 <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
                 <suiteTest>kdump_3_types_storage</suiteTest>
                 <suiteTest>kdump_trigger_nfs</suiteTest>
@@ -360,8 +361,6 @@
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>
-                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -409,16 +408,12 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 44 -->
+            <!-- Tier1: 48 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
-                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
@@ -437,6 +432,8 @@
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -462,6 +459,9 @@
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
