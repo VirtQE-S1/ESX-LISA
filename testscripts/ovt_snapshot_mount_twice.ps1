@@ -165,23 +165,28 @@ if( -not $result ){
 $snapshotTargetName = "snapshot"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
-write-host -f red "$newSPName"
+Write-Host -F Red "DEBUG: newSPName: $newSPName"
+Write-Output "DEBUG: newSPName: $newSPName"
 if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is created successfully."
-        Write-Output "INFO: The snapshot $newSPName with Quiesce is created successfully."
-        $retVal = $Passed
+        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is equl to $snapshotTargetName."
+        Write-Output "INFO: The snapshot $newSPName with Quiesce is equl to $snapshotTargetName."
     }
     else
     {
-        Write-Output "ERROR: The snapshot $newSPName with Quiesce is created Failed"
+        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is not equl to $snapshotTargetName."
+        Write-Output "INFO: The snapshot $newSPName with Quiesce is not equl to $snapshotTargetName."
+    	return $Aborted
     }
 }
-
-
-sleep 3
+else
+{
+    Write-Host -F Red "ERROR: Create the snapshot with Quiesce failed."
+    Write-Output "ERROR: Create the snapshot with Quiesce failed."
+   	return $Aborted
+}
 
 
 # Remove SP created
@@ -196,15 +201,15 @@ if ($snapshots -eq $null)
 {
     Write-Host -F Red "INFO: The snapshot has been removed successfully."
     Write-Output "INFO: The snapshot has been removed successfully."
+	$retVal = $Passed
 }
 else
 {
     Write-Host -F Red "ERROR: The snapshot removed failed."
     Write-Output "ERROR: The snapshot removed failed."
-    return $Aborted
+    return $Failed
 }
 
 
 DisconnectWithVIServer
 return $retVal
-
