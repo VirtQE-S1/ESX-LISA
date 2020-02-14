@@ -314,7 +314,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 91 -->
+            <!-- Tier2: 96 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -408,10 +408,16 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 48 -->
+            <!-- Tier1: 43 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
@@ -432,8 +438,6 @@
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>
-                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -459,9 +463,6 @@
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
