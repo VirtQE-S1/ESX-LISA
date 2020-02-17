@@ -160,18 +160,26 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
+}
+else {
+    LogPrint "clone vm start successfully."
 }
 
 
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Ready SSH"
+else {
+    LogPrint "INFO: Ready SSH"
+}
+
 
 
 # Get another VM IP addr
