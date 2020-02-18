@@ -5,6 +5,7 @@
 ## Revision:
 ##  v1.0.0 - ldu - 12/01/2019 - Build the script
 ##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
+##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
 ########################################################################################
 
 
@@ -148,17 +149,25 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 }
 
 
-#set clone vm name follow each host
+#sen the clone vm name
 $cloneName = $vmName + "-clone"
-$OSSpecs = Get-OSCustomizationSpec -Name "ldu-auto-dhcp"
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
+
+# Create the customization specification
+$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+
+#Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+
+LogPrint "INFO: clone vm done"
+
+#Refresh the new cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
-
-#Start clone vm
+#Power on the clone vm
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -167,25 +176,18 @@ if (-not $?) {
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
+    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Ready SSH"
+else {
+    LogPrint "INFO: Ready SSH"
+}
 
 
 # Get another VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-
-#Check the DNS
-$DNSinfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /etc/resolv.conf |grep '192.168.1.2'"
-if ($null -eq $DNSinfo)
-{
-    Write-Host -F Red "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
-    Write-Output "Failed: the customization gust DNS failed as default with 192.168.1.2, $DNSinfo"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
-}
 
 
 # Check the log for customization

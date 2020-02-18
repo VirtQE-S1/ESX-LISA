@@ -5,7 +5,7 @@
 ## Revision:
 ##  v1.0.0 - ldu - 12/09/2019 - Build the script
 ##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
-##  
+##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
 ########################################################################################
 
 
@@ -144,28 +144,51 @@ LogPrint "INFO: Guest OS version is $DISTRO"
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) is not supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
 }
 
 
-#clone vm
+#set clone vm name
 $cloneName = $vmName + "-clone"
-$OSSpecs = Get-OSCustomizationSpec -Name "ldu-test-multinic"
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
+LogPrint "the clone name is $cloneName"
 
+# Acquire a new static IP
+$ip = "172.18.1." + (Get-Random -Maximum 254 -Minimum 125)
+LogPrint "the random ip is $ip"
+
+# Create the customization specification
+$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+
+# Remove any NIC mappings from the specification
+$nicMapping = Get-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec
+
+Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm:$false
+
+#Create a new NIC mapping for the first NIC - it will use DHCP IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
+
+#Create another NIC mapping for the second NIC - it will use static IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.18.1.1 -Position 2
+
+LogPrint "INFO: two nic config done"
+
+#Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+
+LogPrint "INFO: clone vm done"
+
+#Refresh the new cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-# Start clone vm
-Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+
+#Power on the clone vm
+Start-VM -VM $cloneVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
-}
-else {
-    LogPrint "clone vm start successfully."
 }
 
 
@@ -181,14 +204,12 @@ else {
 }
 
 
-
 # Get another VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
-
 #Check the static IP for second NIC
-$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.88'"
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep $ip"
 if ($null -eq $staticIP)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
@@ -196,17 +217,6 @@ if ($null -eq $staticIP)
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
-
-#check the compter name info
-$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-002"
-if ($null -eq $computerName)
-{
-    Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
-    Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
-}
-
 
 # Check the log 
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
@@ -223,13 +233,7 @@ else
 }
 
 #Delete the clone VM
-$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
-if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest"    
-    DisconnectWithVIServer
-    return $Aborted
-}
-
+RemoveVM -vmName $cloneName -hvServer $hvServer
 
 DisconnectWithVIServer
 return $retVal

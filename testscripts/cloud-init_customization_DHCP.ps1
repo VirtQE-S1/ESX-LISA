@@ -5,6 +5,7 @@
 ## Revision:
 ##  v1.0.0 - ldu - 12/09/2019 - Build the script
 ##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
+##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
 ########################################################################################
 
 
@@ -156,13 +157,21 @@ else {
        LogPrint "Pass : install cloud-init passed"
 }
 
-#clone vm
+#sen the clone vm name
 $cloneName = $vmName + "-clone"
-$OSSpecs = Get-OSCustomizationSpec -Name "Test-cloud-init-dhcp"
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
 
+# Create the customization specification
+$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+
+#Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+
+LogPrint "INFO: clone vm done"
+
+#refresh the cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-# Start clone vm
+
+#Power on the clone vm
 Start-VM -VM $cloneVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
@@ -179,23 +188,13 @@ if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Ready SSH"
-
+else {
+    LogPrint "INFO: Ready SSH"
+}
 
 # Get cloned VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-
-
-#check the compter name info
-$computerName = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "hostname |grep auto-test-001"
-if ($null -eq $computerName)
-{
-    Write-Host -F Red " Failed:  the customization gust Failed with cumputer name is $computerName"
-    Write-Output " Failed:  the customization gust Failed with computer name is $computerName"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
-}
 
 
 # Check the log 
