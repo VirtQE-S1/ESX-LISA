@@ -160,7 +160,7 @@ else {
 }
 
 
-#sen the clone vm name
+#set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1500 -Minimum 1201)
 LogPrint "the clone name is $cloneName"
 

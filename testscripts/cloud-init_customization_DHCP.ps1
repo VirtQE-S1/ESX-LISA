@@ -157,7 +157,7 @@ else {
        LogPrint "Pass : install cloud-init passed"
 }
 
-#sen the clone vm name
+#set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1200 -Minimum 901)
 LogPrint "the clone name is $cloneName"
 
