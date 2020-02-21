@@ -151,11 +151,11 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 
 
 #set clone vm name
-$cloneName = $vmName + "-clone"
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 300 -Minimum 1)
 LogPrint "the clone name is $cloneName"
 
 # Acquire a new static IP
-$ip = "172.18.1." + (Get-Random -Maximum 254 -Minimum 125)
+$ip = "172.18.1." + (Get-Random -Maximum 254 -Minimum 10)
 LogPrint "the random ip is $ip"
 
 # Create the customization specification
@@ -170,7 +170,7 @@ Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm
 New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
 
 #Create another NIC mapping for the second NIC - it will use static IP
-New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.18.1.1 -Position 2
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 10.73.199.254 -Position 2
 
 LogPrint "INFO: two nic config done"
 

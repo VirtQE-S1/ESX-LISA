@@ -158,7 +158,8 @@ else {
 }
 
 #sen the clone vm name
-$cloneName = $vmName + "-clone"
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1200 -Minimum 901)
+LogPrint "the clone name is $cloneName"
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM

@@ -150,7 +150,8 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 
 
 #sen the clone vm name
-$cloneName = $vmName + "-clone"
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
+LogPrint "the clone name is $cloneName"
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM

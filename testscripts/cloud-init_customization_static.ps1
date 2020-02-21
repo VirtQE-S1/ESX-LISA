@@ -157,11 +157,11 @@ else {
 }
 
 #set clone vm name
-$cloneName = $vmName + "-clone"
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 900 -Minimum 601)
 LogPrint "the clone name is $cloneName"
 
 # Acquire a new static IP
-$ip = "172.16.1." + (Get-Random -Maximum 254 -Minimum 125)
+$ip = "172.16.1." + (Get-Random -Maximum 254 -Minimum 10)
 LogPrint "the random ip is $ip"
 
 # Create the customization specification
@@ -175,7 +175,7 @@ Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm
 #Create a new NIC mapping for the first NIC - it will use DHCP IP
 New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
 
-#Create another NIC mapping for the second NIC - it will use static IP
+#Create another NIC mapping for the second NIC - it will use static IP -DefaultGateway 172.16.1.1 
 New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.16.1.1 -Position 2
 LogPrint "INFO: two nic config done"
 
