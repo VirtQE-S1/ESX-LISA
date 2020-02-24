@@ -20,7 +20,6 @@
             <suiteTests>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_customization_static</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
                 <suiteTest>ovt_customization_DHCP</suiteTest>
                 <suiteTest>ovt_customization_static</suiteTest>
             </suiteTests>
