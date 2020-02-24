@@ -5,6 +5,7 @@
 ## Revision:
 ##  v1.0.0 - ldu - 01/02/2020 - Build the script
 ##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
+##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
 ########################################################################################
 
 
@@ -158,13 +159,39 @@ else {
        LogPrint "Pass : install cloud-init passed"
 }
 
-#clone vm
-$cloneName = $vmName + "-clone"
-$OSSpecs = Get-OSCustomizationSpec -Name "ldu-test-multinic"
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $OSSpecs -VMHost $hvServer
 
+#set the clone vm name
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1500 -Minimum 1201)
+LogPrint "the clone name is $cloneName"
+
+# Acquire a new static IP
+$ip = "172.19.1." + (Get-Random -Maximum 254 -Minimum 10)
+LogPrint "the random ip is $ip"
+
+# Create the customization specification
+$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+
+# Remove any NIC mappings from the specification
+$nicMapping = Get-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec
+
+Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm:$false
+
+#Create a new NIC mapping for the first NIC - it will use DHCP IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
+
+#Create another NIC mapping for the second NIC - it will use static IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.19.1.1 -Position 2
+LogPrint "INFO: two nic config done"
+
+#Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+
+LogPrint "INFO: clone vm done"
+
+#Refresh the new cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-# Start clone vm
+
+#Power on the clone vm
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
@@ -181,7 +208,10 @@ if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Ready SSH"
+else {
+    LogPrint "INFO: Ready SSH"
+}
+
 
 
 # Get another VM IP addr
@@ -190,7 +220,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 
 
 #Check the static IP for second NIC
-$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.88'"
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep $ip"
 if ($null -eq $staticIP)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
@@ -239,7 +269,7 @@ else
 
 
 #Check the static IP after reboot guest
-$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep '192.168.1.88'"
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep $ip"
 if ($null -eq $staticIP)
 {
     Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
