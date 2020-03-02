@@ -2548,15 +2548,17 @@ function RemoveVM {
     }
 
     # Remove VM
-    $status = Remove-VM -VM $vmObj -DeletePermanently -Confirm:$false -RunAsync | out-null
+    $status = Remove-VM -VM $vmObj -DeletePermanently -Confirm:$false | out-null
+
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
     if (-not $vmObj) {
     	LogPrint "INFO: Remove vm successfully."
         DisconnectWithVIServer
-        return $Aborted
+        return $true
     } 
 	else{
         LogPrint "ERROR: Remove VM failed as find it again."
+        return $false
 	}
 }
 

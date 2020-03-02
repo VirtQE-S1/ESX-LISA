@@ -117,8 +117,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -162,14 +160,22 @@ else {
 
 #set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1500 -Minimum 1201)
-LogPrint "the clone name is $cloneName"
+LogPrint "DEBUG: cloneName: ${cloneName}."
+
 
 # Acquire a new static IP
 $ip = "172.19.1." + (Get-Random -Maximum 254 -Minimum 10)
-LogPrint "the random ip is $ip"
+LogPrint "DEBUG: ip: ${ip}."
+
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+if ($null -eq $linuxSpec) {
+    LogPrint "ERROR: Create linuxspec failed."
+    DisconnectWithVIServer
+    return $Aborted
+}
+
 
 # Remove any NIC mappings from the specification
 $nicMapping = Get-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec
@@ -178,18 +184,37 @@ Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm
 
 #Create a new NIC mapping for the first NIC - it will use DHCP IP
 New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
+if (-not $?) {
+    LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with dhcp IP."
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
 
 #Create another NIC mapping for the second NIC - it will use static IP
 New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.19.1.1 -Position 2
-LogPrint "INFO: two nic config done"
+if (-not $?) {
+    LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with static IP."
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Two nic config done."
+
 
 #Clone the vm with new OSCustomization Spec
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+LogPrint "INFO: Complete clone operation. Below will check VM cloned."
 
-LogPrint "INFO: clone vm done"
 
 #Refresh the new cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+if (-not $cloneVM) {
+    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
+    DisconnectWithVIServer
+    return $Aborted
+}
+
 
 #Power on the clone vm
 Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
@@ -201,6 +226,7 @@ if (-not $?) {
 }
 
 
+LogPrint "DEBUG: Befor wait for SSH."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
@@ -223,8 +249,7 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep $ip"
 if ($null -eq $staticIP)
 {
-    Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
-    Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
+    LogPrint " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
@@ -234,15 +259,13 @@ if ($null -eq $staticIP)
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Deployment for cloud-init succeeded'"
 if ($null -eq $loginfo)
 {
-    Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
-    Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    LogPrint " Failed:  the customization gust Failed with log $loginfo"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
-    Write-Host -F Red " Passed:  the customization gust passed with log $loginfo"
-    Write-Output " Passed:  the customization gust passed with log $loginfo"
+    LogPrint " Passed:  the customization gust passed with log $loginfo"
 }
 
 #reboot cloned guest
@@ -256,13 +279,11 @@ Start-Sleep -seconds 6
 $ret = WaitForVMSSHReady $cloneName $hvServer ${sshKey} 300
 if ($ret -eq $true)
 {
-    Write-Host -F Red "PASS: Complete the rebooting"
-    Write-Output "PASS: Complete the rebooting"
+    LogPrint "PASS: Complete the rebooting"
 }
 else
 {
-    Write-Host -F Red "FAIL: The rebooting failed"
-    Write-Output "FAIL: The rebooting failed"
+    LogPrint "FAIL: The rebooting failed"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
@@ -272,16 +293,14 @@ else
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr |grep $ip"
 if ($null -eq $staticIP)
 {
-    Write-Host -F Red " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
-    Write-Output " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
+    LogPrint " Failed:  the customization gust Failed with static IP for second NIC $staticIP"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    Write-Host -F Red " Passed:  the customization gust passed with static IP for second NIC $staticIP"
-    Write-Output " Passed:  the customization gust passed withstatic IP for second NIC $staticIP"
+    LogPrint " Passed:  the customization gust passed withstatic IP for second NIC $staticIP"
 }    
 
 #Delete the clone VM
