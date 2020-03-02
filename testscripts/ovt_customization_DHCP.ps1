@@ -116,8 +116,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -151,38 +149,51 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 
 #set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
-LogPrint "the clone name is $cloneName"
+LogPrint "DEBUG: cloneName: ${cloneName}."
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
-
-#Clone the vm with new OSCustomization Spec
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
-
-LogPrint "INFO: clone vm done"
-
-#Refresh the new cloned vm
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-
-#Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
+if ($null -eq $linuxSpec) {
+    LogPrint "ERROR: Create linuxspec failed."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 
 
+#Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+LogPrint "INFO: Complete clone operation. Below will check VM cloned."
+
+#Refresh the new cloned vm
+$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+if (-not $cloneVM) {
+    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+#Power on the clone vm
+Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
+if (-not $?) {
+    LogPrint "ERROR : Cannot start VM."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    DisconnectWithVIServer
+    return $Aborted
+}
+
+
+LogPrint"DEBUG: Before wait for SSH."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
+    LogPrint "ERROR : Cannot start SSH."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 else {
-    LogPrint "INFO: Ready SSH"
+    LogPrint "INFO: Ready SSH."
 }
 
 
@@ -195,16 +206,14 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
 if ($null -eq $loginfo)
 {
-    Write-Host -F Red "failed: the customization gust failed with log $loginfo"
-    Write-Output "failed: the customization gust failed with log $loginfo"
+    LogPrint "failed: the customization gust failed with log $loginfo"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    Write-Host -F Red "Passed:  the customization gust passed with log $loginfo"
-    Write-Output "Passed:  the customization gust passed with log $loginfo"
+    LogPrint "Passed:  the customization gust passed with log $loginfo"
 }
 
 

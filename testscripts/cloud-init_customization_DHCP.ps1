@@ -115,8 +115,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -159,21 +157,35 @@ else {
 
 #set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1200 -Minimum 901)
-LogPrint "the clone name is $cloneName"
+LogPrint "DEBUG: cloneName: ${cloneName}."
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
+if ($null -eq $linuxSpec) {
+    LogPrint "ERROR: Create linuxspec failed."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    DisconnectWithVIServer
+    return $Aborted
+}
+
 
 #Clone the vm with new OSCustomization Spec
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+LogPrint "INFO: Complete clone operation. Below will check VM cloned."
 
-LogPrint "INFO: clone vm done"
 
 #refresh the cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+if (-not $cloneVM) {
+    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    DisconnectWithVIServer
+    return $Aborted
+}
+
 
 #Power on the clone vm
-Start-VM -VM $cloneVM -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
     RemoveVM -vmName $cloneName -hvServer $hvServer
@@ -182,6 +194,7 @@ if (-not $?) {
 }
 
 
+LogPrint"DEBUG: Before wait for SSH."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
@@ -202,16 +215,14 @@ $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Deployment for cloud-init succeeded'"
 if ($null -eq $loginfo)
 {
-    Write-Host -F Red " Failed:  the customization gust Failed with log $loginfo"
-    Write-Output " Failed:  the customization gust Failed with log $loginfo"
+    LogPrint "Failed:  the customization gust Failed with log $loginfo"
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    Write-Host -F Red " Passed:  the customization gust passed with log $loginfo"
-    Write-Output " Passed:  the customization gust passed with log $loginfo"
+    LogPrint "Passed:  the customization gust passed with log $loginfo"
 }
 
 #Delete the clone VM

@@ -1,9 +1,9 @@
-#######################################################################################
+########################################################################################
 ## Description:
 ##  Set IPV6 DHCP IP for Guest
 ## Revision:
 ##  v1.0.0 - xinhu - 09/27/2019 - Build the script
-#######################################################################################
+########################################################################################
 
 
 <#
@@ -122,9 +122,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-#######################################################################################
+########################################################################################
 # Main Body
-#######################################################################################
+########################################################################################
 $retVal1 = $False
 $retVal2 = $False
 
@@ -132,54 +132,52 @@ $retVal2 = $False
 # Function ping6 VM_B
 function ping-VM(${sshKey},${ipv4},$choice,$IPv6_B,$packages)
 {
-    Write-Host -F Green "DEBUG:params $choice,$IPv6_B,$packages"
+	LogPrint "DEBUG: choice: ${choice}, IPv6_B: ${IPv6_B}, packages: ${packages}."
     $SwitchIPv6 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sysctl -w net.ipv6.conf.${NIC}.disable_ipv6=$choice; echo `$?"
-    Write-Host -F Green "DEBUG: switch IPV6 execute: $($SwitchIPv6[-1])"
+    LogPrint "DEBUG: SwitchIPv6[-1]: $($SwitchIPv6[-1])."
     if ($SwitchIPv6[-1] -ne 0)
     {
-        Write-Host -F Red "Error: set disable ipv6 = $choice failed"
+        LogPrint "ERROR: Set disable ipv6 = $choice failed"
         return $False
     }
 
     # Wait for completing switch ipv6 
     Sleep -seconds 6
+
     $result = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ping6 $IPv6_B -c $packages;echo `$?"
-    Write-Host -F Red "DEBUG: ping6 $IPv6_B result: $result"
+    LogPrint "DEBUG: result: ${result}."
     return $result
 }
 
+
 # Get NIC name of VM_A
 $NIC = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
-Write-Host -F Green "INFO: Get NIC name $NIC"
-Write-Output "INFO: Get NIC name $NIC"
+LogPrint "INFO: Get NIC name - ${NIC}."
 if ([String]::IsNullOrEmpty(${NIC}))
 {
-    Write-Host -F Red "Error: NIC name is null: $NIC "
-    Write-Output "Error: NIC name is null: $NIC "
+    LogPrint "ERROR: NIC name is null."
     DisconnectWithVIServer
     return $Aborted
 }
+
 
 # Get ipv6 addr of VM_B
 $vmNameB = $vmName -creplace ("-A$"),"-B"
-Write-Host -F Red "INFO: RevertSnap $vmNameB..."
-Write-Output "INFO: RevertSnap $vmNameB..."
+LogPrint "INFO: RevertSnap $vmNameB..."
 $result = RevertSnapshotVM $vmNameB $hvServer
 if ($result[-1] -ne $true)
 {
-    Write-Host -F Red "INFO: RevertSnap $vmNameB failed"
-    Write-Output "INFO: RevertSnap $vmNameB failed"
+    LogPrint "INFO: RevertSnap $vmNameB failed"
     DisconnectWithVIServer
     return $Aborted
 }
 
-# Refresh status
-$vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-Write-Host -F Red "INFO: Starting $vmNameB..."
-Write-Output "INFO: Starting $vmNameB..."
+
+LogPrint "INFO: Starting $vmNameB..."
 # Start Guest
 Start-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-Write-Host -F Red  "DEBUG:Finish start VM_B"
+
+
 # Wait for VM_B start and gei ip address
 $ret = WaitForVMSSHReady $vmNameB $hvServer ${sshKey} 300
 if ( $ret -ne $true )
@@ -189,11 +187,14 @@ if ( $ret -ne $true )
     DisconnectWithVIServer
     return $Aborted
 }
+
+
 # Refresh status
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 $IPADDB = $vmObjB.Guest.IPAddress
 Write-Host -F Red "DEBUG: IP address of VM_B: $IPADDB"
 Write-Output "DEBUG: IP address of VM_B: $IPADDB"
+
 
 # Current version get ipv6 method, (fe80 IPV6 add are not valid to ping6)
 if ($IPADDB[1].contains("fe80"))
@@ -206,20 +207,19 @@ else
 }
 
 
-$packages = 4
 # Disable ipv6 for VM_A
+$packages = 4
 $Disable = 1
 $Disresult = ping-VM ${sshKey} ${ipv4} $Disable $IPv6_B $packages
-Write-Host -F Green "DEBUG: Get result is $Disresult"
-Write-Output "DEBUG: set disable ipv6 result: $Disresult"
+LogPrint "DEBUG: Disresult: $Disresult"
 if ($Disresult -eq $False) 
 {
-    Write-Output "Error: set disable ipv6 failed"
+    LogPrint "ERROR: Set disable ipv6 failed."
 }
 elseif ($Disresult -eq 0) 
 {
-    Write-Host -F Red "Error: set disable ipv6, and sucess to ping6, $Disresult"
-    Write-Output "Error: set disable ipv6, and sucess to ping6, $Disresult"
+    Write-Host -F Red "Error: set disable ipv6, but sucess to ping6, $Disresult"
+    Write-Output "Error: set disable ipv6, but sucess to ping6, $Disresult"
 }
 else 
 {
@@ -232,11 +232,10 @@ else
 # Enable ipv6 for VM_A
 $Enable = 0
 $Enresult = ping-VM ${sshKey} ${ipv4} $Enable $IPv6_B $packages
-Write-Host -F Green "DEBUG: Get result is $Enresult"
-Write-Output "DEBUG: set enable ipv6 result: $Enresult"
+LogPrint "DEBUG: Enresult: $Ensresult"
 if ($Enresult[-1] -eq $False) 
 {
-    Write-Output "Error: set enable ipv6 failed"
+    LogPrint "ERROR: Set enable ipv6 failed."
 }
 elseif ($Enresult[-1] -eq 0)
 {
