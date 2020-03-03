@@ -72,6 +72,16 @@ foreach ($p in $params)
 }
 
 
+# Source the tcutils.ps1 file
+. .\setupscripts\tcutils.ps1
+
+PowerCLIImport
+ConnectToVIServer $env:ENVVISIPADDR `
+    $env:ENVVISUSERNAME `
+    $env:ENVVISPASSWORD `
+    $env:ENVVISPROTOCOL
+
+
 ########################################################################################
 # Main Body
 ########################################################################################
@@ -80,35 +90,38 @@ $retVal = $Failed
 
 # VM is in powered off status, as a setup script to remove CD driver.
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+if (-not $vmObj) {
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 
-# Remove CD driver to host
+# Confirm CD exists or not.
 $cd = Get-CDDrive -VM $vmObj
 if ($null -eq $cd)
 {
-    write-host -F Red "ERROR: CD of VM is null."
-    Write-Output "ERROR: CD of VM is null."
+    LogPrint "ERROR: CD of VM is null."
     return $retVal
 }
 
 
+# Remove CD
 $remove_cd = Remove-CDDrive -CD $cd -Confirm:$false
+
 
 # Check the cd removed successfully or not.
 $CDList =  Get-CDDrive -VM $vmObj
 $CDLength = $CDList.Length
-Write-Host -F Red "DEBUG: CDLength: ${CDLength}"
-Write-Output "DEBUG: CDLength: ${CDLength}"
+LogPrint "DEBUG: CDLength: ${CDLength}."
 if ($CDLength -eq 0)
 {
-    write-host -F Red "INFO: Remove cd driver successfully."
-    Write-Output "INFO: Remove cd driver successfully."
+    LogPrint "INFO: Remove cd driver successfully."
     $retVal = $Passed
 }
 else
 {
-    write-host -F Red "INFO: Remove cd driver failed."
-    Write-Output "INFO: Remove cd driver failed."
+    LogPrint "INFO: Remove cd driver failed."
     DisconnectWithVIServer
     return $retVal
 }

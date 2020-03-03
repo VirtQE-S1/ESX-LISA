@@ -85,7 +85,7 @@ $retVal = $Failed
 # VM is in powered off status, as a setup script to add CD driver.
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $state = $vmObj.PowerState
-LogPrint"DEBUG: state: $state"
+LogPrint "DEBUG: state: $state"
 if ($state -ne "PoweredOff")
 {
     LogPrint "ERROR: VM power state should be powered off."

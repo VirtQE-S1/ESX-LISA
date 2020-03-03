@@ -136,7 +136,7 @@ if (-not $DISTRO) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO."
+LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 
 # Different Guest DISTRO
@@ -147,7 +147,7 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 }
 
 
-#set clone vm name
+# Set clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 300 -Minimum 1)
 LogPrint "DEBUG: cloneName: ${cloneName}."
 
@@ -190,12 +190,12 @@ if (-not $?) {
 LogPrint "INFO: Two nic config done."
 
 
-#Clone the vm with new OSCustomization Spec
+# Clone the vm with new OSCustomization Spec
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
 LogPrint "INFO: Complete clone operation. Below will check VM cloned."
 
 
-#Refresh the new cloned vm
+# Refresh the new cloned vm
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 if (-not $cloneVM) {
     LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
@@ -204,7 +204,7 @@ if (-not $cloneVM) {
 }
 
 
-#Power on the clone vm
+# Power on the clone vm
 Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM."
@@ -229,32 +229,40 @@ else {
 
 # Get another VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
-#Check the static IP for second NIC
+
+# Check the static IP for second NIC
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
+LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: the customization gust Failed with static IP for second NIC $staticIP"
+    LogPrint "ERROR: The customization gust Failed with static IP for second NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
+
 # Check the log 
-$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
+$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log | grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
 if ($null -eq $loginfo)
 {
-    LogPrint "failed: the customization gust failed with log $loginfo"
+    LogPrint "ERROR: The customization gust failed with log ${loginfo}."
 }
 else
 {
     $retVal = $Passed
-    LogPrint "Passed:  the customization gust passed with log $loginfo"
+    LogPrint "ERROR: The customization gust passed with log ${loginfo}."
 }
 
 
 #Delete the clone VM
-RemoveVM -vmName $cloneName -hvServer $hvServer
+$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+if ($null -eq $remove) {
+    LogPrint "ERROR: Cannot remove cloned guest."
+    DisconnectWithVIServer
+    return $Aborted
+}
 
 
 DisconnectWithVIServer
