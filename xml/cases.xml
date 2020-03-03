@@ -1231,7 +1231,7 @@
                 <!-- RHEL8 -->
                 <param>redhat_8_standard_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
                 <param>redhat_8_lower_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=11.0.0/4.el8/x86_64/open-vm-tools-11.0.0-3.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_rpm=11.0.0/3.el8/x86_64/open-vm-tools-11.0.0-3.el8.x86_64.rpm</param>
                 <param>redhat_8_lower_dsk_rpm=11.0.0/3.el8/x86_64/open-vm-tools-desktop-11.0.0-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>

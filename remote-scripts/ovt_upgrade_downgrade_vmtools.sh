@@ -39,7 +39,6 @@ UtilsInit
 # Main script body
 #
 #######################################################################
-
 # If current Guest is supported in the XML <testParams>
 # "cat constant.sh | grep $DISTRO" will get the standard OVT version of $DISTRO
 distro_standard_version=`cat constants.sh | grep ${DISTRO}_standard_version | awk -F "=" '{print $2}'`
@@ -60,9 +59,11 @@ if [ $distro_standard_version == "NOOVT" ]; then
     exit 0
 fi
 
+
 # Install open-vm-tools-desktop for current Guest WITHOUT relationship of DISTR
 yum install -y open-vm-tools-desktop
 # HERE. Check result value
+
 
 systemctl restart vmtoolsd
 service_status=$(systemctl status vmtoolsd |grep running -c)
@@ -76,6 +77,7 @@ else
     exit 1
 fi
 
+
 # Get OVT lower info
 url_prefix="http://download.eng.bos.redhat.com/brewroot/packages/open-vm-tools/"
 lower_version=`cat constants.sh | grep ${DISTRO}_lower_version | awk -F "=" '{print $2}'`
@@ -88,17 +90,21 @@ lower_dsk_rpm=`cat constants.sh | grep ${DISTRO}_lower_dsk_rpm | awk -F "=" '{pr
 LogMsg "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
 UpdateSummary "DEBUG: lower_dsk_rpm: $lower_dsk_rpm"
 
+
 # Download lower version OVT
 wget -P /root/ $url_prefix$lower_rpm
 # HERE. Check result value
+
 
 # Download lower version desktop OVT
 wget -P /root/ $url_prefix$lower_dsk_rpm
 # HERE. Check result value
 
+
 # Downgrade the open-vm-tools to a older version
 yum downgrade /root/*.rpm -y
 # HERE. Check result value
+
 
 # Check the open-vm-tools version after downgrade
 ovt_ver_after_downgrade=$(rpm -qa open-vm-tools)
@@ -114,9 +120,11 @@ else
     exit 1
 fi
 
+
 # Upgrage the open-vm-tools to distro_standard_version
 yum upgrade open-vm-tools-desktop open-vm-tools -y
 # HERE. Check result value
+
 
 # Check the open-vm-tools version after upgrade
 ovt_ver_after_upgrade=$(rpm -qa open-vm-tools)

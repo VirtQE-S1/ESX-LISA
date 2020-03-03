@@ -120,5 +120,4 @@ else
 }
 
 
-DisconnectWithVIServer
 return $retVal
