@@ -160,7 +160,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Create linuxspec well."
+LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
 
 
 # Clone the vm with new OSCustomization Spec
