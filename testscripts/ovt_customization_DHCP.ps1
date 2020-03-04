@@ -187,7 +187,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Powered on VM cloned ${cloneName} well."
+LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
 
 
 # Wait for clone VM SSH ready

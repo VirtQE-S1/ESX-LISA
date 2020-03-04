@@ -213,7 +213,7 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
+LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
 
 
 # Power on the clone vm
