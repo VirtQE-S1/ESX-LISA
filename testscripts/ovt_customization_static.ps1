@@ -164,6 +164,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
 
 
 # Remove any NIC mappings from the specification
@@ -178,6 +179,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: DHCP NIC config done."
 
 
 # Create another NIC mapping for the second NIC - it will use static IP
@@ -187,7 +189,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Two nic config done."
+LogPrint "INFO: Static NIC config done."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -202,6 +204,7 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
@@ -212,6 +215,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Powered on VM cloned ${cloneName} well."
 
 
 LogPrint "DEBUG: Befor wait for SSH."

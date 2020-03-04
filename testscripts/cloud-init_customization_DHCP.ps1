@@ -169,6 +169,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -184,6 +185,7 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
@@ -194,6 +196,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Powered on VM cloned ${cloneName} well."
 
 
 LogPrint "DEBUG: Before wait for SSH."
@@ -211,6 +214,7 @@ else {
 
 # Get cloned VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
+LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the log 
