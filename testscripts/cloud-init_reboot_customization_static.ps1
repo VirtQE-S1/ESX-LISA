@@ -173,6 +173,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
 
 
 # Remove any NIC mappings from the specification
@@ -187,6 +188,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: DHCP NIC config done."
 
 
 # Create another NIC mapping for the second NIC - it will use static IP
@@ -196,7 +198,7 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Two nic config done."
+LogPrint "INFO: Static NIC config done."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -211,19 +213,15 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Befor wait for SSH."
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
@@ -238,9 +236,13 @@ else {
 
 # Get another VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
+LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the static IP for second NIC
+$ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
+LogPrint "DEBUG: ip_debug: ${ip_debug}."
+
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)

@@ -175,6 +175,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
 
 
 # Remove any NIC mappings from the specification
@@ -189,6 +190,8 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: DHCP NIC config done."
+
 
 
 # Create another NIC mapping for the second NIC - it will use static IP -DefaultGateway 172.16.1.1 
@@ -198,10 +201,10 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Two nic config done."
+LogPrint "INFO: Static NIC config done."
 
 
-#Clone the vm with new OSCustomization Spec
+# Clone the vm with new OSCustomization Spec
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
 LogPrint "INFO: Complete clone operation. Below will check VM cloned."
 
@@ -213,19 +216,15 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Befor wait for SSH."
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
@@ -244,6 +243,9 @@ LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 #Check the static IP for second NIC
+$ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
+LogPrint "DEBUG: ip_debug: ${ip_debug}."
+
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
@@ -261,14 +263,14 @@ else {
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log | grep 'Deployment for cloud-init succeeded'"
 if ($null -eq $loginfo)
 {
-    LogPrint "ERROR: the customization gust Failed with log ${loginfo}."
+    LogPrint "ERROR: The customization gust Failed with log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
+    LogPrint "INFO: The customization gust passed with log ${loginfo}."
     $retVal = $Passed
-    LogPrint "INFO: the customization gust passed with log ${loginfo}."
 }
 
 

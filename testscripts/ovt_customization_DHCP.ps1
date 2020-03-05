@@ -160,6 +160,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -175,20 +176,16 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Before wait for SSH."
 # Wait for clone VM SSH ready
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
     RemoveVM -vmName $cloneName -hvServer $hvServer
@@ -201,7 +198,8 @@ else {
 
 
 # Get another VM IP addr
-$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
+$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer LogPrint "D"
+LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the log for customization
