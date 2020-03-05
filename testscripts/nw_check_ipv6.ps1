@@ -3,6 +3,7 @@
 ##  Set IPV6 DHCP IP for Guest
 ## Revision:
 ##  v1.0.0 - xinhu - 09/27/2019 - Build the script
+##  v1.1.0 - boyang - 03/05/2020 - Build the script
 ########################################################################################
 
 
@@ -163,37 +164,44 @@ if ([String]::IsNullOrEmpty(${NIC}))
 
 # Get ipv6 addr of VM_B
 $vmNameB = $vmName -creplace ("-A$"),"-B"
-LogPrint "INFO: RevertSnap $vmNameB..."
+$vmB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+if (-not $vmB)
+{
+    Write-Error -Message "nw_ping.ps1: Unable to create VM object for VM $vmNameB" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    return $Aborted
+}
+
+
+LogPrint "INFO: Revert snapshot of ${vmNameB}."
 $result = RevertSnapshotVM $vmNameB $hvServer
 if ($result[-1] -ne $true)
 {
-    LogPrint "INFO: RevertSnap $vmNameB failed"
+    LogPrint "INFO: Revert snapshot of $vmNameB failed."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-LogPrint "INFO: Starting $vmNameB..."
 # Start Guest
-Start-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+LogPrint "INFO: Powering on VM_B."
+$on = Start-VM -VM $vmB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Wait for VM_B start and gei ip address
+LogPrint "INFO: Wait for SSH to confirm VM_B booting."
 $ret = WaitForVMSSHReady $vmNameB $hvServer ${sshKey} 300
-if ( $ret -ne $true )
+if ($ret -ne $true)
 {
-    Write-Output "Failed: Failed to start VM."
-    write-host -F Red "Failed: Failed to start VM."
+	LogPrint "ERROR: SSH failed."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Refresh status
-$vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-$IPADDB = $vmObjB.Guest.IPAddress
-Write-Host -F Red "DEBUG: IP address of VM_B: $IPADDB"
-Write-Output "DEBUG: IP address of VM_B: $IPADDB"
+$vmB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
+$IPADDB = $vmB.Guest.IPAddress
+LogPrint "DEBUG: IP address of VM_B: $IPADDB"
 
 
 # Current version get ipv6 method, (fe80 IPV6 add are not valid to ping6)
@@ -205,6 +213,7 @@ else
 {
     $IPv6_B = $IPADDB[1]
 }
+LogPrint "DEBUG: IPv6_B: $IPv6_B"
 
 
 # Disable ipv6 for VM_A
@@ -218,14 +227,12 @@ if ($Disresult -eq $False)
 }
 elseif ($Disresult -eq 0) 
 {
-    Write-Host -F Red "Error: set disable ipv6, but sucess to ping6, $Disresult"
-    Write-Output "Error: set disable ipv6, but sucess to ping6, $Disresult"
+    LogPrint "ERROR: set disable ipv6, but sucess to ping6, $Disresult"
 }
 else 
 {
-    Write-Host -F Green "INFO: set disable ipv6, and failed to ping6"
-    Write-Output "INFO: set disable ipv6, and failed to ping6"
-    $retVal1 = $True
+    LogPrint "INFO: Set disable ipv6, and failed to ping6"
+    $retVal1 = $Passed
 }
 
  
@@ -239,21 +246,23 @@ if ($Enresult[-1] -eq $False)
 }
 elseif ($Enresult[-1] -eq 0)
 {
-    Write-Host -F Green "INFO: set enable ipv6, and sucess to ping6"
-    Write-Output "INFO: set enable ipv6, and sucess to ping6"
+    LogPrint "INFO: Set enable ipv6, and sucess to ping6"
     $retVal2 = $True
 }
 else 
 {
-    Write-Host -F Red "ERROR: set enable ipv6, and failed to ping6, $Enresult"
-    Write-Output "ERROR: set enable ipv6, and failed to ping6, $Enresult"
+    LogPrint "ERROR: Set enable ipv6, and failed to ping6, $Enresult"
 }
 
 
-Stop-VM $vmObjB -Confirm:$False -RunAsync:$true -ErrorAction SilentlyContinue
-DisconnectWithVIServer
+Stop-VM $vmB -Confirm:$False -RunAsync:$true -ErrorAction SilentlyContinue
+
+
 if ($retVal1 -and $retval2)
 {
     return $Passed
 }
-return $Failed
+else
+{
+	return $Failed
+}

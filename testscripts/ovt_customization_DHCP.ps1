@@ -160,7 +160,7 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
+LogPrint "INFO: Create linuxspec well."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -180,18 +180,12 @@ LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
 
 
 # Wait for clone VM SSH ready
-LogPrint "DEBUG: Before wait for SSH."
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
     RemoveVM -vmName $cloneName -hvServer $hvServer

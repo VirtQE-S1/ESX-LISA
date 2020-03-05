@@ -204,22 +204,16 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Powered on VM cloned ${cloneName} well."
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Befor wait for SSH."
 # Wait for clone VM SSH ready
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
     RemoveVM -vmName $cloneName -hvServer $hvServer
@@ -237,6 +231,9 @@ LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the static IP for second NIC
+$ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
+LogPrint "DEBUG: ip_debug: ${ip_debug}."
+
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
@@ -249,24 +246,20 @@ if ($null -eq $staticIP)
 
 # Check the log 
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log | grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
+LogPrint "DEBUG: loginfo: ${loginfo}."
 if ($null -eq $loginfo)
 {
     LogPrint "ERROR: The customization gust failed with log ${loginfo}."
 }
 else
 {
+    LogPrint "INFO: The customization gust passed with log ${loginfo}."
     $retVal = $Passed
-    LogPrint "ERROR: The customization gust passed with log ${loginfo}."
 }
 
 
 #Delete the clone VM
 $remove = RemoveVM -vmName $cloneName -hvServer $hvServer
-if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest."
-    DisconnectWithVIServer
-    return $Aborted
-}
 
 
 DisconnectWithVIServer

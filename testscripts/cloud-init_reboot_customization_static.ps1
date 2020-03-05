@@ -213,21 +213,15 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Powered on VM cloned ${cloneName} well."
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Befor wait for SSH."
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
@@ -246,6 +240,9 @@ LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the static IP for second NIC
+$ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
+LogPrint "DEBUG: ip_debug: ${ip_debug}."
+
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)

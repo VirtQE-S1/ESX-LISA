@@ -185,21 +185,15 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}. and its power state $($cloneVM.PowerState)"
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Power on the clone vm.
-Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Powered on VM cloned ${cloneName} well."
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 
 
-LogPrint "DEBUG: Before wait for SSH."
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 # Wait for clone VM SSH ready
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH."
