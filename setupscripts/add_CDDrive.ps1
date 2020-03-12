@@ -84,9 +84,8 @@ $retVal = $Failed
 
 # VM is in powered off status, as a setup script to add CD driver.
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-
 $state = $vmObj.PowerState
-LogPrint"DEBUG: state: $state."
+LogPrint "DEBUG: state: $state"
 if ($state -ne "PoweredOff")
 {
     LogPrint "ERROR: VM power state should be powered off."
@@ -94,7 +93,7 @@ if ($state -ne "PoweredOff")
 }
 
 
-# Add CD driver
+# Add CD driver.
 $CDList =  Get-CDDrive -VM $vmObj
 $current_cd = $CDList.Length
 while ($current_cd -lt $cd_num)
@@ -108,19 +107,17 @@ while ($current_cd -lt $cd_num)
 # Check the CD drive add successfully
 $CDList =  Get-CDDrive -VM $vmObj
 $CDLength = $CDList.Length
-
 if ($CDLength -eq $cd_num)
 {
-    LogPrint "INFO: Add CD driver successfully, find $CDLength CD(s)"
+    LogPrint "INFO: Add CD driver successfully, find $CDLength CD(s)."
     $retVal = $Passed
 }
 else
 {
-    LogPrint "ERROR: Add CD driver failed in setup. CDLength: $CDLength"
+    LogPrint "ERROR: Add CD driver failed in setup. There are $CDLength CD(s)."
     DisconnectWithVIServer
     return $retVal
 }
 
 
-DisconnectWithVIServer
 return $retVal

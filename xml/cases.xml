@@ -359,7 +359,7 @@
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
-                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
+                <!-- suiteTest>ovt_snapshot_mount_twice</suiteTest -->
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
@@ -945,7 +945,7 @@
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <param>redhat_7_standard_version=open-vm-tools-10.3.10-2.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1229,10 +1229,10 @@
                 <param>redhat_7_lower_rpm=10.3.10/1.el7/x86_64/open-vm-tools-10.3.10-1.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=10.3.10/1.el7/x86_64/open-vm-tools-desktop-10.3.10-1.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-10.3.10-3.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.3.10/3.el8/x86_64/open-vm-tools-10.3.10-3.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=10.3.10/3.el8/x86_64/open-vm-tools-desktop-10.3.10-3.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.0.0/3.el8/x86_64/open-vm-tools-11.0.0-3.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=11.0.0/3.el8/x86_64/open-vm-tools-desktop-11.0.0-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1255,10 +1255,10 @@
                 <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.3.10-1.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=10.3.10/1.el7/x86_64/open-vm-tools-debuginfo-10.3.10-1.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-3.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=11.0.0/3.el8/x86_64/open-vm-tools-debuginfo-11.0.0-3.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.3.10-3.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.3.10/3.el8/x86_64/open-vm-tools-debuginfo-10.3.10-3.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-4.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=11.0.0/4.el8/x86_64/open-vm-tools-debuginfo-11.0.0-4.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_version=open-vm-tools-debuginfo-11.0.0-3.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.0.0/3.el8/x86_64/open-vm-tools-debuginfo-11.0.0-3.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

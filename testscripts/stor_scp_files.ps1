@@ -100,28 +100,25 @@ $retVal = $Failed
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Get VMB by Name
-$VMBName = $vmObj.Name.Split('-')
-$VMBName[-1] = "B"
-$VMBName = $VMBName -join "-"
+$vmBName = $vmName -replace "-A$","-B"
 $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $VMBName
-LogPrint "DEBUG: vmObjectB: $vmObjectB"
-
-
-# Start VMB
-Start-VM -VM $vmObjectB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM."
+if (-not $vmObjectB) {
+    LogPrint "ERROR: Unable to Get-VM with ${vmObjectB}."
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${vmObjectB}."
+
+
+# Start VMB
+$on = Start-VM -VM $vmObjectB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Confirm VMB SSH

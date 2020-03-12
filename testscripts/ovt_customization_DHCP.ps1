@@ -116,14 +116,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -132,89 +130,101 @@ if (-not $vmObj) {
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-LogPrint "DEBUG: DISTRO: $DISTRO"
+LogPrint "DEBUG: DISTRO: ${DISTRO}."
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
+LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
 
 
-#set the clone vm name
+# Set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
-LogPrint "the clone name is $cloneName"
+LogPrint "DEBUG: cloneName: ${cloneName}."
+
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
-
-#Clone the vm with new OSCustomization Spec
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
-
-LogPrint "INFO: clone vm done"
-
-#Refresh the new cloned vm
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-
-#Power on the clone vm
-Start-VM -VM $cloneName -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
+if ($null -eq $linuxSpec) {
+    LogPrint "ERROR: Create linuxspec failed."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Create linuxspec well."
+
+
+# Clone the vm with new OSCustomization Spec
+$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
+LogPrint "INFO: Complete clone operation. Below will check VM cloned."
+
+
+# Refresh the new cloned vm
+$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+if (-not $cloneVM) {
+    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Found the VM cloned - ${cloneName}."
+
+
+# Power on the clone vm
+LogPrint "INFO: Powering on $cloneName"
+$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
 
 
 # Wait for clone VM SSH ready
+LogPrint "INFO: Wait for SSH to confirm VM booting."
 if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
+    LogPrint "ERROR : Cannot start SSH."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 else {
-    LogPrint "INFO: Ready SSH"
+    LogPrint "INFO: Ready SSH."
 }
 
 
 # Get another VM IP addr
-$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
+$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer LogPrint "D"
+LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
 # Check the log for customization
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
 if ($null -eq $loginfo)
 {
-    Write-Host -F Red "failed: the customization gust failed with log $loginfo"
-    Write-Output "failed: the customization gust failed with log $loginfo"
+    LogPrint "ERROR: The customization gust failed with log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    Write-Host -F Red "Passed:  the customization gust passed with log $loginfo"
-    Write-Output "Passed:  the customization gust passed with log $loginfo"
+    LogPrint "INFO: The customization gust passed with log ${loginfo}."
 }
 
 
-#Delete the clone VM
+# Delete the clone VM
 $remove = RemoveVM -vmName $cloneName -hvServer $hvServer
 if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest"    
+    LogPrint "ERROR: Cannot remove cloned guest."    
     DisconnectWithVIServer
     return $Aborted
 }
+
 
 DisconnectWithVIServer
 return $retVal
