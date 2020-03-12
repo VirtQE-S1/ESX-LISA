@@ -152,7 +152,7 @@ $retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 #Install docker and start one network container on guest.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
+$sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
 if (-not $sts) {
     LogPrint "ERROR : YUM cannot install podman packages"
     DisconnectWithVIServer
