@@ -7,6 +7,7 @@
 ##
 ## Revision:
 ## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
+## v2.0.0 -ldu - 03/12/2020 - Update podman install command and modifiy the container registry config  file.
 ##
 ###############################################################################
 
@@ -151,7 +152,7 @@ $retVal = $Failed
 #
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-#Install docker and start one network container on guest.
+#Install podman and add docker.io to container registries config file.
 $sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
 if (-not $sts) {
     LogPrint "ERROR : YUM cannot install podman packages"
@@ -159,7 +160,7 @@ if (-not $sts) {
     return $Failed
 }
 
-#Run a container in guest
+#Run one network container in guest
 $sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
 if (-not $sts) {
     LogPrint "ERROR : run container nginx failed in guest"
