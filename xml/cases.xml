@@ -408,7 +408,6 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
-
                 <suiteTest>ovt_customization_DHCP</suiteTest>
                 <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>cloud-init_reboot_customization_static</suiteTest>

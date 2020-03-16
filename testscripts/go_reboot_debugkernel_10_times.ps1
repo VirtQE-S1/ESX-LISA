@@ -121,28 +121,30 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 ## Main Body
 ########################################################################################
-
 $retVal = $Failed
+
 
 # Install kerel-debug package in guest
 $kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
+LogPrint "DEBUG: kerneldebug_install: ${kerneldebug_install}."
+
+
+Start-Sleep -seconds 6
+
 
 # Check the kernel-debug installed successfully or not
 $kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
-Write-Host -F Red "DEBUG: kerneldebug_check: $kerneldebug_check"
-Write-Output "DEBUG: kerneldebug_check: $kerneldebug_check"
+LogPrint "DEBUG: kerneldebug_check: ${kerneldebug_check}."
 if ($null -eq $kerneldebug_check)
 {
-    Write-Output "ERROR: The kernel-debug installed failed in guest"
+    LogPrint "ERROR: The kernel-debug installed failed in the guest."
     return $Aborted
 }
-else
-{
-    Write-Output "ERROR: The kernel debug $kerneldebug_check installed successfully"
-}
 
-# Check the OS distro.Then change the grub file to change boot order.
+
+# Check the OS distro. Then change the grub file to change boot order.
 $OS = GetLinuxDistro $ipv4 $sshKey
+LogPrint "INFO: As VM's OS: ${OS}. Will take different methods to change boot order."
 if ($OS -eq "RedHat6")
 {
     # Change the boot sequence to debug kernel
@@ -155,43 +157,42 @@ else
     $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
 }
 
+
 # Reboot the guest 10 times.
 $round=0
 while ($round -lt 10)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
     Start-Sleep -seconds 6
-    # wait for vm to Start
     
     $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-    if ( $ssh -ne $true )
+    if ($ssh -ne $true)
     {
-    	Write-host -F Red "ERROR: Failed to start VM"
-    	Write-Output "ERROR: Failed to start VM"
+    	Write-Output "ERROR: Failed to start VM."
         return $Aborted
     }
     else
     {
         $current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r | grep debug"
-        Write-Host -F Red "INFO: After reboot the current kernel is $current_kernel"
-        Write-Output "INFO: After reboot the current kernel is $current_kernel"
+        LogPrint "INFO: After reboot the current kernel: ${current_kernel}."
         if ($null -eq $current_kernel)
         {
-            Write-Output "ERROR: The kernel-debug switch failed in guest"
+            LogPrint "ERROR: The kernel-debug has been installed but current kernel isn't kernel-debug but ${current_kernel}."
             return $Aborted
         }
     }
+
     $round=$round+1
-    Write-Host -F Red "INFO: The round is $round"
-    Write-Output "INFO: The round is $round"
+    LogPrint "INFO: The $round time(s) to reboot VM."
 }
+
 
 if ($round -eq 10)
 {
     $status = CheckCallTrace $ipv4 $sshKey 
     if (-not $status[-1]) { 
-        Write-Host -F Red "ERROR: Found $($status[-2]) in msg." 
-        Write-Output "ERROR: Found $($status[-2]) in msg." 
+        LogPrint "ERROR: Found $($status[-2]) in msg." 
     } 
     else { 
         LogPrint "INFO: NOT found Call Trace in VM msg." 
@@ -200,8 +201,7 @@ if ($round -eq 10)
 }
 else
 {
-    Write-Host -F Red "FAIL: The actual round is $round < 10 times rebooting"
-    Write-Output "FAIL: The actual round is $round < 10 times rebooting"
+    LogPrint "ERROR: The actual round: $round < 10 time(s)."
 }
 
 
