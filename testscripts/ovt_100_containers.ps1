@@ -5,6 +5,7 @@
 ## Revision:
 ## 	v1.0.0 - ldu - 07/28/2018 - Check guest log when 100 containers running.
 ## 	v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+##  v2.0.0 - ldu - 03/12/2020 - Update podman install command and modifiy the container registry config  file.
 ########################################################################################
 
 
@@ -132,8 +133,8 @@ if ( $DISTRO -eq "RedHat6" ){
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 
-# Install docker and start one network container on guest.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install -y podman" 
+# Install podman and add docker.io to container registries config file.
+$sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
 if (-not $sts) {
     LogPrint "ERROR : YUM install podman packages failed"
     DisconnectWithVIServer
@@ -146,7 +147,7 @@ for ($i = 0; $i -le 100; $i++)
 {
     $sts = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
     if (-not $sts) {
-        LogPrint "ERROR : run container centos failed in guest"
+        LogPrint "ERROR : run container failed in guest"
         DisconnectWithVIServer
         return $Failed
     }

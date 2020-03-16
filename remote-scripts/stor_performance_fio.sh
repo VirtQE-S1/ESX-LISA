@@ -12,7 +12,7 @@
 ## v1.0.0 - ldu - 8/20/2018 - Build the script
 ## v2.0.0 - ldu - 04/02/2019 - add new function, could benchmark test result.
 ## v2.1.0 - ldu - 02/06/2020 - update the test log name and folder.
-##
+## v2.2.0 - ldu - 03/12/2020 - update test paramter for fio and change the benchmark result file to chmod 666.
 ###############################################################################
 
 dos2unix utils.sh
@@ -184,7 +184,7 @@ else
 fi
 
 # Execute fio test
-/usr/bin/python ./RunFioTest.py --numjobs 16 --rw_list read,write,rw  --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
+/usr/bin/python ./RunFioTest.py --numjobs 1 --rw_list read,write,rw  --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
 	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
@@ -195,7 +195,7 @@ else
 	UpdateSummary "fio run successfully."
 fi
 
-/usr/bin/python ./RunFioTest.py --numjobs 1 --rw_list randread,randwrite,randrw --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path
+/usr/bin/python ./RunFioTest.py --numjobs 16 --rw_list randread,randwrite,randrw --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
 	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
@@ -230,6 +230,7 @@ if [ $? -ne 0 ]; then
 	SetTestStateFailed
 	exit 1
 else
+    chmod 666 /mnt/benchmark/*
 	LogMsg "Test result benchmark successfully, basepath is $basepath and path is $path."
 	UpdateSummary "Test result benchmark successfully, basepath is $basepath and path is $path."
 	SetTestStateCompleted
