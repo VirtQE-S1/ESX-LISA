@@ -27,10 +27,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 1
@@ -89,13 +87,11 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
 # Check host version
-$skip = SkipTestInHost $hvServer "6.0.0"
+$skip = SkipTestInHost $hvServer "6.0.0","6.5.0"
 if($skip)
 {
     return $Skipped

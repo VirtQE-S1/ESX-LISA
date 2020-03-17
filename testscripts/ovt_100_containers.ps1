@@ -135,6 +135,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 # Install podman and add docker.io to container registries config file.
 $sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
+LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
     LogPrint "ERROR : YUM install podman packages failed"
     DisconnectWithVIServer
@@ -145,12 +146,16 @@ if (-not $sts) {
 # Run 100 containers in guest.
 for ($i = 0; $i -le 100; $i++)
 {
-    $sts = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
-    if (-not $sts) {
-        LogPrint "ERROR : run container failed in guest"
+    $run = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
+	LogPrint "DEBUG: run: ${run}."
+    if (-not $run) {
+        LogPrint "ERROR: Run container failed in guest."
         DisconnectWithVIServer
         return $Failed
     }
+
+	Start-Sleep -S 6
+
 }
 
 
@@ -161,11 +166,10 @@ Start-Sleep -S 30
 $calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /var/log/vmware-vmsvc.log | grep 'NIC limit (16) reached'"
 if ($null -eq $calltrace_check)
 {
-    Write-host -F Red "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached log found."
-    Write-Output "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached found."
+    LogPrint "INFO: After cat file /var/log/vmware-vmsvc.log, NO NIC limit (16) reached found."
 }
 else{
-    Write-Output "ERROR: After, FOUND NIC limit (16) reached in /var/log/vmware-vmsvc.log."
+    LogPrint "ERROR: Found NIC limit (16) reached in /var/log/vmware-vmsvc.log!"
     return $Failed
 }
 
@@ -173,14 +177,12 @@ else{
 # Check the call trace in dmesg file
 $status = CheckCallTrace $ipv4 $sshKey
 if (-not $status[-1]) {
-    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
-    Write-Output "ERROR: Found $($status[-2]) in msg."
+    LogPrint "ERROR: Found $($status[-2]) in msg."
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    Write-Host -F Red "INFO: NO call trace found after 100 containers."
-    Write-Output "INFO: NO call trace found after 100 containers."
+    LogPrint "INFO: NO call trace found after 100 containers."
     $retVal = $Passed
 }
 
