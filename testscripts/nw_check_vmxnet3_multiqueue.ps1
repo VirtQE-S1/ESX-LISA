@@ -1,9 +1,9 @@
-#######################################################################################
+########################################################################################
 ## Description:
 ##  Check the VMXNET3 multiqueue support
 ## Revision:
 ##  v1.0.0 - xinhu - 11/15/2019 - Build the script
-#######################################################################################
+########################################################################################
 
 
 <#
@@ -36,10 +36,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "FAIL: VM name cannot be null!"
     exit 1
@@ -117,15 +115,17 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-#######################################################################################
+########################################################################################
 ## Main Body
-#######################################################################################
+########################################################################################
 $retValdhcp = $Failed
-# Define the network queues
+
+
+# Define the network queues.
 $queues = "rx-0","rx-1","rx-2","rx-3","tx-0","tx-1","tx-2","tx-3"
 
 
-# Function to stop VMB and disconnect with VIserver
+# Function to stop VMB and disconnect with VIserver.
 Function StopVMB($hvServer,$vmNameB)
 {
     $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
@@ -134,37 +134,35 @@ Function StopVMB($hvServer,$vmNameB)
 }
 
 
-# Function to check network queues
+# Function to check network queues.
 Function CheckQueues($sshKey,$ip,$NIC,$queues)
 {
-    Write-Host -F Green "INFO: Start to check queues of ${ip}"
-    Write-Output "INFO: Start to check queues of ${ip}" 
+    LogPrint "INFO: Start to check queues of ${ip}." 
     $result = bin\plink.exe -i ssh\${sshKey} root@${ip} "ls /sys/class/net/$NIC/queues"
     $compare = Compare-Object $result $queues -SyncWindow 0
     if ($compare -ne $null)
     {
-        Write-Host -F Red "ERROR: the queues of ${ipv4} is $result , not equal to $queues"
-        Write-Output "ERROR: the queues of ${ipv4} is $result , not equal to $queues"
+        LogPrint "ERROR: The queues of ${ipv4} is $result , not equal to ${queues}."
         return $false
     }
+
     return $true
 }
 
 
-# Function to install netperf on vms
+# Function to install netperf on vms.
 Function InstalNetperf(${sshKey},${ip})
 {
-    Write-Host -F Green "INFO: Start to install netperf on ${ip}"
-    Write-Output "INFO: Start to install netperf on ${ip}"
+    LogPrint "INFO: Start to install netperf on ${ip}"
     # Current have a error "don't have command makeinfo" when install netperf, So cannot judge by echo $?
     $result = bin\plink.exe -i ssh\${sshKey} root@${ip} "yum install -y automake && git clone https://github.com/HewlettPackard/netperf.git && cd netperf && ./autogen.sh && ./configure && make; make install; netperf -h; echo `$?"
-    Write-Host -F Red "DEBUG: Log of installing netperf: $result"
+    LogPrint "DEBUG: result: $result"
     if ( $result[-1] -eq 127)
     {
-        Write-Host -F Red "ERROR: Install netperf failed"
-        Write-Output "ERROR: Install netperf failed"
+        LogPrint "ERROR: Install netperf failed."
         return $false
     }
+
     return $true
 }
 
@@ -172,38 +170,39 @@ Function InstalNetperf(${sshKey},${ip})
 # Prepare VMB
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $vmNameB = $vmName -creplace ("-A$"),"-B"
-Write-Host -F Green "INFO: RevertSnap $vmNameB..."
-Write-Output "INFO: RevertSnap $vmNameB..."
+LogPrint "INFO: RevertSnap ${vmNameB}."
 $result = RevertSnapshotVM $vmNameB $hvServer
 if ($result[-1] -ne $true)
 {
-    Write-Host -F Red "ERROR: RevertSnap $vmNameB failed"
-    Write-Output "ERROR: RevertSnap $vmNameB failed"
+    LogPrint "ERROR: RevertSnap $vmNameB failed."
     DisconnectWithVIServer
     return $Aborted
 }
 
-Write-Host -F Red "INFO: set vCpuNum = 4."
+
+LogPrint "INFO: set vCpuNum = 4."
 $State = Set-VM -VM $vmNameB -NumCpu $numCPUs -Confirm:$false
 if (-not $?) {
-    Write-Host -F Red "Aborted: Failed to set $vmNameB vCpuNum = 4."
-    Write-Output "Aborted: Failed to set $vmNameB vCpuNum = 4."
+    LogPrint "ERROR: Failed to set $vmNameB vCpuNum = 4."
     DisconnectWithVIServer
     return $Aborted
 }
 
+
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-Write-Host -F Green "INFO: Starting $vmNameB..."
-Write-Output "INFO: Starting $vmNameB..."
-Start-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+LogPrint "INFO: Starting ${vmNameB}."
+
+
+$on = Start-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 $ret = WaitForVMSSHReady $vmNameB $hvServer ${sshKey} 300
-if ( $ret -ne $true )
+if ($ret -ne $true)
 {
-    write-host -F Red "Failed: Failed to start VM."
-    Write-Output "Failed: Failed to start VM."
+    LogPrint "ERROR: Failed to start VM."
     DisconnectWithVIServer
     return $Aborted
 }
+
+
 # Refresh status
 $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 $IPB = GetIPv4ViaPowerCLI $vmNameB $hvServer
@@ -211,22 +210,23 @@ $IPB = GetIPv4ViaPowerCLI $vmNameB $hvServer
 
 # Get NIC name of VMs
 $NIC = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ls /sys/class/net/ | grep ^e[tn][hosp]"
-Write-Host -F Green "INFO: Get NIC name $NIC"
-Write-Output "INFO: Get NIC name $NIC"
+LogPrint "INFO: Get NIC name $NIC"
 
 
 # Check network queues
 $CheckA = CheckQueues ${sshKey} ${ipv4} $NIC $queues
 if ($CheckA[-1] -ne $true)
 {
-    Write-Output "ERROR: Check network queues: $CheckA"
+    LogPrint "ERROR: Check network queues: $CheckA"
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
+
+
 $CheckB = CheckQueues ${sshKey} ${IPB} $NIC $queues
 if ($CheckB[-1] -ne $true)
 {
-    Write-Output "ERROR: Check network queues: $CheckB"
+    LogPrint "ERROR: Check network queues: $CheckB"
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
@@ -236,40 +236,52 @@ if ($CheckB[-1] -ne $true)
 $IsInsA = InstalNetperf ${sshKey} ${ipv4}
 if ($IsInsA[-1] -ne $true)
 {
-    Write-Output "ERROR: Check network queues: $IsInsA"
+    LogPrint "ERROR: Check network queues: $IsInsA"
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
+
 $IsInsB = InstalNetperf ${sshKey} ${IPB}
 if ($IsInsB[-1] -ne $true)
 {
-    Write-Output "ERROR: Check network queues: $IsInsB"
+    LogPrint "ERROR: Check network queues: $IsInsB"
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
 
 
 # Start to netperf from VMB to VMA(as server)
-$StarSer = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "netserver;echo `$?"
-if ($StarSer[-1] -ne 0)
+$serer = "Unknown ERROR"
+$server = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "netserver;echo `$?"
+LogPrint "DEBUG: server: ${server}."
+if ($server[-1] -ne 0)
 {
-    Write-Host -F Red "ERROR: Make ${ipv4} as netserver Failed: $StarSer"
-    Write-Output "ERROR: Make ${ipv4} as netserver Failed;  $StarSer"
+    LogPrint "ERROR: Make ${ipv4} as netserver Failed as ${server}."
     StopVMB $hvServer $vmNameB
     return $Aborted
 }
-$time=Get-date
-Write-Host -F Green "DEBUG: Start to netperf $time"
+
+
+# Run netperf.
+$stime=Get-date
+LogPrint "DEBUG: stime: ${stime}."
+
 bin\plink.exe -i ssh\${sshKey} root@${IPB} "netperf -H ${ipv4} -l 2700"
-$time=Get-date
-Write-Host -F Green "DEBUG: Finish netperf $time"
+
+$etime=Get-date
+LogPrint "DEBUG: etime: ${etime}."
+
+
+# Check interrupts.
 $Checkqueues = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/interrupts | grep $NIC"
+LogPrint "DEBUG: Checkqueues: ${Checkqueues}"
 if ($Checkqueues.count -ge 4)
 {
     $retValdhcp = $Passed
 }
-Write-Host -F Green "INFO: $Checkqueues"
-Write-Output "INFO: $Checkqueues"
+
 
 StopVMB $hvServer $vmNameB
+
+
 return $retValdhcp

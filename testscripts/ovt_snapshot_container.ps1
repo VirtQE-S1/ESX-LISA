@@ -1,15 +1,13 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Take snapshot when container running.
-##
-###############################################################################
+## 	Take snapshot when container running.
 ##
 ## Revision:
-## V1.0 - ldu - 07/25/2018 - Take snapshot when container running.
-## v2.0.0 -ldu - 03/12/2020 - Update podman install command and modifiy the container registry config  file.
-##
-###############################################################################
+## 	v1.0.0 - ldu - 07/25/2018 - Take snapshot when container running.
+## 	v2.0.0 - ldu - 03/12/2020 - Update podman install command.
+## 	v2.0.1 - ldu - 03/12/2020 - Modifiy the container registry config file.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -37,11 +35,9 @@
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -59,14 +55,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -86,9 +80,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -123,9 +116,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -133,78 +125,81 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
-#Skip RHEL6, as not support OVT on RHEL6.
+########################################################################################
+$retVal = $Failed
+
+
+# Skip RHEL6, as not support OVT on RHEL6.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 if ( $DISTRO -eq "RedHat6" ){
     DisconnectWithVIServer
     return $Skipped
 }
 
-$retVal = $Failed
 
-#
 # Get the VM
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-#Install podman and add docker.io to container registries config file.
+
+# Install podman and add docker.io to container registries config file.
 $sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
+LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
-    LogPrint "ERROR : YUM cannot install podman packages"
+    LogPrint "ERROR: YUM cannot install podman packages."
     DisconnectWithVIServer
     return $Failed
 }
 
-#Run one network container in guest
-$sts = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
+
+# Run one network container in guest.
+$run = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
+LogPrint "DEBUG: run: ${run}."
 if (-not $sts) {
-    LogPrint "ERROR : run container nginx failed in guest"
+    LogPrint "ERROR: run container nginx failed in guest."
     DisconnectWithVIServer
     return $Failed
 }
 
-# Take snapshot and select quiesce option
+
+# Take snapshot and select quiesce option.
 $snapshotTargetName = "snapcontainer"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
-write-host -f red "$newSPName"
+LogPrint "DEBUG: newSPName: ${newSPName}."
 if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        Write-Host -F Red "The snapshot $newSPName with Quiesce is created successfully"
-        Write-Output "The snapshot $newSPName with Quiesce is created successfully"
+        LogPrint "INFO: The snapshot $newSPName with Quiesce is created successfully"
         $retVal = $Passed
     }
     else
     {
-        Write-Output "The snapshot $newSPName with Quiesce is created Failed"
+        LogPrint "INFO：The snapshot $newSPName with Quiesce is created Failed"
     }
 }
-sleep 3
-#
-# Remove SP created
-#
+
+
+Start-Sleep -S 6
+
+
+# Remove SP created.
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-sleep 3
 $snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
+LogPrint "DEBUG: snapshots: ${snapshots}."
 if ($snapshots -eq $null)
 {
-    Write-Host -F Red "The snapshot has been removed successfully"
-    Write-Output "The snapshot has been removed successfully"
+    LogPrint "INFO: The snapshot has been removed successfully."
 }
 else
 {
-    Write-Host -F Red "The snapshot removed failed"
-    Write-Output "The snapshot removed failed"
+    LogPrint "INFO: The snapshot removed failed."
     return $Aborted
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

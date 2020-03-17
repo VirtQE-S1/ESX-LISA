@@ -27,10 +27,8 @@
 #>
 
 
-param([string] $vmName, [string] $hvServer, [string] $testParams)
-
-
 # Checking the input arguments
+param([string] $vmName, [string] $hvServer, [string] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
