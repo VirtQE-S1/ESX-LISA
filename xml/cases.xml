@@ -99,7 +99,8 @@
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>                                                                                
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_check_installation_info</suiteTest>                                                                                
             </suiteTests>
         </suite>
         <suite>
@@ -437,6 +438,7 @@
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_installation_info</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -467,6 +469,20 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>ovt_check_installation_info</testName>
+            <testID>ESX-OVT-038</testID>
+            <testScript>ovt_check_installation_info.sh</testScript>
+            <files>remote-scripts/ovt_check_installation_info.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186495</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>kdump_trigger_nfs</testName>
             <testID>ESX-KDUMP-06</testID>
