@@ -1,9 +1,9 @@
-#######################################################################################
+########################################################################################
 ## Description:
 ##  Trigger kernel core dump through NFS under network traffic
 ## Revision:
-##  v1.0.0 - xinhu - 12/03/2019 - Build the script
-#######################################################################################
+##  v1.0.0 - xinhu - 12/03/2019 - Build the script.
+########################################################################################
 
 
 <#
@@ -36,10 +36,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "FAIL: VM name cannot be null!"
     exit 1
@@ -121,14 +119,15 @@ $retValdhcp = $Failed
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
+
+
 # Current version will skip the RHEL6.x.x
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }

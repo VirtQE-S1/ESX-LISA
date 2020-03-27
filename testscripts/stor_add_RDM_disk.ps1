@@ -39,11 +39,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -107,15 +104,12 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -123,38 +117,29 @@ if (-not $vmObj) {
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
-Write-Output "DEBUG: DISTRO: $DISTRO"
+LogPrint "DEBUG: DISTRO: ${DISTRO}."
 if (-not $DISTRO) {
-    Write-Host -F Red "ERROR: Guest OS version is NULL"
-    Write-Output "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
-} else{
-    Write-Host -F Red "INFO: Guest OS version is $DISTRO"
-    Write-Output "INFO: Guest OS version is $DISTRO"
 }
 
 
-
-# Different Guest DISTRO, different modules
+# Different Guest DISTRO, different modules.
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint"ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
 
 
-$scripts = "stor_add_disk_ide.sh"
 # Run remote test scripts
+$scripts = "stor_add_disk_ide.sh"
 RunRemoteScript $scripts | Write-Output -OutVariable sts
 if( -not $sts[-1] ){
-    Write-Host -F Red "ERROR: Add RDM disk test script  failed"
-    Write-Output "ERROR: Add RDM disk test script failed"
+    LogPrint "ERROR: Add RDM disk test script failed"
 }  else {
-    Write-Host -F Red "Info : Add RDM disk test script completed"
-    Write-Output "Info : Add RDM disk test script completed"
+    LogPrint "INFO: Add RDM disk test script completed"
     $retVal = $Passed
 }
 

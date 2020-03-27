@@ -38,10 +38,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -89,6 +87,7 @@ foreach ($p in $params)
 		default			{}
     }
 }
+
 
 # Check all parameters
 if (-not $rootDir)
@@ -149,8 +148,8 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
-
 				  
+
 ########################################################################################
 # Main Body
 ########################################################################################
@@ -158,18 +157,18 @@ $retVal = $Failed
 
 
 # kdump_config.sh: configures kdump.config / grub
-LogPrint "INFO: Start to execute kdump_config.sh in VM"
+LogPrint "INFO: Start to execute kdump_config.sh in VM."
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && sleep 1 && dos2unix kdump_config.sh && sleep 1 && chmod u+x kdump_config.sh && sleep 1 && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
-	LogPrint "ERROR: Failed to execute kdump_config.sh in VM"
+	LogPrint "ERROR: Failed to execute kdump_config.sh in VM."
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 
 # Rebooting the VM to apply the kdump settings
-LogPrint "INFO: Start to reboot VM after kdump and grub changed"
+LogPrint "INFO: Start to reboot VM after kdump and grub changed."
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
 
@@ -183,7 +182,7 @@ Start-Sleep -S 120
 $timeout = 180
 while ($timeout -gt 0)
 {
-	LogPrint "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
+	LogPrint "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves ${timeout}."
 	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_prepare.sh && chmod u+x kdump_prepare.sh && ./kdump_prepare.sh"
 	if ($result)
 	{
