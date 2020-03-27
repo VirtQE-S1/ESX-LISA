@@ -1,15 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Check the scsi timeout value is 180.
-##
-###############################################################################
+## 	Check the scsi timeout value is 180.
 ##
 ## Revision:
-## V1.0 - ldu - 03/05/2018 - Check the scsi timeout value is 180.
-##
-##
-###############################################################################
+## 	v1.0.0 - ldu - 03/05/2018 - Check the scsi timeout value is 180.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -36,11 +32,9 @@
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -58,14 +52,11 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -87,9 +78,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -124,27 +114,24 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
+
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 
-#
+
 # OVT is skipped in RHEL6
-#
 $OS = GetLinuxDistro  $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
@@ -152,24 +139,23 @@ if ($OS -eq "RedHat6")
     return $Skipped
 }
 
+
 # Check the scsi timeout value in two files.
-$scsi_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/block/sda/device/timeout |grep 180"
-Write-Host -F Red "/sys/block/sda/device/timeout is $scsi_timeout"
+$scsi_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/block/sda/device/timeout | grep 180"
+LogPrint "DEBUG: scsi_timeout: ${scsi_timeout}."
 
-$udev_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180"
-Write-Host -F Red "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules |grep 180 is $udev_timeout"
 
+$udev_timeout = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /usr/lib/udev/rules.d/99-vmware-scsi-udev.rules | grep 180"
+LogPrint "DEBUG: udev_timeout: ${udev_timeout}."
 if ($udev_timeout -and $scsi_timeout)
 {
-    Write-Output "Passed:The scsi timeout vale is $scsi_timeout and $udev_timeout."
+    LogPrint "INFO: The scsi timeout values are ${scsi_timeout} and ${udev_timeout}."
     $retVal = $Passed
 }
 else{
-    Write-Output "Failed:The scsi timeout vale is not 180,The actual vale is $scsi_timeout and $udev_timeout."
+    Write-Output "INFO: The scsi timeout values are not 180, The actual values are $scsi_timeout and ${udev_timeout}."
 }
 
 
 DisconnectWithVIServer
-
 return $retVal
-
