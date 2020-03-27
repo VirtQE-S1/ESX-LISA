@@ -185,7 +185,7 @@ $ipef3URL = "http://download.eng.bos.redhat.com/brewroot/vol/rhel-6/packages/ipe
 
 
 # Specify dst host
-$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
+$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7 -Host7_0 $dstHost7_0
 if ($null -eq $dstHost) {
     LogPrint "ERROR: Cannot find required Host"    
     DisconnectWithVIServer

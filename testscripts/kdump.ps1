@@ -158,18 +158,18 @@ $retVal = $Failed
 
 
 # kdump_config.sh: configures kdump.config / grub
-LogMsg 0 "INFO: Start to execute kdump_config.sh in VM"
+LogPrint "INFO: Start to execute kdump_config.sh in VM"
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && sleep 1 && dos2unix kdump_config.sh && sleep 1 && chmod u+x kdump_config.sh && sleep 1 && ./kdump_config.sh $crashkernel"
 if (-not $result)
 {
-	LogMsg 0 "ERROR: Failed to execute kdump_config.sh in VM"
+	LogPrint "ERROR: Failed to execute kdump_config.sh in VM"
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 
 # Rebooting the VM to apply the kdump settings
-LogMsg 0 "INFO: Start to reboot VM after kdump and grub changed"
+LogPrint "INFO: Start to reboot VM after kdump and grub changed"
 bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
 
@@ -183,16 +183,16 @@ Start-Sleep -S 120
 $timeout = 180
 while ($timeout -gt 0)
 {
-	LogMsg 0 "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
+	LogPrint "INFO: Start to execute kdump_prepare.sh in VM, timeout leaves [ $timeout ]"
 	$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix kdump_prepare.sh && chmod u+x kdump_prepare.sh && ./kdump_prepare.sh"
 	if ($result)
 	{
-		LogMsg 0  "INFO: Execute kdump_prepare.sh to VM"
+		LogPrint  "INFO: Execute kdump_prepare.sh to VM"
 		break
 	}
 	else
 	{
-		LogMsg 0 "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
+		LogPrint "WARNING: Failed to execute kdump_prepare.sh in VM, try again"
 		Start-Sleep -S 18
 		$timeout = $timeout - 18
 		if ($timeout -eq 0)
@@ -207,7 +207,7 @@ while ($timeout -gt 0)
 
 
 # Trigger the kernel panic with subprocess
-LogMsg 0 "INFO: Start a new process to triger kdump"
+LogPrint "INFO: Start a new process to triger kdump"
 $tmpCmd = "echo 1 > /proc/sys/kernel/sysrq; echo c > /proc/sysrq-trigger 2>/dev/null &"
 Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${tmpCmd}" -WindowStyle Hidden
 
@@ -222,23 +222,23 @@ Start-Sleep -S 60
 $timeout = 180
 while ($timeout -gt 0)
 {
-	LogMsg 0 "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"
+	LogPrint "INFO: Start to check vmcore, maybe vmcore is not ready, timeout leaves [ $timeout ]"
 	
 	$ret = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /var/crash/ -name vmcore -type f -size +10M"
 	if ($null -ne $ret)
 	{
-		LogMsg 0 "INFO: Generates vmcore in VM"
+		LogPrint "INFO: Generates vmcore in VM"
 		$retVal = $Passed
 		break	
 	}
 	else
 	{
-		LogMsg 0 "WARNING: Failed to get vmcore from VM, try again"
+		LogPrint "WARNING: Failed to get vmcore from VM, try again"
 		Start-Sleep -S 6
 		$timeout = $timeout - 6
 		if ($timeout -eq 0)
 		{
-			LogMsg 0 "FAIL: After timeout, can't get vmcore"
+			LogPrint "FAIL: After timeout, can't get vmcore"
 			DisconnectWithVIServer			
 			$retVal = $Failed
 		}

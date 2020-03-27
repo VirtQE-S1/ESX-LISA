@@ -33,10 +33,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -112,117 +110,106 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with $vmName."
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
 
 
-#Get boot disk and UUID
+# Get boot disk.
 $command = "df /boot | grep boot | awk '{print `$1}'"
 $bootDisk = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+LogPrint "DEBUG: bootDisk: ${bootDisk}."
 if ($null -eq $bootDisk)
 {
-    Write-Host -F Red " Failed: Failed get the boot disk, $bootDisk"
-    Write-Output " Failed: Failed get the boot disk, $bootDisk"
+    LogPrint "ERROR: Failed get the boot disk, ${bootDisk}."
     return $Aborted
 }
 else
 {
-    Write-Host -F Red " Passed:  the boot disk for guest is $bootDisk"
-    Write-Output " Passed:   the boot disk for guest is $bootDisk"
+    LogPrint "INFO: The boot disk for guest is ${bootDisk}."
 }    
 
-#Get boot disk's UUID
+
+# Get boot disk's UUID.
 $command = "blkid $bootDisk |awk '{print `$2}'"
 $uuid = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+LogPrint "DEBUG: uuid: ${uuid}."
 if ($null -eq $uuid)
 {
-    Write-Host -F Red " Failed:  the boot disk's UUID is $uuid"
-    Write-Output " Failed: the boot disk's UUID is $uuid"
+    LogPrint "ERROR: the boot disk's UUID is ${uuid}."
     return $Aborted
 }
 else
 {
-    Write-Host -F Red " Passed: the boot disk's UUID is $uuid"
-    Write-Output " Passed:  the boot disk's UUID is $uuid"
+    LogPrint "INFO: The boot disk's UUID is ${uuid}."
 }  
 
-#cofigure fips enable in guest
+
+# Cofigure fips enable in guest.
 $Command = "yum install dracut-fips dracut-fips-aesni -y && dracut -v -f && grubby --update-kernel=ALL --args='boot=$uuid' && grubby --update-kernel=ALL --args='fips=1'"
 $status = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+LogPrint "DEBUG: status: ${status}."
 if (-not $status) 
 {
-    LogPrint "ERROR : configure fips commands failed"
+    LogPrint "ERROR: Configure fips commands failed."
     $retVal = $Aborted
 }
 else
 {
-    LogPrint "Pass : configure fips commands passed"
+    LogPrint "INFO: Configure fips commands passed."
 }
 
-#reboot cloned guest
+
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
 
 
 # Sleep for seconds to wait for the VM stopping firstly
 Start-Sleep -seconds 6
 
+
 # Wait for the VM booting
 $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ($ret -eq $true)
+if ($ret -ne $true)
 {
-    Write-Host -F Red "PASS: Complete the rebooting"
-    Write-Output "PASS: Complete the rebooting"
-}
-else
-{
-    Write-Host -F Red "FAIL: The rebooting failed"
-    Write-Output "FAIL: The rebooting failed"
-    RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
 
-#Check the fips value after reboot guest
+
+# Check the fips value after reboot guest.
 $fips = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/sys/crypto/fips_enabled"
+LogPrint "DEBUG: fips: ${fips}."
 if ($fips -eq "1")
 {
-    Write-Host -F Red " passed, the fips enabled with  /proc/sys/crypto/fips_enabled  $fips"
-    Write-Output " passed, the fips enabled with fips  /proc/sys/crypto/fips_enabled $fips"
+    LogPrint "INFO: The fips enabled with fips  /proc/sys/crypto/fips_enabled $fips"
     $retVal = $Passed
 }
 else
 {
-    
-    Write-Host -F Red " Failed:  fips value is $fips"
-    Write-Output " Failed: fips value is  $fips"
+    LogPrint "ERROR: fips value is  $fips"
     return $Failed
 }    
 

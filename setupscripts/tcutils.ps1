@@ -50,11 +50,9 @@ New-Variable Aborted             -value "Aborted"             -option ReadOnly
 New-Variable Failed              -value "Failed"              -option ReadOnly
 
 
-###############################################################################
-#
-# Import VMware Powershell module
-#
-###############################################################################
+########################################################################################
+# PowerCLIImport
+########################################################################################
 function PowerCLIImport () {
    <#
     .Description
@@ -81,7 +79,7 @@ function PowerCLIImport () {
 
 
 ########################################################################################
-# Connect to VI Server
+# ConnectToVIServer
 ########################################################################################
 function ConnectToVIServer ([string] $visIpAddr,
                             [string] $visUsername,
@@ -171,7 +169,7 @@ function ConnectToVIServer ([string] $visIpAddr,
 
 
 ########################################################################################
-# Disconnect with VI Server
+# DisconnectWithVIServer
 ########################################################################################
 function DisconnectWithVIServer ()
 {
@@ -277,11 +275,9 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 }
 
 
-#####################################################################
-#
+########################################################################################
 # GetFileFromVM()
-#
-#####################################################################
+########################################################################################
 function GetFileFromVM([String] $ipv4, [String] $sshKey, [string] $remoteFile, [string] $localFile)
 {
     <#
@@ -421,11 +417,10 @@ function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer)
 }
 
 
-#######################################################################
-#
+
+########################################################################################
 # GetIPv4()
-#
-#######################################################################
+########################################################################################
 function GetIPv4([String] $vmName, [String] $hvServer)
 {
     <#
@@ -1300,11 +1295,9 @@ function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
 }
 
 
-#######################################################################
-#
-# Check modules in vm.
-#
-#######################################################################
+#######################################################################################
+# CheckModule
+#######################################################################################
 function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
 {
     <#
@@ -1365,11 +1358,9 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
 }
 
 
-########################################################################
-#
+#######################################################################################
 # ConvertStringToDecimal()
-#
-########################################################################
+#######################################################################################
 function ConvertStringToDecimal([string] $str)
 {
     $uint64Size = $null
@@ -1403,11 +1394,9 @@ function ConvertStringToDecimal([string] $str)
 }
 
 
-########################################################################
-#
+#######################################################################################
 # LogPrint()
-#
-########################################################################
+#######################################################################################
 function LogPrint([string] $msg) {
 
     $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
@@ -1430,13 +1419,9 @@ function LogPrint([string] $msg) {
 }
 
 
-########################################################################
-# 
-# Mainly use for two guest test case, help user to revert snapshot of Guest-B
-#
+#######################################################################################
 # RevertSnapshotVM()
-#
-########################################################################
+#######################################################################################
 function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
     <#
     .Synopsis
@@ -1549,13 +1534,9 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 }
 
 
-########################################################################
-# 
-# Add a new SR-IOV nic
-#
+#######################################################################################
 # AddSrIOVNIC()
-#
-########################################################################
+#######################################################################################
 function AddSrIOVNIC { 
     Param(
         [String] $vmName, 
@@ -1950,9 +1931,19 @@ function AddPVrdmaNIC {
     try {
         # Get Switch INFO
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
-    
-        # This is hard code DPortGroup Name (6.0 6.5 6.7) This may change
+        LogPrint "DEBUG: DVS: ${DVS}."
+        if (-not $DVS) {
+        Write-ERROR -Message "ERROR: Get VDSwitch failed." -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+        }
+
+        # Hard code DPortGroup Name (6.0 6.5 6.7) This may change
         $PG = $DVS | Get-VDPortgroup -Name "DPortGroup"
+        LogPrint "DEBUG: PG: ${PG}."        
+        if (-not $PG) {
+        Write-ERROR -Message "ERROR: Get port group failed." -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+        }
 
         # Add new nic into config file
         $Spec = New-Object VMware.Vim.VirtualMachineConfigSpec
@@ -1976,17 +1967,16 @@ function AddPVrdmaNIC {
         $ERRORMessage = $_ | Out-String
         LogPrint "ERROR: RDMA config ERROR, $ERRORMessage"
         return $false
-    } 
+    }
+
     $retVal = $true
     return $retVal
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # AddNVMeDisk()
-#
-#######################################################################
+#######################################################################################
 
 function AddNVMeDisk {
     param (
@@ -2195,10 +2185,9 @@ function FindAllNewAddNIC {
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # DisableMemoryReserve()
-# #######################################################################
+# #####################################################################################
 
 function DisableMemoryReserve {
     param (
@@ -2254,63 +2243,56 @@ function DisableMemoryReserve {
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # FindDstHost()
-#
-#######################################################################
+#######################################################################################
 function FindDstHost {
     param (
         [String] $hvServer,
-        [Parameter(Mandatory = $false)] [String] $Host6_0,
         [Parameter(Mandatory = $false)] [String] $Host6_5,
-        [Parameter(Mandatory = $false)] [String] $Host6_7
+        [Parameter(Mandatory = $false)] [String] $Host6_7,
+        [Parameter(Mandatory = $false)] [String] $Host7_0
     )    
-       <#
+    <#
     .Synopsis
         Find Dest Host Address
     .Description
-        Find Dest Host Address from input ESXi 6.7,6.5,6.0 address set
+        Find Dest Host Address from input ESXi 7.0,6.7,6.5 address set
     .Parameter vmName
         Name of the VM
     .Parameter hvServer
         Host of VM
-    .Parameter Host6_0
-        Address set in EXSi 6.0. such as "10.73.196.95,10.73.196.97"
     .Parameter Host6_5
-        Address set in EXSi 6.5. such as "10.73.196.95,10.73.196.97"
+        Address set in EXSi 6.5. such as "10.73.196.230,10.73.196.191"
     .Parameter Host6_7
         Address set in EXSi 6.7. such as "10.73.196.95,10.73.196.97"
+    .Parameter Host7_0
+        Address set in EXSi 7.0. such as "10.73.196.33,10.73.196.39"        
     .Outputs
         IP address string
     .Example
         FindDstHost -vmName $vmName -hvServer $hvServer -Host6_0 $dstHost6_0 -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
     #> 
 
-
     # Get Host version
     $vm_host = Get-VMHost -Name $hvServer
     $version = $vm_host.Version
 
-
-    # Help to setup amd 6.7 server
+    # Help to setup amd 7.0 server
     $vmHost = Get-VMHost -Name $hvServer  
     # This may fail, try to delete -V2 param Current only support one card
     $esxcli = Get-EsxCli -VMHost $vmHost -V2
     # Get cpu info
     $cpuInfo = $esxcli.Hardware.cpu.list.Invoke() | Select-Object -ExpandProperty "Brand" -First 1
-
-
     # Reset dstHost6_7 if host is AMD
     if ($cpuInfo -like "*amd*") {
-       $Host6_7 = "10.73.196.39,10.73.196.33" 
+       $Host7_0 = "10.73.196.39,10.73.196.33" 
     }
 
-
-    # Specify dst host
+    # Specify dst host.
     $dstHost = $null
-    if ($PSBoundParameters.ContainsKey("Host6_0") -and $null -ne $Host6_0 -and  $version -eq "6.0.0") {
-        $ip_addresses = $Host6_0.Split(",")
+    if ($PSBoundParameters.ContainsKey("Host7_0") -and $null -ne $Host7_0 -and  $version -eq "7.0.0") {
+        $ip_addresses = $Host7_0.Split(",")
         if ($hvServer -eq $ip_addresses[0].Trim()) {
             $dsthost = $ip_addresses[1]
         }
@@ -2336,14 +2318,13 @@ function FindDstHost {
             $dsthost = $ip_addresses[0]
         }
     }
+
     return $dstHost
 }
 
 
 #######################################################################
-#
 # CheckCallTrace()
-#
 #######################################################################
 function CheckCallTrace {
     Param
@@ -2382,11 +2363,9 @@ function CheckCallTrace {
 }
 
 
-#######################################################################
-#
+########################################################################################
 # resetGuestSRIOV()
-#
-#######################################################################
+########################################################################################
 function resetGuestSRIOV {
     param (
         [String] $vmName,
@@ -2465,7 +2444,7 @@ function resetGuestSRIOV {
 function SkipTestInHost([String] $hvServer, [Array] $skip_hosts) 
 {
     # Define 3RD-ESXi team automatiuon hardware ENV.
-    $automation_hosts = ("6.0.0", "6.5.0", "6.7.0", "6.7.0-amd")
+    $automation_hosts = ("6.0.0", "6.5.0", "6.7.0", "6.7.0-amd", "7.0.0-amd")
 
     $host_obj = Get-VMHost -Name $hvServer
     $host_ver = $host_obj.version
@@ -2484,7 +2463,7 @@ function SkipTestInHost([String] $hvServer, [Array] $skip_hosts)
     {
         if($automation_hosts -notcontains $i)
         {
-            Write-Host -F Red "ERROR: Host want to be skipped is not in automation hosts list (6.0.0, 6.5.0, 6.7.0, 6.7.0-amd). Please confirm"
+            Write-Host -F Red "ERROR: Host want to be skipped is not in automation hosts list ($automation_hosts). Please confirm"
             return $false
         }
     }

@@ -23,7 +23,6 @@
 
 .Parameter testParams
     Semicolon separated list of test parameters
-
 #>
 
 
@@ -101,8 +100,10 @@ if($skip)
 # Use function to add new RDMA nic
 $status = AddPVrdmaNIC -vmName $vmName -hvServer $hvServer
 if ( -not $status[-1] ) {
-    return $Failed
+    return $retVal
 }
-
-$retVal = $Passed
+else
+{
+    $retVal = $Passed
+}
 return $retVal
