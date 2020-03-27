@@ -121,7 +121,7 @@ if($skip)
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -129,13 +129,12 @@ if (-not $vmObj) {
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-LogPrint "DEBUG: DISTRO: $DISTRO"
+LogPrint "DEBUG: DISTRO: ${DISTRO}."
 if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
@@ -160,6 +159,7 @@ else {
 
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
+LogPrint "DEBUG: IPAddr: ${IPAddr}."
 if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
     LogPrint "ERROR : Config IP Failed."
     DisconnectWithVIServer
@@ -168,7 +168,8 @@ if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
 
 
 # Install required packages
-$sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
+$sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags"
+LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
     LogPrint "ERROR : YUM cannot install required packages."
     DisconnectWithVIServer
@@ -179,18 +180,20 @@ if (-not $sts) {
 # Load mod ib_umad for ibstat check.
 $Command = "modprobe ib_umad"
 $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: modules: ${modules}."
 
 
 # Make sure the ibstat is active.
 $Command = "ibstat | grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+LogPrint "DEBUG: ibstat: ${ibstat}."
 if ($ibstat -eq 0) {
-    LogPrint "ERROR : the ibstat is not correctly."
+    LogPrint "ERROR: The ibstat is not correct."
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    LogPrint "INFO: $ibstat the ibstat is correctly."
+    LogPrint "INFO: The ibstat is correct."
     $retVal = $Passed
 }
 

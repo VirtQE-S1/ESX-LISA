@@ -173,7 +173,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-Write-Host -F Red "count is $Count"
+LogPrint "DEBUG: Count: $Count"
 for ($i = 0; $i -lt $Count; $i++) {
     # If we have multiple opition for params
     if ($multipleParams) {
@@ -183,13 +183,11 @@ for ($i = 0; $i -lt $Count; $i++) {
         $capacityGB = $capacityGBList[$i] 
     }
 
-
     # Check storage format params
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
         LogPrint "Error: Unknown StorageFormat type: $storageFormat"
         return $Aborted
     }
-
 
     # Check Disk Type params
     if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "RawPhysical", "NVMe") -notcontains $diskType) {
@@ -197,16 +195,11 @@ for ($i = 0; $i -lt $Count; $i++) {
         return $Aborted
     }
 
-
     # Check Datastore
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    if (-not $vmObj) {
-        LogPrint "ERROR: Unable to Get-VM with $vmName"
-        return $Aborted
-    }
     $vmDataStore = $vmObj.VMHost | Get-Datastore -Name "*$diskDataStore*"
     $diskDataStore = $vmDataStore.Name
-    LogPrint "INFO: Target Datastore is $diskDataStore"
+    LogPrint "DEBUG: diskDataStore: $diskDataStore"
     
     # Add SCSI controller
     if ($diskType -eq "SCSIController") {
@@ -248,7 +241,7 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
     }
 
-# Add RawPhysical disk
+	# Add RawPhysical disk
     if ($diskType -eq "RawPhysical") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         # $vmhost = Get-VMHost -Name $hvServer
@@ -263,7 +256,7 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
     }
 
-# Add LSI Logic SAS scsi disk
+	# Add LSI Logic SAS scsi disk
     if ($diskType -eq "SAS") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
@@ -283,7 +276,7 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
     }
 
-# Add LSI Logic Parallel scsi disk
+	# Add LSI Logic Parallel scsi disk
     if ($diskType -eq "Parallel") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
