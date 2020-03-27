@@ -632,6 +632,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2565,6 +2566,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2607,6 +2609,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2654,6 +2657,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2684,6 +2688,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ipv6_throughtput.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2752,6 +2757,7 @@
                 <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2804,6 +2810,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2839,6 +2846,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2859,6 +2867,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2879,6 +2888,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2903,6 +2913,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2926,6 +2937,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>            
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
