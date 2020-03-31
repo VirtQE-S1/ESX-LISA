@@ -114,8 +114,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -133,16 +131,20 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-# Get pci status
+
+# Get pci status.
 $Command = "lspci | grep -i infiniband"
 $pciInfo = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: pciInfo: $pciInfo"
 if ( $pciInfo -notlike "*Infiniband controller: VMware Paravirtual RDMA controller*") {
-    LogPrint "ERROR : Cannot get pvRDMA info from guest"
+    LogPrint "ERROR : Cannot get pvRDMA info from guest."
     DisconnectWithVIServer
     return $Aborted
 }
 
+
 $nics = Get-NetworkAdapter -VM $vmObj
+LogPrint "DEBUG: nics: $nics"
 foreach ($nic in $nics)
 {
     Write-Host -F red nic is ${nic} , nic.NetworkName is ${nic}.NetworkName
@@ -151,16 +153,17 @@ foreach ($nic in $nics)
         $result = Remove-NetworkAdapter -NetworkAdapter $nic -Confirm:$false
         if ($? -eq 0)
         {
-            Write-Output "PASS: Remove-NetworkAdapter RDMA well"
+            LogPrint "INFO: Remove-NetworkAdapter RDMA well."
             $retVal = $Passed
         }
         else
         {
-            Write-Host -F red nic.NetworkName is ${nic}.NetworkName
-            write-output "FAIL: Remove-NetworkAdapter RDMA Failed"
+            LogPrint "INFO: NIC NetworkName is $(${nic.NetworkName})"
+            LogPrint "ERROR: Remove-NetworkAdapter RDMA Failed."
         }
     }
 }
+
 
 DisconnectWithVIServer
 return $retVal

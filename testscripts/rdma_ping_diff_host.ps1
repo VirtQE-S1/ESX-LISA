@@ -209,7 +209,7 @@ if (-not $shardDatastore) {
 
 
 $name = $shardDatastore.Name
-LogPrint "INFO: required shard datastore $name"
+LogPrint "INFO: Required shard datastore $name"
 
 
 # Move Hard Disk to another datastore to prepare next migrate
@@ -226,6 +226,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 # Add RDMA NIC for Guest B
 $status = AddPVrdmaNIC $GuestBName $hvServer
+LogPrint "DEBUG: status: $status"
 if ( -not $status[-1]) {
     LogPrint "ERROR: RDMA NIC adds failed" 
     DisconnectWithVIServer
@@ -234,7 +235,7 @@ if ( -not $status[-1]) {
 
 
 # Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+$on = Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
     DisconnectWithVIServer
@@ -243,7 +244,7 @@ if (-not $?) {
 
 
 # Wait for GuestB SSH ready
-if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
+if (-not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
     DisconnectWithVIServer
     return $Aborted
@@ -258,8 +259,9 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 # Find out new add RDMA nic for Guest B
 $nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+LogPrint "DEBUG: nics: $nics"
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
+    LogPrint "ERROR: Cannot find new add RDMA NIC." 
     DisconnectWithVIServer
     return $Failed
 }
@@ -281,9 +283,9 @@ LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 # Check Migration status
 Start-Sleep -Seconds 6
-$status = Wait-Task -Task $task
-LogPrint "INFO: Migration result is $status"
-if (-not $status) {
+$task = Wait-Task -Task $task
+LogPrint "DEBUG: task: $task"
+if (-not $task) {
     LogPrint "ERROR : Cannot move disk to required Datastore ${shardDatastore.Name}"
     DisconnectWithVIServer
     return $Aborted
@@ -292,6 +294,7 @@ if (-not $status) {
 
 # Find out new add RDMA nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+LogPrint "DEBUG: nics: $nics"
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add rdma NIC" 
     DisconnectWithVIServer
@@ -315,9 +318,9 @@ LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
 
 # Check can we ping GuestA from GuestB via RDMA NIC
 $Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
+$ping = SendCommandToVM $ipv4Addr_B $sshkey $command
+if (-not $ping) {
+    LogPrint "ERROR: Ping test Failed"
     $retVal = $Failed
 }
 else {
@@ -346,7 +349,6 @@ if (-not $?) {
 }
 
 
-# Wait 6 seconds
 Start-Sleep -Seconds 6
 
 

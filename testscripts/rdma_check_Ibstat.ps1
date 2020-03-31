@@ -136,6 +136,7 @@ if (-not $DISTRO) {
     return $Aborted
 }
 
+
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
@@ -146,6 +147,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 
 # Get new add RDMA NIC.
 $nics = FindAllNewAddNIC $ipv4 $sshKey
+LogPrint "DEBUG: nics: ${nics}."
 if ($null -eq $nics[-1]) {
     LogPrint "ERROR: Cannot find new add SR-IOV NIC." 
     DisconnectWithVIServer

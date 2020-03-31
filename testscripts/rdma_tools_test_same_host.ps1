@@ -123,8 +123,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -145,6 +143,7 @@ if (-not $vmObj) {
 
 # Specify dst host
 $dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7 -Host7_0 $dstHost7_0
+LogPrint "DEBUG: dstHost: ${dstHost}."
 if ($null -eq $dstHost) {
     LogPrint "ERROR: Cannot find required Host"    
     DisconnectWithVIServer
@@ -155,21 +154,21 @@ LogPrint "INFO: Destination Host is $dstHost"
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-LogPrint "DEBUG: DISTRO: $DISTRO"
+LogPrint "DEBUG: DISTRO: ${DISTRO}."
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
+
 
 # Start another VM
 $GuestBName = $vmObj.Name.Split('-')
@@ -180,21 +179,17 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Add RDMA NIC for Guest B
-$status = AddPVrdmaNIC $GuestBName $hvServer
-if ( -not $status[-1]) {
-    LogPrint "ERROR: RDMA NIC adds failed" 
+$add = AddPVrdmaNIC $GuestBName $hvServer
+LogPrint "DEBUG: add: ${add}."
+if ( -not $add[-1]) {
+    LogPrint "ERROR: RDMA NIC adds failed." 
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
-    DisconnectWithVIServer
-    return $Aborted
-}
+$on = Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Wait for GuestB SSH ready
@@ -212,14 +207,15 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Find out new add RDMA nic for Guest B
-$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
+$Bnics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+LogPrint "DEBUG: Bnics: ${Bnics}."
+if ($null -eq $Bnics) {
+    LogPrint "ERROR: Cannot find new add RDMA NIC." 
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    $rdmaNIC = $nics[-1]
+    $rdmaNIC = $Bnics[-1]
 }
 LogPrint "INFO: New NIC is $rdmaNIC"
 
@@ -227,7 +223,7 @@ LogPrint "INFO: New NIC is $rdmaNIC"
 # Config RDMA NIC IP addr for Guest B
 $IPAddr_guest_B = "172.31.1." + (Get-Random -Maximum 254 -Minimum 125)
 if ( -not (ConfigIPforNewDevice $ipv4Addr_B $sshKey $rdmaNIC ($IPAddr_guest_B + "/24"))) {
-    LogPrint "ERROR : Guest B Config IP Failed"
+    LogPrint "ERROR: Guest B Config IP failed"
     DisconnectWithVIServer
     return $Failed
 }
@@ -235,9 +231,10 @@ LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 
 # Find out new add RDMA nic for Guest A
-$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add rdma NIC" 
+$Anics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+LogPrint "DEBUG: Anics: ${Anics}."
+if ($null -eq $Anics) {
+    LogPrint "ERROR: Cannot find new add rdma NIC." 
     DisconnectWithVIServer
     return $Failed
 }
@@ -250,7 +247,7 @@ LogPrint "INFO: New NIC is $rdmaNIC"
 # Config RDMA NIC IP addr for Guest A
 $IPAddr_guest_A = "172.31.1." + (Get-Random -Maximum 124 -Minimum 2)
 if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr_guest_A + "/24"))) {
-    LogPrint "ERROR : Guest A Config IP Failed"
+    LogPrint "ERROR : Guest A Config IP failed"
     DisconnectWithVIServer
     return $Failed
 }
@@ -259,13 +256,13 @@ LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
 
 # Check can we ping GuestA from GuestB via RDMA NIC
 $Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
+$ping = SendCommandToVM $ipv4Addr_B $sshkey $command
+if (-not $ping) {
+    LogPrint "ERROR: Ping test failed."
     $retVal = $Failed
 }
 else {
-       LogPrint "Pass : Ping test passed"
+       LogPrint "INFO: Ping test passed."
 }
 
 
@@ -278,59 +275,61 @@ else {
 }
 
 # Install dependency package on guest B.
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command1
-if (-not $status) {
-    LogPrint "ERROR : install package Failed"
+$cmdb1 = SendCommandToVM $ipv4Addr_B $sshkey $command1
+LogPrint "DEBUG: cmdb1: ${cmdb1}."
+if (-not $cmdb1) {
+    LogPrint "ERROR: Install package Failed."
     return $Aborted
 }
+
+
 # Load ib related modules
 $command2 = "modprobe ib_umad"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command2
-if (-not $status) {
-    LogPrint "ERROR : load modules Failed"
+$cmdb2 = SendCommandToVM $ipv4Addr_B $sshkey $command2
+LogPrint "DEBUG: cmdb2: ${cmdb2}."
+if (-not $cmdb2) {
+    LogPrint "ERROR: Load modules Failed."
 
     return $Aborted
 }
 
 # Install dependency package on guest A.
-$status = SendCommandToVM $ipv4 $sshkey $command1
+$cmda1 = SendCommandToVM $ipv4 $sshkey $command1
+LogPrint "DEBUG: cmda1: ${cmda1}."
 if (-not $status) {
-    LogPrint "ERROR : install package Failed"
+    LogPrint "ERROR: Install package Failed."
     
     return $Aborted
 }
 
 # Load ib related modules
-$status = SendCommandToVM $ipv4 $sshkey $command2
-if (-not $status) {
-    LogPrint "ERROR : load modules Failed"
+$cmda2 = SendCommandToVM $ipv4 $sshkey $command2
+if (-not $cmda2) {
+    LogPrint "ERROR: Load modules Failed."
     
     return $Aborted
 }
+
 
 # Check the RoCE version
 $RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
 if ("RoCE V2" -eq $RoCE)
 {
     $gid=1
-	Write-Host -F Green "INFO: gid set to 1, RoCE version is $RoCE"
-    Write-Output "INFO: RoCE version is $RoCE"
+	LogPrint "INFO: gid set to 1, RoCE version is $RoCE"
 }
 elseif ("IB/RoCE v1" -eq $RoCE) {
     $gid=0
-    Write-Host -F Red "INFO: gid set to 0, RoCE version is $RoCE"
-	Write-Output "INFO: RoCE version is $RoCE"
+    LogPrint "INFO: gid set to 0, RoCE version is $RoCE"
 }
 else
 {
-    Write-Host -F Red "Error: RoCE version is $RoCE"
-    Write-Output "Error: RoCE version is $RoCE"
+    LogPrint "ERROR: RoCE version is $RoCE"
     return $Aborted
 }
 
 # Check the test tools used for test.
-LogPrint "test is $tool"
-write-host -F Red "Test tool is $tool"
+LogPrint "INFO: Test is $tool"
 if ( $tool -eq "perf" )
 {
   # Array for perftest command
@@ -340,16 +339,17 @@ if ( $tool -eq "perf" )
   foreach($i in $perf_guestB)
   {
       $Process = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${i}" -PassThru -WindowStyle Hidden
-      write-host -F Red "the process1 id is $($Process.id) and $i"
+      LogPrint "INFO: The process1 id is $($Process.id) and $i"
       $index = $perf_guestB.IndexOf($i)
       $commandA = $perf_guestA[$index]
-      $status = SendCommandToVM $ipv4 $sshkey $commandA
-      if (-not $status) {
-          LogPrint "ERROR : $commandA test Failed"
+      $perf = SendCommandToVM $ipv4 $sshkey $commandA
+      LogPrint "DEBUG: perf: $perf"
+      if (-not $perf) {
+          LogPrint "ERROR: $commandA test failed."
           return $Failed
       } else {
           $retVal = $Passed
-          LogPrint "pass : $commandA test passed"
+          LogPrint "INFO: $commandA test passed."
       }
   }
 }
@@ -366,19 +366,20 @@ else
       $commandB = "rping -s -v -V -C 1 -a $IPAddr_guest_B"
   }
 
+
   # Run test on guest B first,because guest B is test as server.
   $Process1 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4Addr_B} ${commandB}" -PassThru -WindowStyle Hidden
-  write-host -F Red "$($Process1.id)"
+  LogPrint "DEBUG: Process1.id: $($Process1.id)"
 
   # Then run test on guest A, guest A as client.
-  $status = SendCommandToVM $ipv4 $sshkey $commandA
-  if (-not $status) {
-      LogPrint "ERROR :  test $commandA test Failed"
+  $cmda = SendCommandToVM $ipv4 $sshkey $commandA
+  if (-not $cmda) {
+      LogPrint "ERROR: Test $commandA test failed"
       DisconnectWithVIServer
       $retVal = $Failed
   } else {
       $retVal = $Passed
-      LogPrint "pass :  test $commandA test passed"
+      LogPrint "INFO: Test $commandA test passed"
   }
   
 }

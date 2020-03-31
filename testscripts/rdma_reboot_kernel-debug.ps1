@@ -134,6 +134,7 @@ if($skip)
 
 # Get new add RDMA NIC
 $nics = FindAllNewAddNIC $ipv4 $sshKey
+
 if ($null -eq $nics) 
 {
     LogPrint "ERROR: Cannot find new add SR-IOV NIC."
@@ -159,6 +160,7 @@ if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24")))
 
 # Install required packages
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
+LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) 
 {
     LogPrint "ERROR: YUM cannot install required packages."
@@ -170,11 +172,13 @@ if (-not $sts)
 # Load mod ib_umad for ibstat check
 $Command = "modprobe ib_umad"
 $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: modules: ${modules}."
 
 
 # Make sure the ibstat is active 
 $Command = "ibstat | grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+LogPrint "DEBUG: ibstat: ${ibstat}."
 if ($ibstat -eq 0) 
 {
     LogPrint "ERROR: The ibstat is not correctly."
@@ -185,12 +189,12 @@ if ($ibstat -eq 0)
 
 # Install kerel-debug package in guest.
 $kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
+LogPrint "DEBUG: kerneldebug_install: ${kerneldebug_install}."
 
 
 # Check the kernel-debug installed successfully or not.
 $kernel_debug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
-Write-Host -F Red "DEBUG: kernel_debug_check: $kernel_debug_check"
-Write-Output "DEBUG: kernel_debug_check: $kernel_debug_check"
+LogPrint "DEBUG: kernel_debug_check: ${kernel_debug_check}."
 if ($null -eq $kernel_debug_check)
 {
     Write-Output "ERROR: Failed to install kernel-debug."
@@ -219,6 +223,8 @@ else
 
 # Reboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
+
 Start-Sleep -seconds 6
 
 
@@ -233,11 +239,10 @@ if ($ssh -ne $true)
 else
 {
     $current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r | grep debug"
-    Write-Host -F Red "INFO: After reboot the current kernel is $current_kernel."
-    Write-Output "INFO: After reboot the current kernel is $current_kernel."
+    LogPrint "INFO: After reboot the current kernel is ${current_kernel}."
     if ($null -eq $current_kernel)
     {
-        Write-Output "ERROR: The kernel-debug switch failed in guest."
+        LogPrint "ERROR: The kernel-debug switch failed in guest."
         return $Aborted
     }
 }
@@ -246,12 +251,10 @@ else
 # Check call trace.
 $status = CheckCallTrace $ipv4 $sshKey
 if (-not $status[-1]) {
-    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
-    Write-Output "ERROR: Found $($status[-2]) in msg."
+    LogPrint "ERROR: Found $($status[-2]) in msg."
 }
 else {
-    Write-Host -F Red "INFO: NO call trace found."
-    Write-Output "INFO: NO call trace found."
+    LogPrint "INFO: NO call trace found."
     $retVal = $Passed
 }
 

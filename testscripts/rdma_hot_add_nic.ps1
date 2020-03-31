@@ -3,7 +3,7 @@
 ##  Boot guest with no pvrdma NIC, then add pvrdma NIC to the guest
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/16/2018 - Build the script.
+##  v1.0.0 - ruqin  - 8/16/2018 - Build the script.
 ##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
@@ -34,10 +34,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -129,23 +127,14 @@ if (-not $vmObj) {
 }
 
 
-# Check host version
-$hvHost = Get-VMHost -Name $hvServer
-if ($hvHost.Version -lt "6.5.0") {
-    LogPrint "WARN: vSphere which less than 6.5.0 is not support RDMA"
-    return $Skipped
-}
-
-
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
@@ -158,6 +147,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 
 # Hot add RDMA nic
 $status = AddPVrdmaNIC $vmName $hvServer
+LogPrint "DEBUG: status: $status"
 if (-not $status) {
     LogPrint "ERROR: Hot add RDMA nic failed"
     DisconnectWithVIServer
@@ -167,8 +157,7 @@ if (-not $status) {
 
 # Find out new add RDMA nic
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-Write-Output "DEBUG: nics: ${nics}."
-Write-Host -F Red "DEBUG: nics: ${nics}."
+LogPrint "DEBUG: nics: ${nics}."
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC." 
     DisconnectWithVIServer
@@ -183,7 +172,7 @@ LogPrint "INFO: Found the new NIC - ${rdmaNIC}."
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
 if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
-    LogPrint "ERROR : Config IP Failed maybe IP address conflit."
+    LogPrint "ERROR: Config IP Failed maybe IP address conflit."
     DisconnectWithVIServer
     return $Failed
 }
@@ -191,9 +180,10 @@ if ( -not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) {
 
 # Check new IP is reachable
 $Command = "ping $IPAddr -c 10 -W 15  | grep ttl > /dev/null"
-$status = SendCommandToVM $ipv4 $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Ping test Failed."
+$ping = SendCommandToVM $ipv4 $sshkey $command
+LogPrint "DEBUG: ping: $ping"
+if (-not $ping) {
+    LogPrint "ERROR: Ping test Failed."
     DisconnectWithVIServer
     return $Failed
 }

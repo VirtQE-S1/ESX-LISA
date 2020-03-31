@@ -1,10 +1,11 @@
 ########################################################################################
 ## Description:
-##  Reboot and shutdown the VM
+##  Reboot and shutdown the VM.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 09/06/2017 - reboot and shutdown guest
-##  v1.0.1 - boyang - 05/06/2019 - Increase sleep time after shutdown
+##  v1.0.0 - ldu    - 09/06/2017 - reboot and shutdown guest.
+##  v1.0.1 - boyang - 05/06/2019 - Increase sleep time after shutdown.
+##  v1.1.0 - boyang - 03/30/2020 - Update stop-guestvm cmd.
 ########################################################################################
 
 
@@ -107,6 +108,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
+
 # Source tcutils.ps1
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
@@ -129,47 +131,48 @@ if ($DISTRO -eq "RedHat6"){
 }
 
 
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$state = $vmObj.PowerState
-LogPrint "DEBUG: state: ${state}."
-if ($state -ne "PoweredOn")
-{
-    LogPrint "ERROR: VM power state isn't on. Shoule be on, later powered off it."
-    return $Aborted
-}
+LogPrint "INFO: Reboot the VM."
+$restart = Restart-VMGuest -VM $vmObj -Confirm:$False
 
 
-# $vmObj_restart = Restart-VMGuest -VM $vmObj -Confirm:$False
-$reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+Start-sleep 24
 
 
-$ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ($ret -ne $true)
+$wait = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+if ($wait -ne $true)
 {
     LogPrint "ERROR: Failed to start VM."
     return $Aborted
 }
 
 
-$exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+$on = $vmObj.PowerState
+LogPrint "DEBUG: on: ${on}."
+if ($on -ne "PoweredOn")
+{
+    LogPrint "ERROR: Restart VM failed."
+    return $Aborted
+}
 
 
-$shutdown = Shutdown-VMGuest -VM $vmObj -Confirm:$False
+LogPrint "INFO: Shutdown the VM."
+$off = Stop-VMGuest -VM $vmObj -Confirm:$False
 
 
-Start-sleep 6
+Start-sleep 24
 
 
 $vmObjShutdown = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$state = $vmObjShutdown.PowerState
-LogPrint "DEBUG: state: ${state}."
-if ($state -ne "PoweredOff")
+$off = $vmObjShutdown.PowerState
+LogPrint "DEBUG: off: ${off}."
+if ($off -ne "PoweredOff")
 {
-    LogPrint "ERROR: Failed to shutdown VM. Current state is ${state}."
+    LogPrint "ERROR: Failed to shutdown VM. Current state is ${off}."
 }
 else
 {
-    LogPrint "INFO: Successed to shutdown VM. Current state is ${state}."
+    LogPrint "INFO: Successed to shutdown VM. Current state is ${off}."
     $retVal = $Passed
 }
 
