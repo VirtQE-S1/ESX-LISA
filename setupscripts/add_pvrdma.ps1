@@ -89,15 +89,15 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-# Check host version
-$skip = SkipTestInHost $hvServer "6.0.0","6.5.0"
+# Check host version.
+$skip = SkipTestInHost $hvServer "6.0.0"
 if($skip)
 {
     return $Skipped
 }
 
 
-# Use function to add new RDMA nic
+# Use function to add new RDMA nic.
 $status = AddPVrdmaNIC -vmName $vmName -hvServer $hvServer
 if ( -not $status[-1] ) {
     return $retVal
