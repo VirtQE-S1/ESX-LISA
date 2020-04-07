@@ -6,15 +6,13 @@
 ## 	SCP big file with MTU = 90000
 ##
 ## Revision:
-## 	v1.0.0 - boyang - 10/19/2017 - Build script
-## 	v1.1.0 - boyang - 10/20/2017 - Install net-tools
+## 	v1.0.0 - boyang - 10/19/2017 - Build script.
+## 	v1.1.0 - boyang - 10/20/2017 - Install net-tools.
 ########################################################################################
 
 
-dos2unix utils.sh
-
-
 # Source utils.sh
+dos2unix utils.sh
 . utils.sh || {
 	echo "Error: unable to source utils.sh!"
 	exit 1

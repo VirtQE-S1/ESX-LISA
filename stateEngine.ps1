@@ -2919,7 +2919,7 @@ function DoPS1TestCompleted ([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
     else
     {
-        LogMsg 0 "Info : NO jobID for $($vm.currentTest), as failed in setupscript, come here from RunSetupScript directly."
+        LogMsg 0 "Info : NO jobID for $($vm.currentTest), as need to skip the setup in RunSetupScript."
         "Error : VM $($vm.vmName) setup script ${script} for test ${testName} failed. See ica.log to find logs." >> $logFilename
     }
 
