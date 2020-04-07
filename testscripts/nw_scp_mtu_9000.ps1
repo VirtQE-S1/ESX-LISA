@@ -100,8 +100,6 @@ $retVal = $Failed
 
 
 # The VM A and the VM B own the same part in names
-# RHEL-7.4-20170711.0-x86_64-BIOS-A / RHEL-7.4-20170711.0-x86_64-BIOS-A
-# RHEL-7.3-20161019.0-x86_64-EFI-A / RHEL-7.3-20161019.0-x86_64-EFI-B
 $vmNameB = $vmName -replace "-A$","-B"
 $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
 if (-not $vmObjecB) {
@@ -109,25 +107,25 @@ if (-not $vmObjecB) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 
 # Confirm the VM B power state
 $vmObjectBPowerState = $vmObjectB.PowerState
-LogPrint "DEBUG: vmObjectBPowerState: $vmObjectBPowerState"
+LogPrint "DEBUG: vmObjectBPowerState: ${vmObjectBPowerState}."
 
 
 # Boot vmObjectB if its power state isn't PoweredOn and get its IP
 if ($vmObjectBPowerState -ne "PoweredOn")
 {
-    LogPrint "INFO: Power on VM $vmObjectB"
+    LogPrint "INFO: Power on VM ${vmObjectB}."
     $vmObjectBOn = Start-VM -VM $vmObjectB -Confirm:$False
+
     $timeout = 360
     while ($timeout -gt 0)
     {
         $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
         $vmTempPowerState = $vmObjectB.PowerState
-        LogPrint "INFO: The VM B power state: $vmTempPowerState"
+        LogPrint "INFO: The VM B power state: ${vmTempPowerState}."
         if ($vmTempPowerState -eq "PoweredOn")
         {
             $ipv4B = GetIPv4 $vmNameB $hvServer
@@ -165,6 +163,7 @@ else
 
 # Will use a shell script to change VM's MTU = 9000 and DD a file > 5G and scp it
 $ret = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix nw_scp_mtu_9000.sh && chmod u+x nw_scp_mtu_9000.sh && ./nw_scp_mtu_9000.sh $ipv4B"
+LogPrint "DEBUG: ret: ${ret}."
 if (-not $ret)
 {
 	LogPrint "ERROR: Failed to execute nw_scp_mtu_9000.sh in VM and Powered off VM B."
