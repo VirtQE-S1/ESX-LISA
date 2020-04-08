@@ -1,17 +1,16 @@
 ########################################################################################
 ## Description:
-## Check SCSI domain validation deadlock status when a device's request queue is full.
+## 	Check SCSI domain validation deadlock status when a device's request queue is full.
 ##
 ## Revision:
-## v1.0.0 - ldu - 09/23/2019 - Build scripts.
-## v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+## 	v1.0.0 - ldu - 09/23/2019 - Build scripts.
+## 	v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
 ########################################################################################
 
 
 <#
 .Synopsis
     Check SCSI domain validation deadlock status when a device's request queue is full
-##
 .Description
 <test>
         <testName>stor_scsi_domain_validation</testName>
@@ -38,10 +37,8 @@
 #>
 
 
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-# Checking the input arguments
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -110,19 +107,20 @@ if ($null -eq $sshKey)
 
 if ($null -eq $ipv4)
 {
-	"FAIL: Test parameter ipv4 was not specified"
+	"ERROR: Test parameter ipv4 was not specified."
 	return $False
 }
 
 if ($null -eq $logdir)
 {
-	"FAIL: Test parameter logdir was not specified"
+	"ERROR: Test parameter logdir was not specified."
 	return $False
 }
 
 
 # Source tcutils.ps1
 . .\setupscripts\tcutils.ps1
+
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISUSERNAME `
@@ -136,45 +134,47 @@ ConnectToVIServer $env:ENVVISIPADDR `
 $retVal = $Failed
 
 
-# Get the VM
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-
-
-# Get the Guest B
+# Get the Guest B.
 $GuestBName = $vmObj.Name.Split('-')
-# Get another VM by change Name
+# Get another VM by change Name.
 $GuestBName[-1] = "B"
 $GuestBName = $GuestBName -join "-"
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
-# If the VM is not stopped, try to stop it
+# If the VM is not stopped, try to stop it.
 if ($GuestB.PowerState -ne "PoweredOff") {
-    LogPrint "Info : $($GuestBName) is not in a stopped state - stopping VM"
+    LogPrint "INFO: $GuestBName is not in a poweredoff state. Will stop-vm."
     $outStopVm = Stop-VM -VM $GuestB -Confirm:$false -Kill
     if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") {
-        LogPrint "Error : ResetVM is unable to stop VM $($GuestBName). VM has been disabled"
+        LogPrint "ERROR: VM-B powerstate isn't powered off. Aborted."
         return $Aborted
     }
 }
 
 
-# Add LSI Logic Parallel for Guest B
+# Check the disk number of the guest before add a new one.
+$oldDiskList =  Get-HardDisk -VM $GuestB
+$oldDiskLength = $diskList.Length
+LogPrint "DEBUG: oldDiskLength: ${oldDiskLength}."
+
+
+# Add LSI Logic Parallel for Guest B.
 $hd_size = Get-Random -Minimum 10 -Maximum 15
 
 $GuestB | New-HardDisk -CapacityGB $hd_size -StorageFormat "Thin" | New-ScsiController -Type VirtualLsiLogic
 if (-not $?) {
-    LogPrint "ERROR : Cannot add disk to VMB"
+    LogPrint "ERROR : Cannot add a disk to VMB."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: add LSI logic Parallel scsi controller and disk completed when vmb power off"
+LogPrint "INFO: Add LSI logic Parallel scsi controller and disk well when VM-B powered off."
 
 
-# Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+# Start GuestB.
+$on = Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
+    LogPrint "ERROR : Cannot start VM."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -184,39 +184,36 @@ else
 }
 
 
-# Wait for GuestB SSH ready
+# Wait for GuestB SSH ready.
 if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
+    LogPrint "ERROR : Cannot start SSH."
     DisconnectWithVIServer
     return $Aborted
 }
 {
-    LogPrint "INFO: Ready SSH"
+    LogPrint "INFO: Ready SSH."
 }
 
 
-# Get VMB IP addr
+# Get VMB IP addr.
 $ipv4B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName 
+LogPrint "DEBUG: ipv4B: ${ipv4B}."
 
 
 # Check the disk number of the guest.
 $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
+$newDiskList =  Get-HardDisk -VM $GuestB
+$newDiskLength = $newDiskList.Length
+LogPrint "DEBUG: newDiskLength: ${newDiskLength}."
 
-$diskList =  Get-HardDisk -VM $GuestB
-$diskLength = $diskList.Length
-write-host -F Red "DEBUG diskLength: $diskLength."
-
-if ($diskLength -eq 2)
+if (($newDiskLength - $oldDiskLength) -eq 1)
 {
-    write-host -F Red "The disk count is $diskLength."
-    Write-Output "Hot plug LSILogicParallel scsi disk successfully, The disk count is $diskLength."
+    LogPrint "INFO: Hot plug LSILogicParallel scsi disk successfully, The disk count is $newDiskLength."
 }
 else
 {
-    write-host -F Red "The disk count is $diskLength."
-    Write-Output "Hot plug LSILogicParallel scsi disk Failed, only $diskLength disk in guest."
+    LogPrint "ERROR: Hot plug LSILogicParallel scsi disk Failed, $newDiskLength disk in the guest."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -224,63 +221,63 @@ else
 
 # Rescan new add parallel scsi disk in guest.
 $result = SendCommandToVM $ipv4B $sshKey "rescan-scsi-bus.sh -a && sleep 3 && ls /dev/sdb"
+LogPrint "DEBUG: result: ${result}."
 if (-not $result)
 {
-	Write-Host -F Red "FAIL: Failed to detect new add LSILogicParallel scsi disk.$result"
-	Write-Output "FAIL: Failed to detect new add LSILogicParallel scsi disk $result"
+	LogPrint "ERROR: Failed to detect new add LSILogicParallel scsi disk."
 	return $Aborted
 }
 else
-{
-	Write-Host -F Green "PASS: new add LSILogicParallel scsi disk could be detected.$result"
-    Write-Output "PASS: new add LSILogicParallel scsi disk could be detected.$result"
+    LogPrint "INFO: new add LSILogicParallel scsi disk could be detected."
 }
 
-# Add ipv4B addr to constants.sh
-$result = SendCommandToVM $ipv4 $sshKey "echo 'ipv4B=$ipv4B' >> ~/constants.sh"
-if (-not $result[-1])
+
+# Add ipv4B addr to constants.sh.
+$result2 = SendCommandToVM $ipv4 $sshKey "echo 'ipv4B=$ipv4B' >> ~/constants.sh"
+LogPrint "DEBUG: result2: ${result2}."
+if (-not $result2[-1])
 {
-    LogPrint "ERROR: Cannot add ipv4B addr into constants.sh file"
+    LogPrint "ERROR: Cannot add ipv4B addr into constants.sh file."
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 
-# SCP shell scripts stor_domain_validation.sh utils.sh constants.sh from guestA to guestB .
-$result = SendCommandToVM $ipv4 $sshKey "scp -i `$HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no stor_domain_validation.sh utils.sh constants.sh root@${ipv4B}:/root"
-if (-not $result[-1])
+# SCP shell scripts stor_domain_validation.sh utils.sh constants.sh from guestA to guestB.
+$result3 = SendCommandToVM $ipv4 $sshKey "scp -i `$HOME/.ssh/id_rsa_private -o StrictHostKeyChecking=no stor_domain_validation.sh utils.sh constants.sh root@${ipv4B}:/root"
+LogPrint "DEBUG: result3: ${result3}."
+if (-not $result3[-1])
 {
-    LogPrint "ERROR: Cannot scp file."
+    LogPrint "ERROR: Cannot scp file to VM-B."
 	DisconnectWithVIServer
 	return $Aborted
 }
 
 
 # Make filesystem and mount the new Parallel disk to /mnt.
-$result = SendCommandToVM $ipv4B $sshKey "cd /root && dos2unix stor_domain_validation.sh && bash stor_domain_validation.sh"
-if (-not $result)
+$result4 = SendCommandToVM $ipv4B $sshKey "cd /root && dos2unix stor_domain_validation.sh && bash stor_domain_validation.sh"
+LogPrint "DEBUG: result4: ${result4}."
+if (-not $result4)
 {
-	Write-Host -F Red "FAIL: Failed to format new add scsi disk."
-	Write-Output "FAIL: Failed to format new add scsi disk"
+	LogPrint "ERROR: Failed to format new add scsi disk."
 	return $Aborted
 }
 else
 {
-	Write-Host -F Green "PASS: new add scsi disk could be formated and read,write."
-    Write-Output "PASS: new add scsi disk could be formated and read,write."
+    LogPrint "INFO: new add scsi disk could be formated and read,write."
 }
 
 
 # Start running a heavy load of io to sdb，for example:
 $workload = 'fio --filename=/mnt/test --time_based --direct=1 --rw=randrw --bs=4k --size=5G --numjobs=75 --runtime=300000 --name=test --ioengine=libaio --iodepth=64 --rwmixread=50'
 $process1 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4B} ${workload}" -PassThru -WindowStyle Hidden
-write-host -F Red "process1 id is $($process1.id)"
+LogPrint "INFO: Process1 id is $($process1.id)"
 
 
 # In a loop issue the revalidate command
 $Command = "while true; do echo 1 > /sys/class/spi_transport/target2\:0\:0/revalidate; done"
 $process2 = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv4B} ${Command}" -PassThru -WindowStyle Hidden
-LogPrint "INFO: process2 id is $($process2.id)  revalidate while loop is running"
+LogPrint "INFO: Process2 id is $($process2.id)  revalidate while loop is running"
 
 
 # Loop runing for 10 mins
@@ -289,46 +286,44 @@ Start-Sleep -Seconds 300
 
 # Check the fio tools running from the fio test file /mnt/test1
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4B} "ls /mnt/test"
+LogPrint "DEBUG: exist: ${exist}."
 if ($null -eq $exist)
 {
     
-	Write-Host -F Red "INFO: fio tool run failed, file /mnt/test1 isn't exist: $exist"
-	Write-Output "Failed, fio tool run failed, file /mnt/test1 isn't exist: $exist "
+	LogPrint "ERROR Tool fio run failed, file /mnt/test1 didn't exist."
     DisconnectWithVIServer
 	return $Failed
 }
 else
 {
-	Write-Host -F Red "INFO:fio tool run successfully,  file /mnt/test1 is exist: $exist"
-	Write-Output "Passed, fio tool run successfully,  file /mnt/test1 is exist: $exist "
+	Write-Output "INFO: Tool fio run successfully, file /mnt/test1 exist."
 }
 
 
-# Check loop revalidate command is running from dmesg log file
-$exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4B} "dmesg |grep 'Ending Domain Validation'"
-if ($null -eq $exist)
+# Check loop revalidate command is running from dmesg log file.
+$grep = bin\plink.exe -i ssh\${sshKey} root@${ipv4B} "dmesg | grep 'Ending Domain Validation'"
+LogPrint "DEBUG: grep: ${grep}."
+if ($null -eq $grep)
 {
     
-	Write-Host -F Red "INFO: revalidate command failed, no Domain validation log is exist: $exist"
-	Write-Output "Failed, revalidate command failed, no Domain validation log is exist in dmesg: $exist "
+	LogPrint "ERROR: Revalidate command failed, no domain validation log in dmesg."
     DisconnectWithVIServer
 	return $Failed
 }
 else
 {
-	Write-Host -F Red "INFO: revalidate command successfully,  Domain validation log is exist: $exist"
-	Write-Output "Passed, revalidate command successfully,  Domain validation log is exist in dmesg: $exist "
+	LogPrint "INFO: Revalidate command successfully, found domain validation log in dmesg."
 }
+
 
 # Check the call trace in dmesg file.
-$status = CheckCallTrace $ipv4 $sshKey
-if (-not $status[-1]) {
-    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
-    Write-Output "ERROR: Found $($status[-2]) in msg."
+$calltrace = CheckCallTrace $ipv4 $sshKey
+LogPrint "DEBUG: calltrace: ${calltrace}."
+if (-not $calltrace[-1]) {
+    LogPrint "ERROR: Found $($calltrace[-2]) in msg."
 }
 else {
-    Write-Host -F Red "INFO: NO call trace found."
-    Write-Output "INFO: NO call trace found."
+    LogPrint "INFO: NOT found $($calltrace[-2]) in msg."
     $retVal = $Passed
 }
 

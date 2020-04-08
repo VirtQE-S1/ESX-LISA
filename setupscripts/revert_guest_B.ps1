@@ -111,7 +111,7 @@ if ($snapsOut) {
     foreach ($s in $snapsOut) {
         if ($s.Name -eq $snapshotName) {
             LogPrint "INFO: $($vmBName) is being reset to snapshot $($s.Name)"
-            $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
+            $setsnapOut = Set-VM -VM $vmBObj -Snapshot $s -Confirm:$false
             if ($setsnapOut) {
                 $snapshotFound = $true
                 break

@@ -7,6 +7,7 @@
 ##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
+
 <#
 .Synopsis
     [rdma]load and unload vmxnet3 module on guest with connected PVRDMA adapter (BZ1587951)
@@ -36,8 +37,8 @@
 #>
 
 
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-# Checking the input arguments
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -53,11 +54,11 @@ if (-not $testParams) {
 }
 
 
-# Output test parameters so they are captured in log file
+# Output test parameters so they are captured in log file.
 "TestParams : '${testParams}'"
 
 
-# Parse the test parameters
+# Parse the test parameters.
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -73,7 +74,8 @@ foreach ($p in $params) {
     }
 }
 
-# Check all parameters are valid
+
+# Check all parameters are valid.
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -110,8 +112,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 

@@ -1,18 +1,15 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  Change the MTU of a vmxnet3
+##  Change the MTU of a vmxnet3.
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/23/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 8/23/2018 - Build the script.
+########################################################################################
 
 
 <#
 .Synopsis
     Change the MTU of a vmxnet3
-
 .Description
        <test>
             <testName>nw_arbitrary_mtu</testName>
@@ -33,19 +30,15 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-# Checking the input arguments
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -122,12 +115,10 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
+########################################################################################
+$retVal = $Failed
 
 function setMTU {
     param (
@@ -136,6 +127,7 @@ function setMTU {
         [String] $con,
         [int] $Set_MTu
     )
+
     $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
     # Start NetworkManager
     if ($DISTRO -eq "RedHat6") {
@@ -172,7 +164,6 @@ function setMTU {
 
 
 # Get VM object
-$retVal = $Failed
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -207,21 +198,23 @@ if (-not $?) {
 # Get NIC guest A
 $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
 $vmxnet_A = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: vmxnet_A: ${vmxnet_A}."
 
 
 # Setup new MTU
-$status = setMTU $ipv4 $sshKey $vmxnet_A $mtu
-if (-not $status[-1]) {
-    LogPrint "ERROR: Setup new MTU failed"
+$setA = setMTU $ipv4 $sshKey $vmxnet_A $mtu
+LogPrint "DEBUG: setA: ${setA}."
+if (-not $setA[-1]) {
+    LogPrint "ERROR: Setup new MTU failed in VM-A."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Install tcpdump at GuestA
-$status = SendCommandToVM $ipv4 $sshKey "yum install tcpdump -y"
-if (-not $status[-1]) {
-    LogPrint "Error: Cannot install tcpdump"
+$install = SendCommandToVM $ipv4 $sshKey "yum install tcpdump -y"
+if (-not $install[-1]) {
+    LogPrint "Error: Cannot install tcpdump."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -238,18 +231,20 @@ LogPrint "INFO: Ready SSH"
 
 # Get GuestB IP addr
 $ipv4Addr_B = GetIPv4 -vmName $GuestBName -hvServer $hvServer
-$GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
+LogPrint "DEBUG: ipv4Addr_B: ${ipv4Addr_B}."
 
 
 # Get NIC guest B
 $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
 $vmxnet_B = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_B} $Command
+LogPrint "DEBUG: vmxnet_B: ${vmxnet_B}."
 
 
 # Setup new MTU
-$status = setMTU $ipv4Addr_B $sshKey $vmxnet_B $mtu
-if (-not $status[-1]) {
-    LogPrint "ERROR: Setup new MTU failed"
+$setB = setMTU $ipv4Addr_B $sshKey $vmxnet_B $mtu
+LogPrint "DEBUG: setB: ${setB}."
+if (-not $setB[-1]) {
+    LogPrint "ERROR: Setup new MTU failed in VM-B."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -262,23 +257,22 @@ $proc = Start-Process .\bin\plink.exe -ArgumentList "-i ssh\${sshKey} root@${ipv
 
 
 # Use tcpdump to check the packet is not fragmented
-LogPrint "INFO: Start tcpdump to receive Ping"
+LogPrint "INFO: Start tcpdump to receive Ping."
 $Command = "timeout 100 tcpdump -n -v -i $vmxnet_A -l -c 20 icmp and src $ipv4Addr_B | grep 'offset 0'| grep 'length $mtu' | wc -l"
 $packetsCount = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
 if ($packetsCount -ne 20) {
-    LogPrint "ERROR: Packet is fragmented or tcpdump is timeout" 
-    LogPrint "ERROR: packetsCount is $packetsCount, Command is $Command" 
+    LogPrint "ERROR: packet is fragmented or tcpdump is timeout. Found packetsCount is $packetsCount, Command is $Command"
     DisconnectWithVIServer
     return $Failed
 }
 
 
-# Check Ping results
+# Check Ping results.
 $handle = $proc.Handle
 $proc.WaitForExit()
 LogPrint "INFO: Handle is $handle, Exit Code is $($proc.ExitCode)"
 if ($proc.ExitCode -ne 0) {
-    LogPrint "ERROR: Exit Code is not 0" 
+    LogPrint "ERROR: Exit Code is not 0." 
     DisconnectWithVIServer
     return $Failed 
 }

@@ -125,8 +125,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 #
 # Main Body
 ######################################################################################## 
-
-
 $retVal = $Failed
 
 
@@ -147,6 +145,7 @@ if (-not $vmObj) {
 
 # Specify dst host
 $dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7 -Host7_0 $dstHost7_0
+LogPrint "DEBUG: dstHost: ${dstHost}."
 if ($null -eq $dstHost) {
     LogPrint "ERROR: Cannot find required Host"    
     DisconnectWithVIServer
@@ -163,7 +162,6 @@ if (-not $DISTRO) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
@@ -176,6 +174,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 
 # Store Old datastore
 $oldDatastore = Get-Datastore -Name "datastore-*" -VMHost $hvServer
+LogPrint "DEBUG: oldDatastore: ${oldDatastore}."
 if (-not $oldDatastore) {
     LogPrint "ERROR: Unable to Get required original datastore $oldDatastore"
     DisconnectWithVIServer
@@ -185,6 +184,7 @@ if (-not $oldDatastore) {
 
 # Get Required Datastore
 $shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
+LogPrint "DEBUG: shardDatastore: ${shardDatastore}."
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
@@ -218,17 +218,12 @@ if ( -not $status[-1]) {
 
 
 # Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
-    DisconnectWithVIServer
-    return $Aborted
-}
+$on = Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Wait for GuestB SSH ready
 if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
+    LogPrint "ERROR: Cannot start SSH."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -241,14 +236,15 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 
 # Find out new add RDMA nic for Guest B
-$nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
-if ($null -eq $nics) {
+$Bnics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+LogPrint "DEBUG: Bnics: ${Bnics}."
+if ($null -eq $Bnics) {
     LogPrint "ERROR: Cannot find new add RDMA NIC" 
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    $rdmaNIC = $nics[-1]
+    $rdmaNIC = $Bnics[-1]
 }
 LogPrint "INFO: New NIC is $rdmaNIC"
 
@@ -268,21 +264,22 @@ Start-Sleep -Seconds 6
 $status = Wait-Task -Task $task
 LogPrint "INFO: Migration result is $status"
 if (-not $status) {
-    LogPrint "ERROR : Cannot move disk to required Datastore ${shardDatastore.Name}"
+    LogPrint "ERROR : Cannot move disk to required Datastore $(${shardDatastore}.Name)"
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Find out new add RDMA nic for Guest A
-$nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-if ($null -eq $nics) {
+$Anics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+LogPrint "DEBUG: Anics: ${Anics}."
+if ($null -eq $Anics) {
     LogPrint "ERROR: Cannot find new add rdma NIC" 
     DisconnectWithVIServer
     return $Failed
 }
 else {
-    $rdmaNIC = $nics[-1]
+    $rdmaNIC = $Anics[-1]
 }
 LogPrint "INFO: New NIC is $rdmaNIC"
 
@@ -300,6 +297,7 @@ LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
 # Check can we ping GuestA from GuestB via RDMA NIC
 $Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
 $status = SendCommandToVM $ipv4Addr_B $sshkey $command
+LogPrint "DEBUG: status: ${status}."
 if (-not $status) {
     LogPrint "ERROR : Ping test Failed"
     $retVal = $Failed
@@ -318,53 +316,57 @@ else {
 }
 
 # Install dependency package on guest B.
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command1
-if (-not $status) {
+$cmd1 = SendCommandToVM $ipv4Addr_B $sshkey $command1
+LogPrint "DEBUG: cmd1: ${cmd1}."
+if (-not $cmd1) {
     LogPrint "ERROR : install package Failed"
     return $Aborted
 }
 # Load ib related modules
 $command2 = "modprobe ib_umad"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command2
-if (-not $status) {
+$cmd2 = SendCommandToVM $ipv4Addr_B $sshkey $command2
+LogPrint "DEBUG: cmd2: ${cmd2}."
+if (-not $cmd2) {
     LogPrint "ERROR : load modules Failed"
 
     return $Aborted
 }
 
+
 # Install dependency package on guest A.
-$status = SendCommandToVM $ipv4 $sshkey $command1
-if (-not $status) {
+$cmda1 = SendCommandToVM $ipv4 $sshkey $command1
+LogPrint "DEBUG: cmda1: ${cmda1}."
+if (-not $cmda1) {
     LogPrint "ERROR : install package Failed"
     
     return $Aborted
 }
 
+
 # Load ib related modules
-$status = SendCommandToVM $ipv4 $sshkey $command2
-if (-not $status) {
+$cmda2 = SendCommandToVM $ipv4 $sshkey $command2
+LogPrint "DEBUG: cmda2: ${cmda2}."
+if (-not $cmda2) {
     LogPrint "ERROR : load modules Failed"
     
     return $Aborted
 }
+
 
 # Check the RoCE version
 $RoCE = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/class/infiniband/vmw_pvrdma0/ports/1/gid_attrs/types/0"
 if ("RoCE V2" -eq $RoCE)
 {
     $gid=1
-	Write-Host -F Green "INFO: gid set to 1, RoCE version is $RoCE"
-    Write-Output "INFO: RoCE version is $RoCE"
+	LogPrint "INFO: gid set to 1, RoCE version is $RoCE"
 }
 elseif ("IB/RoCE v1" -eq $RoCE) {
     $gid=0
-    Write-Host -F Red "INFO: gid set to 0, RoCE version is $RoCE"
-	Write-Output "INFO: RoCE version is $RoCE"
+    LogPrint "INFO: gid set to 0, RoCE version is $RoCE"
 }
 else
 {
-    Write-Host -F Red "Error: RoCE version is $RoCE"
-    Write-Output "Error: RoCE version is $RoCE"
+    LogPrint "Error: RoCE version is $RoCE"
     return $Aborted
 }
 

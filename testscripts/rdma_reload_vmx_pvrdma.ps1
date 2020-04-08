@@ -114,8 +114,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -142,7 +140,6 @@ if (-not $DISTRO) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
@@ -156,6 +153,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
 # Make sure the vmw_pvrdma is loaded 
 $Command = "lsmod | grep vmw_pvrdma | wc -l"
 $modules = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+LogPrint "DEBUG: modules: ${modules}."
 if ($modules -eq 0) {
     LogPrint "ERROR : Cannot find any pvRDMA module"
     DisconnectWithVIServer
