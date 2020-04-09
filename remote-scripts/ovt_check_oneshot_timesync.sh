@@ -76,11 +76,15 @@ else
         datehost=`vmware-toolbox-cmd stat hosttime`
         timehost=`date +%s -d"$datehost"`
         UpdateSummary "timehost after enable: $timehost"
+
         timeguest=`date +%s`
         UpdateSummary "timeguest after enable: $timeguest"
+
+        #calculate the guest time and host time difference not bigger then 1
         offset=$[timehost-timeguest]
-        #calculate the guest time and host time difference
-        if [ $offset -ne 0 ]; then
+        offset=${offset/-/}
+       
+        if [ $offset -gt 1 ]; then
                 LogMsg "Info : The guest time is sync with host failed."
                 UpdateSummary "offset: $offset,offset Test Failed,The guest time is sync with host failed."
                 SetTestStateFailed

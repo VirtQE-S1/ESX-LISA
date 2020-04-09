@@ -134,7 +134,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 
 # Install podman and add docker.io to container registries config file.
-$sts = SendCommandToVM $ipv4 $sshKey "yum module install container-tools -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
+$sts = SendCommandToVM $ipv4 $sshKey "yum install podman -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
 LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
     LogPrint "ERROR : YUM install podman packages failed"
