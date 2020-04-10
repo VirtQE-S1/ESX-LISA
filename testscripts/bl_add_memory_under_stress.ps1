@@ -1,16 +1,15 @@
 ########################################################################################
 ## Description:
-##  Test Hot add memory under memory stress
+##  Test Hot add memory under memory stress.
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 7/16/2018 - Build the script
+##  v1.0.0 - ruqin - 7/16/2018 - Build the script.
 ########################################################################################
 
 
 <#
 .Synopsis
     Hot add memory during memory stress
-
 .Description
         <test>
             <testName>bl_add_memory_under_stress</testName>
@@ -29,10 +28,8 @@
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
@@ -51,7 +48,7 @@ if (-not $hvServer) {
 }
 
 if (-not $testParams) {
-    Throw "Error: No test parameters specified"
+    Throw "Error: No test parameters specified."
 }
 
 
@@ -78,14 +75,14 @@ foreach ($p in $params) {
 
 # Check all parameters are valid
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARN: no rootdir was specified."
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARN: rootdir '${rootDir}' does not exist."
     }
 }
 
@@ -109,13 +106,13 @@ $retVal = $Failed
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Get the Guest version
+# Get the Guest version.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
@@ -123,7 +120,6 @@ if (-not $DISTRO) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
@@ -176,7 +172,7 @@ Start-Sleep -Seconds 6
 $status = Set-VM $vmObj -MemoryGB ($vmObj.MemoryGB * 2) -Confirm:$false
 LogPrint "DEBUG: status: ${status}."
 if (-not $?) {
-    LogPrint "ERROR: Failed Hot Add memeory to the VM $vmName"
+    LogPrint "ERROR: Failed Hot Add memeory to the VM ${vmName}."
     DisconnectWithVIServer
     return $Failed
 }
@@ -186,33 +182,33 @@ if (-not $?) {
 Start-Sleep -Seconds 30
 
 
-# Clean Cache
+# Clean Cache.
 $Command = "sync; echo 3 > /proc/sys/vm/drop_caches"
 $status = SendCommandToVM $ipv4 $sshkey $command
 if ( -not $status) {
-    LogPrint "ERROR: Clean Cache Failed in $vmName"
+    LogPrint "ERROR: Clean Cache Failed in ${vmName}."
     DisconnectWithVIServer
     return $Failed
 }
 
 
-# Now Total Memory
+# Now Total Memory.
 $Command = "free -m | awk '{print `$2}' | awk 'NR==2'"
 $Total_Mem = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
-LogPrint "DEBUG: Total_Mem: $Total_Mem"
+LogPrint "DEBUG: Total_Mem: ${Total_Mem}."
 
 
 $dst_mem = $vmobj.memorymb * 2
 if ( $total_mem -le ($dst_mem * 0.9) -or $total_mem -gt ($dst_mem * 1.1)) {
-    LogPrint  "ERROR: New hot add memory not fit $dst_mem mb in $vmname"
+    LogPrint  "ERROR: New hot add memory not fit $dst_mem mb in ${vmname}."
     disconnectwithviserver
     return $failed
 }
 
 
-# check system dmesg
+# Check system dmesg.
 if (-not (CheckCallTrace $ipv4 $sshKey)) {
-    LogPrint "ERROR: hot add memory has error call trace in $vmname"
+    LogPrint "ERROR: hot add memory has error call trace in ${vmname}."
     disconnectwithviserver
     return $Failed
 }
@@ -221,7 +217,7 @@ else {
 }
 
 
-# Wait seconds for Hot Add memory
+# Wait seconds for Hot Add memory.
 Start-Sleep -Seconds 6
 
 
@@ -229,13 +225,13 @@ $Process.WaitForExit()
 $exit = [int]$Process.ExitCode
 
 
-# Wait seconds for Hot Add memory
+# Wait seconds for Hot Add memory.
 Start-Sleep -Seconds 6
 
 
-# Check Stress return value
+# Check Stress return value.
 if ($exit -ne 0) {
-    LogPrint "ERROR: Stress Failed in $vmName With Command $Command and ExitCode $status"
+    LogPrint "ERROR: Stress Failed in $vmName With Command $Command and ExitCode $status."
     DisconnectWithVIServer
     return $Aborted
 }

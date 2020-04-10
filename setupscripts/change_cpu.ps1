@@ -27,24 +27,24 @@
 param([string] $vmName, [string] $hvServer, [string] $testParams)
 if ($vmName -eq $null)
 {
-    "Error: VM name is null"
+    "ERROR: VM name is null."
     return $retVal
 }
 
 if ($hvServer -eq $null)
 {
-    "Error: hvServer is null"
+    "ERROR: hvServer is null."
     return $retVal
 }
 
 if ($testParams -eq $null -or $testParams.Length -lt 3)
 {
-    "The script change_cpu.ps1 requires the VCPU test parameter"
+    "ERROR: change_cpu.ps1 requires the VCPU test parameter."
     return $retVal
 }
 
 
-# Find the testParams we require.  Complain if not found
+# Find the testParams we require.  Complain if not found.
 $retVal = $false
 $numCPUs = 0
 $params = $testParams.Split(";")
@@ -71,14 +71,14 @@ if ($procs)
 
 if ($numCPUs -lt 1 -or $numCPUs -gt $maxCPUs)
 {
-    "Error: Incorrect VCPU value: $numCPUs (max CPUs = $maxCPUs)"
+    "ERROR: Incorrect VCPU value: $numCPUs (max CPUs = $maxCPUs)"
     return $retVal
 }
 
 $vm = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vm)
 {
-    "Error: change_cpu: Unable to create VM object for VM $vmName"
+    "ERROR: change_cpu: Unable to create VM object for VM ${vmName}."
     return $retVal
 }
 
@@ -88,17 +88,17 @@ if ($numCPUs -ne 0)
     Set-VM -VM $vm -NumCpu $numCPUs -Confirm:$False
     if ($? -eq "True")
     {
-        "Info : CPU count updated to $numCPUs"
+        "INFO: CPU count updated to ${numCPUs}."
         $retVal = $true
     }
     else
     {
-        write-host "Error: Unable to update CPU num."
+        write-host "ERROR: Unable to update CPU num."
         return $retVal
     }
 }
 else {
-    "Error : VCPU test parameter not found in testParams."
+    "ERROR: VCPU test parameter not found in testParams."
 }
 
 

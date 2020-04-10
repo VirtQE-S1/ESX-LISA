@@ -102,7 +102,7 @@ $retVal = $Failed
 # The VM A and the VM B own the same part in names
 $vmNameB = $vmName -replace "-A$","-B"
 $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
-if (-not $vmObjecB) {
+if (-not $vmObjectB) {
     LogPrint "ERROR: Unable to Get-VM with ${vmObjectB}."
     DisconnectWithVIServer
     return $Aborted

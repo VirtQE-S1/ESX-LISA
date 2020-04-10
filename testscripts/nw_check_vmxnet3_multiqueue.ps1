@@ -2,14 +2,13 @@
 ## Description:
 ##  Check the VMXNET3 multiqueue support
 ## Revision:
-##  v1.0.0 - xinhu - 11/15/2019 - Build the script
+##  v1.0.0 - xinhu - 11/15/2019 - Build the script.
 ########################################################################################
 
 
 <#
 .Synopsis
     Vertify the VMXNET3 support multiqueue
-
 .Description
     <test>
         <testName>nw_check_vmxnet3_multiqueue</testName>
@@ -27,37 +26,35 @@
     </test>
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-# Checking the input arguments
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
-    "FAIL: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit 1
 }
 
 if (-not $hvServer) {
-    "FAIL: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit 1
 }
 
 if (-not $testParams) {
-    Throw "FAIL: No test parameters specified"
+    Throw "ERROR: No test parameters specified."
 }
 
 
-# Output test parameters so they are captured in log file
+# Output test parameters so they are captured in log file.
 "TestParams : '${testParams}'"
 
 
-# Parse test parameters
+# Parse test parameters.
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -77,37 +74,38 @@ foreach ($p in $params) {
 }
 
 
-# Check all parameters are valid
+# Check all parameters are valid.
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARN: no rootdir was specified."
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARN: rootdir '${rootDir}' does not exist."
     }
 }
 
 if ($null -eq $sshKey) {
-    "FAIL: Test parameter sshKey was not specified"
+    "ERROR: Test parameter sshKey was not specified."
     return $False
 }
 
 if ($null -eq $ipv4) {
-    "FAIL: Test parameter ipv4 was not specified"
+    "ERROR: Test parameter ipv4 was not specified."
     return $False
 }
 
 if ($null -eq $numCPUs) {
-    "FAIL: Test parameter numCPUs was not specified"
+    "ERROR: Test parameter numCPUs was not specified."
     return $False
 }
 
 
 # Source tcutils.ps1
 . .\setupscripts\tcutils.ps1
+
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISUSERNAME `
@@ -126,7 +124,7 @@ $queues = "rx-0","rx-1","rx-2","rx-3","tx-0","tx-1","tx-2","tx-3"
 
 
 # Function to stop VMB and disconnect with VIserver.
-Function StopVMB($hvServer,$vmNameB)
+Function StopVMB($hvServer, $vmNameB)
 {
     $vmObjB = Get-VMHost -Name $hvServer | Get-VM -Name $vmNameB
     Stop-VM -VM $vmObjB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
@@ -135,11 +133,12 @@ Function StopVMB($hvServer,$vmNameB)
 
 
 # Function to check network queues.
-Function CheckQueues($sshKey,$ip,$NIC,$queues)
+Function CheckQueues($sshKey, $ip, $NIC, $queues)
 {
     LogPrint "INFO: Start to check queues of ${ip}." 
     $result = bin\plink.exe -i ssh\${sshKey} root@${ip} "ls /sys/class/net/$NIC/queues"
     $compare = Compare-Object $result $queues -SyncWindow 0
+	LogPrint "DEBUG: compare: ${compare}."
     if ($compare -ne $null)
     {
         LogPrint "ERROR: The queues of ${ipv4} is $result , not equal to ${queues}."
@@ -155,9 +154,9 @@ Function InstalNetperf(${sshKey},${ip})
 {
     LogPrint "INFO: Start to install netperf on ${ip}"
     # Current have a error "don't have command makeinfo" when install netperf, So cannot judge by echo $?
-    $result = bin\plink.exe -i ssh\${sshKey} root@${ip} "yum install -y automake && git clone https://github.com/HewlettPackard/netperf.git && cd netperf && ./autogen.sh && ./configure && make; make install; netperf -h; echo `$?"
-    LogPrint "DEBUG: result: $result"
-    if ( $result[-1] -eq 127)
+    $install = bin\plink.exe -i ssh\${sshKey} root@${ip} "yum install -y automake && git clone https://github.com/HewlettPackard/netperf.git && cd netperf && ./autogen.sh && ./configure && make; make install; netperf -h; echo `$?"
+    LogPrint "DEBUG: install: $install"
+    if ( $install[-1] -eq 127)
     {
         LogPrint "ERROR: Install netperf failed."
         return $false
@@ -167,12 +166,13 @@ Function InstalNetperf(${sshKey},${ip})
 }
 
 
-# Prepare VMB
+# Prepare VMB.
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $vmNameB = $vmName -creplace ("-A$"),"-B"
-LogPrint "INFO: RevertSnap ${vmNameB}."
-$result = RevertSnapshotVM $vmNameB $hvServer
-if ($result[-1] -ne $true)
+LogPrint "INFO: Start to revert snapshot of ${vmNameB}."
+$revert = RevertSnapshotVM $vmNameB $hvServer
+LogPrint "DEBUG: revert: ${revert}."
+if ($revert[-1] -ne $true)
 {
     LogPrint "ERROR: RevertSnap $vmNameB failed."
     DisconnectWithVIServer
@@ -180,8 +180,9 @@ if ($result[-1] -ne $true)
 }
 
 
-LogPrint "INFO: set vCpuNum = 4."
+LogPrint "INFO: Set $vmNameB vCpuNum = 4."
 $State = Set-VM -VM $vmNameB -NumCpu $numCPUs -Confirm:$false
+LogPrint "DEBUG: State: ${State}."
 if (-not $?) {
     LogPrint "ERROR: Failed to set $vmNameB vCpuNum = 4."
     DisconnectWithVIServer
