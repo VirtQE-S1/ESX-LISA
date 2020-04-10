@@ -1,6 +1,8 @@
 ########################################################################################
 ## Description:
-##  Check NIC name after unload and load vmxnet3
+##  Check NIC name after unload and load vmxnet3. Like the original nic named ens192,
+##	after add two nics nes193, ens194, and remove ens193, after reload vmxnet3 driver,
+##	ens194 name can't be changed to ens193 or others, should be kept nes194.
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 08/02/2018 - Build the script.
@@ -23,10 +25,9 @@
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>240</timeout>
-            <onError>Continue</onError>
+            <onERROR>Continue</onERROR>
             <noReboot>False</noReboot>
         </test>
-
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -34,22 +35,20 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
-    "Error: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit 100
 }
 
 if (-not $hvServer) {
-    "Error: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit 100
 }
 
 if (-not $testParams) {
-    Throw "Error: No test parameters specified"
+    Throw "ERROR: No test parameters specified."
 }
 
 
@@ -73,16 +72,17 @@ foreach ($p in $params) {
     }
 }
 
+
 # Check all parameters are valid
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARN : no rootdir was specified"
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARN : rootdir '${rootDir}' does not exist"
     }
 }
 
@@ -110,99 +110,107 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-function findNICByMAC ([String] $AdapterName, $vmObj, [String] $ipv4, [String] $sshKey) {
+$retVal = $Failed
 
+
+function findNICByMAC ([String] $AdapterName, $vmObj, [String] $ipv4, [String] $sshKey) 
+{
     $nics = Get-NetworkAdapter -VM $vmObj
     $Command = "cat /sys/class/net/$AdapterName/address"
     $MacAddr = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    LogPrint "DEBUG: MacAddr: ${MacAddr}."
 
     if ($null -eq $MacAddr) {
-        LogPrint "Warn: Cannot find required Mac address $MacAddr" 
+        LogPrint "WARN: Cannot find required Mac address ${MacAddr}." 
         return $null
     }
 
     foreach ($nic in $nics) {
         if ($nic.MacAddress -eq $MacAddr) {
-            LogPrint "INFO: NIC found is $nic"
+            LogPrint "INFO: NIC found is ${nic}."
             return $nic
         }
     }
-    LogPrint "Warn: Cannot find required NIC"
+
+    LogPrint "WARN: Cannot find required NIC."
     return $null
 }
 
-$retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Get the Guest version
+# Get the Guest version.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
-    LogPrint "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Different Guest DISTRO
+# Different Guest DISTRO.
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
 
 
-# Get Old Adapter Name of VM
-$Command = "ip a| grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+# Get Old Adapter Name of VM.
+$Command = "ip a | grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
 $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-
+LogPrint "DEBUG: Old_Adapter: ${Old_Adapter}."
 if ( $null -eq $Old_Adapter) {
-    LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
+    LogPrint "ERROR : Cannot get Server_Adapter from first adapter."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Get other two nics
+# Get other two nics.
 $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter | awk 'NR==1'"
 $Second_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: Second_Adapter: ${Second_Adapter}."
 if ( $null -eq $Second_Adapter) {
-    LogPrint "ERROR : Cannot get Server_Adapter from Second adapter"
+    LogPrint "ERROR : Cannot get Server_Adapter from Second adapter."
     DisconnectWithVIServer
     return $Aborted
 }
 
 $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter | awk 'NR==2'"
 $Thrid_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: Thrid_Adapter: ${Thrid_Adapter}."
 if ( $null -eq $Thrid_Adapter) {
-    LogPrint "ERROR : Cannot get Server_Adapter from Thrid adapter"
+    LogPrint "ERROR : Cannot get Server_Adapter from Thrid adapter."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Remove vmxnet3 NIC
+# Remove vmxnet3 NIC.
 $Second_NIC = findNICByMAC -AdapterName $Second_Adapter -vmObj $vmObj -ipv4 $ipv4 -sshKey $sshKey
-# Because new patch is not online so have to poweroff
+LogPrint "DEBUG: Second_NIC: ${Second_NIC}."
+
+
+# Because new patch is not online so have to poweroff.
 $status = Stop-VM $vmObj -Confirm:$False
-LogPrint "INFO: Poweroff sucessful"
 
 
-# Wait for reload
-Start-Sleep -Seconds 6
+# Enough time to stop the VM.
+Start-Sleep -Seconds 60
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -211,45 +219,47 @@ if (-not $vmObj) {
 # Must be [-1] due to powershell return value
 Remove-NetworkAdapter -NetworkAdapter $Second_NIC[-1] -Confirm:$false
 if (-not $?) {
-    LogPrint "ERROR: Cannot remove seoncd NIC"
+    LogPrint "ERROR: Cannot remove seoncd NIC."
     DisconnectWithVIServer
     return $Aborted
 }
-$status = Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+
+
+$status = Start-VM -VM $vmObj -Confirm:$false -RunAsync:$true -ERRORAction SilentlyContinue
 if (-not $?) {
-    Write-Host -F Red "ERROR : Cannot start VM"
-    Write-Output "ERROR : Cannot start VM"
+    LogPrint "ERROR: Cannot start VM."
     DisconnectWithVIServer
     return $Aborted
 }
 
 
-# Get VM IP addr
+# Get VM IP addr.
 if ( -not (WaitForVMSSHReady $vmName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH"
+    LogPrint "ERROR : Cannot start SSH."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Ready SSH"
+LogPrint "INFO: Ready SSH."
 
 
-# refresh vmobj
+# Refresh vmobj.
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
     DisconnectWithVIServer
     return $Aborted
 }
 
-# Load and Unload vmxnet3
+# Load and Unload vmxnet3.
 $Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && systemctl restart NetworkManager"
 if ($DISTRO -eq "RedHat6") {
-    $Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && service network restart"
+    $Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && service network restart."
 }
-$status = SendCommandToVM $ipv4 $sshKey $Command
 
-if ( -not $status) {
-    LogPrint "Error : Cannot reload vmxnet3"
+$status = SendCommandToVM $ipv4 $sshKey $Command
+LogPrint "DEBUG: status: ${status}."
+if (-not $status) {
+    LogPrint "ERROR : Cannot reload vmxnet3."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -262,9 +272,9 @@ Start-Sleep -Seconds 6
 # Get New Adapter Name Again
 $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
 $Reload_Adapter = bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-
+LogPrint "DEBUG: Reload_Adapter: ${Reload_Adapter}."
 if ( $null -eq $Reload_Adapter) {
-    LogPrint "ERROR : Cannot get Server_Adapter From third Adapter"
+    LogPrint "ERROR: Cannot get Server_Adapter From third Adapter."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -272,7 +282,7 @@ if ( $null -eq $Reload_Adapter) {
 
 # Check NIC name
 if ($Reload_Adapter -ne $Thrid_Adapter) {
-    LogPrint "ERROR : NIC name changed after reload vmxnet3"
+    LogPrint "ERROR: NIC name changed after reload vmxnet3."
     DisconnectWithVIServer
     return $Failed
 }

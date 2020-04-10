@@ -1,55 +1,47 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Hot enable memory feature
-##
-###############################################################################
+## 	Hot enable memory feature.
 ##
 ## Revision:
-## V1.0.0 - boyang - 10/12/2017 - Build the script
-## v1.0.1 - ruqin - 7/16/2018 - Fix DisconnectWithVIServer Error
-##
-###############################################################################
+## 	v1.0.0 - boyang - 10/12/2017 - Build the script.
+## 	v1.0.1 - ruqin  - 07/16/2018 - Fix DisconnectWithVIServer ERROR.
+########################################################################################
+
+
 <#
 .Synopsis
     Hot enable memory feature
-
 .Description
     Hot enable memory feature in setup phrase
-
 .Parameter vmName
     Name of the test VM
-
 .Parameter testParams
     Semicolon separated list of test parameters
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-#
+
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
-    "Error: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit
 }
 
 if (-not $hvServer) {
-    "Error: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit
 }
 
 if (-not $testParams) {
-    Throw "Error: No test parameters specified"
+    Throw "ERROR: No test parameters specified."
 }
 
-#
+
 # Display the test parameters so they are captured in the log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -77,9 +69,7 @@ else {
     }
 }
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -88,23 +78,21 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
+
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    Write-Error -Message "CheckModules: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ErrorAction SilentlyContinue
+    Write-ERROR -Message "INFO: Unable to create VM object for VM $vmName" -Category ObjectNotFound -ERRORAction SilentlyContinue
     DisconnectWithVIServer
     return $Aborted
 }
 else {
-    Write-Host -F Gray "Start to enable hot-mem feature......."
-    Write-Output "Start to enable hot-mem feature"
+    LogPrint "INFO: Start to enable hot-mem feature."
     # $vmObj.ExtensionData.config
     $vmView = Get-vm $vmObj | Get-View
     $vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
@@ -118,5 +106,6 @@ else {
     $vmView.ReconfigVM($vmConfigSpec)
     $retVal = $Passed
 }
+
 
 return $retVal
