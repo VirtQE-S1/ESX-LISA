@@ -36,18 +36,20 @@ fi
 
 vmware-toolbox-cmd timesync enable
 #enable the guest timesync with host
-date -s "2008-08-08 12:00:00"
+date -s "2018-08-08 12:00:00"
 
+#wait 60 seconds and check the guest time and host time difference
 sleep 60
-#wait 60seconds and check the guest time and host time difference
 
 datehost=`vmware-toolbox-cmd stat hosttime`
 timehost=`date +%s -d"$datehost"`
 timeguest=`date +%s`
 
+#calculate the guest time and host time difference not bigger then 1
 offset=$[timehost-timeguest]
+offset=${offset/-/}
 
-if [ $offset -ne 0 ]; then
+if [ $offset -gt 1 ]; then
         LogMsg "Info : The guest time is sync with host failed."
         UpdateSummary "offset: $offset,Test Failed,The guest time is sync with host failed."
         SetTestStateFailed

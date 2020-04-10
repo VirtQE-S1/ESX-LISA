@@ -42,6 +42,10 @@
                 <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_check_hyperv_drivers</suiteTest>
                 <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
+                <suiteTest>go_check_dmesg_unable</suiteTest>
+                <suiteTest>go_check_journalctl_traceback</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -426,6 +430,9 @@
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
+                <suiteTest>go_check_dmesg_unable</suiteTest>
+                <suiteTest>go_check_journalctl_traceback</suiteTest>
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
@@ -469,6 +476,45 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_check_journalctl_traceback</testName>
+            <testID>ESX-GO-027</testID>
+            <testScript>testscripts/go_check_journalctl_traceback.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186407</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_dmesg_unable</testName>
+            <testID>ESX-GO-025</testID>
+            <testScript>testscripts/go_check_dmesg_unable.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186406</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_dmesg_unknowsymbol</testName>
+            <testID>ESX-GO-026</testID>
+            <testScript>testscripts/go_check_dmesg_unknowsymbol.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186405</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>ovt_check_installation_info</testName>
             <testID>ESX-OVT-038</testID>
@@ -536,7 +582,7 @@
         </test>
         <test>
             <testName>go_fips_enable</testName>
-            <testID>ESX-go-021</testID>
+            <testID>ESX-GO-024</testID>
             <testScript>testscripts/go_fips_enable.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <testParams>
