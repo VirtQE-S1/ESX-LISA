@@ -3,7 +3,7 @@
 ###############################################################################
 ##
 ## Description:
-##   This script verify open-vm-tools function collect running appinfo
+##   This script check disable appinfo plugin via set poll-interval to 0
 ##
 ###############################################################################
 ##
@@ -12,13 +12,13 @@
 ##
 ###############################################################################
 #         <test>
-#             <testName>ovt_get_appinfo</testName>
-#             <testID>ESX-OVT-039</testID>
-#             <testScript>ovt_get_appinfo.sh</testScript>
-#             <files>remote-scripts/ovt_get_appinfo.sh</files>
+#             <testName>ovt_disable_appinfo_via_poll-interval</testName>
+#             <testID>ESX-OVT-040</testID>
+#             <testScript>ovt_disable_appinfo_via_poll-interval.sh</testScript>
+#             <files>remote-scripts/ovt_disable_appinfo_via_poll-interval.sh</files>
 #             <files>remote-scripts/utils.sh</files>
 #             <testParams>
-#                 <param>TC_COVERED=RHEL6-0000,RHEL-187173</param>
+#                 <param>TC_COVERED=RHEL6-0000,RHEL-18714</param>
 #             </testParams>
 #             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #             <timeout>600</timeout>
@@ -60,28 +60,17 @@ else
   exit
 fi
 
+
 #Make sure the captures the app information in gust every 1 seconds
 vmware-toolbox-cmd config set appinfo poll-interval 1
 
 sleep 6
 #Both below two command should get the running appinfo in guest
 appNumber1=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
-appNumber2=$(vmtoolsd --cmd "info-get guestinfo.appInfo" | wc -l)
-if [ $appNumber1 -eq $appNumber2 ]; then
-  LogMsg "vmware-rpctool:$appNumber1,vmtoolsd --cmd:$appNumber2"
-  UpdateSummary "info: the running appinfo collect passed for both command."
-else
-  LogMsg "Info :vmware-rpctool:$appNumber1,vmtoolsd --cmd:$appNumber2"
-  UpdateSummary "Test failed. The appinfo get failed in guest.vmware-rpctool:$appNumber1,vmtoolsd --cmd:$appNumber2"
-  SetTestStateFailed
-  exit 1
-fi
 #check the app number in guest
 if [ "$appNumber1" -gt "100" ]; then
   LogMsg $appNumber
-  UpdateSummary "Test Successfully. the running appinfo collect passed."
-  SetTestStateCompleted
-  exit 0
+  UpdateSummary "Info: the running appinfo collect passed. the app number is $appNumber"
 else
   LogMsg "Info : Test failed, $appNumber1"
   UpdateSummary "Test failed. The app number below than 100,is $appNumber1."
@@ -89,4 +78,21 @@ else
   exit 1
 fi
 
+#Disable the appinfo plugin
+vmware-toolbox-cmd config set appinfo poll-interval 0
+
+sleep 6
+appNumber=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
+#check the app number in guest
+if [ "$appNumber" -eq "1" ]; then
+  LogMsg $appNumber
+  UpdateSummary "Test Successfully. The appinfo plugin has disabled."
+  SetTestStateCompleted
+  exit 0
+else
+  LogMsg "Info : Test failed, $appNumber"
+  UpdateSummary "Test failed. The appinfo plugin disabled failed, the app number is $appNumber."
+  SetTestStateFailed
+  exit 1
+fi
 
