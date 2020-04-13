@@ -18,7 +18,7 @@
 #             <files>remote-scripts/ovt_disable_appinfo_via_poll-interval.sh</files>
 #             <files>remote-scripts/utils.sh</files>
 #             <testParams>
-#                 <param>TC_COVERED=RHEL6-0000,RHEL-18714</param>
+#                 <param>TC_COVERED=RHEL6-0000,RHEL-187174</param>
 #             </testParams>
 #             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
 #             <timeout>600</timeout>
@@ -52,10 +52,10 @@ version=$(rpm -qa open-vm-tools)
 version_num=${version:14:2}
 if [ "$version_num" -gt "10" ]; then
   LogMsg $version_num
-  UpdateSummary "Info: The OVT version great 10, version number is $version_num"
+  UpdateSummary "Info: The OVT version great 10, version number is $version."
 else
-  LogMsg "Info : skip as OVT version old then 10, $version_num"
-  UpdateSummary "skip as OVT version old then 10, version number is $version_num."
+  LogMsg "Info : skip as OVT version old then 10, current version is $version."
+  UpdateSummary "skip as OVT version old then 10, version number is $version."
   SetTestStateSkipped
   exit
 fi
@@ -69,10 +69,10 @@ sleep 6
 appNumber1=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
 #check the app number in guest
 if [ "$appNumber1" -gt "100" ]; then
-  LogMsg $appNumber
-  UpdateSummary "Info: the running appinfo collect passed. the app number is $appNumber"
+  LogMsg $appNumber1
+  UpdateSummary "Info: the running appinfo collect passed. the app number is $appNumber1."
 else
-  LogMsg "Info : Test failed, $appNumber1"
+  LogMsg "Info : Test failed, $appNumber1."
   UpdateSummary "Test failed. The app number below than 100,is $appNumber1."
   SetTestStateFailed
   exit 1
@@ -90,7 +90,7 @@ if [ "$appNumber" -eq "1" ]; then
   SetTestStateCompleted
   exit 0
 else
-  LogMsg "Info : Test failed, $appNumber"
+  LogMsg "Info : Test failed, $appNumber."
   UpdateSummary "Test failed. The appinfo plugin disabled failed, the app number is $appNumber."
   SetTestStateFailed
   exit 1
