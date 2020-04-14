@@ -38,10 +38,8 @@ dos2unix utils.sh
 # Source constants file and initialize most common variables
 UtilsInit
 
-#
-# Start the testing
-#
 
+# Start the testing
 if [[ $DISTRO == "redhat_6" ]]; then
         SetTestStateSkipped
         exit
@@ -79,10 +77,14 @@ else
   exit 1
 fi
 
+
 #Make sure the captures the app information in gust every 1 seconds
 vmware-toolbox-cmd config set appinfo poll-interval 0
 
+
 sleep 6
+
+
 #Both below two command should get the running appinfo in guest
 appNumber2=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
 #check the app number in guest
@@ -96,9 +98,13 @@ else
   exit 1
 fi
 
+
 vmware-toolbox-cmd config set appinfo poll-interval 20
 
+
 sleep 15
+
+
 appNumber3=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
 #check the app number in guest
 if [ "$appNumber3" -lt "2" ]; then
@@ -112,19 +118,20 @@ else
 fi
 
 
-
 sleep 10
+
+
 #Both below two command should get the running appinfo in guest
 appNumber4=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
 #check the app number in guest
 if [ "$appNumber4" -gt "100" ]; then
   LogMsg $appNumber4
-  UpdateSummary "Info: Third time set poll-interval to 20, wait 21s, the app number is $appNumber4."
+  UpdateSummary "Info: Third time set poll-interval to 20, wait 25s, the app number is $appNumber4."
   SetTestStateCompleted
   exit 0
 else
   LogMsg "Info : Test failed, $appNumber4."
-  UpdateSummary "Test failed. Third time set poll-interval to 20, wait 21s,app number is $appNumber4."
+  UpdateSummary "Test failed. Third time set poll-interval to 20, wait 25s,app number is $appNumber4."
   SetTestStateFailed
   exit 1
 fi
