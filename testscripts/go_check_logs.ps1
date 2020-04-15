@@ -137,6 +137,7 @@ if (-not $vmObj)
 	return $Aborted
 }
 
+#Check the kernel version, if kernel version below then 162
 
 # Check Call Trace
 $status = CheckCallTrace $ipv4 $sshKey
@@ -153,12 +154,23 @@ $fail_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep -v 'fail
 if ($null -eq $fail_check)
 {
     $retVal = $Passed
-    Write-Host -F Red "INFO: After boot, NO $fail_check failed log found."
-    Write-Output "INFO: After boot, NO $fail_check failed log found."
+    LogPrint "INFO: After boot, NO $fail_check failed log found."
 }
 else{
-    Write-Host -F Red "ERROR: After boot, FOUND $fail_check failed log in demsg."
-    Write-Output "ERROR: After boot, FOUND $fail_check failed log in demsg."
+    $version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel" 
+    $ver_num = $($version.split("-"))[2]
+    LogPrint "DEBUG: kernel version is: ${version} and kernel ver_num is $ver_num."
+    if ($ver_num -lt 162) {
+        LogPrint "INFO: The kernel version older then 162."
+        if ("$fail_check" -match "Perf event create on CPU 0 failed with -2")
+        {
+            LogPrint "INFO: it's a know issue,ignore this failed log $fail_check."
+            DisconnectWithVIServer
+            return $Skipped
+        }
+        LogPrint "ERROR: After boot, FOUND $fail_check failed log in demsg."  
+    }
+    
 }
 
 
