@@ -282,6 +282,35 @@
             </suiteTests>
         </suite>
         <suite>
+            <!-- EACV: X -->
+            <suiteName>eacv</suiteName>
+            <suiteTests>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>vsock_host_as_server</suiteTest>
+                <suiteTest>vsock_guest_as_server</suiteTest>
+                <suiteTest>rdma_check_IB_state</suiteTest>
+                <suiteTest>nw_check_nic_name</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
+                <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
+                <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
+                <suiteTest>go_check_dmesg_unable</suiteTest>
+                <suiteTest>go_check_journalctl_traceback</suiteTest>
+                <!-- suiteTest>nw_live_migration</suiteTest -->
+                <suiteTest>rdma_hot_remove</suiteTest>
+                <suiteTest>sriov_boot_check</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_100_containers</suiteTest>
+                <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
+                <suiteTest>nw_arbitrary_mtu</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
+                <suiteTest>nw_scp_mtu_9000</suiteTest>
+                <suiteTest>ovt_change_poll_interval_value</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_cmd</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_poll-interval</suiteTest>
+                <suiteTest>ovt_get_appinfo</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
             <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
@@ -365,6 +394,10 @@
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <!-- suiteTest>ovt_snapshot_mount_twice</suiteTest -->
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_change_poll_interval_value</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_cmd</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_poll-interval</suiteTest>
+                <suiteTest>ovt_get_appinfo</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -475,6 +508,62 @@
     </testSuites>
 
     <testCases>
+        <test>
+             <testName>ovt_change_poll_interval_value</testName>
+             <testID>ESX-OVT-040</testID>
+             <testScript>ovt_change_poll_interval_value.sh</testScript>
+             <files>remote-scripts/ovt_change_poll_interval_value.sh</files>
+             <files>remote-scripts/utils.sh</files>
+             <testParams>
+                 <param>TC_COVERED=RHEL6-0000,RHEL-187176</param>
+             </testParams>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>600</timeout>
+             <onError>Continue</onError>
+             <noReboot>False</noReboot>
+        </test>			
+        <test>
+             <testName>ovt_disable_appinfo_via_cmd</testName>
+             <testID>ESX-OVT-040</testID>
+             <testScript>ovt_disable_appinfo_via_cmd.sh</testScript>
+             <files>remote-scripts/ovt_disable_appinfo_via_cmd.sh</files>
+             <files>remote-scripts/utils.sh</files>
+             <testParams>
+                 <param>TC_COVERED=RHEL6-0000,RHEL-187177</param>
+             </testParams>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>600</timeout>
+             <onError>Continue</onError>
+             <noReboot>False</noReboot>
+        </test>			
+        <test>
+             <testName>ovt_disable_appinfo_via_poll-interval</testName>
+             <testID>ESX-OVT-040</testID>
+             <testScript>ovt_disable_appinfo_via_poll-interval.sh</testScript>
+             <files>remote-scripts/ovt_disable_appinfo_via_poll-interval.sh</files>
+             <files>remote-scripts/utils.sh</files>
+             <testParams>
+                 <param>TC_COVERED=RHEL6-0000,RHEL-187174</param>
+             </testParams>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>600</timeout>
+             <onError>Continue</onError>
+             <noReboot>False</noReboot>
+        </test>			
+		<test>
+             <testName>ovt_get_appinfo</testName>
+             <testID>ESX-OVT-039</testID>
+             <testScript>ovt_get_appinfo.sh</testScript>
+             <files>remote-scripts/ovt_get_appinfo.sh</files>
+             <files>remote-scripts/utils.sh</files>
+             <testParams>
+                 <param>TC_COVERED=RHEL6-0000,RHEL-187173</param>
+             </testParams>
+             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+             <timeout>600</timeout>
+             <onError>Continue</onError>
+             <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_check_journalctl_traceback</testName>
             <testID>ESX-GO-027</testID>
