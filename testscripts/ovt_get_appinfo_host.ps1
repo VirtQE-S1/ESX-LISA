@@ -116,16 +116,14 @@ if ($OS -eq "RedHat6")
 }
 
 # #Get the open vm tools version, if version old then 11, then skip it.
-$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa open-vm-tools" 
-$ver_num = $($version.split("-"))[3]
-LogPrint "DEBUG: version: ${version} and ver_num is $ver_num."
-if ($ver_num -lt 11) {
-    LogPrint "ERROR: The OVT version older then 11, not support appinfo plugin."
-    DisconnectWithVIServer
-    return $Skipped
+$appinfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -ql open-vm-tools |grep libappInfo" 
+if ($appinfo) {
+    LogPrint "Info: The OVT support appinfo plugin. $appinfo"
 }
 else{
-    LogPrint "Info: The OVT version is $ver_num."
+    LogPrint "ERROR: The OVT not support appinfo plugin.$appinfo"
+    DisconnectWithVIServer
+    return $Skipped
 }
 
 $vmOut = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
