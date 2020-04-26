@@ -207,7 +207,6 @@ else{
 
 # Get Required Datastore
 $shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) -Name "datastore-*"
-# $shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
@@ -275,7 +274,7 @@ if ($null -eq $nics) {
 else {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: GuestB New NIC is $rdmaNIC"
 
 
 # Config RDMA NIC IP addr for Guest B
@@ -310,7 +309,7 @@ if ($null -eq $nics) {
 else {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: Guest A RDMA NIC is $rdmaNIC"
 
 
 # Config RDMA NIC IP addr for Guest A
