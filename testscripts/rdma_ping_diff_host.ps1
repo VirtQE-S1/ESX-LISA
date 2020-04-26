@@ -5,6 +5,7 @@
 ## Revision:
 ##  v1.0.0 - ruqin - 8/21/2018 - Build the script.
 ##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.2.0 - ldu - 04/26/2020 - update find datastore cmd
 ########################################################################################
 
 
@@ -84,6 +85,7 @@ foreach ($p in $params) {
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "dstHost6.7" { $dstHost6_7 = $fields[1].Trim()}
         "dstHost6.5" { $dstHost6_5 = $fields[1].Trim()}
+        "dstHost7.0" { $dstHost7_0 = $fields[1].Trim()}
         "dstDatastore" { $dstDatastore = $fields[1].Trim() }
         default {}
     }
@@ -125,6 +127,7 @@ if ($null -eq $dstDatastore) {
 if (-not $dstHost6_7 -or -not $dstHost6_5) {
     "INFO: dstHost 6.7 is $dstHost6_7"
     "INFO: dstHost 6.5 is $dstHost6_5"
+    "INFO: dstHost 7.0 is $dstHost7_0"
     "Warn : dstHost was not specified"
     return $false
 }
@@ -182,12 +185,12 @@ if (-not $DISTRO) {
 LogPrint "INFO: Guest OS version is $DISTRO"
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
-}
+# # Different Guest DISTRO
+# if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+#     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+#     DisconnectWithVIServer
+#     return $Skipped
+# }
 
 
 # Store Old datastore
@@ -197,19 +200,23 @@ if (-not $oldDatastore) {
     DisconnectWithVIServer
     return $Aborted
 }
+else{
+    LogPrint "INFO: Get required original datastore $oldDatastore. "
+}
 
 
 # Get Required Datastore
-$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
+$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) -Name "datastore-*"
+# $shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
     return $Aborted
 }
-
-
-$name = $shardDatastore.Name
-LogPrint "INFO: Required shard datastore $name"
+else{
+    $name = $shardDatastore.Name
+    LogPrint "INFO: Required shard datastore $shardDatastore and $name."
+}
 
 
 # Move Hard Disk to another datastore to prepare next migrate
@@ -286,7 +293,7 @@ Start-Sleep -Seconds 6
 $task = Wait-Task -Task $task
 LogPrint "DEBUG: task: $task"
 if (-not $task) {
-    LogPrint "ERROR : Cannot move disk to required Datastore ${shardDatastore.Name}"
+    LogPrint "ERROR : Cannot move disk to required Datastore $shardDatastore, $name."
     DisconnectWithVIServer
     return $Aborted
 }
