@@ -47,15 +47,14 @@ if [[ $DISTRO == "redhat_6" ]]; then
         exit
 fi
 
-#check the ovt version, if version old then 11, skip it.
-version=$(rpm -qa open-vm-tools)
-version_num=${version:14:2}
-if [ "$version_num" -gt "10" ]; then
+#check the ovt package file list to confirm whether support appinfo plugin
+rpm -ql open-vm-tools | grep "libappInfo"
+if [[ $? == 0 ]]; then
   LogMsg $version_num
-  UpdateSummary "Info: The OVT version great 10, version number is $version_num ."
+  UpdateSummary "Info: The OVT supoort appinfo plugin."
 else
-  LogMsg "Info : skip as OVT version old then 10, $version_num"
-  UpdateSummary "skip as OVT version old then 10, version number is $version_num."
+  LogMsg "Info : skip as OVT supoort appinfo plugin."
+  UpdateSummary "skip as OVT supoort appinfo plugin."
   SetTestStateSkipped
   exit
 fi
