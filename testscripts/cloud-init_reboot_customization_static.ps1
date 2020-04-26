@@ -181,24 +181,24 @@ $nicMapping = Get-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec
 Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm:$false
 
 
-# Create a new NIC mapping for the first NIC - it will use DHCP IP
-New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 1
-if (-not $?) {
-    LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with dhcp IP."
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: DHCP NIC config done."
-
-
-# Create another NIC mapping for the second NIC - it will use static IP
-New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.19.1.1 -Position 2
+# Create a new NIC mapping for the first NIC - it will use static IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 172.19.1.1 -Position 1
 if (-not $?) {
     LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with static IP."
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Static NIC config done."
+LogPrint "INFO: static NIC config done."
+
+
+# Create another NIC mapping for the second NIC - it will use DHCP IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseDhcp -Position 2
+if (-not $?) {
+    LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with DHCP IP."
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: DHCP NIC config done."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -239,7 +239,7 @@ $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
-# Check the static IP for second NIC
+# Check the static IP for First NIC
 $ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
 LogPrint "DEBUG: ip_debug: ${ip_debug}."
 
@@ -247,7 +247,7 @@ $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | gre
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for second NIC."
+    LogPrint "ERROR: The customization gust Failed with static IP for First NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
@@ -293,14 +293,14 @@ else
 $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for second NIC."
+    LogPrint "ERROR: The customization gust Failed with static IP for First NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    LogPrint "INFO: The customization gust passed withstatic IP for second NIC ${staticIP}."
+    LogPrint "INFO: The customization gust passed withstatic IP for First NIC ${staticIP}."
 }    
 
 
