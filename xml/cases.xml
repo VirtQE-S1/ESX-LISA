@@ -449,7 +449,7 @@
                 <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>cloud-init_reboot_customization_static</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
+                <!-- suiteTest>cloud-init_customization_static</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -1094,7 +1094,7 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
-                <param>redhat_7_standard_version=open-vm-tools-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-11.0.5-3.el7.x86_64</param>
                 <param>redhat_8_standard_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
@@ -1360,10 +1360,10 @@
                 <!-- RHELs NO OVT -->
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-11.0.5-2.el7.x86_64</param>
-                <param>redhat_7_lower_version=open-vm-tools-10.3.10-2.el7.x86_64</param>
-                <param>redhat_7_lower_rpm=10.3.10/2.el7/x86_64/open-vm-tools-10.3.10-2.el7.x86_64.rpm</param>
-                <param>redhat_7_lower_dsk_rpm=10.3.10/2.el7/x86_64/open-vm-tools-desktop-10.3.10-2.el7.x86_64.rpm</param>
+                <param>redhat_7_standard_version=open-vm-tools-11.0.5-3.el7.x86_64</param>
+                <param>redhat_7_lower_version=open-vm-tools-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-11.0.5-2.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_dsk_rpm=11.0.5/2.el7/x86_64/open-vm-tools-desktop-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
                 <param>redhat_8_standard_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
                 <param>redhat_8_lower_version=open-vm-tools-11.0.0-3.el8.x86_64</param>
@@ -1386,10 +1386,10 @@
                 <!-- RHELs NO OVT -->
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-debuginfo-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-debuginfo-11.0.5-3.el7.x86_64</param>
                 <param>redhat_7_standard_rpm=11.0.5/2.el7/x86_64/open-vm-tools-debuginfo-11.0.5-2.el7.x86_64.rpm</param>
-                <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.3.10-2.el7.x86_64</param>
-                <param>redhat_7_lower_rpm=10.3.10/2.el7/x86_64/open-vm-tools-debuginfo-10.3.10-2.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_version=open-vm-tools-debuginfo-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-debuginfo-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
                 <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.0.0-4.el8.x86_64</param>
                 <param>redhat_8_standard_rpm=11.0.0/4.el8/x86_64/open-vm-tools-debuginfo-11.0.0-4.el8.x86_64.rpm</param>
