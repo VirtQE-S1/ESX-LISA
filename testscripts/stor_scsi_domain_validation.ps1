@@ -133,7 +133,7 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 $retVal = $Failed
 
-
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 # Get the Guest B.
 $GuestBName = $vmObj.Name.Split('-')
 # Get another VM by change Name.
@@ -155,7 +155,8 @@ if ($GuestB.PowerState -ne "PoweredOff") {
 
 # Check the disk number of the guest before add a new one.
 $oldDiskList =  Get-HardDisk -VM $GuestB
-$oldDiskLength = $diskList.Length
+$oldDiskLength = $oldDiskList.Length
+
 LogPrint "DEBUG: oldDiskLength: ${oldDiskLength}."
 
 
@@ -227,7 +228,7 @@ if (-not $result)
 	LogPrint "ERROR: Failed to detect new add LSILogicParallel scsi disk."
 	return $Aborted
 }
-else
+else{
     LogPrint "INFO: new add LSILogicParallel scsi disk could be detected."
 }
 
