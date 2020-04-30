@@ -75,45 +75,54 @@
                 <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
+
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
+
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
                 <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
                 <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_scsi_timeout</suiteTest>
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
-                <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
-                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
-                <suiteTest>ovt_customization_DHCP</suiteTest>
                 <suiteTest>ovt_check_installation_info</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT-GT: 3 -->
+            <!-- OVT-GT: 10 -->
             <suiteName>gt-ovt</suiteName>
             <suiteTests>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -257,11 +266,15 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 2 -->
+            <!-- CLOUD-INIT-GT: 6 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
             </suiteTests>
         </suite>
         <suite>
