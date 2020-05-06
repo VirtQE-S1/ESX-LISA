@@ -274,7 +274,7 @@
                 <suiteTest>cloud-init_check_status</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_customization_static</suiteTest>
-                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
