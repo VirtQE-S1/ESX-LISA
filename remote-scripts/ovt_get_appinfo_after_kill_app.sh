@@ -1,4 +1,4 @@
-#!/bin/bash
+  v1.1.0 - ldu - 05/18/2020 - update the #!/bin/bash
 
 ###############################################################################
 ##
@@ -9,7 +9,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 04/15/2020 - Build scripts.
-##
+##  v1.1.0 - ldu - 05/18/2020 - update the check kill app methond.
 ###############################################################################
 #         <test>
 #             <testName>ovt_get_appinfo_after_kill_app</testName>
@@ -65,33 +65,32 @@ vmware-toolbox-cmd config set appinfo poll-interval 1
 
 sleep 6
 #Both below two command should get the running appinfo in guest
-appNumber1=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
-#check the app number in guest
-if [ "$appNumber1" -gt "100" ]; then
-  LogMsg $appNumber1
-  UpdateSummary "Info: the running appinfo collect passed. the app number is $appNumber1."
-else
-  LogMsg "Info : Test failed, $appNumber1."
-  UpdateSummary "Test failed. The app number below than 100,is $appNumber1."
+service=$(vmware-rpctool "info-get guestinfo.appInfo" | grep crond)
+#check the app status in guest
+if [ "$service" = "" ]; then
+  LogMsg "Info : Test failed, can not found service crond in guest $service ."
+  UpdateSummary "Test failed. can not found service crond in guest."
   SetTestStateFailed
   exit 1
+else
+  LogMsg $service
+  UpdateSummary "Info: the service $service is running status."
 fi
 
-#Kill some running app
-pkill chronyd
+#Kill running app crond
 pkill crond
 
-sleep 3
-appNumber=$(vmware-rpctool "info-get guestinfo.appInfo" | wc -l)
-#check the app number in guest
-if [ "$appNumber" -lt $appNumber1 ]; then
-  LogMsg app number is $appNumber.
-  UpdateSummary "Test Successfully. The appinfo plugin could get appinfo correctly after kill some app,the app number is $appNumber."
+sleep 1
+service=$(vmware-rpctool "info-get guestinfo.appInfo" | grep crond)
+#check the app status in guest if exist
+if [ "$service" = "" ]; then
+  LogMsg app is $service.
+  UpdateSummary "Test Successfully. The appinfo could not detect by appinfo plugin after kill it."
   SetTestStateCompleted
   exit 0
 else
-  LogMsg "Info : Test failed, $appNumber."
-  UpdateSummary "Test failed. The appinfo plugin captures appinfo failed after kill some app, the app number is $appNumber."
+  LogMsg "Info : Test failed, $service."
+  UpdateSummary "Test failed. The appinfo plugin captures crond after kill it, service is $service."
   SetTestStateFailed
   exit 1
 fi
