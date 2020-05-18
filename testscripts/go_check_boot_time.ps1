@@ -21,7 +21,7 @@ go_check_dmesg_unknowsymbol
         <testScript>testscripts/go_check_boot_time.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL-186407</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-186408</param>
         </testParams>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>600</timeout>
