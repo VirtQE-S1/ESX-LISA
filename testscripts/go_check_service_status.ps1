@@ -1,27 +1,27 @@
 ###############################################################################
 ##
 ## Description:
-##  Check the VM OS boot time
+##  Check the guest service status after boot up.
 ##
 ##
 ## Revision:
-##  v1.0.0 - ldu - 05/18/2020 - Build Scripts
+##  v1.0.0 - ldu - 05/19/2020 - Build Scripts
 ##
 ###############################################################################
 
 
 <#
 .Synopsis
-go_check_boot_time
+go_check_service_status
 
 .Description
     <test>
-        <testName>go_check_boot_time</testName>
-        <testID>ESX-GO-028</testID>
-        <testScript>testscripts/go_check_boot_time.ps1</testScript  >
+        <testName>go_check_service_status</testName>
+        <testID>ESX-GO-029</testID>
+        <testScript>testscripts/go_check_service_status.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL-186408</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-186409</param>
         </testParams>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>600</timeout>
@@ -136,16 +136,30 @@ if (-not $vmObj)
 	return $Aborted
 }
 
-# Check the guest boot time via systemd-analyze 
-$boot_time = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemd-analyze | grep -o -e  '= [1-9]*' | awk '{print `$NF}'"
-if ($boot_time -lt 60)
+# Check failed service via systemctl.
+$service = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl | grep failed"
+if ($null -eq $service)
 {
     $retVal = $Passed
-    LogPrint "INFO: The guest boot time less then 60s, used $boot_time second."
+    LogPrint "INFO: After boot, NO $service failed service found."
 }
 else{
-    $blame_log = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemd-analyze blame"
-    LogPrint "ERROR: After boot, FOUND the boot time more then 60s,used $boot_time second.please check the systemd-analyze blame log $blame_log."
+    $cpu_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/cpuinfo |grep AMD" 
+    if ($null -ne $cpu_check) {
+        if ("$service" -match "mcelog.service")
+        {
+            LogPrint "INFO: The CPU is AMD $cpu_check. it's a know issue,ignore this failed log $service."
+            $retVal = $Passed
+            DisconnectWithVIServer
+        }
+        else{
+            LogPrint "ERROR: After boot, FOUND $service failed log in demsg."
+        }
+    }
+    else{
+        LogPrint "ERROR: After boot, FOUND $service failed log in demsg."
+    }
+    
 }
 
 
