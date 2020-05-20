@@ -136,9 +136,11 @@ if (-not $vmObj)
 	return $Aborted
 }
 
-# Check failed service via systemctl.
+# Change clock source then check the guest status.
 $clocksource = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /sys/devices/system/clocksource/clocksource0/available_clocksource"
-$clock = $clocksource.Split("")
+$clock = ($clocksource.Trim()).Split()
+$len = $clock.Length
+LogPrint "INFO: $len."
 foreach ($c in $clock)
 {
     $change = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "echo $c > /sys/devices/system/clocksource/clocksource0/current_clocksource"
