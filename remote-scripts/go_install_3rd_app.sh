@@ -56,12 +56,12 @@ rpm -qa pcp pcp-pmda-perfevent
 version=$(rpm -qa pcp pcp-pmda-perfevent)
 LogMsg "$version"
 if [ -n "$version" ]; then
+        LogMsg "Intall the 3rd app Passed."
+else
         LogMsg "Intall the 3rd app pcp pcp-pmda-perfevent Failed."
         UpdateSummary "Failed. Intall the 3rd app pcp pcp-pmda-perfevent Failed."
         SetTestStateAborted
         exit 1
-else
-        LogMsg "Intall the 3rd app Passed."
 fi
 
 #Set PMCD communicate with the perfevent daemon via a pipe
