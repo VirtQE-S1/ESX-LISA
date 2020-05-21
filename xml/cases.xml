@@ -306,6 +306,9 @@
                 <suiteTest>ovt_get_appinfo_after_kill_app</suiteTest>
                 <suiteTest>ovt_get_appinfo_host</suiteTest>
                 <suiteTest>go_check_boot_time</suiteTest>
+                <suiteTest>go_check_service_status</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -509,6 +512,45 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_check_clocksource</testName>
+            <testID>ESX-GO-30</testID>
+            <testScript>testscripts/go_check_clocksource.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186410</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_change_clocksource</testName>
+            <testID>ESX-GO-31</testID>
+            <testScript>testscripts/go_change_clocksource.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186411</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_service_status</testName>
+            <testID>ESX-GO-029</testID>
+            <testScript>testscripts/go_check_service_status.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186409</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_check_boot_time</testName>
             <testID>ESX-GO-028</testID>
