@@ -309,6 +309,7 @@
                 <suiteTest>go_check_service_status</suiteTest>
                 <suiteTest>go_check_clocksource</suiteTest>
                 <suiteTest>go_change_clocksource</suiteTest>
+                <suiteTest>go_install_3rd_app</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -512,6 +513,20 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>go_install_3rd_app</testName>
+            <testID>ESX-GO-32</testID>
+            <testScript>go_install_3rd_app.sh</testScript>
+            <files>remote-scripts/go_install_3rd_app.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL-174551</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_check_clocksource</testName>
             <testID>ESX-GO-30</testID>
