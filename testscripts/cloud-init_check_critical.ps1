@@ -246,13 +246,13 @@ $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | gre
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for First NIC."
+    LogPrint "ERROR: The customization gust Failed with static IP for first NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
 
 
-#  Check no "Warning" level message in /var/log/cloud-init.log
+#  Check no "critical" level message in /var/log/cloud-init.log
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "grep 'CRITICAL' /var/log/cloud-init.log"
 if ($null -eq $loginfo)
 {
@@ -262,7 +262,7 @@ if ($null -eq $loginfo)
 }
 else
 {
-    LogPrint "ERROR: The customization gust Failed with critical log ${loginfo}."
+    LogPrint "ERROR: The customization gust failed with critical log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }

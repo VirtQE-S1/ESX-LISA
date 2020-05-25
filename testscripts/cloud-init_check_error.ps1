@@ -258,12 +258,12 @@ $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "grep 'ERROR' /
 if ($null -eq $loginfo)
 {
     $retVal = $Passed
-    LogPrint "INFO: Tthe customization gust passed with no error log ${loginfo}."
+    LogPrint "INFO: The customization gust passed with no error log ${loginfo}."
     
 }
 else
 {
-    LogPrint "ERROR: The customization gust Failed with error log ${loginfo}."
+    LogPrint "ERROR: The customization gust failed with error log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
