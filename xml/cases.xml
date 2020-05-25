@@ -46,6 +46,10 @@
                 <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
                 <suiteTest>go_check_dmesg_unable</suiteTest>
                 <suiteTest>go_check_journalctl_traceback</suiteTest>
+                <suiteTest>go_check_boot_time</suiteTest>
+                <suiteTest>go_check_service_status</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>						
             </suiteTests>
         </suite>
         <suite>
@@ -266,7 +270,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 6 -->
+            <!-- CLOUD-INIT-GT: 9 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
@@ -275,6 +279,9 @@
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_customization_static</suiteTest>
                 <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -298,18 +305,10 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>ovt_enable_appinfo_after_disable</suiteTest>
-                <suiteTest>ovt_disable_appinfo_via_poll-interval</suiteTest>
-                <suiteTest>ovt_get_appinfo</suiteTest>
-                <suiteTest>ovt_disable_appinfo_via_cmd</suiteTest>
-                <suiteTest>ovt_change_poll_interval_value</suiteTest>
-                <suiteTest>ovt_get_appinfo_after_kill_app</suiteTest>
-                <suiteTest>ovt_get_appinfo_host</suiteTest>
-                <suiteTest>go_check_boot_time</suiteTest>
-                <suiteTest>go_check_service_status</suiteTest>
-                <suiteTest>go_check_clocksource</suiteTest>
-                <suiteTest>go_change_clocksource</suiteTest>
                 <suiteTest>go_install_3rd_app</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -350,7 +349,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 102 -->
+            <!-- Tier2: 105 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -455,6 +454,9 @@
                 <suiteTest>cloud-init_reboot_customization_static</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <!-- suiteTest>cloud-init_customization_static</suiteTest -->
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -470,6 +472,10 @@
                 <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
                 <suiteTest>go_check_dmesg_unable</suiteTest>
                 <suiteTest>go_check_journalctl_traceback</suiteTest>
+                <suiteTest>go_check_boot_time</suiteTest>
+                <suiteTest>go_check_service_status</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>						
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
@@ -513,6 +519,51 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>cloud-init_check_warning</testName>
+            <testID>ESX-cloud-init-007</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_warning.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187894</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_error</testName>
+            <testID>ESX-cloud-init-008</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_error.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187893</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_critical</testName>
+            <testID>ESX-cloud-init-009</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_critical.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187892</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>go_install_3rd_app</testName>
             <testID>ESX-GO-32</testID>
