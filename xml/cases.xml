@@ -49,7 +49,7 @@
                 <suiteTest>go_check_boot_time</suiteTest>
                 <suiteTest>go_check_service_status</suiteTest>
                 <suiteTest>go_check_clocksource</suiteTest>
-                <suiteTest>go_change_clocksource</suiteTest>						
+                <suiteTest>go_change_clocksource</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -258,7 +258,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT: 6 -->
+            <!-- CLOUD-INIT: 12 -->
             <suiteName>cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
@@ -267,10 +267,16 @@
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_customization_static</suiteTest>
                 <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 9 -->
+            <!-- CLOUD-INIT-GT: 12 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
@@ -282,6 +288,9 @@
                 <suiteTest>cloud-init_check_critical</suiteTest>
                 <suiteTest>cloud-init_check_error</suiteTest>
                 <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -305,10 +314,12 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>go_install_3rd_app</suiteTest>
                 <suiteTest>cloud-init_check_critical</suiteTest>
                 <suiteTest>cloud-init_check_error</suiteTest>
                 <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>                
             </suiteTests>
         </suite>
         <suite>
@@ -349,22 +360,25 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 105 -->
+            <!-- Tier2: 109 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
-                <suiteTest>go_check_cpu</suiteTest>
-                <suiteTest>go_cpupower_frequency</suiteTest>
-                <suiteTest>go_ftracing_check</suiteTest>
-                <suiteTest>go_check_time_sync</suiteTest>
-                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTest>
+                <suiteTest>go_install_3rd_app</suiteTest>
                 <suiteTest>go_check_hyperv_drivers</suiteTest>
                 <suiteTest>go_fips_enable</suiteTest>
-                <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
                 <suiteTest>kdump_3_types_storage</suiteTest>
                 <suiteTest>kdump_trigger_nfs</suiteTest>
@@ -454,13 +468,14 @@
                 <suiteTest>cloud-init_reboot_customization_static</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <!-- suiteTest>cloud-init_customization_static</suiteTest -->
-                <suiteTest>cloud-init_check_critical</suiteTest>
                 <suiteTest>cloud-init_check_error</suiteTest>
                 <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 48 -->
+            <!-- Tier1: 53 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
@@ -475,7 +490,7 @@
                 <suiteTest>go_check_boot_time</suiteTest>
                 <suiteTest>go_check_service_status</suiteTest>
                 <suiteTest>go_check_clocksource</suiteTest>
-                <suiteTest>go_change_clocksource</suiteTest>						
+                <suiteTest>go_change_clocksource</suiteTest>
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
@@ -514,11 +529,56 @@
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>cloud-init_check_service_status</testName>
+            <testID>ESX-cloud-init-010</testID>
+            <testScript>testscripts/cloud-init_check_service_status.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187964</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_traceback</testName>
+            <testID>ESX-cloud-init-012</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_traceback.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187965</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_unexpected</testName>
+            <testID>ESX-cloud-init-011</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_unexpected.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187966</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>cloud-init_check_warning</testName>
             <testID>ESX-cloud-init-007</testID>
