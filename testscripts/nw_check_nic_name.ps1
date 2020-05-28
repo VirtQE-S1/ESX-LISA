@@ -137,7 +137,6 @@ function findNICByMAC ([String] $AdapterName, $vmObj, [String] $ipv4, [String] $
 }
 
 
-
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with ${vmName}."
@@ -185,6 +184,7 @@ if ( $null -eq $Second_Adapter) {
     return $Aborted
 }
 
+
 $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter | awk 'NR==2'"
 $Thrid_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
 LogPrint "DEBUG: Thrid_Adapter: ${Thrid_Adapter}."
@@ -205,7 +205,7 @@ $status = Stop-VM $vmObj -Confirm:$False
 
 
 # Enough time to stop the VM.
-Start-Sleep -Seconds 60
+Start-Sleep -Seconds 30
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -249,6 +249,7 @@ if (-not $vmObj) {
     DisconnectWithVIServer
     return $Aborted
 }
+
 
 # Load and Unload vmxnet3.
 $Command = "modprobe -r vmxnet3 && modprobe vmxnet3 && systemctl restart NetworkManager"
