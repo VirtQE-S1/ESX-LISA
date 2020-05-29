@@ -258,18 +258,19 @@ $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "grep 'WARNING'
 if ($null -eq $loginfo)
 {
     $retVal = $Passed
-    LogPrint "INFO: The customization gust passed with log ${loginfo}."
-    
+    LogPrint "INFO: The customization gust passed with log: ${loginfo}."
 }
 else
 {
-    LogPrint "ERROR: The customization gust failed with log ${loginfo}."
+    LogPrint "ERROR: The customization gust failed with log: ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 
-# Delete the clone VM
+
+# Delete the clone VM.
 $remove = RemoveVM -vmName $cloneName -hvServer $hvServer
+LogPrint "DEBUG: remove: ${remove}."
 if ($null -eq $remove) {
     LogPrint "ERROR: Cannot remove cloned guest." 
     DisconnectWithVIServer

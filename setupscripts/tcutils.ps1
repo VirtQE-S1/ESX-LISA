@@ -187,6 +187,7 @@ function DisconnectWithVIServer ()
         {
             "INFO : Disconnect with VIServer $($viserver.name)."
             Disconnect-VIServer -Server $viserver -Force -Confirm:$false
+            "INFO : Disconnect with VIServer $($viserver.name) done."
         }
     }
     else

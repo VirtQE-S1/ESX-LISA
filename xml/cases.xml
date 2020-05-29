@@ -285,9 +285,6 @@
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_customization_static</suiteTest>
                 <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
-                <suiteTest>cloud-init_check_critical</suiteTest>
-                <suiteTest>cloud-init_check_error</suiteTest>
-                <suiteTest>cloud-init_check_warning</suiteTest>
                 <suiteTest>cloud-init_check_service_status</suiteTest>
                 <suiteTest>cloud-init_check_traceback</suiteTest>
                 <suiteTest>cloud-init_check_unexpected</suiteTest>
