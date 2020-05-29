@@ -246,7 +246,7 @@ $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | gre
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for first NIC."
+    LogPrint "ERROR: The customization guest Failed with static IP for first NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
@@ -257,12 +257,12 @@ $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "grep 'tracebac
 if ($null -eq $loginfo)
 {
     $retVal = $Passed
-    LogPrint "INFO: The customization gust passed with no traceback log ${loginfo}."
+    LogPrint "INFO: The customization guest passed with no traceback log ${loginfo}."
     
 }
 else
 {
-    LogPrint "ERROR: The customization gust failed with traceback log ${loginfo}."
+    LogPrint "ERROR: The customization guest failed with traceback log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }

@@ -3,13 +3,13 @@
 ###############################################################################
 ##
 ## Description:
-##   This script checks
-##  Take snapshot after deadlock condiation.
+## Take snapshot when mount a disk to two mount point
+## 
 ##
 ###############################################################################
 ##
 ## Revision:
-## v1.0 - ldu - 23/07/2017 - Take snapshot after deadlock condiation.
+## v1.0 - ldu - 13/08/2019 - Build scripts.
 ##
 ###############################################################################
 

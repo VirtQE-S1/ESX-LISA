@@ -1,34 +1,34 @@
 ########################################################################################
 ## Description:
-##  [open-vm-tools]Check the Guest customization with DHCP
+##  Disable the guest customization in the guest. By default, the guest customization is enabled
 ##
 ## Revision:
-##  v1.0.0 - ldu - 12/01/2019 - Build the script
-##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
-##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
+##  v1.0.0 - ldu - 28/05/2020 - Build the script
+## 
 ########################################################################################
 
 
 <#
 .Synopsis
-   [open-vm-tools]Check the Guest customization with DHCP
+   Disable the guest customization
 
 .Description
+        <test>
+            <testName>ovt_disable_customization</testName>
+            <testID>ESX-ovt-037</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/ovt_disable_customization.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187728</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 
-<test>
-        <testName>ovt_customization_DHCP</testName>
-        <testID>ESX-OVT-036</testID>
-        <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
-        <files>remote-scripts/utils.sh</files>
-        <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
-        </testParams>
-        <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-        <timeout>1800</timeout>
-        <onError>Continue</onError>
-        <noReboot>False</noReboot>
-    </test>
-    
 .Parameter vmName
     Name of the test VM.
 
@@ -121,11 +121,10 @@ $retVal = $Failed
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    LogPrint "ERROR: Unable to Get-VM with ${vmName}."
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
     return $Aborted
 }
-
 
 
 # Get the Guest version
@@ -141,26 +140,54 @@ LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
+    LogPrint "ERROR: Guest OS ($DISTRO) is not supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
     return $Skipped
 }
 
+#Disable customization in guest
+$Command = "vmware-toolbox-cmd config set deployPkg enable-customization false"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : Disable customization failed"
+    $retVal = $Aborted
+}
+else {
+       LogPrint "INFO: Disable customization passed"
+}
 
-# Set the clone vm name
-$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
+# Set clone vm name
+$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 300 -Minimum 1)
 LogPrint "DEBUG: cloneName: ${cloneName}."
+
+
+# Acquire a new static IP
+$ip = "172.18.1." + (Get-Random -Maximum 254 -Minimum 10)
+LogPrint "DEBUG: ip: ${ip}."
 
 
 # Create the customization specification
 $linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
 if ($null -eq $linuxSpec) {
     LogPrint "ERROR: Create linuxspec failed."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
 LogPrint "INFO: Create linuxspec well."
+
+
+# Remove any NIC mappings from the specification
+$nicMapping = Get-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec
+Remove-OSCustomizationNicMapping -OSCustomizationNicMapping $nicMapping -Confirm:$false
+
+# Create another NIC mapping for the second NIC - it will use static IP
+New-OSCustomizationNicMapping -OSCustomizationSpec $linuxSpec -IpMode UseStaticIP -IpAddress $ip -SubnetMask 255.255.255.0 -DefaultGateway 10.73.199.254 -Position 2
+if (-not $?) {
+    LogPrint "ERROR: Failed when New-OSCustomizationNicMapping with static IP."
+    DisconnectWithVIServer
+    return $Aborted
+}
+LogPrint "INFO: Static NIC config done."
 
 
 # Clone the vm with new OSCustomization Spec
@@ -172,7 +199,6 @@ LogPrint "INFO: Complete clone operation. Below will check VM cloned."
 $cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
 if (-not $cloneVM) {
     LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
     DisconnectWithVIServer
     return $Aborted
 }
@@ -181,8 +207,7 @@ LogPrint "INFO: Found the VM cloned - ${cloneName}."
 
 # Power on the clone vm
 LogPrint "INFO: Powering on $cloneName"
-$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
-
+$on = Start-VM -VM $cloneVM -Confirm:$false -ErrorAction SilentlyContinue
 
 # Wait for clone VM SSH ready
 LogPrint "INFO: Wait for SSH to confirm VM booting."
@@ -197,33 +222,44 @@ else {
 }
 
 
-# Get another VM IP addr
+# Get cloned VM IP addr
 $ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
 LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 
 
-# Check the log for customization
-$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
-if ($null -eq $loginfo)
+# Check the static IP for second NIC
+$ip_debug = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr"
+LogPrint "DEBUG: ip_debug: ${ip_debug}."
+
+$staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | grep $ip"
+LogPrint "DEBUG: staticIP: ${staticIP}."
+if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization guest failed with log ${loginfo}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
+    LogPrint "INFO: The customization guest Failed with static IP for second NIC."
 }
 else
 {
+    LogPrint "ERROR: The customization guest set static IP for second NIC."
+    RemoveVM -vmName $cloneName -hvServer $hvServer
+    return $Failed
+}
+
+#Check the log foleder whether exist.
+$Command = "cd /var/log/vmware-imc"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "INFO: vmware-imc folder not exist"
     $retVal = $Passed
-    LogPrint "INFO: The customization guest passed with log ${loginfo}."
+}
+else {
+       LogPrint "INFO: vmware-imc folder exist"
+       RemoveVM -vmName $cloneName -hvServer $hvServer
+       return $Failed
 }
 
 
-# Delete the clone VM
+#Delete the clone VM
 $remove = RemoveVM -vmName $cloneName -hvServer $hvServer
-if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest."    
-    DisconnectWithVIServer
-    return $Aborted
-}
 
 
 DisconnectWithVIServer
