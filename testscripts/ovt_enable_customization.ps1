@@ -1,27 +1,25 @@
 ########################################################################################
 ## Description:
-##  [open-vm-tools]Check the Guest customization with DHCP
+##   Enable the guest customization in the guest after disable guest customization.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 12/01/2019 - Build the script
-##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
-##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
+##  v1.0.0 - ldu - 05/28 /2020 - Build the script
+## 
 ########################################################################################
 
 
 <#
 .Synopsis
-   [open-vm-tools]Check the Guest customization with DHCP
-
+   Enable guest customization
 .Description
 
 <test>
-        <testName>ovt_customization_DHCP</testName>
+        <testName>ovt_enable_customization</testName>
         <testID>ESX-OVT-036</testID>
-        <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
+        <testScript>testscripts/ovt_enable_customization.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-187727</param>
         </testParams>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>1800</timeout>
@@ -146,6 +144,44 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     return $Skipped
 }
 
+#check the ovt version, if version old then 11, skip it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa open-vm-tools" 
+$ver_num = $($version.split("-"))[3]
+LogPrint "DEBUG: version: ${version} and ver_num is $ver_num."
+if ($ver_num -ge 11.1) {
+    LogPrint "Info: The OVT version is $ver_num."
+}
+else
+{
+    LogPrint "Info: The OVT version is $ver_num."
+    LogPrint "ERROR: The OVT version older then 11.1, not support disable customization个."
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+#Disable customization in guest
+$Command = "vmware-toolbox-cmd config set deployPkg enable-customization false"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : Disable customization failed"
+    $retVal = $Aborted
+}
+else {
+       LogPrint "INFO: Disable customization passed"
+}
+
+Start-Sleep 3
+
+#Enable customization in guest
+$Command = "vmware-toolbox-cmd config set deployPkg enable-customization true"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : Enable customization failed"
+    $retVal = $Aborted
+}
+else {
+       LogPrint "INFO: Enable customization passed"
+}
 
 # Set the clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
@@ -206,14 +242,14 @@ LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
 $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
 if ($null -eq $loginfo)
 {
-    LogPrint "ERROR: The customization guest failed with log ${loginfo}."
+    LogPrint "ERROR: Enable customization gust failed with log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
 else
 {
     $retVal = $Passed
-    LogPrint "INFO: The customization guest passed with log ${loginfo}."
+    LogPrint "INFO: Enable customization gust passed with log ${loginfo}."
 }
 
 
