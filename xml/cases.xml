@@ -125,7 +125,7 @@
                 <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>ovt_customization_DHCP</suiteTest>
-                <suiteTest>ovt_snapshot_container</suiteTest>
+                <!-- suiteTest>ovt_snapshot_container</suiteTest -->
                 <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
             </suiteTests>
         </suite>
@@ -286,8 +286,8 @@
                 <suiteTest>cloud-init_customization_static</suiteTest>
                 <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
                 <suiteTest>cloud-init_check_service_status</suiteTest>
-                <suiteTest>cloud-init_check_traceback</suiteTest>
-                <suiteTest>cloud-init_check_unexpected</suiteTest>
+                <!-- suiteTest>cloud-init_check_traceback</suiteTest -->
+                <!-- suiteTest>cloud-init_check_unexpected</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
