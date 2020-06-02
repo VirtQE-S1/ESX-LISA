@@ -145,15 +145,35 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 }
 
 
-$Command = "yum install cloud-init -y"
-$status = SendCommandToVM $ipv4 $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : install cloud-init failed."
-    $retVal = $Aborted
+#check cloud-init installed or not in guest, if not, install it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa cloud-init" 
+if ($null -eq $version) 
+{
+    LogPrint "INFO: The cloud-init not install on guest $version."
+    $Command = "yum install cloud-init -y"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Install cloud-init failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Install cloud-init passed"
+    }
 }
-else {
-       LogPrint "Pass : install cloud-init passed."
+else
+{
+    LogPrint "INFO: The cloud-init have installed on guest $version."
+    $Command = "cloud-init clean -l"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Clean cloud-init log failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Clean cloud-init log passed"
+    }
 }
+
 
 
 # Set the clone vm name

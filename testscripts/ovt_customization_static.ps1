@@ -238,7 +238,7 @@ $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | gre
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for second NIC."
+    LogPrint "ERROR: The customization guest Failed with static IP for second NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
@@ -249,11 +249,11 @@ $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/v
 LogPrint "DEBUG: loginfo: ${loginfo}."
 if ($null -eq $loginfo)
 {
-    LogPrint "ERROR: The customization gust failed with log ${loginfo}."
+    LogPrint "ERROR: The customization guest failed with log ${loginfo}."
 }
 else
 {
-    LogPrint "INFO: The customization gust passed with log ${loginfo}."
+    LogPrint "INFO: The customization guest passed with log ${loginfo}."
     $retVal = $Passed
 }
 

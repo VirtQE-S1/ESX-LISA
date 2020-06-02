@@ -144,14 +144,33 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
 }
 
 
-$Command = "yum install cloud-init -y"
-$status = SendCommandToVM $ipv4 $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : install cloud-init failed."
-    $retVal = $Aborted
+#check cloud-init installed or not in guest, if not, install it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa cloud-init" 
+if ($null -eq $version) 
+{
+    LogPrint "INFO: The cloud-init not install on guest $version."
+    $Command = "yum install cloud-init -y"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Install cloud-init failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Install cloud-init passed"
+    }
 }
-else {
-       LogPrint "Pass : install cloud-init passed."
+else
+{
+    LogPrint "INFO: The cloud-init have installed on guest $version."
+    $Command = "cloud-init clean -l"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Clean cloud-init log failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Clean cloud-init log passed"
+    }
 }
 
 
@@ -172,7 +191,9 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Create linuxspec well."
+else{
+    LogPrint "INFO: Create linuxspec well."
+}
 
 
 # Remove any NIC mappings from the specification
@@ -187,7 +208,9 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: DHCP NIC config done."
+else{
+    LogPrint "INFO: DHCP NIC config done."
+}
 
 
 
@@ -198,7 +221,9 @@ if (-not $?) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Static NIC config done."
+else{
+    LogPrint "INFO: Static NIC config done."
+}
 
 
 # Clone the vm with new OSCustomization Spec
@@ -213,7 +238,9 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
+else{
+    LogPrint "INFO: Found the VM cloned - ${cloneName}."
+}
 
 # Power on the clone vm
 LogPrint "INFO: Powering on $cloneName"
@@ -246,7 +273,7 @@ $staticIP = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "ip addr | gre
 LogPrint "DEBUG: staticIP: ${staticIP}."
 if ($null -eq $staticIP)
 {
-    LogPrint "ERROR: The customization gust Failed with static IP for first NIC."
+    LogPrint "ERROR: The customization guest Failed with static IP for first NIC."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Aborted
 }
@@ -257,12 +284,12 @@ $loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "grep 'CRITICAL
 if ($null -eq $loginfo)
 {
     $retVal = $Passed
-    LogPrint "INFO: The customization gust passed with no critical log ${loginfo}."
+    LogPrint "INFO: The customization guest passed with no critical log ${loginfo}."
     
 }
 else
 {
-    LogPrint "ERROR: The customization gust failed with critical log ${loginfo}."
+    LogPrint "ERROR: The customization guest failed with critical log ${loginfo}."
     RemoveVM -vmName $cloneName -hvServer $hvServer
     return $Failed
 }
