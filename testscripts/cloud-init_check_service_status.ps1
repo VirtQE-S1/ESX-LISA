@@ -143,15 +143,33 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     return $Skipped
 }
 
-
-$Command = "yum install cloud-init -y"
-$status = SendCommandToVM $ipv4 $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Install cloud-init failed"
-    $retVal = $Aborted
+#check cloud-init installed or not in guest, if not, install it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa cloud-init" 
+if ($null -eq $version) 
+{
+    LogPrint "INFO: The cloud-init not install on guest $version."
+    $Command = "yum install cloud-init -y"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Install cloud-init failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Install cloud-init passed"
+    }
 }
-else {
-       LogPrint "INFO: Install cloud-init passed"
+else
+{
+    LogPrint "INFO: The cloud-init have installed on guest $version."
+    $Command = "cloud-init clean -l"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Clean cloud-init log failed"
+        $retVal = $Aborted
+    }
+    else {
+        LogPrint "INFO: Clean cloud-init log passed"
+    }
 }
 
 
@@ -168,7 +186,9 @@ if ($null -eq $linuxSpec) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Create linuxspec well."
+else{
+    LogPrint "INFO: Create linuxspec well."
+}
 
 
 # Clone the vm with new OSCustomization Spec
@@ -184,7 +204,10 @@ if (-not $cloneVM) {
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
+else
+{
+    LogPrint "INFO: Found the VM cloned - ${cloneName}."
+}
 
 
 # Power on the clone vm.

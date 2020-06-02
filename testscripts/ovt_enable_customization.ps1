@@ -15,7 +15,7 @@
 
 <test>
         <testName>ovt_enable_customization</testName>
-        <testID>ESX-OVT-036</testID>
+        <testID>ESX-OVT-047</testID>
         <testScript>testscripts/ovt_enable_customization.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>

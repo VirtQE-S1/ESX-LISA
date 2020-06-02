@@ -15,7 +15,7 @@
 .Description
         <test>
             <testName>ovt_disable_customization</testName>
-            <testID>ESX-ovt-037</testID>
+            <testID>ESX-ovt-046</testID>
             <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
             <testScript>testscripts/ovt_disable_customization.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
