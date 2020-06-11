@@ -145,6 +145,21 @@ if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
     return $Skipped
 }
 
+#Check the ovt version, if version old then 11, not support this feature skip it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa open-vm-tools" 
+$ver_num = $($version.split("-"))[3]
+LogPrint "DEBUG: version: ${version} and ver_num is $ver_num."
+if ($ver_num -ge 11.1) {
+    LogPrint "Info: The OVT version is $ver_num."
+}
+else
+{
+    LogPrint "Info: The OVT version is $ver_num."
+    LogPrint "ERROR: The OVT version older then 11.1, not support disable customization."
+    DisconnectWithVIServer
+    return $Skipped
+}
+
 #Disable customization in guest
 $Command = "vmware-toolbox-cmd config set deployPkg enable-customization false"
 $status = SendCommandToVM $ipv4 $sshkey $command

@@ -1,25 +1,25 @@
 ########################################################################################
 ## Description:
-##   Enable the guest customization in the guest after disable guest customization.
+## Uninstall open-vm-tools-sdmp package and check the serviceDiscovery plugin gets removed
 ##
 ## Revision:
-##  v1.0.0 - ldu - 05/28 /2020 - Build the script
+##  v1.0.0 - ldu - 06/11/2020 - Build the script
 ## 
 ########################################################################################
 
 
 <#
 .Synopsis
-   Enable guest customization
+  Uninstall open-vm-tools-sdmp package and check the serviceDiscovery plugin gets removed
 .Description
 
 <test>
-        <testName>ovt_enable_customization</testName>
-        <testID>ESX-OVT-047</testID>
-        <testScript>testscripts/ovt_enable_customization.ps1</testScript  >
+        <testName>ovt_uninstall_sdmp</testName>
+        <testID>ESX-OVT-049</testID>
+        <testScript>testscripts/ovt_uninstall_sdmp.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL-187727</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-188056</param>
         </testParams>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>1800</timeout>
@@ -124,8 +124,6 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-
-
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: ${DISTRO}."
@@ -154,113 +152,45 @@ if ($ver_num -ge 11.1) {
 else
 {
     LogPrint "Info: The OVT version is $ver_num."
-    LogPrint "ERROR: The OVT version older then 11.1, not support disable customization."
+    LogPrint "ERROR: The OVT version older then 11.1, not support sdmp."
     DisconnectWithVIServer
     return $Skipped
 }
 
-#Disable customization in guest
-$Command = "vmware-toolbox-cmd config set deployPkg enable-customization false"
+$Command = "yum install lsof -y"
 $status = SendCommandToVM $ipv4 $sshkey $command
 if (-not $status) {
-    LogPrint "ERROR : Disable customization failed"
+    LogPrint "ERROR : Install lsof failed"
     $retVal = $Aborted
 }
 else {
-       LogPrint "INFO: Disable customization passed"
+    LogPrint "INFO: Install lsof passed"
 }
 
-Start-Sleep 3
 
-#Enable customization in guest
-$Command = "vmware-toolbox-cmd config set deployPkg enable-customization true"
+$Command = "yum erase open-vm-tools-sdmp -y"
 $status = SendCommandToVM $ipv4 $sshkey $command
 if (-not $status) {
-    LogPrint "ERROR : Enable customization failed"
+    LogPrint "ERROR : Uninstall open-vm-tools-sdmp failed"
     $retVal = $Aborted
 }
 else {
-       LogPrint "INFO: Enable customization passed"
-}
-
-# Set the clone vm name
-$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
-LogPrint "DEBUG: cloneName: ${cloneName}."
-
-
-# Create the customization specification
-$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
-if ($null -eq $linuxSpec) {
-    LogPrint "ERROR: Create linuxspec failed."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Create linuxspec well."
-
-
-# Clone the vm with new OSCustomization Spec
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
-LogPrint "INFO: Complete clone operation. Below will check VM cloned."
-
-
-# Refresh the new cloned vm
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-if (-not $cloneVM) {
-    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
-
-
-# Power on the clone vm
-LogPrint "INFO: Powering on $cloneName"
-$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
-
-
-# Wait for clone VM SSH ready
-LogPrint "INFO: Wait for SSH to confirm VM booting."
-if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-else {
-    LogPrint "INFO: Ready SSH."
+    LogPrint "INFO: Uninstall open-vm-tools-sdmp passed"
 }
 
 
-# Get another VM IP addr
-$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
-LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
-
-
-# Check the log for customization
-$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
-if ($null -eq $loginfo)
-{
-    LogPrint "ERROR: Enable customization gust failed with log ${loginfo}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
-}
-else
+#Check the serviceDiscovery plugin installed and vmtoolsd service unloads after uninstall open-vm-tools-sdmp
+$service = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsof -p ``pidof vmtoolsd`` | grep libserviceDiscovery"
+if ($null -eq $service)
 {
     $retVal = $Passed
-    LogPrint "INFO: Enable customization gust passed with log ${loginfo}."
+    LogPrint "INFO: vmtoolsd service unloads serviceDiscovery plugin successfully."
+    
 }
-
-
-# Delete the clone VM
-$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
-if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest."    
-    DisconnectWithVIServer
-    return $Aborted
+else 
+{
+    LogPrint "ERROR : vmtoolsd service unloads serviceDiscovery plugin failed. $service"
 }
-
 
 DisconnectWithVIServer
 return $retVal
