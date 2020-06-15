@@ -135,13 +135,6 @@ if (-not $DISTRO) {
 LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
-}
-
 #Check the ovt version, if version old then 11, not support this feature skip it.
 $version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa open-vm-tools" 
 $ver_num = $($version.split("-"))[3]

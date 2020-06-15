@@ -132,12 +132,6 @@ if (-not $DISTRO) {
 
 
 # Different Guest DISTRO have different configure fips method
-if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
-}
-
 if ($DISTRO -eq "RedHat7") 
 {
     $command = "df /boot | grep boot | awk '{print `$1}'"
@@ -211,9 +205,11 @@ else
         LogPrint "INFO: Enable fips in $DISTRO guest successfully."
         #reboot guest to check the fips
         $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-        LogPrint "INFO: reboot the guest after configure fips"
+        LogPrint "INFO: reboot the guest after configure fips."
+
         # Sleep for seconds to wait for the VM stopping firstly
-        Start-Sleep -seconds 6
+        Start-Sleep -seconds 10
+
         # Wait for the VM booting
         $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
         if ($ret -ne $true)
@@ -224,17 +220,26 @@ else
         else
         {
             LogPrint "INFO: The guest reboot successfully."
-            $Command = "fips-mode-setup --check |grep enabled"
-            $status = SendCommandToVM $ipv4 $sshkey $command
-            if (-not $status) 
+            $fips = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "fips-mode-setup --check |grep enabled"
+            if ($fips -eq $null)
             {
-                LogPrint "ERROR: After reboot, the fips enable failed. "
-                return $Failed
+                LogPrint "INFO: The fips enable failed, $fips"
             }
             else
             {
-                LogPrint "INFO: After reboot, the fips enable passed."
+                LogPrint "INFO: the fips enable passed, $fips"
             }
+            # $Command = "fips-mode-setup --check |grep enabled"
+            # $status = SendCommandToVM $ipv4 $sshkey $command
+            # if (-not $status) 
+            # {
+            #     LogPrint "ERROR: After reboot, the fips enable failed. "
+            #     return $Failed
+            # }
+            # else
+            # {
+            #     LogPrint "INFO: After reboot, the fips enable passed."
+            # }
         }
     }
 }
