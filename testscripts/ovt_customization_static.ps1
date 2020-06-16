@@ -139,14 +139,6 @@ if (-not $DISTRO) {
 LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) is not supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
-}
-
-
 # Set clone vm name
 $cloneName = $vmName + "-clone-" + (Get-Random -Maximum 300 -Minimum 1)
 LogPrint "DEBUG: cloneName: ${cloneName}."

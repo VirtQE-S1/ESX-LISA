@@ -137,14 +137,6 @@ if (-not $DISTRO) {
 LogPrint "INFO: Guest OS version is ${DISTRO}."
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
-}
-
-
 #check cloud-init installed or not in guest, if not, install it.
 $version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa cloud-init" 
 if ($null -eq $version) 

@@ -131,77 +131,121 @@ if (-not $DISTRO) {
 }
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7"-and $DISTRO -ne "RedHat8"-and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
-}
-
-
-# Get boot disk.
-$command = "df /boot | grep boot | awk '{print `$1}'"
-$bootDisk = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
-LogPrint "DEBUG: bootDisk: ${bootDisk}."
-if ($null -eq $bootDisk)
+# Different Guest DISTRO have different configure fips method
+if ($DISTRO -eq "RedHat7") 
 {
-    LogPrint "ERROR: Failed get the boot disk, ${bootDisk}."
-    return $Aborted
+    $command = "df /boot | grep boot | awk '{print `$1}'"
+    $bootDisk = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+    LogPrint "DEBUG: bootDisk: ${bootDisk}."
+    if ($null -eq $bootDisk)
+    {
+        LogPrint "ERROR: Failed get the boot disk, ${bootDisk}."
+        return $Aborted
+    }
+    else
+    {
+        LogPrint "INFO: The boot disk for guest is ${bootDisk}."
+    }
+
+    # Get boot disk's UUID.
+    $command = "blkid $bootDisk |awk '{print `$2}'"
+    $uuid = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+    LogPrint "DEBUG: uuid: ${uuid}."
+    if ($null -eq $uuid)
+    {
+        LogPrint "ERROR: the boot disk's UUID is ${uuid}."
+        return $Aborted
+    }
+    else
+    {
+        LogPrint "INFO: The boot disk's UUID is ${uuid}."
+    }  
+
+    # Cofigure fips enable in guest.
+    $Command = "yum install dracut-fips dracut-fips-aesni -y && dracut -v -f && grubby --update-kernel=ALL --args='boot=$uuid' && grubby --update-kernel=ALL --args='fips=1'"
+    $status = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
+    LogPrint "DEBUG: status: ${status}."
+    if (-not $status) 
+    {
+        LogPrint "ERROR: Configure fips commands failed."
+        $retVal = $Aborted
+    }
+    else
+    {
+        LogPrint "INFO: Configure fips commands passed."
+    }
+
+    #Reboot guest to check the fips
+    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+    LogPrint "INFO: reboot the guest after configure fips"
+    
+    # Sleep for seconds to wait for the VM stopping firstly
+    Start-Sleep -seconds 6
+    
+    
+    # Wait for the VM booting
+    $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+    if ($ret -ne $true)
+    {
+        LogPrint "INFO: The guest reboot failed after configure fips enabled."
+        return $Aborted
+    }
 }
 else
 {
-    LogPrint "INFO: The boot disk for guest is ${bootDisk}."
-}    
+    LogPrint "INFO:The guest is not rehel7, configure the guest fips with fips-mode-setup command."
+    $Command = "fips-mode-setup --enable"
+    $status = SendCommandToVM $ipv4 $sshkey $command
+    if (-not $status) {
+        LogPrint "ERROR : Enable fips in $DISTRO guest failed."
+        $retVal = $Aborted
+    }
+    else
+    {
+        LogPrint "INFO: Enable fips in $DISTRO guest successfully."
+        #reboot guest to check the fips
+        $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
+        LogPrint "INFO: reboot the guest after configure fips."
 
+        # Sleep for seconds to wait for the VM stopping firstly
+        Start-Sleep -seconds 10
 
-# Get boot disk's UUID.
-$command = "blkid $bootDisk |awk '{print `$2}'"
-$uuid = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
-LogPrint "DEBUG: uuid: ${uuid}."
-if ($null -eq $uuid)
-{
-    LogPrint "ERROR: the boot disk's UUID is ${uuid}."
-    return $Aborted
+        # Wait for the VM booting
+        $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+        if ($ret -ne $true)
+        {
+            LogPrint "INFO: The guest reboot failed after configure fips enabled."
+            return $Aborted
+        }
+        else
+        {
+            LogPrint "INFO: The guest reboot successfully."
+            $fips = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "fips-mode-setup --check |grep enabled"
+            if ($fips -eq $null)
+            {
+                LogPrint "INFO: The fips enable failed, $fips"
+            }
+            else
+            {
+                LogPrint "INFO: the fips enable passed, $fips"
+            }
+            # $Command = "fips-mode-setup --check |grep enabled"
+            # $status = SendCommandToVM $ipv4 $sshkey $command
+            # if (-not $status) 
+            # {
+            #     LogPrint "ERROR: After reboot, the fips enable failed. "
+            #     return $Failed
+            # }
+            # else
+            # {
+            #     LogPrint "INFO: After reboot, the fips enable passed."
+            # }
+        }
+    }
 }
-else
-{
-    LogPrint "INFO: The boot disk's UUID is ${uuid}."
-}  
-
-
-# Cofigure fips enable in guest.
-$Command = "yum install dracut-fips dracut-fips-aesni -y && dracut -v -f && grubby --update-kernel=ALL --args='boot=$uuid' && grubby --update-kernel=ALL --args='fips=1'"
-$status = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
-LogPrint "DEBUG: status: ${status}."
-if (-not $status) 
-{
-    LogPrint "ERROR: Configure fips commands failed."
-    $retVal = $Aborted
-}
-else
-{
-    LogPrint "INFO: Configure fips commands passed."
-}
-
-
-$reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-
-
-# Sleep for seconds to wait for the VM stopping firstly
-Start-Sleep -seconds 6
-
-
-# Wait for the VM booting
-$ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ($ret -ne $true)
-{
-    return $Aborted
-}
-
 
 # Check the fips value after reboot guest.
 $fips = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/sys/crypto/fips_enabled"
-LogPrint "DEBUG: fips: ${fips}."
 if ($fips -eq "1")
 {
     LogPrint "INFO: The fips enabled with fips  /proc/sys/crypto/fips_enabled $fips"
@@ -209,7 +253,7 @@ if ($fips -eq "1")
 }
 else
 {
-    LogPrint "ERROR: fips value is  $fips"
+    LogPrint "ERROR: fips value is not 1 , the value is $fips"
     return $Failed
 }    
 

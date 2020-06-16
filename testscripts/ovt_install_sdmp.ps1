@@ -1,27 +1,25 @@
 ########################################################################################
 ## Description:
-##  [open-vm-tools]Check the Guest customization with DHCP
+## Install open-vm-tools-sdmp package and check the serviceDiscovery plugin gets installed
 ##
 ## Revision:
-##  v1.0.0 - ldu - 12/01/2019 - Build the script
-##  v1.1.0 - ldu - 01/02/2020 - add remove clone vm function
-##  v2.0.0 - ldu - 18/02/2020 - Redesign the case to use nonpersistent OS spec
+##  v1.0.0 - ldu - 06/11/2020 - Build the script
+## 
 ########################################################################################
 
 
 <#
 .Synopsis
-   [open-vm-tools]Check the Guest customization with DHCP
-
+   Install open-vm-tools-sdmp package and check the serviceDiscovery plugin gets installed
 .Description
 
 <test>
-        <testName>ovt_customization_DHCP</testName>
-        <testID>ESX-OVT-036</testID>
-        <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
+        <testName>ovt_install_sdmp</testName>
+        <testID>ESX-OVT-048</testID>
+        <testScript>testscripts/ovt_install_sdmp.ps1</testScript  >
         <files>remote-scripts/utils.sh</files>
         <testParams>
-            <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
+            <param>TC_COVERED=RHEL6-0000,RHEL-188055</param>
         </testParams>
         <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
         <timeout>1800</timeout>
@@ -126,8 +124,6 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-
-
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
 LogPrint "DEBUG: DISTRO: ${DISTRO}."
@@ -138,85 +134,43 @@ if (-not $DISTRO) {
 }
 LogPrint "INFO: Guest OS version is ${DISTRO}."
 
-
-# Set the clone vm name
-$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 600 -Minimum 301)
-LogPrint "DEBUG: cloneName: ${cloneName}."
-
-
-# Create the customization specification
-$linuxSpec = New-OSCustomizationSpec -Type NonPersistent -OSType Linux -Domain redhat.com -NamingScheme VM
-if ($null -eq $linuxSpec) {
-    LogPrint "ERROR: Create linuxspec failed."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Create linuxspec well."
-
-
-# Clone the vm with new OSCustomization Spec
-$clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
-LogPrint "INFO: Complete clone operation. Below will check VM cloned."
-
-
-# Refresh the new cloned vm
-$cloneVM = Get-VMHost -Name $hvServer | Get-VM -Name $cloneName
-if (-not $cloneVM) {
-    LogPrint "ERROR: Unable to Get-VM with ${cloneName}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-LogPrint "INFO: Found the VM cloned - ${cloneName}."
-
-
-# Power on the clone vm
-LogPrint "INFO: Powering on $cloneName"
-$on = Start-VM -VM $cloneName -Confirm:$false -ErrorAction SilentlyContinue
-
-
-# Wait for clone VM SSH ready
-LogPrint "INFO: Wait for SSH to confirm VM booting."
-if ( -not (WaitForVMSSHReady $cloneName $hvServer $sshKey 300)) {
-    LogPrint "ERROR : Cannot start SSH."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    DisconnectWithVIServer
-    return $Aborted
-}
-else {
-    LogPrint "INFO: Ready SSH."
-}
-
-
-# Get another VM IP addr
-$ipv4Addr_clone = GetIPv4 -vmName $cloneName -hvServer $hvServer
-LogPrint "DEBUG: ipv4Addr_clone: ${ipv4Addr_clone}."
-
-
-# Check the log for customization
-$loginfo = bin\plink.exe -i ssh\${sshKey} root@${ipv4Addr_clone} "cat /var/log/vmware-imc/toolsDeployPkg.log |grep 'Ran DeployPkg_DeployPackageFromFile successfully'"
-if ($null -eq $loginfo)
-{
-    LogPrint "ERROR: The customization guest failed with log ${loginfo}."
-    RemoveVM -vmName $cloneName -hvServer $hvServer
-    return $Failed
+#Check the ovt version, if version old then 11, not support this feature skip it.
+$version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa open-vm-tools" 
+$ver_num = $($version.split("-"))[3]
+LogPrint "DEBUG: version: ${version} and ver_num is $ver_num."
+if ($ver_num -ge 11.1) {
+    LogPrint "Info: The OVT version is $ver_num."
 }
 else
 {
-    $retVal = $Passed
-    LogPrint "INFO: The customization guest passed with log ${loginfo}."
-}
-
-
-# Delete the clone VM
-$remove = RemoveVM -vmName $cloneName -hvServer $hvServer
-if ($null -eq $remove) {
-    LogPrint "ERROR: Cannot remove cloned guest."    
+    LogPrint "Info: The OVT version is $ver_num."
+    LogPrint "ERROR: The OVT version older then 11.1, not support sdmp."
     DisconnectWithVIServer
-    return $Aborted
+    return $Skipped
 }
 
+$Command = "yum install open-vm-tools-sdmp lsof -y"
+$status = SendCommandToVM $ipv4 $sshkey $command
+if (-not $status) {
+    LogPrint "ERROR : Install open-vm-tools-sdmp failed"
+    $retVal = $Aborted
+}
+else {
+    LogPrint "INFO: Install open-vm-tools-sdmp passed"
+}
+
+
+#Check the serviceDiscovery plugin installed and vmtoolsd service loads 
+$service = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsof -p ``pidof vmtoolsd`` | grep libserviceDiscovery"
+if ($null -eq $service)
+{
+    LogPrint "ERROR : vmtoolsd service loads serviceDiscovery plugin failed.$service"
+}
+else 
+{
+    $retVal = $Passed
+    LogPrint "INFO: vmtoolsd service loads serviceDiscovery plugin successfully, $service."
+}
 
 DisconnectWithVIServer
 return $retVal
