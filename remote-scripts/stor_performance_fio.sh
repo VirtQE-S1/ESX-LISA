@@ -11,7 +11,8 @@
 ## Revision:
 ## v1.0.0 - ldu - 8/20/2018 - Build the script
 ## v2.0.0 - ldu - 04/02/2019 - add new function, could benchmark test result.
-##
+## v2.1.0 - ldu - 02/06/2020 - update the test log name and folder.
+## v2.2.0 - ldu - 03/12/2020 - update test paramter for fio and change the benchmark result file to chmod 666.
 ###############################################################################
 
 dos2unix utils.sh
@@ -58,9 +59,9 @@ fi
 yum install nfs-utils make -y
 
 #install storage performance tool fio.
-wget https://github.com/axboe/fio/archive/fio-3.2.tar.gz
-tar -zxvf fio-3.2.tar.gz
-cd fio-fio-3.2
+wget https://github.com/axboe/fio/archive/fio-3.14.tar.gz
+tar -zxvf fio-3.14.tar.gz
+cd fio-fio-3.14
 make && make install
 if [ ! "$?" -eq 0 ]; then
 	LogMsg "ERROR:  install fio failed or make,nfs-utils install failed."
@@ -73,7 +74,7 @@ fi
 
 #Check the fio version.
 version=`fio --version`
-if [ $version == "fio-3.2" ]; then
+if [ $version == "fio-3.14" ]; then
 	LogMsg "fio version $version is correctly."
 	UpdateSummary "fio version $version is correctly."
 else
@@ -151,9 +152,10 @@ else
 	UpdateSummary "mount nfs successfully."
 fi
 
+
 #set the compare kernel for fio test result, if the kernel set in xml will use it, if not ,we select the latest for this Distro.
 if [ ! ${base} ]; then
-	basepath=`ls -lt /mnt | grep ${DISTRO}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
+	basepath=`ls -lt /mnt | grep ${DISTRO}_${yamlFile##*/}_.*_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
     UpdateSummary "set basepath $basepath from latest one in folder $base"
 else
     basepath=`ls -lt /mnt | grep ${base}_${DiskType}_${FS}_ | head -n 1 |awk '{print $9}'`
@@ -161,13 +163,18 @@ else
 fi
 
 #Create fio test result path.
-path="${DISTRO}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
-mkdir -p /mnt/$path
+path="${DISTRO}_${yamlFile##*/}_kernel-$(uname -r)_${DiskType}_${FS}_$(date +%Y%m%d%H%M%S)"
+mkdir -p /home/$path
 
 #Download fio python scripts from github.
 cd /root
 git clone https://github.com/SCHEN2015/virt-perf-scripts.git
 cd /root/virt-perf-scripts/block
+[ -r ${yamlFile:="../virt_perf_scripts.yaml"} ] && rm -f virt_perf_scripts.yaml \
+&& ln -s $yamlFile virt_perf_scripts.yaml && UpdateSummary "currently used $yamlFile yaml file"
+
+#run setup scripts
+./utils/setup.sh
 
 # set filename dependecy raw or filesystem disk 
 if [[ $FS == raw ]]; then
@@ -175,21 +182,32 @@ if [[ $FS == raw ]]; then
 else
 	filename="/test/test"
 fi
-# Execute fio test
 
-./RunFioTest.py --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path
+# Execute fio test
+/usr/bin/python ./RunFioTest.py --numjobs 1 --rw_list read,write,rw  --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path 
 if [ $? -ne 0 ]; then
 	LogMsg "Test Failed. fio run failed."
-	UpdateSummary "Test failed.fio run failed. RunFioTest.py --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg " fio run successfully."
+	LogMsg " fio run for numjobs 16 successfully."
+	UpdateSummary "fio run successfully."
+fi
+
+/usr/bin/python ./RunFioTest.py --numjobs 16 --rw_list randread,randwrite,randrw --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /home/$path
+if [ $? -ne 0 ]; then
+	LogMsg "Test Failed. fio run failed."
+	UpdateSummary "Test failed.fio run failed. RunFioTest.py --dryrun --rounds 1 --runtime 1 --backend $backend --driver $DiskType --fs $FS --filename $filename --log_path /mnt/$path"
+	SetTestStateFailed
+	exit 1
+else
+	LogMsg " fio run for numjobs 1 successfully."
 	UpdateSummary "fio run successfully."
 fi
 
 # Generate Fio test report
-./GenerateTestReport.py --result_path /mnt/$path
+/usr/bin/python ./GenerateTestReport.py --result_path /home/$path
 if [ $? -ne 0 ]; then
 	LogMsg "Test report generate failed"
 	UpdateSummary "Test report generate failed"
@@ -200,18 +218,21 @@ else
 	UpdateSummary "Test report generate successfully."
 fi
 
-#Generate benchmark Report
+#copy the test result to nfs folder
+cp -r /home/$path /mnt
 
-
-./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
+#Generate benchmark Report in nfs folder
+ls /mnt/benchmark || mkdir /mnt/benchmark
+/usr/bin/python ./GenerateBenchmarkReport.py --base_csv /mnt/${basepath}/fio_report.csv --test_csv  /mnt/${path}/fio_report.csv --report_csv /mnt/benchmark/${basepath}_VS_${path}.csv
 if [ $? -ne 0 ]; then
 	LogMsg "Test result benchmark failed,"
 	UpdateSummary "Test result benchmark failed, basepath is $basepath and path is $path"
 	SetTestStateFailed
 	exit 1
 else
-	LogMsg "Test result benchmark successfully."
-	UpdateSummary "Test result benchmark successfully."
+    chmod 666 /mnt/benchmark/*
+	LogMsg "Test result benchmark successfully, basepath is $basepath and path is $path."
+	UpdateSummary "Test result benchmark successfully, basepath is $basepath and path is $path."
 	SetTestStateCompleted
 	exit 0
 fi

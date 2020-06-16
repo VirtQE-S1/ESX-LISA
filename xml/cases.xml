@@ -13,9 +13,10 @@
             <smtpServer>mysmtphost.mycompany.com</smtpServer>
         </email>
     </global>
+
     <testSuites>
         <suite>
-            <!-- GO: 21 -->
+            <!-- GO: 24 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -39,10 +40,20 @@
                 <suiteTest>go_cpupower_frequency</suiteTest>
                 <suiteTest>go_ftracing_check</suiteTest>
                 <suiteTest>go_check_time_sync</suiteTest>
+                <suiteTest>go_check_hyperv_drivers</suiteTest>
+                <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
+                <suiteTest>go_check_dmesg_unable</suiteTest>
+                <suiteTest>go_check_journalctl_traceback</suiteTest>
+                <suiteTest>go_check_boot_time</suiteTest>
+                <suiteTest>go_check_service_status</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Kdump: 5 -->
+            <!-- Kdump: 7 -->
             <suiteName>kdump</suiteName>
             <suiteTests>
                 <suiteTest>kdump_crash_single_core</suiteTest>
@@ -50,10 +61,12 @@
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>kdump_trigger_nfs</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT: 35 -->
+            <!-- OVT: 39 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -66,44 +79,58 @@
                 <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
+
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_snapshot_container</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
+
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
-                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
                 <suiteTest>ovt_check_suspend_timesync</suiteTest>
                 <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_timesync</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
                 <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_IP_display</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_scsi_timeout</suiteTest>
                 <suiteTest>ovt_check_vmwaretool_directory</suiteTest>
                 <suiteTest>ovt_deadlock_condition</suiteTest>
-                <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
                 <suiteTest>ovt_snapshot_mount_twice</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
+                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_check_installation_info</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT-GT: 3 -->
+            <!-- OVT-GT: 10 -->
             <suiteName>gt-ovt</suiteName>
             <suiteTests>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_oneshot_timesync</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <!-- suiteTest>ovt_snapshot_container</suiteTest -->
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- STORAGE: 21 -->
+            <!-- STORAGE: 24 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -127,10 +154,11 @@
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
                 <suiteTest>stor_largest_size</suiteTest>
+                <suiteTest>stor_add_RDM_disk</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- NETWORK: 22 -->
+            <!-- NETWORK: 23 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -155,6 +183,8 @@
                 <suiteTest>nw_arbitrary_mtu</suiteTest>
                 <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
+                <suiteTest>nw_check_ipv6</suiteTest>
+                <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -167,7 +197,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- RDMA: 14 -->
+            <!-- RDMA: 15 -->
             <suiteName>rdma</suiteName>
             <suiteTests>
                 <suiteTest>rdma_boot_check</suiteTest>
@@ -184,6 +214,7 @@
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+                <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -227,20 +258,36 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT: 3 -->
+            <!-- CLOUD-INIT: 12 -->
             <suiteName>cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 2 -->
+            <!-- CLOUD-INIT-GT: 12 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+                <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <!-- suiteTest>cloud-init_check_traceback</suiteTest -->
+                <!-- suiteTest>cloud-init_check_unexpected</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -261,7 +308,28 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier3: 27 -->
+            <!-- EACV: X -->
+            <suiteName>eacv</suiteName>
+            <suiteTests>
+                <!-- suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+				<suiteTest>cloud-init_customization_static</suiteTest>
+				<suiteTest>cloud-init_reboot_customization_static</suiteTest>
+				<suiteTest>cloud-init_check_critical</suiteTest>
+				<suiteTest>cloud-init_check_error</suiteTest>
+				<suiteTest>cloud-init_check_warning</suiteTest>
+				<suiteTest>cloud-init_check_service_status</suiteTest>
+				<suiteTest>cloud-init_check_traceback</suiteTest>
+				<suiteTest>cloud-init_check_unexpected</suiteTest -->
+                <suiteTest>ovt_uninstall_sdmp</suiteTest>
+                <suiteTest>ovt_install_sdmp</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
                 <suiteTest>dpdk_compile</suiteTest>
@@ -270,15 +338,11 @@
                 <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
-                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
-                <suiteTest>rdma_perf_test_diff_host</suiteTest>
-                <suiteTest>rdma_perf_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_same_host</suiteTest>
-                <suiteTest>rdma_rping_test_diff_host</suiteTest>
-                <suiteTest>sriov_maximum_nics</suiteTest>
-                <suiteTest>sriov_manual_mac</suiteTest>
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
+                <suiteTest>perf_nw_ipv4_udp</suiteTest>
+                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
+                <suiteTest>perf_nw_ipv6_udp</suiteTest>
+                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
                 <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
@@ -287,33 +351,50 @@
                 <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
                 <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
                 <suiteTest>perf_stor_max_num_disk</suiteTest>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
+                <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
+                <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
+                <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
+                <suiteTest>rdma_perf_test_diff_host</suiteTest>
+                <suiteTest>rdma_perf_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_same_host</suiteTest>
+                <suiteTest>rdma_rping_test_diff_host</suiteTest>
+                <suiteTest>sriov_maximum_nics</suiteTest>
+                <suiteTest>sriov_manual_mac</suiteTest>
+                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
+                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier2: 77 -->
+            <!-- Tier2: 109 -->
             <suiteName>tier2</suiteName>
             <suiteTests>
-                <suiteTest>go_check_cpu</suiteTest>
-                <suiteTest>go_cpupower_frequency</suiteTest>
-                <suiteTest>go_ftracing_check</suiteTest>
-                <suiteTest>go_check_time_sync</suiteTest>
-                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
+                <suiteTest>go_check_cpu</suiteTest>
                 <suiteTest>go_check_memory</suiteTest>
                 <suiteTest>go_install_ide_disk</suiteTest>
+                <suiteTest>go_reboot_12G_memory</suiteTest>
+                <suiteTest>go_check_time_sync</suiteTest>
                 <suiteTest>go_reboot_debugkernel_10_times</suiteTest>
+                <suiteTest>go_cpupower_frequency</suiteTest>
+                <suiteTest>go_ftracing_check</suiteTest>
+                <suiteTest>go_install_3rd_app</suiteTest>
+                <suiteTest>go_check_hyperv_drivers</suiteTest>
+                <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>
                 <suiteTest>kdump_crash_mixed_disk</suiteTest>
+                <suiteTest>kdump_3_types_storage</suiteTest>
+                <suiteTest>kdump_trigger_nfs</suiteTest>
+                <suiteTest>ovt_check_build_version</suiteTest>
+                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
                 <suiteTest>ovt_vgauth_add_alias</suiteTest>
                 <suiteTest>ovt_vgauth_list_alias</suiteTest>
                 <suiteTest>ovt_vgauth_del_alias</suiteTest>
                 <suiteTest>ovt_upgrade_downgrade_debuginfo</suiteTest>
                 <suiteTest>ovt_check_pam_unix2</suiteTest>
-                <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
@@ -332,7 +413,17 @@
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_100_containers</suiteTest>
                 <suiteTest>ovt_snapshot_bind_mount</suiteTest>
-                <suiteTest>ovt_snapshot_mount_twice</suiteTest>
+                <!-- suiteTest>ovt_snapshot_mount_twice</suiteTest -->
+                <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
+                <suiteTest>ovt_enable_appinfo_after_disable</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_poll-interval</suiteTest>
+                <suiteTest>ovt_get_appinfo</suiteTest>
+                <suiteTest>ovt_disable_appinfo_via_cmd</suiteTest>
+                <suiteTest>ovt_change_poll_interval_value</suiteTest>
+                <suiteTest>ovt_get_appinfo_after_kill_app</suiteTest>
+                <suiteTest>ovt_get_appinfo_host</suiteTest>
+                <suiteTest>ovt_customization_DHCP</suiteTest>
+                <suiteTest>ovt_customization_static</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -348,6 +439,9 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
+                <suiteTest>stor_add_RDM_disk</suiteTest>
+                <suiteTest>stor_reset_scsi</suiteTest>
+                <suiteTest>stor_scsi_domain_validation</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
                 <suiteTest>nw_resize_rx_tx_max</suiteTest>
                 <suiteTest>nw_resize_rx_tx</suiteTest>
@@ -363,10 +457,12 @@
                 <suiteTest>nw_check_mtu_scope</suiteTest>
                 <suiteTest>nw_set_mtu_multi_vmxnet3</suiteTest>
                 <suiteTest>nw_check_ssh</suiteTest>
+                <suiteTest>nw_check_ipv6</suiteTest>
+                <suiteTest>nw_check_vmxnet3_multiqueue</suiteTest>
                 <suiteTest>bl_no_vmmemctl_process</suiteTest>
                 <suiteTest>bl_add_memory_under_stress</suiteTest>
                 <suiteTest>rdma_ping_diff_host</suiteTest>
-                <suiteTest>rdma_reload_vmxnet3</suiteTest>
+                <!-- suiteTest>rdma_reload_vmxnet3</suiteTest -->
                 <suiteTest>rdma_reboot_kernel-debug</suiteTest>
                 <suiteTest>vmwgfx_check_file_snapshot</suiteTest>
                 <!-- suiteTest>sriov_mtu_check</suiteTest -->
@@ -375,69 +471,693 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
+                <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <!-- suiteTest>cloud-init_customization_static</suiteTest -->
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_unexpected</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- Tier1: 46 -->
+            <!-- Tier1: 53 -->
             <suiteName>tier1</suiteName>
             <suiteTests>
-                <suiteTest>go_suspend_vm</suiteTest>
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
                 <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
+                <suiteTest>go_check_logs</suiteTest>
+                <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
+                <suiteTest>go_check_dmesg_unable</suiteTest>
+                <suiteTest>go_check_journalctl_traceback</suiteTest>
+                <suiteTest>go_check_boot_time</suiteTest>
+                <suiteTest>go_check_service_status</suiteTest>
+                <suiteTest>go_check_clocksource</suiteTest>
+                <suiteTest>go_change_clocksource</suiteTest>
                 <suiteTest>kdump_crash_single_core</suiteTest>
                 <suiteTest>kdump_crash_smp</suiteTest>
                 <suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>kdump_crash_diff_size</suiteTest>
-                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
-                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
-                <suiteTest>ovt_check_build_version</suiteTest>
-                <suiteTest>ovt_uninstall_ovt</suiteTest>
-                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
-                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
-                <suiteTest>ovt_upgrade_downgrade_vmtools</suiteTest>
-                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
-                <suiteTest>ovt_install_by_iso</suiteTest>
                 <suiteTest>ovt_shutdown_restart_vm</suiteTest>
                 <suiteTest>ovt_check_IP_display</suiteTest>
+                <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
+                <suiteTest>ovt_install_uninstall_synced_with_gui</suiteTest>
+                <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
+                <suiteTest>ovt_uninstall_ovt</suiteTest>
+                <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
+                <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
+                <suiteTest>ovt_check_installation_info</suiteTest>
                 <suiteTest>stor_add_remove_multi_scsi</suiteTest>
                 <suiteTest>stor_hdx_resize_to_bigger</suiteTest>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
                 <suiteTest>stor_hot_unplug_scsi</suiteTest>
                 <suiteTest>stor_vm_install_by_scsi</suiteTest>
                 <suiteTest>stor_add_nvme_disk</suiteTest>
+                <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>nw_mulit_vmxnet3</suiteTest>
                 <suiteTest>nw_boot_vmxnet3</suiteTest>
                 <suiteTest>nw_new_vmxnet3_dynamic_ip</suiteTest>
                 <suiteTest>nw_hot_plug_unplug</suiteTest>
                 <!-- suiteTest>nw_live_migration</suiteTest -->
                 <suiteTest>nw_check_nic_name</suiteTest>
-                <suiteTest>bl_add_memory_low_to_high</suiteTest>
                 <suiteTest>rdma_boot_check</suiteTest>
                 <suiteTest>rdma_reload_vmx_pvrdma</suiteTest>
                 <suiteTest>rdma_hot_add_nic</suiteTest>
                 <suiteTest>rdma_check_IB_state</suiteTest>
-                <suiteTest>rdma_hot_remove</suiteTest>
+                <!-- suiteTest>rdma_hot_remove</suiteTest -->
                 <suiteTest>vsock_version</suiteTest>
                 <suiteTest>vsock_host_as_server</suiteTest>
                 <suiteTest>vsock_guest_as_server</suiteTest>
-                <suiteTest>sriov_boot_check</suiteTest>
+                <!-- suiteTest>sriov_boot_check</suiteTest -->
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
+
     <testCases>
+        <test>
+            <testName>ovt_install_sdmp</testName>
+            <testID>ESX-OVT-048</testID>
+            <testScript>testscripts/ovt_install_sdmp.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-188055</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_uninstall_sdmp</testName>
+            <testID>ESX-OVT-049</testID>
+            <testScript>testscripts/ovt_uninstall_sdmp.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-188056</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>cloud-init_check_service_status</testName>
+            <testID>ESX-cloud-init-010</testID>
+            <testScript>testscripts/cloud-init_check_service_status.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187964</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_traceback</testName>
+            <testID>ESX-cloud-init-012</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_traceback.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187965</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_unexpected</testName>
+            <testID>ESX-cloud-init-011</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_unexpected.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187966</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_warning</testName>
+            <testID>ESX-cloud-init-007</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_warning.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187894</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_error</testName>
+            <testID>ESX-cloud-init-008</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_error.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187893</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_check_critical</testName>
+            <testID>ESX-cloud-init-009</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_check_critical.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187892</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_install_3rd_app</testName>
+            <testID>ESX-GO-32</testID>
+            <testScript>go_install_3rd_app.sh</testScript>
+            <files>remote-scripts/go_install_3rd_app.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL-174551</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_clocksource</testName>
+            <testID>ESX-GO-30</testID>
+            <testScript>testscripts/go_check_clocksource.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186410</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_change_clocksource</testName>
+            <testID>ESX-GO-31</testID>
+            <testScript>testscripts/go_change_clocksource.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186411</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_service_status</testName>
+            <testID>ESX-GO-029</testID>
+            <testScript>testscripts/go_check_service_status.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186409</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_boot_time</testName>
+            <testID>ESX-GO-028</testID>
+            <testScript>testscripts/go_check_boot_time.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186408</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_enable_appinfo_after_disable</testName>
+            <testID>ESX-OVT-040</testID>
+            <testScript>ovt_enable_appinfo_after_disable.sh</testScript>
+            <files>remote-scripts/ovt_enable_appinfo_after_disable.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187178</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_get_appinfo_after_kill_app</testName>
+            <testID>ESX-OVT-045</testID>
+            <testScript>ovt_get_appinfo_after_kill_app.sh</testScript>
+            <files>remote-scripts/ovt_get_appinfo_after_kill_app.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187199</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_get_appinfo_host</testName>
+            <testID>ESX-OVT-044</testID>
+            <testScript>testscripts/ovt_get_appinfo_host.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>900</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL-187177</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_change_poll_interval_value</testName>
+            <testID>ESX-OVT-040</testID>
+            <testScript>ovt_change_poll_interval_value.sh</testScript>
+            <files>remote-scripts/ovt_change_poll_interval_value.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187176</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_disable_appinfo_via_cmd</testName>
+            <testID>ESX-OVT-040</testID>
+            <testScript>ovt_disable_appinfo_via_cmd.sh</testScript>
+            <files>remote-scripts/ovt_disable_appinfo_via_cmd.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187177</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_disable_appinfo_via_poll-interval</testName>
+            <testID>ESX-OVT-040</testID>
+            <testScript>ovt_disable_appinfo_via_poll-interval.sh</testScript>
+            <files>remote-scripts/ovt_disable_appinfo_via_poll-interval.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187174</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_get_appinfo</testName>
+            <testID>ESX-OVT-039</testID>
+            <testScript>ovt_get_appinfo.sh</testScript>
+            <files>remote-scripts/ovt_get_appinfo.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187173</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_journalctl_traceback</testName>
+            <testID>ESX-GO-027</testID>
+            <testScript>testscripts/go_check_journalctl_traceback.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186407</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_dmesg_unable</testName>
+            <testID>ESX-GO-025</testID>
+            <testScript>testscripts/go_check_dmesg_unable.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186406</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_dmesg_unknowsymbol</testName>
+            <testID>ESX-GO-026</testID>
+            <testScript>testscripts/go_check_dmesg_unknowsymbol.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186405</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_installation_info</testName>
+            <testID>ESX-OVT-038</testID>
+            <testScript>ovt_check_installation_info.sh</testScript>
+            <files>remote-scripts/ovt_check_installation_info.sh</files>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-186495</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>kdump_trigger_nfs</testName>
+            <testID>ESX-KDUMP-06</testID>
+            <testScript>testscripts/kdump_trigger_nfs.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50872</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>kdump_3_types_storage</testName>
+            <testID>ESX-KDUMP-07</testID>
+            <testScript>testscripts/kdump_3_types_storage.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <files>remote-scripts\utils.sh</files>
+            <files>remote-scripts\ssh_storage.sh</files>
+            <timeout>2400</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50873</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>ovt_check_netiprouteconfigureinfo</testName>
+            <testID>ESX-OVT-037</testID>
+            <testScript>testscripts/ovt_check_netiprouteconfigureinfo.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50876</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_check_time_sync_disable_sync_with_host</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_check_time_sync_disable_sync_with_host.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL-173220</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_fips_enable</testName>
+            <testID>ESX-GO-024</testID>
+            <testScript>testscripts/go_fips_enable.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-182794</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1200</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>cloud-init_reboot_customization_static</testName>
+            <testID>ESX-cloud-init-006</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_reboot_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-153099</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+        <test>
+            <testName>cloud-init_customization_DHCP</testName>
+            <testID>ESX-cloud-init-004</testID>
+            <testScript>testscripts/cloud-init_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137082</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>cloud-init_customization_static</testName>
+            <testID>ESX-cloud-init-005</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/cloud-init_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-137083</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_DHCP</testName>
+            <testID>ESX-OVT-036</testID>
+            <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL7-93437</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_customization_static</testName>
+            <testID>ESX-ovt-037</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/ovt_customization_static.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-180199</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>rdma_ibv_srq_pingpong_test_diff_host</testName>
+            <testID>ESX-RDMA-013</testID>
+            <setupScript>
+                <file>SetupScripts\revert_guest_B.ps1</file>
+                <file>setupscripts\add_pvrdma.ps1</file>
+            </setupScript>
+            <cleanupScript>
+                <file>SetupScripts\reset_migration.ps1</file>
+            </cleanupScript>
+            <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
+            <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
+                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
+                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
+                <param>dstDatastore=datastore</param>
+                <param>tool=srq</param>
+                <param>TC_COVERED=RHEL-182322,RHEL6-0000</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>2400</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+
+
+        <test>
+            <testName>nw_check_vmxnet3_multiqueue</testName>
+            <testID>ESX-NW_24</testID>
+            <setupScript>setupscripts\change_cpu.ps1</setupScript>
+            <testScript>testscripts/nw_check_vmxnet3_multiqueue.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <testParams>
+                <param>VCPU=4</param>
+                <param>TC_COVERED=RHEL7-50933</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>perf_nw_unloadload_vmxnet3</testName>
+            <testID>ESX-PERF-013</testID>
+            <testScript>testscripts/perf_nw_unloadload_vmxnet3.ps1</testScript>
+            <files>remote-scripts/load_unload_vmxnet3.sh</files>
+            <files>remote-scripts/ping.sh</files>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL7-50932</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_hyperv_drivers</testName>
+            <testID>ESX-GO-022</testID>
+            <testScript>testscripts/go_check_hyperv_drivers.ps1</testScript>
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-178654</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>go_check_logs</testName>
+            <testID>ESX-GO-023</testID>
+            <testScript>testscripts/go_check_logs.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-149710</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_reset_scsi</testName>
+            <testID>ESX-Stor-038</testID>
+            <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+            <testScript>testscripts\stor_reset_scsi.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/stor_reset_scsi_disk.sh</files>
+            <testParams>
+                <param>DiskType=SCSI</param>
+                <param>StorageFormat=Thick</param>
+                <param>Count=1</param>
+                <param>CapacityGB=10</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-152733</param>
+            </testParams>
+            <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>3600</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_scsi_domain_validation</testName>
+            <testID>ESX-Stor-037</testID>
+            <testScript>testscripts\stor_scsi_domain_validation.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_domain_validation.sh
+            </files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-173219</param>
+            </testParams>
+            <cleanupScript>SetupScripts\revert_guest_B.ps1</cleanupScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>nw_check_ipv6</testName>
+            <testID>ESX-NW-023</testID>
+            <testScript>testscripts/nw_check_ipv6.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>360</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>stor_add_RDM_disk</testName>
+            <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
+            <testID>ESX-Stor-022</testID>
+            <testScript>testscripts\stor_add_RDM_disk.ps1</testScript>
+            <files>
+                remote-scripts/utils.sh,remote-scripts/stor_add_disk_ide.sh
+            </files>
+            <!-- <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript> -->
+            <testParams>
+                <param>DiskType=RawPhysical</param>
+                <param>TC_COVERED=RHEL-111401</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>900</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>ovt_snapshot_mount_twice</testName>
             <testID>ESX-OVT-034</testID>
             <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <files>remote-scripts/utils.sh</files>
-            <files>remote-scripts/ovt_mount.sh</files>
+            <files>remote-scripts/ovt_mount_twice.sh</files>
             <testParams>
                 <param>DiskType=SCSI</param>
                 <param>StorageFormat=Thin</param>
@@ -629,8 +1349,8 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
-                <param>redhat_7_standard_version=open-vm-tools-10.3.10-1.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-10.3.10-3.el8.x86_64</param>
+                <param>redhat_7_standard_version=open-vm-tools-11.0.5-3.el7.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.1.0-1.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -732,20 +1452,6 @@
                 <param>TC_COVERED=RHEL6-34903,RHEL7-50886</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-        <test>
-            <testName>ovt_check_libdnet</testName>
-            <testID>ESX-OVT-010</testID>
-            <testScript>ovt_check_libdnet.sh</testScript>
-            <files>remote-scripts/ovt_check_libdnet.sh</files>
-            <files>remote-scripts/utils.sh</files>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <testParams>
-                <param>TC_COVERED=RHEL6-34894,RHEL7-52026</param>
-            </testParams>
             <timeout>240</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
@@ -907,18 +1613,17 @@
             <files>remote-scripts/utils.sh</files>
             <testParams>
                 <!-- RHELs NO OVT -->
-                <param>redhat_5_standard_version=NOOVT</param>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-10.3.10-1.el7.x86_64</param>
-                <param>redhat_7_lower_version=open-vm-tools-10.3.0-2.el7.x86_64</param>
-                <param>redhat_7_lower_rpm=10.3.0/2.el7/x86_64/open-vm-tools-10.3.0-2.el7.x86_64.rpm</param>
-                <param>redhat_7_lower_dsk_rpm=10.3.0/2.el7/x86_64/open-vm-tools-desktop-10.3.0-2.el7.x86_64.rpm</param>
+                <param>redhat_7_standard_version=open-vm-tools-11.0.5-3.el7.x86_64</param>
+                <param>redhat_7_lower_version=open-vm-tools-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-11.0.5-2.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_dsk_rpm=11.0.5/2.el7/x86_64/open-vm-tools-desktop-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-10.3.10-3.el8.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-10.3.10-2.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.3.10/2.el8/x86_64/open-vm-tools-10.3.10-2.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=10.3.10/2.el8/x86_64/open-vm-tools-desktop-10.3.10-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.1.0-1.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.0.0/4.el8/x86_64/open-vm-tools-11.0.0-4.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=11.0.0/4.el8/x86_64/open-vm-tools-desktop-11.0.0-4.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -936,15 +1641,15 @@
                 <!-- RHELs NO OVT -->
                 <param>redhat_6_standard_version=NOOVT</param>
                 <!-- RHEL7 -->
-                <param>redhat_7_standard_version=open-vm-tools-debuginfo-10.3.10-1.el7.x86_64</param>
-                <param>redhat_7_standard_rpm=10.3.10/1.el7/x86_64/open-vm-tools-debuginfo-10.3.10-1.el7.x86_64.rpm</param>
-                <param>redhat_7_lower_version=open-vm-tools-debuginfo-10.3.0-2.el7.x86_64</param>
-                <param>redhat_7_lower_rpm=10.3.0/2.el7/x86_64/open-vm-tools-debuginfo-10.3.0-2.el7.x86_64.rpm</param>
+                <param>redhat_7_standard_version=open-vm-tools-debuginfo-11.0.5-3.el7.x86_64</param>
+                <param>redhat_7_standard_rpm=11.0.5/3.el7/x86_64/open-vm-tools-debuginfo-11.0.5-3.el7.x86_64.rpm</param>
+                <param>redhat_7_lower_version=open-vm-tools-debuginfo-11.0.5-2.el7.x86_64</param>
+                <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-debuginfo-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-debuginfo-10.3.10-3.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=10.3.10/3.el8/x86_64/open-vm-tools-debuginfo-10.3.10-3.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_version=open-vm-tools-debuginfo-10.3.10-2.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=10.3.10/2.el8/x86_64/open-vm-tools-debuginfo-10.3.10-2.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.1.0-1.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=11.1.0/1.el8/x86_64/open-vm-tools-debuginfo-11.1.0-1.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_version=open-vm-tools-debuginfo-11.0.0-4.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.0.0/4.el8/x86_64/open-vm-tools-debuginfo-11.0.0-4.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1095,7 +1800,7 @@
                 <param>TC_COVERED=RHEL6-0000,RHEL-171563</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1800</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1598,7 +2303,7 @@
             <testName>stor_add_nvme_disk</testName>
             <testID>ESX-Stor-017</testID>
             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
-            <testScript>stor_add_nvme_disk.sh</testScript>
+            <testScript>testscripts\stor_add_nvme_disk.ps1</testScript>
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/stor_add_nvme_disk.sh</files>
             <testParams>
@@ -1925,6 +2630,7 @@
             <timeout>600</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34942,RHEL7-50922</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
@@ -2000,9 +2706,10 @@
             <testScript>testscripts\nw_check_nic_name.ps1</testScript>
             <testParams>
                 <param>TC_COVERED=RHEL-111702,RHEL6-99999</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>360</timeout>
+            <timeout>600</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2089,6 +2796,7 @@
                 <param>VCPU=8</param>
                 <param>VMMemory=8GB</param>
                 <param>TC_COVERED=RHEL-136107,RHEL6-99999</param>
+                <param>nicName=VM Network</param>
             </testParams>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -2162,7 +2870,7 @@
             </setupScript>
             <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
             <testParams>
-                <param>VMMemory=8GB</param>
+                <param>VMMemory=4GB</param>
                 <param>TC_COVERED=RHEL7-80171,RHEL6-38494</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2233,6 +2941,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2275,6 +2984,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ping_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2322,6 +3032,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ipv4_throughtput.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2352,6 +3063,7 @@
             </cleanupScript>
             <testScript>testscripts\sriov_ipv6_throughtput.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2420,6 +3132,7 @@
                 <file>SetupScripts\reset_migration.ps1</file>
             </cleanupScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2472,6 +3185,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2507,6 +3221,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2527,6 +3242,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2547,6 +3263,7 @@
             </setupScript>
             <testScript>testscripts\rdma_tools_test_same_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2571,6 +3288,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2594,6 +3312,7 @@
             </cleanupScript>
             <testScript>testscripts\rdma_tools_test_diff_host.ps1</testScript>
             <testParams>
+                <param>dstHost7.0=10.73.196.33,10.73.196.39</param>
                 <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
                 <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
                 <param>dstDatastore=datastore</param>
@@ -2675,6 +3394,7 @@
             <noReboot>False</noReboot>
         </test>
     </testCases>
+
     <VMs>
         <vm>
             <hvServer>ESXI_HOST_IPADDRESS</hvServer>

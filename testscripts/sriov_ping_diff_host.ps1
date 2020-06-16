@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Ping successfully between 2 Guests which support SR-IOV on the different Hosts
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 09/05/2018 - Build the script
-##
-###############################################################################
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -145,13 +144,21 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-# ############################################################################### 
+# ######################################################################################## 
 
 
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -161,7 +168,7 @@ if (-not $vmObj) {
 
 
 # Specify dst host
-$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
+$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7 -Host7_0 $dstHost7_0
 if ($null -eq $dstHost) {
     LogPrint "ERROR: Cannot find required Host"    
     DisconnectWithVIServer

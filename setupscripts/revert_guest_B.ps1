@@ -1,14 +1,13 @@
-###############################################################################
-##
+#######################################################################################
 ## Description:
-## Stop the test VM and then reset it to a snapshot.
+##  Stop the test VM and then reset it to a snapshot.
 ##
 ## Revision:
-##	v1.0.0 - ruqin - 07/27/2018 - Draft the script for Stop the test VM and then reset it to a snapshot
-##
-###############################################################################
-<#
+##	v1.0.0 - ruqin - 07/27/2018 - Draft the script.
+#######################################################################################
 
+
+<#
  .Synopsis
     Make sure the test VM is stopped
 
@@ -25,14 +24,11 @@
 
 .Parameter testParams
     Semicolon separated list of test parameters.
-
 #>
 
-param([string] $vmName, [string] $hvServer, [string] $testParams)
 
-#
-# Checking the input arguments
-#
+# Checking the input arguments.
+param([string] $vmName, [string] $hvServer, [string] $testParams)
 if (-not $vmName) {
     "FAIL: VM name cannot be null!"
     exit 1
@@ -47,20 +43,19 @@ if (-not $testParams) {
     Throw "FAIL: No test parameters specified"
 }
 
-#
-# Output test parameters so they are captured in log file
-#
+
+# Output test parameters so they are captured in log file.
 "TestParams : '${testParams}'"
+
 
 . .\setupscripts\tcutils.ps1
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+#######################################################################################
+# Main Body
+#######################################################################################
 $retVal = $Failed
+
 
 # Get VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
@@ -72,99 +67,93 @@ if (-not $vmObj) {
 
 # Get Guest-B VM Name
 $testVMName = $vmObj.Name.Split('-')
-# Get another VM by change Name
 $testVMName[-1] = "B"
 $testVMName = $testVMName -join "-"
-$vmName = $testVMName
+$vmBName = $testVMName
 
-if (-not $vmName -or -not $hvServer) {
-    LogPrint "Error : ResetVM was passed an bad vmName or bad hvServer"
+
+if (-not $vmBName -or -not $hvServer) {
+    LogPrint "ERROR: ResetVM was passed an bad vmBName or bad hvServer."
     return $Aborted
 }
 
-LogPrint "Info : ResetVM( $($vmName) )"
 
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-if (-not $vmObj) {
-    LogPrint "Error : ResetVM cannot find the VM $($vmName)"
+LogPrint "INFO: ResetVM( $($vmBName) )."
+$vmBObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmBName
+if (-not $vmBObj) {
+    LogPrint "ERROR: ResetVM cannot find the VM $($vmBName)"
     return $Aborted
 }
 
-#
-# If the VM is not stopped, try to stop it
-#
-if ($vmObj.PowerState -ne "PoweredOff") {
-    LogPrint "Info : $($vmName) is not in a stopped state - stopping VM"
-    $outStopVm = Stop-VM -VM $vmObj -Confirm:$false -Kill
+
+# If the VM is not stopped, try to stop it.
+if ($vmBObj.PowerState -ne "PoweredOff") {
+    LogPrint "Info : $($vmBName) is not in a stopped state - stopping VM"
+    $outStopVm = Stop-VM -VM $vmBObj -Confirm:$false -Kill
     if ($outStopVm -eq $false -or $outStopVm.PowerState -ne "PoweredOff") {
-        LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+        LogPrint "Error : ResetVM is unable to stop VM $($vmBName). VM has been disabled"
         return $Aborted
     }
 }
 
-#
+
 # Reset the VM to a snapshot to put the VM in a known state.  The default name is
 # ICABase.  This can be overridden by the global.defaultSnapshot in the global section
 # and then by the vmSnapshotName in the VM definition.
-#
 $snapshotName = "ICABase"
 
-#
-# Find the snapshot we need and apply the snapshot
-#
+
+# Find the snapshot we need and apply the snapshot.
 $snapshotFound = $false
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$snapsOut = Get-Snapshot -VM $vmObj
+$vmBObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmBName
+$snapsOut = Get-Snapshot -VM $vmBObj
 if ($snapsOut) {
     foreach ($s in $snapsOut) {
         if ($s.Name -eq $snapshotName) {
-            LogPrint "Info : $($vmName) is being reset to snapshot $($s.Name)"
-            $setsnapOut = Set-VM -VM $vmObj -Snapshot $s -Confirm:$false
+            LogPrint "INFO: $($vmBName) is being reset to snapshot $($s.Name)"
+            $setsnapOut = Set-VM -VM $vmBObj -Snapshot $s -Confirm:$false
             if ($setsnapOut) {
                 $snapshotFound = $true
                 break
             }
             else {
-                LogPrint "Error : ResetVM is unable to revert VM $($vmName) to snapshot $($s.Name). VM has been disabled"
+                LogPrint "ERROR: ResetVM is unable to revert VM $($vmBName) to snapshot $($s.Name). VM has been disabled"
                 return $Aborted
             }
         }
     }
 }
 
-#
+
 # Make sure the snapshot left the VM in a stopped state.
-#
 if ($snapshotFound) {
-    #
     # If a VM is in the Suspended (Saved) state after applying the snapshot,
     # the following will handle this case
-    #
-    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    if ($vmObj) {
-        if ($vmObj.PowerState -eq "Suspended") {
-            LogPrint "Info : $($vmName) - resetting to a stopped state after restoring a snapshot"
-            $stopvmOut = Stop-VM -VM $vmObj -Confirm:$false -Kill
+    $vmBObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmBName
+    if ($vmBObj) {
+        if ($vmBObj.PowerState -eq "Suspended") {
+            LogPrint "INFO: $($vmBName) - resetting to a stopped state after restoring a snapshot"
+            $stopvmOut = Stop-VM -VM $vmBObj -Confirm:$false -Kill
             if ($stopvmOut -or $stopvmOut.PowerState -ne "PoweredOff") {
-                LogPrint "Error : ResetVM is unable to stop VM $($vmName). VM has been disabled"
+                LogPrint "Error : ResetVM is unable to stop VM $($vmBName). VM has been disabled"
                 return $Aborted
             }
         }
     }
     else {
-        LogPrint "Error : ResetVM cannot find the VM $($vmName)"
+        LogPrint "ERROR: ResetVM cannot find the VM $($vmBName)"
         return $Aborted
     }
 }
 else {
-    LogPrint "Warn : There's no snapshot with name $snapshotName found in VM $($vmName). Making a new one now."
-    $newSnap = New-Snapshot -VM $vmObj -Name $snapshotName
+    LogPrint "ERROR: There's no snapshot with name $snapshotName found in VM $($vmBName). Making a new one now."
+    $newSnap = New-Snapshot -VM $vmBObj -Name $snapshotName
     if ($newSnap) {
         $snapshotFound = $true
-        LogPrint "Info : $($vmName) made a snapshot $snapshotName."
+        LogPrint "Info : $($vmBName) made a snapshot $snapshotName."
     }
     else {
-        LogPrint "Error : ResetVM is unable to make snapshot for VM $($vmName)."
+        LogPrint "Error : ResetVM is unable to make snapshot for VM $($vmBName)."
         return $Aborted
     }
 }

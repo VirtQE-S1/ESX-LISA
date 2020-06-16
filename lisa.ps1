@@ -1,42 +1,36 @@
-###############################################################################
-##
+########################################################################################
 ## ___________ _____________  ___         .____    .___  _________   _____   
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
 ##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/ 
-##
-###############################################################################
-## 
+########################################################################################
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
 ## aspects of vSphere maagement, including network, storage, VM, guest OS and 
 ## more. This framework automates the tasks required to test the 
 ## Redhat Enterprise Linux Server on WMware ESX Server.
-##
-###############################################################################
-##
+########################################################################################
 ## Revision:
-## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
+##  v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
-## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
+##  v1.1.0 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
-## v1.2 - xiaofwan - 1/22/2017 - Fix a typo issue
-## v1.3 - xiaofwan - 1/23/2017 - Insert suite name into result dir name, such as
+##  v1.2.0 - xiaofwan - 01/22/2017 - Fix a typo issue
+##  v1.3.0 - xiaofwan - 01/23/2017 - Insert suite name into result dir name, such as
 ##                               cases-open_vm_tools-20170120-141152
-## v1.4 - xiaofwan - 1/26/2017 - Remove TC_COVERED param due to useless any more
-## v1.5 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
-## v2.0 - xiaofwan - 2/4/2017 - Add running time and JUnit XML result support.
-## v2.0.1 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
-##
-###############################################################################
+##  v1.4.0 - xiaofwan - 01/26/2017 - Remove TC_COVERED param due to useless any more
+##  v1.5 .0- xiaofwan - 02/03/2017 - $True will be $true and $False will be $false.
+##  v2.0.0 - xiaofwan - 02/04/2017 - Add running time and JUnit XML result support.
+##  v2.0.1 - xiaofwan - 02/04/2017 - Remove Test-Admin function.
+##  v2.1.0 - boyang - 01/08/2020 - Revision 2.1.0 release.
+########################################################################################
 
 
 <#
 .Synopsis
     Perform tests on a VM as defined in a .xml file
-
 .Description
     This powershell script automates the tasks required to test
     the Redhat Enterprise Linux Server on WMware Server.
@@ -207,10 +201,8 @@
     after first case finished. This parameter helps debug test cases.
 .Example
     .\lisa.ps1 run xml\debug_demo.xml
-
 .Example
     .\lisa.ps1 run xml\debug_demo.xml -dbgLevel 5
-
 .Link
     None.
 #>
@@ -235,10 +227,8 @@ param([string] $cmdVerb,
      )
 
 
-#
 # Global variables
-#
-$lisaVersion = "2.0.1"
+$lisaVersion = "2.1.0"
 $logfileRootDir = ".\TestResults"
 $logFile = "ica.log"
 
@@ -247,11 +237,10 @@ $xmlConfig = $null
 
 $testStartTime = [DateTime]::Now
 
-########################################################################
-#
+
+########################################################################################
 # LogMsg()
-#
-########################################################################
+########################################################################################
 function LogMsg([int]$level, [string]$msg)
 {
     <#
@@ -274,10 +263,10 @@ function LogMsg([int]$level, [string]$msg)
         $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
         ($now + $msg) | out-file -encoding ASCII -append -filePath $logfile
         
-        $color = "white"
+        $color = "White"
         if ( $msg.StartsWith("Error"))
         {
-            $color = "red"
+            $color = "Red"
         }
         elseif ($msg.StartsWith("Warn"))
         {
@@ -285,19 +274,17 @@ function LogMsg([int]$level, [string]$msg)
         }
         else
         {
-            $color = "gray"
+            $color = "Gray"
         }
         
-        write-host -f $color "$msg"
+        Write-Host -F $color "$msg"
     }
 }
 
 
-########################################################################
-#
+########################################################################################
 # Usage()
-#
-########################################################################
+########################################################################################
 function Usage()
 {
     <#
@@ -310,7 +297,7 @@ function Usage()
         Usage
     #>
 
-    write-host -f Cyan "`nLISA version $lisaVersion`r`n"
+    Write-Host -F Cyan "`nLISA version $lisaVersion`r`n"
     write-host "Usage: lisa cmdVerb cmdNoun [options]`r`n"
     write-host "    cmdVerb  cmdNoun      options     Description"
     write-host "    -------  -----------  ----------  -------------------------------------"
@@ -343,11 +330,10 @@ function Usage()
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # DumpParams
-#
-#####################################################################
+########################################################################################
 function    DumpParams()
 {
     LogMsg 0 "Info : cmdVerb:    $cmdVerb"
@@ -366,11 +352,10 @@ function    DumpParams()
     LogMsg 0 "Info : dbgLevel:   $dbgLevel"
 }
 
-#####################################################################
-#
+
+########################################################################################
 # AddUserToXmlTree
-#
-#####################################################################
+########################################################################################
 function AddUserVmToXmlTree ([string] $vmName, [string] $hvServer, [string] $ipv4, [string] $sshKey, [string] $testSuite, [XML] $xml, [string] $OS )
 {
     <#
@@ -398,16 +383,12 @@ function AddUserVmToXmlTree ([string] $vmName, [string] $hvServer, [string] $ipv
         
     #>
     
-    #
     # Insert a new VM definition for the user supuplied VM
-    #
 
     # Create a new XML element
     $newVM = $xml.CreateElement("VM")
     
-    #
     # Add the core child elements to the new XML element
-    #
     $newName = $xml.CreateElement("vmName")
     $newName.set_InnerText($vmName)
     $newVM.AppendChild($newName)
@@ -448,11 +429,9 @@ function AddUserVmToXmlTree ([string] $vmName, [string] $hvServer, [string] $ipv
 }
 
 
-#####################################################################
-#
+########################################################################################
 # PruneVMsFromXmlTree
-#
-#####################################################################
+########################################################################################
 function PruneVMsFromXmlTree ([string] $vmName, [XML] $xml)
 {
     <#
@@ -515,11 +494,9 @@ function PruneVMsFromXmlTree ([string] $vmName, [XML] $xml)
 }
 
 
-#####################################################################
-#
+########################################################################################
 # AddTestParamsToVMs
-#
-#####################################################################
+########################################################################################
 function AddTestParamsToVMs ($xmlData, $tParams)
 {
     <#
@@ -565,8 +542,7 @@ function AddTestParamsToVMs ($xmlData, $tParams)
 }
 
 
-########################################################################
-#
+########################################################################################
 # RunInitShutdownScript()
 #
 # Description:
@@ -577,8 +553,7 @@ function AddTestParamsToVMs ($xmlData, $tParams)
 #
 #    The Lisa Init script is called after the .xml file has been
 #    loaded, and before anything is done to the test VMs.
-#
-########################################################################
+########################################################################################
 function RunInitShutdownScript([String] $scriptName, [String] $xmlFilename )
 {
     <#
@@ -658,22 +633,18 @@ function RunInitShutdownScript([String] $scriptName, [String] $xmlFilename )
 }
 
 
-#####################################################################
-#
+########################################################################################
 # NoShutDown()
-#
-#####################################################################
+########################################################################################
 function NoShutDownCheck ()
 {
     return $NoShutDown
 }
 
 
-#####################################################################
-#
+########################################################################################
 # RunTests
-#
-#####################################################################
+########################################################################################
 function RunTests ([String] $xmlFilename )
 {
     <#
@@ -687,28 +658,24 @@ function RunTests ([String] $xmlFilename )
         RunTests "xml\myTests.xml"
     #>
 
-    #
     # Make sure we have a .xml filename to work with
-    #
     if (! $xmlFilename)
     {
-        write-host -f Red "Error: xml filename missing"
+        Write-Host -F Red "Error: xml filename missing"
         return $false
     }
 
-    #
     # Make sure the .xml file exists, then load it
-    #
     if (! (test-path $xmlFilename))
     {
-        write-host -f Red "Error: XML config file '$xmlFilename' does not exist."
+        Write-Host -F Red "Error: XML config file '$xmlFilename' does not exist."
         return $false
     }
 
     $xmlConfig = [xml] (Get-Content -Path $xmlFilename)
     if ($null -eq $xmlConfig)
     {
-        write-host -f Red "Error: Unable to parse the .xml file"
+        Write-Host -F Red "Error: Unable to parse the .xml file"
         return $false
     }
 
@@ -725,16 +692,15 @@ function RunTests ([String] $xmlFilename )
             $rootDir = $xmlConfig.config.global.logfileRootDir
         }
     }
-    #
+
     # Create the directory for the log files if it does not exist
-    #
     if (! (test-path $rootDir))
     {
         $d = mkdir $rootDir -erroraction:silentlycontinue
         if ($d -eq $null)
         {
-            write-host -f red "Error: root log directory does not exist and cannot be created"
-            write-host -f red "       root log directory = $rootDir"
+            Write-Host -F red "Error: root log directory does not exist and cannot be created"
+            Write-Host -F red "       root log directory = $rootDir"
             return $false
         }
     }
@@ -756,9 +722,7 @@ function RunTests ([String] $xmlFilename )
     LogMsg 4 "Info : Logfile =  $logfile"
     LogMsg 4 "Info : Using XML file:  $xmlFilename"
 
-    #
     # See if we need to modify the in memory copy of the .xml file
-    #
     if ($vmName)
     {
         #
@@ -795,9 +759,7 @@ function RunTests ([String] $xmlFilename )
         }
     }
 
-    #
     # If testParams were specified, add them to the VMs
-    #
     if ($testParams)
     {
         AddTestParamsToVMs $xmlConfig $testParams
@@ -822,9 +784,7 @@ function RunTests ([String] $xmlFilename )
     {
         if ($xmlConfig.Config.Global.LisaInitScript.file)
         {
-            #
             # Support the newer syntax that allows multiple init scripts
-            #
             foreach ($file in $xmlConfig.Config.Global.LisaInitScript.file)
             {
                 LogMsg 3 "Info : Running Lisa Init script '${file}'"
@@ -833,9 +793,7 @@ function RunTests ([String] $xmlFilename )
         }
         else
         {
-            #
             # Support the older syntax that allowed a single init script
-            #
             LogMsg 3 "Info : Running Lisa Init script '$($xmlConfig.Config.Global.LisaInitScript)'"
             $initResults = RunInitShutdownScript $xmlConfig.Config.Global.LisaInitScript $xmlFilename
         }
@@ -845,9 +803,7 @@ function RunTests ([String] $xmlFilename )
     . .\stateEngine.ps1
     RunICTests $xmlConfig
 
-    #
     # email the test results if requested
-    #
     if ($eMail)
     {
         SendEmail $xmlConfig $Script:testStartTime $xmlFilename $rootDir
@@ -855,10 +811,8 @@ function RunTests ([String] $xmlFilename )
 
     $summary = SummaryToString $xmlConfig $Script:testStartTime $xmlFilename $rootDir
     
-    #
     # The summary message is formatted for HTML body mail messages
     # When writing to the log file, we should emove the HTML tags
-    #
     $summary = $summary.Replace("<br />", "`r`n")
     $summary = $summary.Replace("<pre>", "")
     $summary = $summary.Replace("</pre>", "")
@@ -872,25 +826,25 @@ function RunTests ([String] $xmlFilename )
         {
             $lisaTestResult = $false
             break
+
         }
     }
 
     return $lisaTestResult
 }
 
-########################################################################
-#
+########################################################################################
 #  Main body of the script
-#
-########################################################################
-
+########################################################################################
 if ( $help)
 {
     Usage
     exit 0
 }
 
+
 $lisaExitCode = 0
+
 
 switch ($cmdVerb)
 {
@@ -921,6 +875,7 @@ default    {
         }
     }
 }
+
 
 Write-Host "Test will exit with error code $lisaExitCode"
 exit $lisaExitCode

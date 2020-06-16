@@ -1,12 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  Add and remove scsi disk multiple times in the VM
+##  Add and remove scsi disk multiple times in the VM.
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 7/12/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 07/12/2018 - Build the script.
+##  v1.0.1 - boyang - 02/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -38,9 +38,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -56,15 +54,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -81,9 +75,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -97,9 +89,7 @@ else {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -109,13 +99,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-
+########################################################################################
 $retVal = $Failed
 
 
@@ -150,7 +136,7 @@ if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6")
     return $Skipped
 }
 
-# add multiple disks 10 times
+# Add multiple disks 10 times.
 for ($i = 1; $i -le 10; $i++) {
     $hd_num = Get-Random -Minimum 1 -Maximum 5
     for ($j = 1; $j -le $hd_num; $j++) {
@@ -167,17 +153,21 @@ for ($i = 1; $i -le 10; $i++) {
         }
         Start-Sleep -Seconds 1
     }
-    # Check System dmesg
-    $Command = "dmesg | grep -i `"Call Trace`" | wc -l"
-    $Error_Num = [int] (bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
-    if ($Error_Num -ne 0) {
-        Write-Host -F Red "Error : New disks have error Call Trace in $vmName"
-        Write-Output "Error : New disks have error Call Trace in $vmName"
-        DisconnectWithVIServer
-        return $Failed
-    }
 
-    #Clean up new added disk and ready for next round
+    # Check system dmesg.
+	$status = CheckCallTrace $ipv4 $sshKey
+	if (-not $status[-1]) {
+	    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+	    Write-Output "ERROR: Found $($status[-2]) in msg."
+        return $Failed
+	}
+	else {
+	    Write-Host -F Red "INFO: NO call trace found."
+	    Write-Output "INFO: NO call trace found."
+	}
+	    
+
+    # Clean up new added disk and ready for next round.
     Start-Sleep -Seconds 2
     $sysDisk = "Hard disk 1"
     if ( -not (CleanUpDisk -vmName $vmName -hvServer $hvServer -sysDisk $sysDisk)) {
@@ -187,7 +177,9 @@ for ($i = 1; $i -le 10; $i++) {
         return $Failed
     }
 }
+
 $retVal = $Passed
+
 
 DisconnectWithVIServer
 return $retVal

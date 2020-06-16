@@ -1,15 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Check the file under /dev/snapshot,if open it, no crash.
 ##
-###############################################################################
-##
 ## Revision:
-## V1.0.0 - ldu - 07/05/2019 - Check the file under /dev/snapshot.
-##
-##
-###############################################################################
+## 	v1.0.0 - ldu - 07/05/2019 - Check the file under /dev/snapshot.
+## 	v1.0.1 - boyang - 12/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -26,9 +23,8 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -46,14 +42,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -75,9 +69,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -112,9 +105,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -122,12 +114,10 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 
 
@@ -143,20 +133,22 @@ else
 	Write-Output "ERROR:vmwgfx loaded."
 }
 
-#open file /dev/snapshot then check guest status and log message.
+# Open file /dev/snapshot then check guest status and log message.
 $open_file = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /dev/snapshot"
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-if ($null -eq $calltrace_check)
-{
+
+
+# Check the call trace in dmesg file.
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
+}
+else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
     $retVal = $Passed
-    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
-    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
 }
-else{
-    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
-}
+
 
 DisconnectWithVIServer
-
 return $retVal
-

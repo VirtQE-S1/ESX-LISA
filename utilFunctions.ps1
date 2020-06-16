@@ -1,67 +1,60 @@
-###############################################################################
-##
+########################################################################################
 ## ___________ _____________  ___         .____    .___  _________   _____   
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \  
 ##  |    __)_ \_____  \  \     /   ______ |    |   |   |\_____  \  /  /_\  \ 
 ##  |        \/        \ /     \  /_____/ |    |___|   |/        \/    |    \
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/ 
-##
-###############################################################################
-## 
+########################################################################################
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test 
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all 
 ## aspects of vSphere maagement, including network, storage, VM, guest OS and 
 ## more. This framework automates the tasks required to test the 
 ## Redhat Enterprise Linux Server on WMware ESX Server.
-## 
-###############################################################################
-##
+########################################################################################
 ## Revision:
-## v1.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
+## v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test.
 ##                                Incorporate VMware PowerCLI with framework
-## v1.1 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
+## v1.1.0 - xiaofwan - 11/28/2016 - Merge SendEmail and SummaryToString update
 ##                                Merge bug fix from LISA
-## v1.2 - xiaofwan - 1/25/2017 - Insert suite name into result dir name,
+## v1.2.0 - xiaofwan - 01/25/2017 - Insert suite name into result dir name,
 ##                               such as cases-open_vm_tools-20170120-141152
-## v1.3 - xiaofwan - 1/25/2017 - $vm.testCaseResults only contains "Passed", 
+## v1.3.0 - xiaofwan - 01/25/2017 - $vm.testCaseResults only contains "Passed", 
 ##                               "Failed", "Skipped", "Aborted", and "none".
-## v1.4 - xiaofwan - 2/3/2017 - $True will be $true and $False will be $false.
-## v1.5 - xiaofwan - 2/4/2017 - Test result can be exported as JUnix XML file.
+## v1.4.0 - xiaofwan - 02/03/2017 - $True will be $true and $False will be $false.
+## v1.5.0 - xiaofwan - 02/04/2017 - Test result can be exported as JUnix XML file.
 ##                              Correct some comment issues.
-## v1.6 - xiaofwan - 2/4/2017 - Remove Test-Admin function.
-## v1.7 - xiaofwan - 2/6/2017 - The <skipped/> section should be removed when
+## v1.6.0 - xiaofwan - 02/04/2017 - Remove Test-Admin function.
+## v1.7.0 - xiaofwan - 02/06/2017 - The <skipped/> section should be removed when
 ##                              case failed or aborted.
-## v1.8 - xiaofwan - 2/21/2017 - Two new functions to set XML result the kernel
+## v1.8.0 - xiaofwan - 02/21/2017 - Two new functions to set XML result the kernel
 ##                               firmware and ESX version.
-## v1.9 - xiaofwan - 2/21/2017 - Iteration related code has been removed.
-## v2.0 - xiaofwan - 2/21/2017 - Add test case running date and time in XML.
-## v2.1 - xiaofwan - 2/21/2017 - Move case running time calculation into 
+## v1.9.0 - xiaofwan - 02/21/2017 - Iteration related code has been removed.
+## v2.0.0 - xiaofwan - 02/21/2017 - Add test case running date and time in XML.
+## v2.1.0 - xiaofwan - 02/21/2017 - Move case running time calculation into 
 ##                               SetRunningTime function.
-## v2.2 - xiaofwan - 3/17/2017 - Change case result timer from TotalMinutes to
+## v2.2.0 - xiaofwan - 03/17/2017 - Change case result timer from TotalMinutes to
 ##                               TotalSeconds to satisfy Jenkins and Polarion
-## v2.3 - xiaofwan - 7/18/2017 - Add a property in case result to save
+## v2.3.0 - xiaofwan - 07/18/2017 - Add a property in case result to save
 ##                               TC_COVERED info into result XML.
-##
-###############################################################################
+########################################################################################
+
 
 <#
 .Synopsis
     Helper functions for the Lisa automation.
-
 .Description
     The functions in this file are helper functions for the
     the lisa.ps1 and stateEngine.ps1 automation scripts.
-
 .Link
     None.
 #>
 
-###############################################################################
-#
+
+########################################################################################
 # PowerCLIImport
-#
-###############################################################################
+########################################################################################
+
 function PowerCLIImport () {
     <#
     .Description
@@ -83,11 +76,9 @@ function PowerCLIImport () {
     }
 }
 
-###############################################################################
-#
+########################################################################################
 # ConnectToVIServer
-#
-###############################################################################
+########################################################################################
 function ConnectToVIServer ([string] $visIpAddr, 
     [string] $visUsername, 
     [string] $visPassword, 
@@ -115,9 +106,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         ConnectToVIServer <visIpAddr> <visUsername> <visPassword> <visProtocol>
     #>
 
-    #
     # Verify the VIServer related environment variable existed.
-    #
     if (-not $visIpAddr) {
         "Error : vCenter IP address is not configured, it is required."
         exit
@@ -138,9 +127,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         exit
     }
 
-    #
     # Check the PowerCLI package installed
-    #
     Get-PowerCLIVersion | out-null
     if (-not $?) {
         "Error : Please install VMWare PowerCLI package."
@@ -169,11 +156,10 @@ function ConnectToVIServer ([string] $visIpAddr,
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # GetJUnitXML 
-#
-#####################################################################
+########################################################################################
 function GetJUnitXML() {
     <#
     .Synopsis
@@ -211,7 +197,7 @@ function GetJUnitXML() {
     $templatePath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), $guid + ".txt");
 
     $template | Out-File $templatePath -encoding UTF8
-    # load template into XML object
+    # Load template into XML object
     $junit_xml = New-Object xml
     $junit_xml.Load($templatePath)
 
@@ -220,11 +206,10 @@ function GetJUnitXML() {
     return $junit_xml
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetESXVersion
-#
-#####################################################################
+########################################################################################
 function SetESXVersion([String] $ver) {
     <#
     .Synopsis
@@ -250,11 +235,10 @@ function SetESXVersion([String] $ver) {
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetOSInfo
-#
-#####################################################################
+########################################################################################
 function SetOSInfo([String] $kernelVer, [String] $firmwareVer) {
     <#
     .Synopsis
@@ -288,11 +272,10 @@ function SetOSInfo([String] $kernelVer, [String] $firmwareVer) {
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetResultSuite
-#
-#####################################################################
+########################################################################################
 function SetResultSuite([String] $testSuite) {
     <#
     .Synopsis
@@ -313,11 +296,10 @@ function SetResultSuite([String] $testSuite) {
     $testResult.testsuite.name = $testSuite
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetTimeStamp
-#
-#####################################################################
+########################################################################################
 function SetTimeStamp([String] $testTimeStamp) {
     <#
     .Synopsis
@@ -338,11 +320,10 @@ function SetTimeStamp([String] $testTimeStamp) {
     $testResult.testsuite.timestamp = $testTimeStamp
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetTestResult
-#
-#####################################################################
+########################################################################################
 function SetTestResult([String] $testName, [Object] $testID, [String] $completionCode) {
     <#
     .Synopsis
@@ -366,6 +347,7 @@ function SetTestResult([String] $testName, [Object] $testID, [String] $completio
     .Example
         SetTestResult $testName $testID $completionCode
     #>
+
     LogMsg 6 ("Info :    SetTestResult($($testName))")
 
     $newTestCaseTemplate = (@($testResult.testsuite.testcase)[0]).Clone()
@@ -391,20 +373,21 @@ function SetTestResult([String] $testName, [Object] $testID, [String] $completio
             $newTestCase.failure.InnerText = "Test $testName Aborted."
         }
     }
+
     foreach ($property in $newTestCase.properties.property) {
         if ($property.name -eq "TC_COVERED") {
             $property.value = $testID.tc
             break
         }
     }
+
     $testResult.testsuite.AppendChild($newTestCase) > $null
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SetRunningTime
-#
-#####################################################################
+########################################################################################
 function SetRunningTime([String] $testName, [System.Xml.XmlElement] $vm) {
     <#
     .Synopsis
@@ -424,6 +407,7 @@ function SetRunningTime([String] $testName, [System.Xml.XmlElement] $vm) {
     .Example
         SetRunningTime $testName $vm
     #>
+
     LogMsg 6 ("Info :    SetRunningTime($testName)")
 
     $caseEndTime = [DateTime]::Now
@@ -439,11 +423,10 @@ function SetRunningTime([String] $testName, [System.Xml.XmlElement] $vm) {
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SaveResultToXML
-#
-#####################################################################
+########################################################################################
 function SaveResultToXML([String] $testDir) {
     <#
     .Synopsis
@@ -471,11 +454,10 @@ function SaveResultToXML([String] $testDir) {
     $testResult.Save($resultXMLFile)
 }
 
-#####################################################################
-#
+
+########################################################################################
 # HasItBeenTooLong
-#
-#####################################################################
+########################################################################################
 function HasItBeenTooLong([String] $timestamp, [Int] $timeout) {
     <#
     .Synopsis
@@ -533,11 +515,9 @@ function HasItBeenTooLong([String] $timestamp, [Int] $timeout) {
     return $retVal
 }
 
-#####################################################################
-#
+########################################################################################
 # GetNextTest
-#
-#####################################################################
+########################################################################################
 function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData) {
     <#
     .Synopsis
@@ -600,9 +580,7 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData) {
         }
     }
 
-    #
     # We found the tests for the VMs test suite. Next find the next test to run.
-    #
     if ($tests) {
         $prev = "unknown"
         $currentTest = $vm.currentTest
@@ -623,11 +601,10 @@ function GetNextTest([System.Xml.XmlElement] $vm, [xml] $xmlData) {
     return $nextTest
 }
 
-#####################################################################
-#
+
+########################################################################################
 # GetTestData
-#
-#####################################################################
+########################################################################################
 function GetTestData([String] $testName, [xml] $xmlData) {
     <#
     .Synopsis
@@ -661,11 +638,10 @@ function GetTestData([String] $testName, [xml] $xmlData) {
     return $testData
 }
 
-#####################################################################
-#
+
+########################################################################################
 # GetTestID
-#
-#####################################################################
+########################################################################################
 function GetTestID([String] $testName, [xml] $xmlData) {
     <#
     .Synopsis
@@ -706,11 +682,10 @@ function GetTestID([String] $testName, [xml] $xmlData) {
     return $idObj
 }
 
-#####################################################################
-#
+
+########################################################################################
 # GetTestTimeout
-#
-#####################################################################
+########################################################################################
 function GetTestTimeout([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -742,11 +717,10 @@ function GetTestTimeout([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     return $timeout
 }
 
-#####################################################################
-#
+
+########################################################################################
 # AbortCurrentTest
-#
-#####################################################################
+########################################################################################
 function AbortCurrentTest([System.Xml.XmlElement] $vm, [string] $msg) {
     <#
     .Synopsis
@@ -785,11 +759,9 @@ function AbortCurrentTest([System.Xml.XmlElement] $vm, [string] $msg) {
     $vm.stateTimestamp = [DateTime]::Now.ToString()
 }
 
-#####################################################################
-#
+########################################################################################
 # SummaryToString
-#
-#####################################################################
+########################################################################################
 function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlFilename, [string] $logDir) {
     <#
     .Synopsis
@@ -828,9 +800,7 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
     $str += "ESX-LISA test run on " + $startTime
     $str += "<br />XML file: $xmlFilename<br /><br />"
 
-    #
     # Add information about the host running ICA to the e-mail summary
-    #
     $str += "<pre>"
     foreach ($vm in $xmlConfig.config.VMs.vm) {
         $str += $vm.emailSummary + "<br />"
@@ -838,9 +808,7 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
 
     $fname = [System.IO.Path]::GetFilenameWithoutExtension($xmlFilename)
 
-    #
     # Check to see if the provided log path is absolute
-    #
     if ([System.IO.Path]::IsPathRooted($logDir)) {
         $logPath = $logDir
     }
@@ -857,11 +825,9 @@ function SummaryToString([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlF
     return $str
 }
 
-#####################################################################
-#
+########################################################################################
 # SendEmail
-#
-#####################################################################
+########################################################################################
 function SendEmail([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlFilename, [string] $logDir) {
     <#
     .Synopsis
@@ -916,11 +882,10 @@ function SendEmail([XML] $xmlConfig, [DateTime] $startTime, [string] $xmlFilenam
     Send-mailMessage -to $to -from $from -subject $subject -body $body -BodyAsHtml -smtpserver $smtpServer
 }
 
-#####################################################################
-#
+
+########################################################################################
 # ShutDownVM
-#
-#####################################################################
+########################################################################################
 function ShutDownVM([System.Xml.XmlElement] $vm) {
     <#
     .Synopsis
@@ -959,11 +924,10 @@ function ShutDownVM([System.Xml.XmlElement] $vm) {
     }
 }
 
-#####################################################################
-#
+
+########################################################################################
 # RunPSScript
-#
-#####################################################################
+########################################################################################
 function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $xmlData, [string] $mode, [string] $logFilename) {
     <#
     .Synopsis
@@ -993,12 +957,9 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
     #>
 
     $retVal = $false
-
     $scriptMode = "unknown"
 
-    #
     # Check the input arguments
-    #
     if (-not $vm) {
         logMsg 0 "Error: RunPSScript() was passed a numm VM"
         return $false
@@ -1033,22 +994,16 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
         return $false
     }
 
-    #
     # Create an string of test params, separated by semicolons - ie. "a=1;b=x;c=5;"
-    #
     $params = CreateTestParamString $vm $xmlData
     $params += "scriptMode=${scriptMode};"
     $params += "sshKey=$($vm.sshKey);"
 
-    #
     # Invoke the setup/cleanup script
-    #
     $cmd = "$scriptName -vmName $vmName -hvServer $hvServer"
 
-    #
     # Only add the testParams if something was specified, and it appears reasonable
     # Min param length is 3 -ie.  "a=1"
-    #
     if ($params.Length -gt 2 -and $params.Contains("=")) {
         $cmd += " -testParams `"$params`""
     }
@@ -1058,37 +1013,36 @@ function RunPSScript([System.Xml.XmlElement] $vm, [string] $scriptName, [XML] $x
         $sts = Invoke-Expression $cmd
     }
     catch {
-        Write-Host "DEBUG: HERE. Use try...catch to catch Invoke-Expression error, or will aborted framework"
+        $Error = $_.Exception.Message
+        LogMsg 3 "ERROR: Catch the errors of setup script $scriptName throws which missed by scripts."
+        LogMsg 6 "ERROR: Catch some exception message and item, Like below."
+        LogMsg 6 "ERROR: $Error"
         return $false
     }
 
     $numItems = $sts.length
-    LogMsg 6 "Debug: $vmName - Invoke-Expression returned array with $($sts.length) elements"
-
-    if (("True" -eq $sts[-1]) -or ("Passed" -eq $sts[-1])) {
-        Write-Host -F red "$sts[-1]"
+    LogMsg 6 "DEBUG: $vmName - Invoke-Expression returned array with $($sts.length) elements"
+    LogMsg 6 "DEBUG: sts: $sts"
+    if (("True" -eq $sts[-1]) -or ("Passed" -eq $sts[-1]) -or ("Skipped" -eq $sts[-1])) {
         $retVal = $true
     }
     
     if ("False" -eq ($sts[-1]) -or ("Failed" -eq $sts[-1])) {
-        Write-Host -F red "$sts[-1]"
         $retVal = $false
     }
 
-    #
     # Write script output into log file
-    #
     foreach ($i in $sts) {
         logMsg 3 ("Info :    $vmName - $i")
     }
+
     return $retVal
 }
 
-#####################################################################
-#
+
+########################################################################################
 # TestPort
-#
-#####################################################################
+########################################################################################
 function TestPort ([String] $serverName, [Int] $port = 22, [Int] $to = 3) {
     <#
     .Synopsis
@@ -1112,9 +1066,7 @@ function TestPort ([String] $serverName, [Int] $port = 22, [Int] $to = 3) {
     $retVal = $false
     $timeout = $to * 1000
 
-    #
     # Try an async connect to the specified machine/port
-    #
     $tcpclient = new-Object system.Net.Sockets.TcpClient
     $iar = $tcpclient.BeginConnect($serverName, $port, $null, $null)
 
@@ -1148,11 +1100,10 @@ function TestPort ([String] $serverName, [Int] $port = 22, [Int] $to = 3) {
     return $retVal
 }
 
-#####################################################################
-#
+
+########################################################################################
 # UpdateState
-#
-#####################################################################
+########################################################################################
 function UpdateState([System.Xml.XmlElement] $vm, [string] $newState) {
     <#
     .Synopsis
@@ -1174,11 +1125,10 @@ function UpdateState([System.Xml.XmlElement] $vm, [string] $newState) {
     $vm.stateTimestamp = [DateTime]::Now.ToString()
 }
 
-#####################################################################
-#
+
+########################################################################################
 # GetFileFromVM()
-#
-#####################################################################
+########################################################################################
 function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [string] $localFile) {
     <#
     .Synopsis
@@ -1227,11 +1177,10 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
     return $retVal
 }
 
-#####################################################################
-#
+
+########################################################################################
 # SendFileToVM()
-#
-#####################################################################
+########################################################################################
 function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string] $remoteFile) {
     <#
     .Synopsis
@@ -1278,10 +1227,9 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
     return $retVal
 }
 
+
 #####################################################################
-#
 # SendCommandToVM()
-#
 #####################################################################
 function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command) {
     <#
@@ -1330,11 +1278,10 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command) {
     return $retVal
 }
 
-#######################################################################
-#
+
+########################################################################################
 # CreateTestParamString()
-#
-#######################################################################
+########################################################################################
 function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -1354,9 +1301,7 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     $testData = GetTestData $($vm.currentTest) $xmlData
 
     if ($xmlData.config.global.testParams -or $testdata.testParams -or $vm.testParams) {
-        #
         # First, add any global testParams
-        #
         if ($xmlData.config.global.testParams) {
             LogMsg 9 "Info : $($vm.vmName) Adding glogal test params"
             foreach ($param in $xmlData.config.global.testParams.param) {
@@ -1364,9 +1309,7 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             }
         }
 
-        #
         # Next, add any test specific testParams
-        #
         if ($testdata.testParams) {
             LogMsg 9 "Info : $($vm.vmName) Adding testparmas for test $($testData.testName)"
             foreach ($param in $testdata.testParams.param) {
@@ -1374,9 +1317,7 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData) {
             }
         }
 
-        #
         # Now, add VM specific testParams
-        #
         if ($vm.testParams) {
             LogMsg 9 "Info : $($vm.vmName) Adding VM specific params"
             foreach ($param in $vm.testParams.param) {
@@ -1385,30 +1326,23 @@ function CreateTestParamString([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         }
     }
 
-    #
     # Include the test log directory path
-    #
     $tp += "rootDir=$PWD;"
 
-    #
     # Include the test log directory path
-    #
     $tp += "TestLogDir=${testDir};"
 
-    #
     # Include the test name too , to redirect remote scripts log to it .
-    #
     $testname = $vm.currentTest
     $tp += "TestName=${testname};"
 
     return $tp
 }
 
-#######################################################################
-#
+
+########################################################################################
 # UpdateCurrentTest()
-#
-#######################################################################
+########################################################################################
 function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     <#
     .Synopsis
@@ -1435,8 +1369,8 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
         return
     }
 
-    #actually this is the previous test. here we need to pick up next new test if existing
-    #if previous test has been marked as "done" - for example, test failed and its XML defined to Abort test onError
+    # Actually this is the previous test. here we need to pick up next new test if existing
+    # If previous test has been marked as "done" - for example, test failed and its XML defined to Abort test onError
     $previousTest = $vm.currentTest
     if ($previousTest -eq "done") {
         return
@@ -1463,16 +1397,15 @@ function UpdateCurrentTest([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     }
 }
 
-#######################################################################
-#
+
+########################################################################################
 # GetIPv4ViaPowerCLI()
 #
 # Description:
 #    Look at the IP addresses on each NIC the VM has. For each
 #    address, see if it in IPv4 address and then see if it is
 #    reachable via a ping.
-#
-#######################################################################
+########################################################################################
 function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer) {
     <#
     .Synopsis
@@ -1529,11 +1462,10 @@ function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer) {
     return $null
 }
 
-#######################################################################
-#
+
+########################################################################################
 # GetIPv4()
-#
-#######################################################################
+########################################################################################
 function GetIPv4([String] $vmName, [String] $hvServer) {
     <#
     .Synopsis
@@ -1559,20 +1491,17 @@ function GetIPv4([String] $vmName, [String] $hvServer) {
     return $addr
 }
 
-#######################################################################
-#
+
+########################################################################################
 # VerifyTestResourcesExist()
-#
-#######################################################################
+########################################################################################
 function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlElement] $testData) {
     $retVal = $true
 
     $vmName = $vm.vmName
     $testName = $testData.testName
 
-    #
     # Verify the VM resource <sshKey>
-    #
     if ($vm.sshKey) {
         $sshKey = ".\ssh\$($vm.sshKey)"
         if (-not (Test-Path -Path "${sshKey}")) {
@@ -1581,9 +1510,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         }
     }
 
-    #
     # Verify the VM resource <preStartConfig>
-    #
     if ($vm.preStartConfig) {
         if ($vm.preStartConfig.file) {
             foreach ($preStartScript in $vm.preStartConfig.file) {
@@ -1601,9 +1528,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         }
     }
 
-    #
     # Verify the test resource <setupScript>
-    #
     if ($testData.setupScript) {
         if ($testData.setupScript.file) {
             foreach ($script in $testData.setupScript.file) {
@@ -1621,9 +1546,7 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
         }
     }
 
-    #
     # Verify the test resource <preTest>
-    #
     if ($testData.preTest) {
         if ($testData.preTest.file) {
             foreach ($script in $testData.preTest.file) {
@@ -1710,11 +1633,9 @@ function VerifyTestResourcesExist([System.Xml.XmlElement] $vm, [System.Xml.XmlEl
 }
 
 
-#######################################################################
-#
-# resetMigration()
-#
-#######################################################################
+########################################################################################
+# FindDstHostUtil()
+########################################################################################
 function FindDstHostUtil {
     param (
         [String] $hvServer,
@@ -1795,11 +1716,9 @@ function FindDstHostUtil {
 }
 
 
-#######################################################################
-#
+########################################################################################
 # resetMigration()
-#
-#######################################################################
+########################################################################################
 function resetMigration {
     param (
         [String] $vmName,
@@ -1934,11 +1853,9 @@ which have migration
 }
 
 
-#######################################################################
-#
+########################################################################################
 # findXMLData()
-#
-#######################################################################
+########################################################################################
 function findXMLData {
     param (
         [System.Xml.XmlElement] $vm, 
@@ -1958,11 +1875,9 @@ function findXMLData {
 }
 
 
-#######################################################################
-#
+########################################################################################
 # cleanupMigration()
-#
-#######################################################################
+########################################################################################
 function cleanupMigration {
     param (
         [System.Xml.XmlElement] $vm, 

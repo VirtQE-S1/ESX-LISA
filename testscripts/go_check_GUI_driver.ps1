@@ -1,15 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Check the vmware driver xorg-x11-drv-vmware exist in guest.
-##
-###############################################################################
+## 	Check the vmware driver xorg-x11-drv-vmware exist in guest.
 ##
 ## Revision:
-## V1.0.0 - ldu - 05/20/2019 - Check the vmware driver xorg-x11-drv-vmware exist in guest.
-##
-##
-###############################################################################
+## 	v1.0.0 - ldu - 05/20/2019 - Check xorg-x11-drv-vmware exists or not.
+## 	v1.0.1 - boyang - 05/20/2019 - Skip test in RHEL-6.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -24,11 +21,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -46,14 +43,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -75,9 +70,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -112,9 +106,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -122,30 +115,42 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 
 
-# Check the vmware driver xorg-x11-drv-vmware exist.
-$vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
-Write-Host -F Red "driver result is $vmware_driver"
+# As last RHEL-6.10 has been released. All RHEL-6 VMs haven't GUI.
+$DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
+LogPrint "DEBUG: DISTRO: $DISTRO."
+if ($null -eq $DISTRO) {
+    LogPrint "ERROR: Guest OS version is NULL."
+    DisconnectWithVIServer
+    return $Aborted
+}
 
+if ($DISTRO -eq "RedHat6") {
+    LogPrint "INFO: Skip the test in RHEL-6."
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
+# Check the vmware driver xorg-x11-drv-vmware exists or not.
+$vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
+Write-Host -F Red "DEBUG: vmware_driver: $vmware_driver."
+Write-Output "DEBUG: vmware_driver: $vmware_driver."
 if ($vmware_driver -eq $null)
 {
-	Write-Output "Failed:The no vmware gui related driver xorg-x11-drv-vmware found in guest.$vmware_driver"
+	Write-Output "ERROR: There is no vmware GUI related driver."
 }
 else{
-    Write-Output "passed, the vmware driver xorg-x11-drv-vmware exist, $vmware_driver."
+    Write-Output "INFO: Found VMware GUI related driver."
     $retVal = $Passed
 }
 
 
 DisconnectWithVIServer
-
 return $retVal
-

@@ -1,14 +1,12 @@
-###############################################################################
-##
+#######################################################################################
 ## Description:
-## Reset guests back to original host if migrated
-##
-###############################################################################
+##  Reset guests back to original host if migrated.
 ##
 ## Revision:
-##  V1.0.0 - ruqin - 9/21/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 9/21/2018 - Build the script.
+#######################################################################################
+
+
 <#
 .Synopsis
     Reset guests back to original host if migrated
@@ -33,22 +31,23 @@ which have migration
 
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
+
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
-    "Error: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit 1
 }
 
 
 if (-not $hvServer) {
-    "Error: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit 1
 }
 
 
 if (-not $testParams) {
-    Throw "Error: No test parameters specified"
+    Throw "ERROR: No test parameters specified"
 }
 
 
@@ -108,13 +107,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-
+########################################################################################
 $retVal = $Failed
 
 
@@ -122,6 +117,7 @@ $retVal = $Failed
 $GuestBName = $vmName.Split('-')
 $GuestBName[-1] = "B"
 $GuestBName = $GuestBName -join "-"
+LogPrint "DEBUG: GuestBName: ${GuestBName}."
 
 
 # Specify dst host
@@ -197,7 +193,7 @@ if (-not $oldDatastore) {
 
 # Move Guest A back to host
 Move-VM -VMotionPriority High -VM $vmObj -Destination (Get-VMHost $hvServer) `
-    -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+    -Datastore $oldDatastore -Confirm:$false -ERRORAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR: Cannot Move $vmName back to $oldDatastore and $hvServer in reset process"
     return $Aborted
@@ -208,7 +204,7 @@ LogPrint "INFO: Move $vmName back to $oldDatastore and $hvServer in reset proces
 
 # Move Guest B back to host
 Move-VM -VMotionPriority High -VM $GuestB -Destination (Get-VMHost $hvServer) `
-    -Datastore $oldDatastore -Confirm:$false -ErrorAction SilentlyContinue
+    -Datastore $oldDatastore -Confirm:$false -ERRORAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR: Move $GuestBName back to $oldDatastore and $hvServer in reset process"
     return $Aborted

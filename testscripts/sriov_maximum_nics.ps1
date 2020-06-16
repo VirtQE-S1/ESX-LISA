@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################\
 ## Description:
 ##  Add the MAX SR-IOV NICs in a Guest
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 8/9/2018 - Build the script
-##
-###############################################################################
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -134,14 +133,19 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-
+########################################################################################
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0","6.7.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -180,12 +184,13 @@ if ($null -eq $nics -or $nics.Count -ne $sriovNum) {
 
 # Check Call Trace
 $status = CheckCallTrace $ipv4 $sshKey
-if ($null -eq $status -or -not $status[-1]) {
-    LogPrint "ERROR: Failed on dmesg Call Trace"
-    DisconnectWithVIServer
-    return $Failed
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
 }
 else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
     $retVal = $Passed
 }
 

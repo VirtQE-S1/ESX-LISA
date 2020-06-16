@@ -1,15 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Test guest works well when hot add  scsi disks at max number .
-##
-###############################################################################
+## Test guest works well when hot add  scsi disks at max number.
 ##
 ## Revision:
 ## v1.0.0 - ldu - 07/21/2019 - Hot add  scsi disk wit max number.
-##
-## 
-###############################################################################
+## v1.0.1 - ldu - 12/18/2019 - Enhance errors check.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -21,11 +18,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -43,14 +40,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -78,9 +73,7 @@ foreach ($p in $params)
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -115,9 +108,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -125,16 +117,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
+
 
 # Get the VM
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
 
 #Hot add scsi disk with max number to each scsi controllor
 Write-Host -F Red "Count is $count"
@@ -172,17 +164,19 @@ else
     return $Aborted
 }
 
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-if ($null -eq $calltrace_check)
-{
-    $retVal = $Passed
-    Write-host -F Red "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
-    Write-Output "INFO: After cat file /dev/snapshot, NO $calltrace_check Call Trace found"
+
+# Check call trace.
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
+    Write-Output "ERROR: Found $($status[-2]) in msg."
 }
-else{
-    Write-Output "ERROR: After, FOUND $calltrace_check Call Trace in demsg"
+else {
+    Write-Host -F Red "INFO: NO call trace found."
+    Write-Output "INFO: NO call trace found."
+	$retVal = $Passed
 }
+
 
 DisconnectWithVIServer
-
 return $retVal

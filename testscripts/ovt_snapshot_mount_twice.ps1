@@ -1,23 +1,19 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Take snapshot after mount one disk twice.
-##
-##
-###############################################################################
+## 	[open-vm-tools]Take snapshot when mount a disk to two mount point
 ##
 ## Revision:
-## V1.0 - ldu - 08/13/2019 - Take snapshot after mount one disk twice.
-##
-###############################################################################
+## 	v1.0.0 - ldu - 08/13/2019 - Build scripts.
+########################################################################################
+
 
 <#
 .Synopsis
-    Take snapshot  after mount one disk twice.
+    [open-vm-tools]Take snapshot when mount a disk to two mount point
 .Description
     <test>
             <testName>ovt_snapshot_mount_twice</testName>
-            <testID>ESX-OVT-035</testID>
+            <testID>ESX-OVT-036</testID>
             <testScript>testscripts/ovt_snapshot_mount_twice.ps1</testScript>
             <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
             <files>remote-scripts/utils.sh</files>
@@ -41,11 +37,11 @@
     Semicolon separated list of test parameters.
 #>
 
+
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -63,14 +59,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -90,9 +84,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -127,9 +120,8 @@ if ($null -eq $logdir)
 	return $False
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -137,24 +129,24 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
+
 ###############################################################################
-#
 # Main Body
-#
 ###############################################################################
+$retVal = $Failed
+
+
 #Skip RHEL6, as not support OVT on RHEL6.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-if ( $DISTRO -eq "RedHat6" ){
+if ($DISTRO -eq "RedHat6"){
     DisconnectWithVIServer
     return $Skipped
 }
 
-$retVal = $Failed
 
-#
 # Get the VM
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+
 
 #Install docker and start one network container on guest.
 $result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix ovt_mount_twice.sh && chmod u+x ovt_mount_twice.sh && ./ovt_mount_twice.sh"
@@ -164,47 +156,60 @@ if( -not $result ){
     DisconnectWithVIServer
     return $Aborted
 }  else {
-    Write-Host -F Red "Info : mount twice with loop device successfully"
-    Write-Output "Info : mount twice with loop device successfully"
+    Write-Host -F Red "INFO: mount twice with loop device successfully."
+    Write-Output "INFO: mount twice with loop device successfully."
 }
+
 
 # Take snapshot and select quiesce option
 $snapshotTargetName = "snapshot"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Quiesce:$true -Confirm:$false
 $newSPName = $new_sp.Name
-write-host -f red "$newSPName"
+Write-Host -F Red "DEBUG: newSPName: $newSPName"
+Write-Output "DEBUG: newSPName: $newSPName"
 if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        Write-Host -F Red "The snapshot $newSPName with Quiesce is created successfully"
-        Write-Output "The snapshot $newSPName with Quiesce is created successfully"
-        $retVal = $Passed
+        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is equl to $snapshotTargetName."
+        Write-Output "INFO: The snapshot $newSPName with Quiesce is equl to $snapshotTargetName."
     }
     else
     {
-        Write-Output "The snapshot $newSPName with Quiesce is created Failed"
+        Write-Host -F Red "INFO: The snapshot $newSPName with Quiesce is not equl to $snapshotTargetName."
+        Write-Output "INFO: The snapshot $newSPName with Quiesce is not equl to $snapshotTargetName."
+    	return $Aborted
     }
-}
-sleep 3
-#
-# Remove SP created
-#
-$remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
-sleep 3
-$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
-if ($snapshots -eq $null)
-{
-    Write-Host -F Red "The snapshot has been removed successfully"
-    Write-Output "The snapshot has been removed successfully"
 }
 else
 {
-    Write-Host -F Red "The snapshot removed failed"
-    Write-Output "The snapshot removed failed"
-    return $Aborted
+    Write-Host -F Red "ERROR: Create the snapshot with Quiesce failed."
+    Write-Output "ERROR: Create the snapshot with Quiesce failed."
+   	return $Aborted
 }
 
-DisconnectWithVIServer
 
+# Remove SP created
+$remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
+
+
+sleep 3
+
+
+$snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
+if ($snapshots -eq $null)
+{
+    Write-Host -F Red "INFO: The snapshot has been removed successfully."
+    Write-Output "INFO: The snapshot has been removed successfully."
+	$retVal = $Passed
+}
+else
+{
+    Write-Host -F Red "ERROR: The snapshot removed failed."
+    Write-Output "ERROR: The snapshot removed failed."
+    return $Failed
+}
+
+
+DisconnectWithVIServer
 return $retVal

@@ -1,16 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-## Take snapshot with memory and Quiesce.
-##
-###############################################################################
+## 	Take snapshot with memory and Quiesce.
 ##
 ## Revision:
-## v1.0.0 - ldu - 10/24/2017 - Take snapshot with memory and Quiesce.
-## v1.0.1 - ruqin - 7/26/2018 - FIX: this case failed in RHEL7.6-ESXi6.5-BIOS
-## RHEL7-81369
-## ESX-Stor-004
-###############################################################################
+## 	v1.0.0 - ldu - 10/24/2017 - Take snapshot with memory and Quiesce.
+## 	v1.0.1 - ruqin - 7/26/2018 - FIX: this case failed in RHEL7.6-ESXi6.5-BIOS.
+########################################################################################
+
 
 <#
 .Synopsis
@@ -40,9 +36,8 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
+
 # Checking the input arguments
-#
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -60,14 +55,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
+
 # Parse test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -86,9 +79,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Check all parameters are valid
-#
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -117,9 +109,8 @@ if ($null -eq $ipv4)
 	return $Aborted
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -127,15 +118,14 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
 
-# Get the VM
+
+# Get the VM.
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -143,15 +133,14 @@ if (-not $vmObj) {
     return $Aborted
 }
 
+
 # Create a new test file named test01 before start test
 $newfile = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
 
-#
+
 # Take snapshot and select quiesce option
-#
 $snapshotTargetName = "snap_memory"
 $new_sp = New-Snapshot -VM $vmObj -Name $snapshotTargetName -Description "snapshot with memory" -Memory:$true -Quiesce:$true -Confirm:$false
-
 $newSPName = $new_sp.Name
 LogPrint "INFO: New Snapshot is $newSPName"
 
@@ -159,18 +148,21 @@ if ($new_sp)
 {
     if ($newSPName -eq $snapshotTargetName)
     {
-        LogPrint "INFO: The snapshot $newSPName with memory and Quiesce is created successfully"
+        LogPrint "INFO: The snapshot $newSPName with memory and Quiesce is created successfully."
     }
     else
     {
-        LogPrint "INFO: The snapshot with memory and Quiesce is created Failed"
+        LogPrint "INFO: The snapshot with memory and Quiesce is created Failed."
         DisconnectWithVIServer
         return $Fail
     }
 }
 
+
 # Remove new created file test01
 $removefile = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rm -f /root/test01"
+
+
 # Confirm file test01 has been removed
 $removeResult = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /root/ -name test01"
 LogPrint "INFO: removeResult is $removeResult"
@@ -191,17 +183,21 @@ if (-not $vmObj) {
 }
 
 
-#
 # restore SP that just created
-#
 $restore = Set-VM -VM $vmObj -Snapshot $new_sp -Confirm:$false
 LogPrint "INFO: restore is $restore"
+
+
 sleep 3
-#
+
+
 # Remove SP created
-#
 $remove = Remove-Snapshot -Snapshot $new_sp -RemoveChildren -Confirm:$false
+
+
 sleep 3
+
+
 $snapshots = Get-Snapshot -VM $vmObj -Name $new_sp
 if ($snapshots -eq $null)
 {
@@ -216,9 +212,8 @@ else
     return $Aborted
 }
 
-#
+
 # Confirm test file test01 esxit after restore snapshot
-#
 $exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "find /root/ -name test01"
 if ($null -eq $exist)
 {
@@ -232,6 +227,7 @@ else
     LogPrint Red "INFO: The snapshot has been restored successfully"
     $retVal = $Passed
 }
+
 
 DisconnectWithVIServer
 return $retVal

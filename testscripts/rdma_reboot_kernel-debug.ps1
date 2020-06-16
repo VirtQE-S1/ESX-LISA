@@ -1,12 +1,12 @@
-###############################################################################################
-##
+########################################################################################
 ## Description:
 ## 	Reboot guet with debugkernel installed.
 ##
 ## Revision:
-## 	v1.0.0 - ldu - 05/27/2019 - Reboot guest with debugkernel installed
-## 	v1.1.0 - boyang - 06/03/2019 - Fix send CMD format 
-###############################################################################################
+## 	v1.0.0 - ldu - 05/27/2019 - Reboot guest with debugkernel installed.
+## 	v1.1.0 - boyang - 06/03/2019 - Fix send CMD format.
+##  v1.2.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -119,17 +119,25 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################################
+########################################################################################
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 # Get new add RDMA NIC
 $nics = FindAllNewAddNIC $ipv4 $sshKey
+
 if ($null -eq $nics) 
 {
-    LogPrint "ERROR: Cannot find new add SR-IOV NIC" 
+    LogPrint "ERROR: Cannot find new add SR-IOV NIC."
     DisconnectWithVIServer
     return $Failed
 }
@@ -137,109 +145,118 @@ else
 {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: New NIC is $rdmaNIC."
+
 
 # Assign a new IP addr to new RDMA nic
 $IPAddr = "172.31.1." + (Get-Random -Maximum 254 -Minimum 2)
 if (-not (ConfigIPforNewDevice $ipv4 $sshKey $rdmaNIC ($IPAddr + "/24"))) 
 {
-    LogPrint "ERROR : Config IP Failed"
+    LogPrint "ERROR: Config IP Failed."
     DisconnectWithVIServer
     return $Failed
 }
 
+
 # Install required packages
 $sts = SendCommandToVM $ipv4 $sshKey "yum install -y rdma-core infiniband-diags" 
+LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) 
 {
-    LogPrint "ERROR : YUM cannot install required packages"
+    LogPrint "ERROR: YUM cannot install required packages."
     DisconnectWithVIServer
     return $Failed
 }
+
 
 # Load mod ib_umad for ibstat check
 $Command = "modprobe ib_umad"
 $modules = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: modules: ${modules}."
+
 
 # Make sure the ibstat is active 
-$Command = "ibstat |grep Active | wc -l"
+$Command = "ibstat | grep Active | wc -l"
 $ibstat = [int] (Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command)
+LogPrint "DEBUG: ibstat: ${ibstat}."
 if ($ibstat -eq 0) 
 {
-    LogPrint "ERROR : the ibstat is not correctly"
+    LogPrint "ERROR: The ibstat is not correctly."
     DisconnectWithVIServer
     return $Failed
 }
 
-# Install kerel-debug package in guest
-$kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
 
-#check the kernel-debug installed successfully or not.
-$kerneldebug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
-Write-Host -F Red "DEBUG: kerneldebug: $kerneldebug_check"
-Write-Output "DEBUG: kerneldebug: $kerneldebug_check"
-if ($null -eq $kerneldebug_check)
+# Install kerel-debug package in guest.
+$kerneldebug_install = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "yum install -y kernel-debug"
+LogPrint "DEBUG: kerneldebug_install: ${kerneldebug_install}."
+
+
+# Check the kernel-debug installed successfully or not.
+$kernel_debug_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa kernel-debug"
+LogPrint "DEBUG: kernel_debug_check: ${kernel_debug_check}."
+if ($null -eq $kernel_debug_check)
 {
-    Write-Output "INFO: The kernel-debug installed failed in guest"
+    Write-Output "ERROR: Failed to install kernel-debug."
     return $Aborted
 }
 else
 {
-    Write-Output "INFO: The kernel debug $kerneldebug_check installed successfully"
+    Write-Output "INFO: Install kernel-debug $kernel_debug_check successfully."
 }
+
 
 # Check the OS distro.Then change the grub file to change boot order
 $OS = GetLinuxDistro  $ipv4 $sshKey
 if ($OS -eq "RedHat6")
 {
-    # Change the boot sequence to debug kernel
+    # Change the boot sequence to debug kernel.
     $change_EFI = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/efi/EFI/redhat/grub.conf"
     $change_bois = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sed -i 's/default=1/default=0/g' /boot/grub/grub.conf"
 }
 else
 {
-    # Change the boot sequence to debug kernel
+    # Change the boot sequence to debug kernel.
     $change_boot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "grub2-set-default 0"
 }
 
+
 # Reboot the guest
 $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
+
+
 Start-Sleep -seconds 6
+
 
 # Wait for vm to Start
 $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
 if ($ssh -ne $true)
 {
-    Write-host -F Red "ERROR: Failed to start VM"
-    Write-Output "ERROR: Failed to start VM"
+    Write-host -F Red "ERROR: Failed to start VM."
+    Write-Output "ERROR: Failed to start VM."
     return $Aborted
 }
 else
 {
     $current_kernel = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "uname -r | grep debug"
-    Write-Host -F Red "INFO: After reboot the current kernel is $current_kernel"
-    Write-Output "INFO: After reboot the current kernel is $current_kernel"
+    LogPrint "INFO: After reboot the current kernel is ${current_kernel}."
     if ($null -eq $current_kernel)
     {
-        Write-Output "ERROR: The kernel-debug switch failed in guest"
+        LogPrint "ERROR: The kernel-debug switch failed in guest."
         return $Aborted
     }
 }
 
-# Check call trace
-$calltrace_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg | grep 'Call Trace'"
-Write-Output "DEBUG: calltrace_check: $calltrace_check"
-Write-Host -F red "DEBUG: calltrace_check: $calltrace_check"
-if ($null -eq $calltrace_check)
-{
-    $retVal = $Passed
-    Write-host -F Red "INFO: After booting with debug kernel, NO $calltrace_check Call Trace found"
-    Write-Output "INFO: After  booting with debug kernel, NO $calltrace_check Call Trace found"
+
+# Check call trace.
+$status = CheckCallTrace $ipv4 $sshKey
+if (-not $status[-1]) {
+    LogPrint "ERROR: Found $($status[-2]) in msg."
 }
-else{
-    Write-Output "ERROR: After booting with debug kernel, FOUND $calltrace_check Call Trace in demsg"
+else {
+    LogPrint "INFO: NO call trace found."
+    $retVal = $Passed
 }
 
 DisconnectWithVIServer
-
 return $retVal

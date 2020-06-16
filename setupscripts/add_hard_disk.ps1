@@ -1,33 +1,27 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##   This script will add hard disk to VM
-##
-###############################################################################
+##   Add different hard disks to a VM based on different parameters.
 ##
 ## Revision:
-## v1.0.0 - xuli - 01/16/2017 - Draft script for add hard disk.
-## v1.0.1 - ruqin - 07/11/2018 - Add a IDE hard disk support
-## v1.1.0 - boyang - 08/06/2018 - Fix a return value can't be converted by Invoke-Expression
-## v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
-## v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
-## v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
-## v1.5.0 - ldu   - 04/02/2019 - support add LSILogicSAS and LSI Logic Parallel scsi disk
-## v1.5.0 - ldu   - 07/20/2019 - support add SCSIController with one disk
-###############################################################################
+## 	v1.0.0 - xuli - 01/16/2017 - Draft script for add hard disk
+## 	v1.0.1 - ruqin - 07/11/2018 - Add a IDE hard disk support
+## 	v1.1.0 - boyang - 08/06/2018 - Fix return value can't be converted
+## 	v1.2.0 - ruqin - 08/13/2018 - Add DiskDatastore parameter
+## 	v1.3.0 - ruqin - 08/16/2018 - Add NVMe support
+## 	v1.4.0 - ruqin - 08/17/2018 - Multiple disks add support
+## 	v1.5.0 - ldu   - 04/02/2019 - support LSILogicSAS and LSI Logic Parallel scsi disk
+## 	v1.5.0 - ldu   - 07/20/2019 - support SCSIController with one disk
+## 	v1.6.0 - ldu   - 09/20/2019 - support RDM disk to guest
+########################################################################################
+
+
 <#
 .Synopsis
     This script will add hard disk to VM.
-
 .Description
     The script will create .vmdk file, and attach to VM directlly.
     The .xml entry to specify this startup script would be:
     <setupScript>SetupScripts\add_hard_disk.ps1</setupScript>
-
-   The scripts will always pass the vmName, hvServer, and a
-   string of testParams from the test definition separated by
-   semicolons. The testParams for this script identify DiskType, CapacityGB,
-   StorageFormat.
 
    Where
         DiskType - IDE, SCSI or NVMe
@@ -35,10 +29,6 @@
         DiskDataStore - The datastore for new disk (IDE disk type not support this parameter)
         CapacityGB - Capacity of the new virtual disk in gigabytes
         Count - The number of disk that we need to add during setup scripts
-
-    A typical XML definition for this test case would look similar
-    to the following:
-
 
         <testparams>
             <param>DiskType=SCSI</param>
@@ -49,8 +39,6 @@
         </testparams>
 
 OR
-
-
         <testparams>
             <param>DiskType=SCSI,IDE,NVMe</param>
             <param>StorageFormat=Thin,Thin,Thin</param>
@@ -58,18 +46,12 @@ OR
             <param>CapacityGB=3,5,6</param>
             <param>Count=3</param>
         </testparams>
-
-
-
 .Parameter vmName
     Name of the VM to add disk.
-
 .Parameter hvServer
     Name of the ESXi server hosting the VM.
-
 .Parameter testParams
     Test data for this test case
-
 .Example
     setupScripts\add_hard_disk
 #>
@@ -143,18 +125,15 @@ else {
     }
 }
 
-
 # If not set this para, the default value is 1
 if ($null -eq $Count) {
     $Count = 1
 }
 
-
 # Default storageformat is Thin
 if ($null -eq $storageFormat) {
     $storageFormat = "Thin" 
 }
-
 
 # Default DiskDatastore is VM's Host
 if ($null -eq $diskDataStore) {
@@ -181,21 +160,20 @@ if ($diskType -like "*,*" -or $capacityGB -like "*,*" -or $diskDataStore -like "
 # Source the tcutils.ps1 file
 . .\setupscripts\tcutils.ps1
 
-
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISUSERNAME `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-###############################################################################
-#
-# Main Body
-#
-###############################################################################
 
-write-host -F red "count is $Count"
+########################################################################################
+# Main Body
+########################################################################################
 $retVal = $Failed
+
+
+LogPrint "DEBUG: Count: $Count"
 for ($i = 0; $i -lt $Count; $i++) {
     # If we have multiple opition for params
     if ($multipleParams) {
@@ -205,30 +183,23 @@ for ($i = 0; $i -lt $Count; $i++) {
         $capacityGB = $capacityGBList[$i] 
     }
 
-
     # Check storage format params
     if (@("Thin", "Thick", "EagerZeroedThick") -notcontains $storageFormat) {
         LogPrint "Error: Unknown StorageFormat type: $storageFormat"
         return $Aborted
     }
 
-
     # Check Disk Type params
-    if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "NVMe") -notcontains $diskType) {
+    if (@("IDE", "SCSIController", "SCSI", "Parallel", "SAS", "RawPhysical", "NVMe") -notcontains $diskType) {
         LogPrint "Error: Unknown StorageFormat type: $diskType"
         return $Aborted
     }
 
-
     # Check Datastore
     $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-    if (-not $vmObj) {
-        LogPrint "ERROR: Unable to Get-VM with $vmName"
-        return $Aborted
-    }
     $vmDataStore = $vmObj.VMHost | Get-Datastore -Name "*$diskDataStore*"
     $diskDataStore = $vmDataStore.Name
-    LogPrint "INFO: Target Datastore is $diskDataStore"
+    LogPrint "DEBUG: diskDataStore: $diskDataStore"
     
     # Add SCSI controller
     if ($diskType -eq "SCSIController") {
@@ -270,7 +241,22 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
     }
 
-#Add LSI Logic SAS scsi disk
+	# Add RawPhysical disk
+    if ($diskType -eq "RawPhysical") {
+        $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+        # $vmhost = Get-VMHost -Name $hvServer
+        $deviceName = (Get-ScsiLun -VMHost $hvserver -CanonicalName "naa.600*")[0].ConsoleDeviceName
+        New-HardDisk -VM $vmObj -DiskType RawPhysical -DeviceName $deviceName
+        if (-not $?) {
+            Throw "Error : Cannot add RawPhysical hard disk to the VM $vmName"
+            return $Failed
+        }
+        else {
+            LogPrint "INFO: Add RawPhysical disk done."
+        }
+    }
+
+	# Add LSI Logic SAS scsi disk
     if ($diskType -eq "SAS") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
@@ -290,7 +276,7 @@ for ($i = 0; $i -lt $Count; $i++) {
         }
     }
 
-#Add LSI Logic Parallel scsi disk
+	# Add LSI Logic Parallel scsi disk
     if ($diskType -eq "Parallel") {
         $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
         if ($null -eq $diskDataStore) {
@@ -325,6 +311,12 @@ for ($i = 0; $i -lt $Count; $i++) {
 
     # Add NVMe disk
     if ($diskType -eq "NVMe") {
+		$skip = SkipTestInHost $hvServer "6.0.0"
+		if($skip)
+		{
+		    return $Skipped
+		}
+
         $sts = AddNVMeDisk $vmName $hvServer $diskDataStore $capacityGB $storageFormat
         if ($sts[-1]) {
             LogPrint "INFO: Add NVMe disk done. $vmName"

@@ -1,26 +1,22 @@
-###############################################################################
+########################################################################################
 ##  Description:
-##      SCP a large file from the VM A to VM B with different disk type.
+##  	SCP a large file from the VM A to VM B with different disk type.
 ##
 ##  Revision:
-##      v1.0.0 - ldu - 07/31/2018 - Build the script
+##		v1.0.0 - ldu - 07/31/2018 - Build the script
 ##      v1.0.1 - boyang - 05/10/2019 - Enhance and normalize script
-###############################################################################
+########################################################################################
 
 
 <#
 .Synopsis
     SCP a large file from the VM A to VM B with different disk types
-
 .Description
     cases.xml
-    
 .Parameter vmName
     Name of the VM to add disk.
-
 .Parameter hvServer
     Name of the ESXi server hosting the VM.
-
 .Parameter testParams
     Test data for this test case
 #>
@@ -68,7 +64,6 @@ foreach ($p in $params)
     }
 }
 
-
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -97,41 +92,37 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-
+########################################################################################
 $retVal = $Failed
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
     return $Aborted
 }
 
 
 # Get VMB by Name
-$VMBName = $vmObj.Name.Split('-')
-$VMBName[-1] = "B"
-$VMBName = $VMBName -join "-"
+$vmBName = $vmName -replace "-A$","-B"
 $vmObjectB = Get-VMHost -Name $hvServer | Get-VM -Name $VMBName
-
-
-# Start VMB
-Start-VM -VM $vmObjectB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
-if (-not $?) {
-    LogPrint "ERROR : Cannot start VM"
+if (-not $vmObjectB) {
+    LogPrint "ERROR: Unable to Get-VM with ${vmObjectB}."
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: Found the VM cloned - ${vmObjectB}."
+
+
+# Start VMB
+$on = Start-VM -VM $vmObjectB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 
 
 # Confirm VMB SSH
-if ( -not (WaitForVMSSHReady $VMBName $hvServer $sshKey 300)) {
+if (-not (WaitForVMSSHReady $VMBName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
     DisconnectWithVIServer
     return $Aborted
@@ -140,8 +131,7 @@ if ( -not (WaitForVMSSHReady $VMBName $hvServer $sshKey 300)) {
 
 # Get VMB IP addr
 $ipv4B = GetIPv4 -vmName $VMBName -hvServer $hvServer
-Write-Host -F Red "DEBUG: ipv4B $ipv4B"
-Write-Output "DEBUG: ipv4B $ipv4B"
+LogPrint "DEBUG: ipv4B $ipv4B"
 
 
 # Add ipv4B addr to constants.sh
@@ -155,7 +145,7 @@ if (-not $result[-1])
 
 
 # Run scp script
-RunRemoteScript  "stor_scp_big_files.sh" | Write-Output -OutVariable result
+RunRemoteScript "stor_scp_big_files.sh" | Write-Output -OutVariable result
 if (-not $result[-1])
 {
 	LogPrint "ERROR: Failed to execute stor_scp_big_files.sh in VM"

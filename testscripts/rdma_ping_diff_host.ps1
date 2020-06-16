@@ -1,12 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Ping successfully between 2 Guests on the different Hosts
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 8/21/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ruqin - 8/21/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.2.0 - ldu - 04/26/2020 - update find datastore cmd
+########################################################################################
 
 
 <#
@@ -48,9 +48,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
 # Checking the input arguments
-#
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -66,15 +64,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -91,15 +85,14 @@ foreach ($p in $params) {
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "dstHost6.7" { $dstHost6_7 = $fields[1].Trim()}
         "dstHost6.5" { $dstHost6_5 = $fields[1].Trim()}
+        "dstHost7.0" { $dstHost7_0 = $fields[1].Trim()}
         "dstDatastore" { $dstDatastore = $fields[1].Trim() }
         default {}
     }
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -134,14 +127,13 @@ if ($null -eq $dstDatastore) {
 if (-not $dstHost6_7 -or -not $dstHost6_5) {
     "INFO: dstHost 6.7 is $dstHost6_7"
     "INFO: dstHost 6.5 is $dstHost6_5"
+    "INFO: dstHost 7.0 is $dstHost7_0"
     "Warn : dstHost was not specified"
     return $false
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -151,13 +143,19 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-# ############################################################################### 
-
-
+########################################################################################
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -167,13 +165,13 @@ if (-not $vmObj) {
 
 
 # Specify dst host
-$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
+$dstHost = FindDstHost -hvServer $hvServer -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7 -Host7_0 $dstHost7_0
+LogPrint "DEBUG: dstHost: ${dstHost}."
 if ($null -eq $dstHost) {
     LogPrint "ERROR: Cannot find required Host"    
     DisconnectWithVIServer
     return $Aborted
 }
-LogPrint "INFO: Destination Host is $dstHost"
 
 
 # Get the Guest version
@@ -187,12 +185,12 @@ if (-not $DISTRO) {
 LogPrint "INFO: Guest OS version is $DISTRO"
 
 
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
-}
+# # Different Guest DISTRO
+# if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+#     LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+#     DisconnectWithVIServer
+#     return $Skipped
+# }
 
 
 # Store Old datastore
@@ -202,19 +200,22 @@ if (-not $oldDatastore) {
     DisconnectWithVIServer
     return $Aborted
 }
+else{
+    LogPrint "INFO: Get required original datastore $oldDatastore. "
+}
 
 
 # Get Required Datastore
-$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) | Where-Object {$_.Name -like "*datastore*"}
+$shardDatastore = Get-Datastore -VMHost (Get-VMHost $dstHost) -Name "datastore-*"
 if (-not $shardDatastore) {
     LogPrint "ERROR: Unable to Get required shard datastore $shardDatastore"
     DisconnectWithVIServer
     return $Aborted
 }
-
-
-$name = $shardDatastore.Name
-LogPrint "INFO: required shard datastore $name"
+else{
+    $name = $shardDatastore.Name
+    LogPrint "INFO: Required shard datastore $shardDatastore and $name."
+}
 
 
 # Move Hard Disk to another datastore to prepare next migrate
@@ -231,6 +232,7 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 # Add RDMA NIC for Guest B
 $status = AddPVrdmaNIC $GuestBName $hvServer
+LogPrint "DEBUG: status: $status"
 if ( -not $status[-1]) {
     LogPrint "ERROR: RDMA NIC adds failed" 
     DisconnectWithVIServer
@@ -239,7 +241,7 @@ if ( -not $status[-1]) {
 
 
 # Start GuestB
-Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
+$on = Start-VM -VM $GuestB -Confirm:$false -RunAsync:$true -ErrorAction SilentlyContinue
 if (-not $?) {
     LogPrint "ERROR : Cannot start VM"
     DisconnectWithVIServer
@@ -248,7 +250,7 @@ if (-not $?) {
 
 
 # Wait for GuestB SSH ready
-if ( -not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
+if (-not (WaitForVMSSHReady $GuestBName $hvServer $sshKey 300)) {
     LogPrint "ERROR : Cannot start SSH"
     DisconnectWithVIServer
     return $Aborted
@@ -263,15 +265,16 @@ $GuestB = Get-VMHost -Name $hvServer | Get-VM -Name $GuestBName
 
 # Find out new add RDMA nic for Guest B
 $nics += @($(FindAllNewAddNIC $ipv4Addr_B $sshKey))
+LogPrint "DEBUG: nics: $nics"
 if ($null -eq $nics) {
-    LogPrint "ERROR: Cannot find new add RDMA NIC" 
+    LogPrint "ERROR: Cannot find new add RDMA NIC." 
     DisconnectWithVIServer
     return $Failed
 }
 else {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: GuestB New NIC is $rdmaNIC"
 
 
 # Config RDMA NIC IP addr for Guest B
@@ -286,10 +289,10 @@ LogPrint "INFO: Guest B RDMA NIC IP add is $IPAddr_guest_B"
 
 # Check Migration status
 Start-Sleep -Seconds 6
-$status = Wait-Task -Task $task
-LogPrint "INFO: Migration result is $status"
-if (-not $status) {
-    LogPrint "ERROR : Cannot move disk to required Datastore ${shardDatastore.Name}"
+$task = Wait-Task -Task $task
+LogPrint "DEBUG: task: $task"
+if (-not $task) {
+    LogPrint "ERROR : Cannot move disk to required Datastore $shardDatastore, $name."
     DisconnectWithVIServer
     return $Aborted
 }
@@ -297,6 +300,7 @@ if (-not $status) {
 
 # Find out new add RDMA nic for Guest A
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
+LogPrint "DEBUG: nics: $nics"
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add rdma NIC" 
     DisconnectWithVIServer
@@ -305,7 +309,7 @@ if ($null -eq $nics) {
 else {
     $rdmaNIC = $nics[-1]
 }
-LogPrint "INFO: New NIC is $rdmaNIC"
+LogPrint "INFO: Guest A RDMA NIC is $rdmaNIC"
 
 
 # Config RDMA NIC IP addr for Guest A
@@ -320,9 +324,9 @@ LogPrint "INFO: Guest A RDMA NIC IP add is $IPAddr_guest_A"
 
 # Check can we ping GuestA from GuestB via RDMA NIC
 $Command = "ping $IPAddr_guest_A -c 10 -W 15  | grep ttl > /dev/null"
-$status = SendCommandToVM $ipv4Addr_B $sshkey $command
-if (-not $status) {
-    LogPrint "ERROR : Ping test Failed"
+$ping = SendCommandToVM $ipv4Addr_B $sshkey $command
+if (-not $ping) {
+    LogPrint "ERROR: Ping test Failed"
     $retVal = $Failed
 }
 else {
@@ -351,7 +355,6 @@ if (-not $?) {
 }
 
 
-# Wait 6 seconds
 Start-Sleep -Seconds 6
 
 

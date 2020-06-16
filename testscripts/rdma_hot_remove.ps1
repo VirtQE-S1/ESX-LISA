@@ -1,12 +1,11 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Boot a Guest with RDMA NIC and remove it after boot.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 9/07/2018 - Build the script
-##
-###############################################################################
+##  v1.0.0 - ldu - 9/07/2018 - Build the script.
+##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+########################################################################################
 
 
 <#
@@ -41,9 +40,7 @@
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
 
-#
-# Checking the input arguments
-#
+# Checking the input arguments.
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -59,15 +56,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -84,9 +77,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -110,9 +101,7 @@ if ($null -eq $ipv4) {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -122,12 +111,19 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 $retVal = $Failed
+
+
+$skip = SkipTestInHost $hvServer "6.0.0"
+if($skip)
+{
+    return $Skipped
+}
+
+
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
     LogPrint "ERROR: Unable to Get-VM with $vmName"
@@ -135,16 +131,20 @@ if (-not $vmObj) {
     return $Aborted
 }
 
-# Get pci status
+
+# Get pci status.
 $Command = "lspci | grep -i infiniband"
 $pciInfo = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+LogPrint "DEBUG: pciInfo: $pciInfo"
 if ( $pciInfo -notlike "*Infiniband controller: VMware Paravirtual RDMA controller*") {
-    LogPrint "ERROR : Cannot get pvRDMA info from guest"
+    LogPrint "ERROR : Cannot get pvRDMA info from guest."
     DisconnectWithVIServer
     return $Aborted
 }
 
+
 $nics = Get-NetworkAdapter -VM $vmObj
+LogPrint "DEBUG: nics: $nics"
 foreach ($nic in $nics)
 {
     Write-Host -F red nic is ${nic} , nic.NetworkName is ${nic}.NetworkName
@@ -153,16 +153,17 @@ foreach ($nic in $nics)
         $result = Remove-NetworkAdapter -NetworkAdapter $nic -Confirm:$false
         if ($? -eq 0)
         {
-            Write-Output "PASS: Remove-NetworkAdapter RDMA well"
+            LogPrint "INFO: Remove-NetworkAdapter RDMA well."
             $retVal = $Passed
         }
         else
         {
-            Write-Host -F red nic.NetworkName is ${nic}.NetworkName
-            write-output "FAIL: Remove-NetworkAdapter RDMA Failed"
+            LogPrint "INFO: NIC NetworkName is $(${nic.NetworkName})"
+            LogPrint "ERROR: Remove-NetworkAdapter RDMA Failed."
         }
     }
 }
+
 
 DisconnectWithVIServer
 return $retVal

@@ -1,13 +1,13 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##   This script will add cd drive to VM
-###############################################################################
+## 	Add a CD drive to the VM
 ##
 ## Revision:
-## v1.1 - ldu - 07/23/2018 - Draft script for add cd driver.
-##
-###############################################################################
+## 	v1.1.0 - ldu - 07/23/2018 - Draft script for add cd driver.
+## 	v1.2.0 - boyang - 12/23/2019 - Check power state should be off although in setup.
+########################################################################################
+
+
 <#
 .Synopsis
     This script will add cd drive to VM.
@@ -26,11 +26,9 @@
 
 #>
 
-param([string] $vmName, [string] $hvServer, [string] $testParams)
 
-#
 # Checking the input arguments
-#
+param([string] $vmName, [string] $hvServer, [string] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -48,15 +46,12 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
-#
+
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
-#
-# Parse test parameters
-#
 
+# Parse test parameters
 $params = $testParams.Split(";")
 foreach ($p in $params)
 {
@@ -69,9 +64,8 @@ foreach ($p in $params)
     }
 }
 
-#
+
 # Source tcutils.ps1
-#
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `
@@ -79,44 +73,49 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPASSWORD `
                   $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 $retVal = $Failed
-#
+
+
 # VM is in powered off status, as a setup script to add CD driver.
-#
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-#
-# add CD driver to host
-#
-$CDList =  Get-CDDrive -VM $vmObj
-$current_cd = $CDList.Length
-while ($current_cd -lt $cd_num )
+$state = $vmObj.PowerState
+LogPrint "DEBUG: state: $state"
+if ($state -ne "PoweredOff")
 {
-    # $add_cd=New-CDDrive -VM $vmObj -ISOPath "[trigger] tmp/cloud-init.iso"
-    $add_cd=New-CDDrive -VM $vmObj -ISOPath "$iso" -StartConnected:$true -Confirm:$false -WarningAction SilentlyContinue
-    $current_cd=$current_cd+1
-    Write-host -F Red "the current cd number is $current_cd "
+    LogPrint "ERROR: VM power state should be powered off."
+    return $Aborted
 }
 
-#Check the CD drive add successfully
+
+# Add CD driver.
+$CDList =  Get-CDDrive -VM $vmObj
+$current_cd = $CDList.Length
+while ($current_cd -lt $cd_num)
+{
+    $add_cd=New-CDDrive -VM $vmObj -ISOPath "$iso" -StartConnected:$true -Confirm:$false -WarningAction SilentlyContinue
+    $current_cd=$current_cd+1
+    LogPrint "DEBUG: current_cd: $current_cd"
+}
+
+
+# Check the CD drive add successfully
 $CDList =  Get-CDDrive -VM $vmObj
 $CDLength = $CDList.Length
-
 if ($CDLength -eq $cd_num)
 {
-    write-host -F Red "The cd driver count is $CDLength "
-    Write-Output "Add cd driver successfully"
+    LogPrint "INFO: Add CD driver successfully, find $CDLength CD(s)."
     $retVal = $Passed
 }
 else
 {
-    write-host -F Red "The cd driver count is $CDLength "
-    Write-Output "Add cd driver during setupScript Failed, only $CDLength cd in guest."
+    LogPrint "ERROR: Add CD driver failed in setup. There are $CDLength CD(s)."
     DisconnectWithVIServer
     return $retVal
 }
+
+
 return $retVal

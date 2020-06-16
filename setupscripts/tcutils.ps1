@@ -1,4 +1,4 @@
-###############################################################################
+########################################################################################
 ##
 ## ___________ _____________  ___         .____    .___  _________   _____
 ## \_   _____//   _____/\   \/  /         |    |   |   |/   _____/  /  _  \
@@ -7,7 +7,7 @@
 ## /_______  /_______  //___/\  \         |_______ \___/_______  /\____|__  /
 ##         \/        \/       \_/                 \/           \/         \/
 ##
-###############################################################################
+########################################################################################
 ##
 ## ESX-LISA is an automation testing framework based on github.com/LIS/lis-test
 ## project. In order to support ESX, ESX-LISA uses PowerCLI to automate all
@@ -15,18 +15,20 @@
 ## more. This framework automates the tasks required to test the
 ## Redhat Enterprise Linux Server on WMware ESX Server.
 ##
-###############################################################################
+########################################################################################
 ##
 ## Revision:
-## v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test
-## v1.1.0 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
-## v1.2.0 - xiaofwan - 01/06/2017 - Add PowerCLIImport; DisconnectWithVIServer
-## v1.3.0 - hhei     - 01/10/2017 - Add CheckModule function
-## v1.4.0 - xiaofwan - 01/25/2016 - Add four test result states
-## v1.5.0 - xiaofwan - 02/28/2016 - Add WaitForVMSSHReady
-## v1.5.1 - ruqin    - 07/06/2018  - Add GetModuleVersion
-## v1.5.2 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
-###############################################################################
+##  v1.0.0 - xiaofwan - 11/25/2016 - Fork from github.com/LIS/lis-test
+##  v1.1.0 - xiaofwan - 12/28/2016 - Add GetLinuxDsitro method.
+##  v1.2.0 - xiaofwan - 01/06/2017 - Add PowerCLIImport; DisconnectWithVIServer
+##  v1.3.0 - hhei     - 01/10/2017 - Add CheckModule function
+##  v1.4.0 - xiaofwan - 01/25/2016 - Add four test result states
+##  v1.5.0 - xiaofwan - 02/28/2016 - Add WaitForVMSSHReady
+##  v1.6.0 - ruqin    - 07/06/2018  - Add GetModuleVersion
+##  v1.7.0 - ruqin    - 07/27/2018 - Add RevertSnapshotVM
+##  v1.8.0 - boyang    - 10/15/2019 - Add SkipTestInHost
+##  v1.9.0 - ldu      - 01/02/2020 - add RemoveVM function
+########################################################################################
 
 
 <#
@@ -48,11 +50,9 @@ New-Variable Aborted             -value "Aborted"             -option ReadOnly
 New-Variable Failed              -value "Failed"              -option ReadOnly
 
 
-###############################################################################
-#
-# Import VMware Powershell module
-#
-###############################################################################
+########################################################################################
+# PowerCLIImport
+########################################################################################
 function PowerCLIImport () {
    <#
     .Description
@@ -78,11 +78,9 @@ function PowerCLIImport () {
 }
 
 
-###############################################################################
-#
-# Connect to VI Server
-#
-###############################################################################
+########################################################################################
+# ConnectToVIServer
+########################################################################################
 function ConnectToVIServer ([string] $visIpAddr,
                             [string] $visUsername,
                             [string] $visPassword,
@@ -110,10 +108,8 @@ function ConnectToVIServer ([string] $visIpAddr,
     .Example
         ConnectToVIServer <visIpAddr> <visUsername> <visPassword> <visProtocol>
     #>
-
-    #
+    
     # Verify the VIServer related environment variable existed.
-    #
     if (-not $visIpAddr)
     {
         "ERROR : vCenter IP address is not configured, it is required."
@@ -138,9 +134,7 @@ function ConnectToVIServer ([string] $visIpAddr,
         exit
     }
 
-    #
     # Check the PowerCLI package installed
-    #
     Get-PowerCLIVersion | out-null
     if (-not $?)
     {
@@ -163,7 +157,7 @@ function ConnectToVIServer ([string] $visIpAddr,
             "and password $visPassword."
             exit
         }
-        "Debug : vCenter connected with " +
+        "DEBUG: vCenter connected with " +
         "session id $($global:DefaultVIServer.SessionId)"
     }
     else
@@ -174,11 +168,9 @@ function ConnectToVIServer ([string] $visIpAddr,
 }
 
 
-###############################################################################
-#
-# Disconnect with VI Server
-#
-###############################################################################
+########################################################################################
+# DisconnectWithVIServer
+########################################################################################
 function DisconnectWithVIServer ()
 {
     <#
@@ -195,6 +187,7 @@ function DisconnectWithVIServer ()
         {
             "INFO : Disconnect with VIServer $($viserver.name)."
             Disconnect-VIServer -Server $viserver -Force -Confirm:$false
+            "INFO : Disconnect with VIServer $($viserver.name) done."
         }
     }
     else
@@ -204,11 +197,9 @@ function DisconnectWithVIServer ()
 }
 
 
-#######################################################################
-#
+########################################################################################
 # GetLinuxDsitro()
-#
-#######################################################################
+########################################################################################
 function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 {
     <#
@@ -285,11 +276,9 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
 }
 
 
-#####################################################################
-#
+########################################################################################
 # GetFileFromVM()
-#
-#####################################################################
+########################################################################################
 function GetFileFromVM([String] $ipv4, [String] $sshKey, [string] $remoteFile, [string] $localFile)
 {
     <#
@@ -429,11 +418,10 @@ function GetIPv4ViaPowerCLI([String] $vmName, [String] $hvServer)
 }
 
 
-#######################################################################
-#
+
+########################################################################################
 # GetIPv4()
-#
-#######################################################################
+########################################################################################
 function GetIPv4([String] $vmName, [String] $hvServer)
 {
     <#
@@ -1101,18 +1089,16 @@ function  CleanUpDisk ([string] $vmName , [string]  $hvServer, [string] $sysDisk
 }
 
 
-#######################################################################
-#
+########################################################################################
 # Runs a remote script on the VM and returns the log.
-#
-#######################################################################
+########################################################################################
 function RunRemoteScript($remoteScript)
 {
-    $retValue = $false
+    $retValue 	   = $false
     $stateFile     = "state.txt"
     $TestCompleted = "TestCompleted"
     $TestAborted   = "TestAborted"
-    $TestFailed   = "TestFailed"
+    $TestFailed    = "TestFailed"
     $TestRunning   = "TestRunning"
     $timeout       = 6000
 
@@ -1154,7 +1140,7 @@ function RunRemoteScript($remoteScript)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
     if (-not $?)
     {
-        LogPrint "ERROR: Unable to chmod +x runtest.sh " -
+        LogPrint "ERROR: Unable to chmod +x runtest.sh"
         return $false
     }
 
@@ -1162,66 +1148,65 @@ function RunRemoteScript($remoteScript)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./runtest.sh"
 
     # Return the state file
-    while ($timeout -ne 0 )
+    while ($timeout -ne 0)
     {
-    .\bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
-    $sts = $?
-    if ($sts)
-    {
-        if (test-path $stateFile)
-        {
-            $contents = Get-Content -Path $stateFile
-            if ($null -ne $contents)
-            {
-                    if ($contents -eq $TestCompleted)
-                    {
-                        LogPrint "INFO : state file contains Testcompleted."
-                        $retValue = $true
-                        break
-                    }
+    	.\bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
+    	$sts = $?
+    	if ($sts)
+    	{
+    	    if (test-path $stateFile)
+    	    {
+    	        $contents = Get-Content -Path $stateFile
+    	        if ($null -ne $contents)
+    	        {
+    	        	if ($contents -eq $TestCompleted)
+    	            {
+    	                LogPrint "INFO : state file contains Testcompleted."
+    	                $retValue = $true
+    	                break
+    	            }
 
-                    if ($contents -eq $TestAborted)
-                    {
-                        LogPrint "INFO : State file contains TestAborted message."
-                         break
-                    }
-                    if ($contents -eq $TestFailed)
-                    {
-                        LogPrint "INFO : State file contains TestFailed message."
-                        break
-                    }
-                    $timeout--
+    	            if ($contents -eq $TestAborted)
+    	            {
+    	                LogPrint "INFO : State file contains TestAborted message."
+    	                 break
+    	            }
+    	            if ($contents -eq $TestFailed)
+    	            {
+    	                LogPrint "INFO : State file contains TestFailed message."
+    	                break
+    	            }
 
-                    if ($timeout -eq 0)
-                    {
-                        LogPrint "ERROR : Timed out on Test Running , Exiting test execution."
-                        break
-                    }
+    	            $timeout--
 
-            }
-            else
-            {
-                LogPrint "Warn : state file is empty"
-                break
-            }
-
-        }
-        else
-        {
-            LogPrint "Warn : ssh reported success, but state file was not copied"
-             break
-        }
-    }
-    else
-    {
-        LogPrint "ERROR : pscp exit status = $sts"
-        LogPrint "ERROR : unable to pull state.txt from VM."
-         break
-    }
+    	            if ($timeout -eq 0)
+    	            {
+    	                LogPrint "ERROR : Timed out on Test Running , Exiting test execution."
+    	                break
+    	            }
+    	        }
+    	        else
+    	        {
+    	            LogPrint "ERROR: state file is empty"
+    	            break
+    	        }
+    	    }
+    	    else
+    	    {
+    	        LogPrint "ERROR: ssh reported success, but state file was not copied"
+    	        break
+    	    }
+    	}
+    	else
+    	{
+    	    LogPrint "ERROR : pscp exit status = $sts"
+    	    LogPrint "ERROR : unable to pull state.txt from VM."
+    	    break
+    	}
     }
 
     # Get the logs
-    $remoteScriptLog = $remoteScript+".log"
+    $remoteScriptLog = $remoteScript + ".log"
 
     bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
     $sts = $?
@@ -1232,42 +1217,40 @@ function RunRemoteScript($remoteScript)
             $contents = Get-Content -Path $remoteScriptLog
             if ($null -ne $contents)
             {
-                    if ($null -ne ${TestLogDir})
-                    {
-                        Move-Item "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
-                    }
-
-                    else
-                    {
-                        LogPrint "INFO: $remoteScriptLog is copied in ${rootDir}"
-                    }
-
+                if ($null -ne ${TestLogDir})
+                {
+                    Move-Item "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
+                }
+                else
+                {
+                    LogPrint "INFO: $remoteScriptLog is copied in ${rootDir}"
+                }
             }
             else
             {
-                LogPrint "Warn: $remoteScriptLog is empty"
+                LogPrint "ERROR: $remoteScriptLog is empty"
             }
         }
         else
         {
-            LogPrint "Warn: ssh reported success, but $remoteScriptLog file was not copied"
+            LogPrint "ERROR: ssh reported success, but $remoteScriptLog file was not copied"
         }
     }
+	else
+	{
+    	LogPrint "ERROR: PSCP failed from remote VM."
+	}
 
     # Cleanup
     Remove-Item state.txt -ERRORAction "SilentlyContinue"
     Remove-Item runtest.sh -ERRORAction "SilentlyContinue"
-
     return $retValue
 }
 
 
-#######################################################################
-#
+########################################################################################
 # Check module version in vm.
-#
-#######################################################################
-
+########################################################################################
 function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
 {
     <#
@@ -1313,11 +1296,9 @@ function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
 }
 
 
-#######################################################################
-#
-# Check modules in vm.
-#
-#######################################################################
+#######################################################################################
+# CheckModule
+#######################################################################################
 function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
 {
     <#
@@ -1353,12 +1334,21 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
         Write-ERROR -Message "module name is null" -Category InvalidData -ERRORAction SilentlyContinue
         return $false
     }
+
     # get around plink questions
     Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
 
     $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
-    Write-Host -F Red "DEBUG: tcutils.ps1: vm_module: $vm_module"
-    if ( $vm_module.Trim() -eq $module.Trim() )
+    Write-Host -F Red "DEBUG: vm_module: $vm_module."
+
+	# If we can't check $vm_moudle is null or not, $vm_module.Trim() will throw error and skip if.
+    if ($null -eq $vm_module)
+    {
+        Write-Host -F Red "DEBUG: NO $module in VM."
+        return $false
+    }
+
+    if ($vm_module.Trim() -eq $module.Trim())
     {
         return $true
     }
@@ -1366,15 +1356,12 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
     {
         return $false
     }
-
 }
 
 
-########################################################################
-#
+#######################################################################################
 # ConvertStringToDecimal()
-#
-########################################################################
+#######################################################################################
 function ConvertStringToDecimal([string] $str)
 {
     $uint64Size = $null
@@ -1408,37 +1395,34 @@ function ConvertStringToDecimal([string] $str)
 }
 
 
-########################################################################
-#
+#######################################################################################
 # LogPrint()
-#
-########################################################################
-
+#######################################################################################
 function LogPrint([string] $msg) {
 
     $now = [Datetime]::Now.ToString("MM/dd/yyyy HH:mm:ss : ")
-    $color = "white"
+
     if ( $msg.StartsWith("ERROR")) {
-        $color = "red"
+        $color = "Red"
     }
-    elseif ($msg.StartsWith("Warn")) {
+    elseif ($msg.StartsWith("WARNING")) {
+        $color = "Yellow"
+    }
+    elseif ($msg.StartsWith("DEBUG")) {
         $color = "Yellow"
     }
     else {
-        $color = "gray"
+        $color = "White"
     }
-    Write-Host -f $color ($now + $msg)
+
+    Write-Host -F $color ($now + $msg)
     Write-Output ($now + $msg)
 }
 
 
-########################################################################
-# 
-# Mainly use for two guest test case, help user to revert snapshot of Guest-B
-#
+#######################################################################################
 # RevertSnapshotVM()
-#
-########################################################################
+#######################################################################################
 function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
     <#
     .Synopsis
@@ -1551,13 +1535,9 @@ function RevertSnapshotVM([String] $vmName, [String] $hvServer) {
 }
 
 
-########################################################################
-# 
-# Add a new SR-IOV nic
-#
+#######################################################################################
 # AddSrIOVNIC()
-#
-########################################################################
+#######################################################################################
 function AddSrIOVNIC { 
     Param(
         [String] $vmName, 
@@ -1781,12 +1761,9 @@ function AddSrIOVNIC {
 }
 
 
-########################################################################
-# 
-# Config IP address for new add NIC
+########################################################################################
 # ConfigIPforNewDevice()
-# 
-########################################################################
+########################################################################################
 function ConfigIPforNewDevice {
     Param
     (
@@ -1820,33 +1797,30 @@ function ConfigIPforNewDevice {
     
     $retVal = $false
     if ($null -eq $deviceName) {
-        LogPrint "ERROR: No device name in param"
+        LogPrint "ERROR: No device name in param."
         return $false 
     }
 
-    # Get the Guest version
+    # Get the Guest version.
     $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
     LogPrint "DEBUG: DISTRO: $DISTRO"
     if (-not $DISTRO) {
-        LogPrint "ERROR: Guest OS version is NULL"
+        LogPrint "ERROR: Guest OS version is NULL."
         return $false
     }
-    LogPrint "INFO: Guest OS version is $DISTRO"
+    LogPrint "INFO: Guest OS version is $DISTRO."
 
-
-    # Different Guest DISTRO
+    # Different Guest DISTRO.
     if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
         LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
         return $false
     }
-
 
     # Setup default MTU value
     if ( -not $PSBoundParameters.ContainsKey("MTU")) {
         LogPrint "INFO: MTU set to default 1500"
         $MTU = 1500 
     }
-
     
     if ($DISTRO -eq "RedHat6") {
         # Start Specifc device
@@ -1863,12 +1837,12 @@ function ConfigIPforNewDevice {
             # Config DHCP for Device
             $Network_Script = "DEVICE=$deviceName`\nBOOTPROTO=dhcp`\nONBOOT=yes`\nMTU=$MTU"
             SendCommandToVM $ipv4 $sshKey "echo `$'$Network_Script' > /etc/sysconfig/network-scripts/ifcfg-$deviceName"
-
         }
+
         # Restart Network service
         $status = SendCommandToVM $ipv4 $sshKey "ifdown $deviceName && ifup $deviceName"
         if (-not $status) {
-            LogPrint "Error: Cannot activate new nic config"
+            LogPrint "Error: Cannot activate new nic config."
             return $false
         } else {
             $retVal = $true
@@ -1886,50 +1860,46 @@ function ConfigIPforNewDevice {
             $status = SendCommandToVM $ipv4 $sshKey "nmcli con add con-name $deviceName ifname $deviceName type Ethernet mtu $MTU" 
         }
 
-
         # Check results
         if (-not $status) {
             LogPrint "Error: Config new connection failed"
             return $false
         }
 
-
         # Restart NetworkManager
         $status = SendCommandToVM $ipv4 $sshKey "systemctl restart NetworkManager" 
-        # Start-Sleep -Seconds 1
+
+        Start-Sleep -Seconds 6
+
         # Restart Connection
         $Command = "nmcli con down $deviceName && nmcli con up $deviceName" 
         $status = SendCommandToVM $ipv4 $sshKey $Command
         if (-not $status) {
-            LogPrint "Error: Cannot activate new nic config"
+            LogPrint "Error: Cannot activate new nic config."
             return $false
         }
 
+        Start-Sleep -Seconds 6
 
         # Check current MTU
         $Command = "ip a | grep $deviceName | head -n 1 | awk '{print `$5}'"
         $Current_MTU = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
         if ($Current_MTU -ne $MTU) {
-           LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement" 
+           LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement." 
            return $false
         } else {
             $retVal = $true
         }
     }
-    LogPrint "INFO: IP config for new NIC succeeded"
-
+    LogPrint "INFO: IP config for new NIC succeeded."
 
     return $retVal
 }
 
 
-########################################################################
-# 
-# Add a new pvRDMA nic
-#
+########################################################################################
 # AddPVrdmaNIC()
-#
-########################################################################
+########################################################################################
 function AddPVrdmaNIC {
     param (
         [String] $vmName,
@@ -1962,9 +1932,19 @@ function AddPVrdmaNIC {
     try {
         # Get Switch INFO
         $DVS = Get-VDSwitch -VMHost $vmObj.VMHost
-    
-        # This is hard code DPortGroup Name (6.0 6.5 6.7) This may change
+        LogPrint "DEBUG: DVS: ${DVS}."
+        if (-not $DVS) {
+        Write-ERROR -Message "ERROR: Get VDSwitch failed." -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+        }
+
+        # Hard code DPortGroup Name (6.0 6.5 6.7) This may change
         $PG = $DVS | Get-VDPortgroup -Name "DPortGroup"
+        LogPrint "DEBUG: PG: ${PG}."        
+        if (-not $PG) {
+        Write-ERROR -Message "ERROR: Get port group failed." -Category ObjectNotFound -ERRORAction SilentlyContinue
+        return $false
+        }
 
         # Add new nic into config file
         $Spec = New-Object VMware.Vim.VirtualMachineConfigSpec
@@ -1988,17 +1968,16 @@ function AddPVrdmaNIC {
         $ERRORMessage = $_ | Out-String
         LogPrint "ERROR: RDMA config ERROR, $ERRORMessage"
         return $false
-    } 
+    }
+
     $retVal = $true
     return $retVal
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # AddNVMeDisk()
-#
-#######################################################################
+#######################################################################################
 
 function AddNVMeDisk {
     param (
@@ -2156,12 +2135,9 @@ function AddNVMeDisk {
 }
 
 
-#######################################################################
-#
+########################################################################################
 # FindAllNewAddNIC()
-#
-#######################################################################
-
+########################################################################################
 function FindAllNewAddNIC {
     Param
     (
@@ -2183,23 +2159,26 @@ function FindAllNewAddNIC {
     .Example
         $nics = FindAllNewAddNIC $ipv4 $sshkey
     #>
+    
     # Get Old Adapter (SSH is using it) of VM
-    $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
+    $Command = "ip a | grep `$(echo `$SSH_CONNECTION | awk '{print `$3}') | awk '{print `$(NF)}'"
     $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-    if ( $null -eq $Old_Adapter) {
-        LogPrint "ERROR : Cannot get Server_Adapter from first adapter"
+	Write-Host -F Red "DEBUG: Old_Adapter: ${Old_Adapter}."
+
+    if ($null -eq $Old_Adapter) {
+        LogPrint "ERROR : Cannot get Server_Adapter from first adapter."
         return $null
     }
-
 
     # Get all other nics
     $retVal = $null
     $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
-    $nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-    $retVal = ,$nics
-    #  powershell  convert array to string if the array only has one element
-    if ( $null -eq $nics) {
-        LogPrint "ERROR : Cannot get any NIC other than default NIC from guest"
+    $new_nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+	Write-Host -F Red "DEBUG: new_nics: ${new_nics}."
+    $retVal = ,$new_nics
+    # Powershell  convert array to string if the array only has one element
+    if ($null -eq $new_nics) {
+        LogPrint "ERROR : Cannot get any NIC other than default NIC from guest."
         return $null
     }else{
         return $retVal
@@ -2207,11 +2186,9 @@ function FindAllNewAddNIC {
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # DisableMemoryReserve()
-#
-#######################################################################
+# #####################################################################################
 
 function DisableMemoryReserve {
     param (
@@ -2267,63 +2244,56 @@ function DisableMemoryReserve {
 }
 
 
-#######################################################################
-#
+#######################################################################################
 # FindDstHost()
-#
-#######################################################################
+#######################################################################################
 function FindDstHost {
     param (
         [String] $hvServer,
-        [Parameter(Mandatory = $false)] [String] $Host6_0,
         [Parameter(Mandatory = $false)] [String] $Host6_5,
-        [Parameter(Mandatory = $false)] [String] $Host6_7
+        [Parameter(Mandatory = $false)] [String] $Host6_7,
+        [Parameter(Mandatory = $false)] [String] $Host7_0
     )    
-       <#
+    <#
     .Synopsis
         Find Dest Host Address
     .Description
-        Find Dest Host Address from input ESXi 6.7,6.5,6.0 address set
+        Find Dest Host Address from input ESXi 7.0,6.7,6.5 address set
     .Parameter vmName
         Name of the VM
     .Parameter hvServer
         Host of VM
-    .Parameter Host6_0
-        Address set in EXSi 6.0. such as "10.73.196.95,10.73.196.97"
     .Parameter Host6_5
-        Address set in EXSi 6.5. such as "10.73.196.95,10.73.196.97"
+        Address set in EXSi 6.5. such as "10.73.196.230,10.73.196.191"
     .Parameter Host6_7
         Address set in EXSi 6.7. such as "10.73.196.95,10.73.196.97"
+    .Parameter Host7_0
+        Address set in EXSi 7.0. such as "10.73.196.33,10.73.196.39"        
     .Outputs
         IP address string
     .Example
         FindDstHost -vmName $vmName -hvServer $hvServer -Host6_0 $dstHost6_0 -Host6_5 $dstHost6_5 -Host6_7 $dstHost6_7
     #> 
 
-
     # Get Host version
     $vm_host = Get-VMHost -Name $hvServer
     $version = $vm_host.Version
 
-
-    # Help to setup amd 6.7 server
+    # Help to setup amd 7.0 server
     $vmHost = Get-VMHost -Name $hvServer  
     # This may fail, try to delete -V2 param Current only support one card
     $esxcli = Get-EsxCli -VMHost $vmHost -V2
     # Get cpu info
     $cpuInfo = $esxcli.Hardware.cpu.list.Invoke() | Select-Object -ExpandProperty "Brand" -First 1
-
-
     # Reset dstHost6_7 if host is AMD
     if ($cpuInfo -like "*amd*") {
-       $Host6_7 = "10.73.196.39,10.73.196.33" 
+       $Host7_0 = "10.73.196.39,10.73.196.33" 
     }
 
-
-    # Specify dst host
+    # Specify dst host.
     $dstHost = $null
-    if ($PSBoundParameters.ContainsKey("Host6_0") -and $null -ne $Host6_0 -and  $version -eq "6.0.0") {
-        $ip_addresses = $Host6_0.Split(",")
+    if ($PSBoundParameters.ContainsKey("Host7_0") -and $null -ne $Host7_0 -and  $version -eq "7.0.0") {
+        $ip_addresses = $Host7_0.Split(",")
         if ($hvServer -eq $ip_addresses[0].Trim()) {
             $dsthost = $ip_addresses[1]
         }
@@ -2349,14 +2319,13 @@ function FindDstHost {
             $dsthost = $ip_addresses[0]
         }
     }
+
     return $dstHost
 }
 
 
 #######################################################################
-#
 # CheckCallTrace()
-#
 #######################################################################
 function CheckCallTrace {
     Param
@@ -2379,31 +2348,25 @@ function CheckCallTrace {
     .Example
         $status = CheckCallTrace $ipv4 $sshkey
     #>
+    $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages /var/log/dmesg.out'
+    
+	# Put dmesg content into /var/log/dmesg.out.
+    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg > /var/log/dmesg.out"
 
-    $Command = '[[ -f "/var/log/syslog" ]] && logfile="/var/log/syslog" || logfile="/var/log/messages"
-	content=$(grep -i "Call Trace" $logfile)
-	if [[ -n $content ]]; then
-		LogMsg "Error: System get Call Trace in $logfile"
-		return 1
-	else
-		LogMsg "No Call Trace in $logfile"
-		return 0
-	fi'
+	# Execute search command.
     $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
-  
-    if (1 -eq $retVal) {
-       return $false 
+    Write-Output "DEBUG: retVal: $retVal"
+    if ($null -ne $retVal) {
+       return $false
     }else {
         return $true
     }
 }
 
 
-#######################################################################
-#
+########################################################################################
 # resetGuestSRIOV()
-#
-#######################################################################
+########################################################################################
 function resetGuestSRIOV {
     param (
         [String] $vmName,
@@ -2414,7 +2377,7 @@ function resetGuestSRIOV {
     <#
     .Synopsis
         Help to reset guest to origin host
-    .Description
+    .Description[String] $hvServer
         Help to reset guest to origin host, mainly for migration cases
     .Parameter vmName
         Name of the VM
@@ -2474,3 +2437,106 @@ function resetGuestSRIOV {
     }
     LogPrint "INFO: In reset function, VM already started"
 }
+
+
+########################################################################################
+# SkipTestInHost()
+########################################################################################
+function SkipTestInHost([String] $hvServer, [Array] $skip_hosts) 
+{
+    # Define 3RD-ESXi team automatiuon hardware ENV.
+    $automation_hosts = ("6.0.0", "6.5.0", "6.7.0", "6.7.0-amd", "7.0.0-amd")
+
+    $host_obj = Get-VMHost -Name $hvServer
+    $host_ver = $host_obj.version
+    Write-Host -F Red "DEBUG: host_ver: $host_ver"
+
+    $processer_type =  $host_obj.ProcessorType
+    Write-Host -F Red "DEBUG: processer_type: $processer_type"
+    if($processer_type.Contains("AMD"))
+    {
+        $host_ver = $host_ver + "-amd"
+        Write-Host -F Red "INFO: AMD Machine: $host_ver"
+    }
+
+    # Confirm hosts want to be skipped match automation hardware ENV.
+    foreach ($i in $skip_hosts)
+    {
+        if($automation_hosts -notcontains $i)
+        {
+            Write-Host -F Red "ERROR: Host want to be skipped is not in automation hosts list ($automation_hosts). Please confirm"
+            return $false
+        }
+    }
+
+    # Skip test if current host match hosts list want to be skipped.
+    if($skip_hosts -contains $host_ver)
+    {
+        Write-Host -F Red "INFO: Host $host_ver belongs to skip list, skip all test"
+        return $true
+    }
+    else
+    {
+        Write-Host -F Red "INFO: Host $host_ver DOESN'T belongs to hosts list want to be skipped. Keep going below testing."
+        return $false
+    }
+}
+
+
+########################################################################################
+# RemoveVM()
+########################################################################################
+function RemoveVM {
+    param (
+        [String] $vmName,
+        [String] $hvServer
+    )
+    <#
+    .Synopsis
+        Help to remove vm that not used
+    .Description
+        Help toremove vm that not used, mainly for cloned cases, such as cloud-init and ovt customization guest cases
+    .Parameter vmName
+        Name of the VM
+    .Parameter hvServer
+        Host of VM, original host
+    .Example
+        RemoveVM -vmName $vmName -hvServer $hvServer
+    #>
+    
+    LogPrint "INFO: Check the vm exists."
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+        LogPrint "ERROR: Unable to Get-VM with $vmName."
+        DisconnectWithVIServer
+        return $Aborted
+    } 
+
+    # Poweroff VM
+    $off = Stop-VM $vmObj -Confirm:$False
+
+    Start-Sleep 6
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+	if ($vmObj.PowerState -ne "PoweredOff")
+    {
+        LogPrint "ERROR: Cannot stop VM $vmName, $status."
+        DisconnectWithVIServer
+        return $Aborted
+    }
+
+    # Remove VM
+    $status = Remove-VM -VM $vmObj -DeletePermanently -Confirm:$false | out-null
+
+    $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+    if (-not $vmObj) {
+    	LogPrint "INFO: Remove vm successfully."
+        DisconnectWithVIServer
+        return $true
+    } 
+	else{
+        LogPrint "ERROR: Remove VM failed as find it again."
+        return $false
+	}
+}
+

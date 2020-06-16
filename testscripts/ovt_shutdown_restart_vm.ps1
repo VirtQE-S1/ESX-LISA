@@ -1,13 +1,12 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  reboot and shutdown the VM
+##  Reboot and shutdown the VM.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 09/06/2017 - reboot and shutdown guest
-##  v1.0.1 - boyang - 05/06/2019 - Increase sleep time after shutdown
-##
-###############################################################################
+##  v1.0.0 - ldu    - 09/06/2017 - reboot and shutdown guest.
+##  v1.0.1 - boyang - 05/06/2019 - Increase sleep time after shutdown.
+##  v1.1.0 - boyang - 03/30/2020 - Update stop-guestvm cmd.
+########################################################################################
 
 
 <#
@@ -27,11 +26,9 @@
     Semicolon separated list of test parameters.
 #>
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -49,8 +46,10 @@ if (-not $testParams)
     Throw "FAIL: No test parameters specified"
 }
 
+
 # Output test parameters so they are captured in log file
 "TestParams : '${testParams}'"
+
 
 # Parse test parameters
 $rootDir = $null
@@ -109,6 +108,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
+
 # Source tcutils.ps1
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
@@ -118,49 +118,64 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
-
+########################################################################################
 $retVal = $Failed
 
+
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-if ( $DISTRO -eq "RedHat6" ){
+if ($DISTRO -eq "RedHat6"){
     DisconnectWithVIServer
     return $Skipped
 }
 
-$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$vmObj_restart = Restart-VMGuest -VM $vmObj -Confirm:$False
-$ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
-if ( $ret -ne $true )
+
+LogPrint "INFO: Reboot the VM."
+$restart = Restart-VMGuest -VM $vmObj -Confirm:$False
+
+
+Start-sleep 24
+
+
+$wait = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+if ($wait -ne $true)
 {
-    Write-Output "Failed: Failed to start VM."
-    write-host -F Red "Failed: Failed to start VM."
+    LogPrint "ERROR: Failed to start VM."
     return $Aborted
 }
 
-$exist = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "touch /root/test01"
 
-$shutdown = Shutdown-VMGuest -VM $vmObj -Confirm:$False
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
+$on = $vmObj.PowerState
+LogPrint "DEBUG: on: ${on}."
+if ($on -ne "PoweredOn")
+{
+    LogPrint "ERROR: Restart VM failed."
+    return $Aborted
+}
 
-Start-sleep 120
+
+LogPrint "INFO: Shutdown the VM."
+$off = Stop-VMGuest -VM $vmObj -Confirm:$False
+
+
+Start-sleep 24
+
 
 $vmObjShutdown = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
-$state = $vmObjShutdown.PowerState
-if ($state -ne "PoweredOff")
+$off = $vmObjShutdown.PowerState
+LogPrint "DEBUG: off: ${off}."
+if ($off -ne "PoweredOff")
 {
-    Write-Output "INFO: The vm status is not powered off, status is $state"
-    write-host -F Red "ERROR: Failed to shutdown VM"
+    LogPrint "ERROR: Failed to shutdown VM. Current state is ${off}."
 }
 else
 {
-    Write-Output "INFO: the vm shutdown successfully,status is $state"
+    LogPrint "INFO: Successed to shutdown VM. Current state is ${off}."
     $retVal = $Passed
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal
