@@ -276,18 +276,15 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 12 -->
+            <!-- CLOUD-INIT-GT: 6 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
-                <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
                 <suiteTest>cloud-init_check_service_status</suiteTest>
-                <!-- suiteTest>cloud-init_check_traceback</suiteTest -->
-                <!-- suiteTest>cloud-init_check_unexpected</suiteTest -->
+                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -534,9 +531,10 @@
                 <!-- suiteTest>sriov_boot_check</suiteTest -->
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
                 <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -1350,7 +1348,7 @@
             <testParams>
                 <param>redhat_6_standard_version=NOOVT</param>
                 <param>redhat_7_standard_version=open-vm-tools-11.0.5-3.el7.x86_64</param>
-                <param>redhat_8_standard_version=open-vm-tools-11.1.0-1.el8.x86_64</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.1.0-2.el8.x86_64</param>
                 <param>TC_COVERED=RHEL6-34901,RHEL7-50884</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1620,10 +1618,10 @@
                 <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-11.0.5-2.el7.x86_64.rpm</param>
                 <param>redhat_7_lower_dsk_rpm=11.0.5/2.el7/x86_64/open-vm-tools-desktop-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-11.1.0-1.el8.x86_64</param>
-                <param>redhat_8_lower_version=open-vm-tools-11.0.0-4.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=11.0.0/4.el8/x86_64/open-vm-tools-11.0.0-4.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_dsk_rpm=11.0.0/4.el8/x86_64/open-vm-tools-desktop-11.0.0-4.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-11.1.0-2.el8.x86_64</param>
+                <param>redhat_8_lower_version=open-vm-tools-11.1.0-1.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.1.0/1.el8/x86_64/open-vm-tools-11.1.0-1.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_dsk_rpm=11.1.0/1.el8/x86_64/open-vm-tools-desktop-11.1.0-1.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34908,RHEL7-50890</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -1646,10 +1644,10 @@
                 <param>redhat_7_lower_version=open-vm-tools-debuginfo-11.0.5-2.el7.x86_64</param>
                 <param>redhat_7_lower_rpm=11.0.5/2.el7/x86_64/open-vm-tools-debuginfo-11.0.5-2.el7.x86_64.rpm</param>
                 <!-- RHEL8 -->
-                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.1.0-1.el8.x86_64</param>
-                <param>redhat_8_standard_rpm=11.1.0/1.el8/x86_64/open-vm-tools-debuginfo-11.1.0-1.el8.x86_64.rpm</param>
-                <param>redhat_8_lower_version=open-vm-tools-debuginfo-11.0.0-4.el8.x86_64</param>
-                <param>redhat_8_lower_rpm=11.0.0/4.el8/x86_64/open-vm-tools-debuginfo-11.0.0-4.el8.x86_64.rpm</param>
+                <param>redhat_8_standard_version=open-vm-tools-debuginfo-11.1.0-2.el8.x86_64</param>
+                <param>redhat_8_standard_rpm=11.1.0/2.el8/x86_64/open-vm-tools-debuginfo-11.1.0-2.el8.x86_64.rpm</param>
+                <param>redhat_8_lower_version=open-vm-tools-debuginfo-11.1.0-1.el8.x86_64</param>
+                <param>redhat_8_lower_rpm=11.1.0/1.el8/x86_64/open-vm-tools-debuginfo-11.1.0-1.el8.x86_64.rpm</param>
                 <param>TC_COVERED=RHEL6-34997,RHEL7-71602</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
