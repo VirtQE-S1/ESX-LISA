@@ -111,6 +111,8 @@
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>ovt_check_netiprouteconfigureinfo</suiteTest>
                 <suiteTest>ovt_check_installation_info</suiteTest>
+                <suiteTest>ovt_disable_customization</suiteTest>
+                <suiteTest>ovt_enable_customization</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -421,6 +423,10 @@
                 <suiteTest>ovt_get_appinfo_host</suiteTest>
                 <suiteTest>ovt_customization_DHCP</suiteTest>
                 <suiteTest>ovt_customization_static</suiteTest>
+                <suiteTest>ovt_disable_customization</suiteTest>
+                <suiteTest>ovt_enable_customization</suiteTest>
+                <suiteTest>ovt_uninstall_sdmp</suiteTest>
+                <suiteTest>ovt_install_sdmp</suiteTest>
                 <suiteTest>stor_check_cd_file</suiteTest>
                 <suiteTest>stor_take_restore_snapshot</suiteTest>
                 <suiteTest>stor_add_remove_cd</suiteTest>
@@ -541,8 +547,36 @@
 
     <testCases>
         <test>
-            <testName>ovt_install_sdmp</testName>
+            <testName>ovt_disable_customization</testName>
+            <testID>ESX-OVT-049</testID>
+            <setupScript>setupscripts\add_vmxnet3.ps1</setupScript>
+            <testScript>testscripts/ovt_disable_customization.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>nicName=auto-test</param>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187728</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_enable_customization</testName>
             <testID>ESX-OVT-048</testID>
+            <testScript>testscripts/ovt_enable_customization.ps1</testScript  >
+            <files>remote-scripts/utils.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL6-0000,RHEL-187727</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>1800</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
+        <test>
+            <testName>ovt_install_sdmp</testName>
+            <testID>ESX-OVT-050</testID>
             <testScript>testscripts/ovt_install_sdmp.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
             <testParams>
@@ -555,7 +589,7 @@
         </test>
         <test>
             <testName>ovt_uninstall_sdmp</testName>
-            <testID>ESX-OVT-049</testID>
+            <testID>ESX-OVT-051</testID>
             <testScript>testscripts/ovt_uninstall_sdmp.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
             <testParams>
@@ -723,7 +757,7 @@
         </test>
         <test>
             <testName>ovt_enable_appinfo_after_disable</testName>
-            <testID>ESX-OVT-040</testID>
+            <testID>ESX-2OVT-04</testID>
             <testScript>ovt_enable_appinfo_after_disable.sh</testScript>
             <files>remote-scripts/ovt_enable_appinfo_after_disable.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -763,7 +797,7 @@
         </test>
         <test>
             <testName>ovt_change_poll_interval_value</testName>
-            <testID>ESX-OVT-040</testID>
+            <testID>ESX-OVT-043</testID>
             <testScript>ovt_change_poll_interval_value.sh</testScript>
             <files>remote-scripts/ovt_change_poll_interval_value.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -777,7 +811,7 @@
         </test>
         <test>
             <testName>ovt_disable_appinfo_via_cmd</testName>
-            <testID>ESX-OVT-040</testID>
+            <testID>ESX-OVT-041</testID>
             <testScript>ovt_disable_appinfo_via_cmd.sh</testScript>
             <files>remote-scripts/ovt_disable_appinfo_via_cmd.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -805,7 +839,7 @@
         </test>
         <test>
             <testName>ovt_get_appinfo</testName>
-            <testID>ESX-OVT-039</testID>
+            <testID>ESX-OVT-046</testID>
             <testScript>ovt_get_appinfo.sh</testScript>
             <files>remote-scripts/ovt_get_appinfo.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -858,7 +892,7 @@
         </test>
         <test>
             <testName>ovt_check_installation_info</testName>
-            <testID>ESX-OVT-038</testID>
+            <testID>ESX-OVT-047</testID>
             <testScript>ovt_check_installation_info.sh</testScript>
             <files>remote-scripts/ovt_check_installation_info.sh</files>
             <files>remote-scripts/utils.sh</files>
@@ -899,7 +933,7 @@
 
         <test>
             <testName>ovt_check_netiprouteconfigureinfo</testName>
-            <testID>ESX-OVT-037</testID>
+            <testID>ESX-OVT-038</testID>
             <testScript>testscripts/ovt_check_netiprouteconfigureinfo.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
             <timeout>1800</timeout>
@@ -981,7 +1015,7 @@
         </test>
         <test>
             <testName>ovt_customization_DHCP</testName>
-            <testID>ESX-OVT-036</testID>
+            <testID>ESX-OVT-039</testID>
             <testScript>testscripts/ovt_customization_DHCP.ps1</testScript  >
             <files>remote-scripts/utils.sh</files>
             <testParams>
