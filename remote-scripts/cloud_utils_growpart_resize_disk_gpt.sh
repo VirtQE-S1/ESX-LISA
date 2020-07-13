@@ -11,6 +11,27 @@
 ## v1.0.0 - ldu - 07/06/2020 - Build the script
 ##
 ###############################################################################
+#        <test>
+#             <testName>cloud_utils_growpart_resize_disk_gpt</testName>
+#             <testID>ESX-Stor-038</testID>
+#             <setupScript>setupscripts\add_hard_disk.ps1</setupScript>
+#             <testScript>cloud_utils_growpart_resize_disk_gpt.sh</testScript>
+#             <files>remote-scripts/utils.sh,remote-scripts/cloud_utils_growpart_resize_disk_gpt.sh</files>
+#             <testParams>
+#                 <param>DiskType=SCSI</param>
+#                 <param>disk=sdb</param>
+#                 <param>StorageFormat=Thick</param>
+#                 <param>Count=1</param>
+#                 <param>CapacityGB=5</param>
+#                 <param>TC_COVERED=RHEL6-0000,RHEL-188750</param>
+#             </testParams>
+#             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
+#             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+#             <timeout>1200</timeout>
+#             <onError>Continue</onError>
+#             <noReboot>False</noReboot>
+#         </test>
+
 
 dos2unix utils.sh
 
