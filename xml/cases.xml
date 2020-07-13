@@ -312,21 +312,9 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <!-- suiteTest>cloud-init_yum_install</suiteTest>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-				<suiteTest>cloud-init_customization_static</suiteTest>
-				<suiteTest>cloud-init_reboot_customization_static</suiteTest>
-				<suiteTest>cloud-init_check_critical</suiteTest>
-				<suiteTest>cloud-init_check_error</suiteTest>
-				<suiteTest>cloud-init_check_warning</suiteTest>
-				<suiteTest>cloud-init_check_service_status</suiteTest>
-				<suiteTest>cloud-init_check_traceback</suiteTest>
-				<suiteTest>cloud-init_check_unexpected</suiteTest -->
-                <suiteTest>ovt_uninstall_sdmp</suiteTest>
-                <suiteTest>ovt_install_sdmp</suiteTest>
                 <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
             </suiteTests>
         </suite>
         <suite>
