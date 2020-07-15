@@ -63,7 +63,7 @@ fi
 # Install open-vm-tools-desktop for current Guest WITHOUT relationship of DISTR
 yum install -y open-vm-tools-desktop
 # HERE. Check result value
-
+yum erase -y open-vm-tools-sdmp
 
 systemctl restart vmtoolsd
 service_status=$(systemctl status vmtoolsd |grep running -c)
