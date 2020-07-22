@@ -3,7 +3,7 @@
 ##  Set IPV6 DHCP IP for Guest
 ## Revision:
 ##  v1.0.0 - xinhu - 09/27/2019 - Build the script
-##  v1.1.0 - boyang - 03/05/2020 - Build the script
+##  v1.1.0 - boyang - 03/05/2020 - Enhance the script
 ########################################################################################
 
 
@@ -131,14 +131,17 @@ $retVal2 = $False
 
 
 # Function ping6 VM_B
-function ping-VM(${sshKey},${ipv4},$choice,$IPv6_B,$packages)
+function ping-VM(${sshKey}, ${ipv4}, $choice, $IPv6_B, $packages)
 {
-	LogPrint "DEBUG: choice: ${choice}, IPv6_B: ${IPv6_B}, packages: ${packages}."
+	LogPrint "DEBUG: choice: ${choice}."
+	LogPrint "DEBUG: IPv6_B: ${IPv6_B}."
+	LogPrint "DEBUG: packages: ${packages}."
+
     $SwitchIPv6 = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "sysctl -w net.ipv6.conf.${NIC}.disable_ipv6=$choice; echo `$?"
     LogPrint "DEBUG: SwitchIPv6[-1]: $($SwitchIPv6[-1])."
     if ($SwitchIPv6[-1] -ne 0)
     {
-        LogPrint "ERROR: Set disable ipv6 = $choice failed"
+        LogPrint "ERROR: Set disable ipv6 = $choice failed."
         return $False
     }
 
@@ -196,6 +199,7 @@ if ($ret -ne $true)
     DisconnectWithVIServer
     return $Aborted
 }
+LogPrint "INFO: SSH ready."
 
 
 # Refresh status

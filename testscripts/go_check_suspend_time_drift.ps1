@@ -1,12 +1,12 @@
-#######################################################################################
+########################################################################################
 ## Description:
 ## 	Check Guest time drift with clock server after suspend
 ##
 ##
 ## Revision:
-## 	v1.0.0 - boyang - 08/11/2017 - Build the script
-## 	v1.0.0 - boyang - 08/11/2017 - Build the script
-#######################################################################################
+## 	v1.0.0 - boyang - 08/11/2017 - Build the script.
+## 	v1.0.1 - boyang - 08/11/2017 - Format the output.
+########################################################################################
 
 
 <#
@@ -75,7 +75,7 @@ foreach ($p in $params)
 # Check all parameters are valid
 if (-not $rootDir)
 {
-	"Warn : no rootdir was specified"
+	"Warn: no rootdir was specified."
 }
 else
 {
@@ -85,19 +85,19 @@ else
 	}
 	else
 	{
-		"Warn : rootdir '${rootDir}' does not exist"
+		"WARN: rootdir '${rootDir}' does not exist."
 	}
 }
 
 if ($null -eq $sshKey)
 {
-	"FAIL: Test parameter sshKey was not specified"
+	"FAIL: Test parameter sshKey was not specified."
 	return $False
 }
 
 if ($null -eq $ipv4)
 {
-	"FAIL: Test parameter ipv4 was not specified"
+	"FAIL: Test parameter ipv4 was not specified."
 	return $False
 }
 
@@ -117,21 +117,20 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-#######################################################################################
-#
+########################################################################################
 # Main Body
-#
-#######################################################################################
+########################################################################################
 $retVal = $Failed
+
 
 # Target offset as 1 sec, after ntpdate, offset should be less than $minOffset
 $minOffset = 1
 
+
 # Confirm the VM power state is PoweredOn
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $state = $vmObj.PowerState
-Write-Host -F Red "DEBUG: state: $state"
-Write-Output "DEBUG: state: $state"
+LogPrint "DEBUG: state: $state"
 if ($state -ne "PoweredOn")
 {
     Write-Error -Message "ABORTED: $vmObj is not poweredOn, power state is $state" -Category ObjectNotFound -ErrorAction SilentlyContinue
@@ -144,12 +143,11 @@ if ($linuxOS -eq "RedHat6")
 {
     $ntpdDisable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "service ntpd stop"
     $ntpdStatus = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "service ntpd status"
-    Write-Host -F Red "DEBUG: ntpdStatus: $ntpdStatus"
-    Write-Output "DEBUG: ntpdStatus: $ntpdStatus"
+    LogPrint "DEBUG: ntpdStatus: $ntpdStatus"
+	# HERE. Need to enhance this kind of check. BAD.
     if ($ntpdStatus -ne "ntpd is stopped")
     {
-        Write-Host -F Red "ERROR: NTPD stopping failed"
-        Write-Output "ERROR: NTPD stopping failed"
+        LogPrint "ERROR: NTPD stopping failed"
         DisconnectWithVIServer
         return $Aborted
     }
@@ -160,12 +158,10 @@ else
     $ntpdStop = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl stop ntpd"
     $ntpdDisable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl disable ntpd"
     $result = SendCommandToVM $ipv4 $sshKey "systemctl status ntpd | grep running"
-    Write-Host -F Red "DEBUG: result: $result"
-    Write-Output "DEBUG: result: $result"
+    LogPrint "DEBUG: result: $result"
     if ($result -ne $False)
     {
-        Write-Host -F Red "ERROR: NTPD stopping failed"
-        Write-Output "ERROR: NTPD stopping failed"
+        LogPrint "ERROR: NTPD stopping failed"
         DisconnectWithVIServer
         return $Aborted
     }
@@ -173,12 +169,10 @@ else
     $ntpdStop = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl stop chronyd"
     $ntpdDisable = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl disable chronyd"
     $result = SendCommandToVM $ipv4 $sshKey "systemctl status chronyd | grep running"
-    Write-Host -F Red "DEBUG: result: $result"
-    Write-Output "DEBUG: result: $result"
+    LogPrint "DEBUG: result: $result"
     if ($result -ne $False)
     {
-        Write-Host -F Red "ERROR: CHRONYD stopping failed"
-        Write-Output "ERROR: CHRONYD stopping failed"
+        LogPrint "ERROR: CHRONYD stopping failed."
         DisconnectWithVIServer
         return $Aborted
     }
@@ -190,85 +184,82 @@ else
     $timedatectlResult = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "timedatectl set-ntp 0"
 }
 
+
 # Before suspend, check offset which should be less than $minOffset
 $offset_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ntpdate -q clock.redhat.com | awk 'NR == 5 {print `$10`}'"
-Write-Host -F Red "DEBUG: offset_temp: $offset_temp"
-Write-Output "DEBUG: offset_temp: $offset_temp"
+LogPrint "DEBUG: offset_temp: $offset_temp"
 $offset = [Math]::Abs($offset_temp)
-Write-Host -F Red "INFO: Before suspend, offset is $offset"
-Write-Output "INFO: Before suspend, offset is $offset"
+LogPrint "INFO: Before suspend, offset is $offset"
 if ($offset -gt $minOffset)
 {
-    Write-Host -F Yellow "ERROR: Offset is wrong before suspend"
-    Write-Output "ERROR: Offset is wrong before suspend"
+    LogPrint "ERROR: Offset is wrong before suspend"
     DisconnectWithVIServer
     return $Aborted
 }
 
+
 # Suspend the VM and confirm the power state
-Write-Host -F Red "INFO: Suspending the VM"
-Write-Output "INFO: Suspending the VM......."
+LogPrint "INFO: Suspending the VM ${vmName}."
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $suspend = Suspend-VM -VM $vmObj -Confirm:$False
 Start-Sleep -S 60
 # Get the new VM power status
 $vmObjSuspend = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $suspendState = $vmObjSuspend.PowerState
-Write-Host -F Red "DEBUG: suspendState: $suspendState"
-Write-Output "DEBUG: suspendState: $suspendState"
+LogPrint "DEBUG: suspendState: $suspendState"
 if ($suspendState -ne "Suspended")
 {
-    Write-Host -F Red "ERROR: Power state is $state, should be Suspended"
-    Write-Output "ERROR: Power state is $state, should be Suspended" 
+    LogPrint "ERROR: Power state is $suspendState, should be Suspended." 
     DisconnectWithVIServer
     return $Aborted
 }
 else
 {
-    Start-Sleep 300
+    LogPrint "INFO: Power state is $suspendState, sleep 60s again in ${suspendState}" 
+    Start-Sleep 60
 }
 
+
 # Power the VM, and confirm the power state
-Write-Host -F Red "INFO: Powering On the VM"
-Write-Output "INFO: Powering On the VM"
+LogPrint "INFO: Powering On the VM $vmName"
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $on = Start-VM -VM $vmObj -Confirm:$False
 
+
 # WaitForVMSSHReady
 $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+
 
 # Get the new VM power status
 $vmObjOn = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 $onState = $vmObjOn.PowerState
 if ($onState -ne "PoweredOn")
 {
-    Write-Host -F Red "ERROR: Power state is not PoweredOn, power state is $state"
-    Write-Output "ERROR: Power state is not PoweredOn, power state is $state"        
+    LogPrint "ERROR: Power state is not PoweredOn, power state is ${onState}."        
     DisconnectWithVIServer
     return $Aborted
 }
 
+
 # After power on, check offset which should be less than $minOffset
 $offset_temp = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "ntpdate -q clock.redhat.com | awk 'NR == 5 {print `$10`}'"
 $statusNtpdate = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl status ntpdate"
-Write-Host -F Red "DEBUG: statusNtpdate: $statusNtpdate"
-Write-Output "DEBUG: statusNtpdate: $statusNtpdate"
+LogPrint "DEBUG: statusNtpdate: $statusNtpdate"
+
+
 # Get offset_temp abs
 $offset = [Math]::Abs($offset_temp)
-Write-Host -F Red "DEBUG: offset: $offset"
-Write-Output "DEBUG: offset: $offset"
+LogPrint "DEBUG: offset: $offset"
 if ($offset -gt $minOffset)
 {
-    Write-Host -F Red "FAIL: After suspend, offset is incorrect"
-    Write-Output "FAIL: After suspend, offset is incorrect"
+    LogPrint "FAIL: After suspend, offset is incorrect."
 }
 else
 {
-    Write-Host -F Green "PASS: After suspend, offset is correct"
-    Write-Output "PASS: After suspend, offset is correct"
+    LogPrint "PASS: After suspend, offset is correct"
     $retVal = $Passed
 }
 
-DisconnectWithVIServer
 
+DisconnectWithVIServer
 return $retVal

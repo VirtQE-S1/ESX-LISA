@@ -994,7 +994,7 @@
                 <param>TC_COVERED=RHEL6-0000,RHEL-182794</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1862,7 +1862,7 @@
                 <param>TC_COVERED=RHEL6-0000,RHEL-171563</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>2400</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1995,7 +1995,7 @@
             <testID>ESX-GO-010</testID>
             <testScript>testscripts\go_check_suspend_time_drift.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38514,RHEL7-80223</param>
             </testParams>
@@ -2184,7 +2184,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
             </testParams>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2238,7 +2238,7 @@
                 remote-scripts/utils.sh,remote-scripts/fdisk.sh
             </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-38502,RHEL7-80230</param>
             </testparams>
@@ -2286,7 +2286,7 @@
                 <param>TC_COVERED=RHEL7-80195</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2357,7 +2357,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2379,7 +2379,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2394,7 +2394,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2417,7 +2417,7 @@
                 <param>TC_COVERED=RHEL6-34890,RHEL7-50874</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2440,7 +2440,7 @@
                 <param>TC_COVERED=RHEL6-34883,RHEL7-50867</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2463,7 +2463,7 @@
                 <param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2638,7 +2638,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_scp_mtu_9000.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>2400</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
             </testParams>
