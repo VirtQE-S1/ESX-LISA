@@ -285,10 +285,10 @@
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_critical</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_check_service_status</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
+                <!-- suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest -->
             </suiteTests>
         </suite>
         <suite>
@@ -312,9 +312,14 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>go_fips_enable</suiteTest>
-                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
-                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
+                <!-- suiteTest>go_fips_enable</suiteTest -->
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
+                <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
