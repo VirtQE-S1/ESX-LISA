@@ -437,7 +437,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
-                <suiteTest>stor_add_RDM_disk</suiteTest>
+                <!-- suiteTest>stor_add_RDM_disk</suiteTest -->
                 <suiteTest>stor_reset_scsi</suiteTest>
                 <suiteTest>stor_scsi_domain_validation</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
