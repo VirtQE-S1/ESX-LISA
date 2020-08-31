@@ -333,10 +333,6 @@
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
                 <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
@@ -355,8 +351,8 @@
                 <suiteTest>rdma_rping_test_diff_host</suiteTest>
                 <suiteTest>sriov_maximum_nics</suiteTest>
                 <suiteTest>sriov_manual_mac</suiteTest>
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+                <suiteTest>sriov_move_host_supported</suiteTest>
+                <suiteTest>sriov_ping_diff_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
