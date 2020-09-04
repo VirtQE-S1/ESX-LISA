@@ -26,7 +26,7 @@
 #>
 
 
-# Checking the input arguments
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
@@ -129,20 +129,18 @@ while ($round -lt 100)
 {
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
 
-    Start-Sleep -seconds 6
+    Start-Sleep -seconds 18
     
-    # Wait for VM booting
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
+    # Wait for the VM booting.
+    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
     if ($ssh -ne $true)
     {
-        Write-Output "ERROR: Failed to start VM,the round is $round"
-        Write-Host -F Red "ERROR: Failed to start VM,the round is $round"
+        LogPrint "ERROR: Failed to start the VM in round ${round}."
         return $Aborted
     }
 
-    $round=$round+1
-    Write-Output "INFO: Round: $round "
-    Write-Host -F Red "INFO: Round: $round"
+    $round = $round + 1
+    LogPrint "DEBUG: Round: ${round}."
 }
 
 
@@ -151,18 +149,16 @@ if ($round -eq 100)
 {
 	$status = CheckCallTrace $ipv4 $sshKey
 	if (-not $status[-1]) {
-   		Write-Host -F Red "ERROR: Found $($status[-2]) in msg."
-   	 	Write-Output "ERROR: Found $($status[-2]) in msg."
+   	 	LogPrint "ERROR: Found $($status[-2]) in dmesg."
 	}
 	else {
-	    LogPrint "INFO: NOT found Call Trace in VM msg."
+	    LogPrint "INFO: NOT found Call Trace in dmesg."
 		$retVal = $Passed
 	}
 }
 else
 {
-    Write-host -F Red "ERROR: The guest can't boot 100 times, only $round times."
-    Write-Output "ERROR: The guest can't boot 100 times, only $round times."
+    LogPrint "ERROR: The guest can't boot with 100 times, only $round times."
 }
 
 
