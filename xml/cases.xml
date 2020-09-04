@@ -275,20 +275,37 @@
                 <suiteTest>cloud-init_check_service_status</suiteTest>
                 <suiteTest>cloud-init_check_traceback</suiteTest>
                 <suiteTest>cloud-init_check_unexpected</suiteTest>
-                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
-                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 6 -->
+            <!-- CLOUD-INIT-GT: 9 -->
             <suiteName>gt-cloud-init</suiteName>
             <suiteTests>
                 <suiteTest>cloud-init_yum_install</suiteTest>
                 <suiteTest>cloud-init_uninstall</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
                 <suiteTest>cloud-init_check_service_status</suiteTest>
-                <!-- suiteTest>cloud-init_check_critical</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest -->
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- CLOUD_UTILS_GROWPART: 2 -->
+            <suiteName>cloud_utils_growpart</suiteName>
+            <suiteTests>
+                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- CLOUD_UTILS_GROWPART-GT: 2 -->
+            <suiteName>gt-cloud_utils_growpart</suiteName>
+            <suiteTests>
+                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -312,11 +329,6 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <!-- suiteTest>go_fips_enable</suiteTest -->
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
@@ -2038,7 +2050,7 @@
                 <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>7200</timeout>
+            <timeout>30000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
