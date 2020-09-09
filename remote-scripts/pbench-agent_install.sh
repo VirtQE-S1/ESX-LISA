@@ -102,7 +102,11 @@ fi
 
 LogMsg  "PBench installation finished"
 UpdateSummary "PBench installation finished"
-UpdateSummary "Registering tools"
+
+#Install fio
+yum install fio -y
+
+ln -s /usr/bin/fio /usr/local/bin/fio
 
 #Register default tool set
 pbench-register-tool-set
@@ -112,6 +116,7 @@ pbench-register-tool --name=turbostat --group cpu_stat_group
 
 pbench-register-tool --name=iostat --group fio_group
 pbench-register-tool --name=vmstat --group fio_group
+UpdateSummary "Registering tools"
 
 pbench-list-tools
 if [ $? -ne 0 ]; then
