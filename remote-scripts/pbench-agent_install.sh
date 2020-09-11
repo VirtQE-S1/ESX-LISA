@@ -66,7 +66,7 @@ if ! grep CRB /etc/yum.repos.d/rhel.repo; then
   git config --global http.sslVerify false
   git clone https://code.engineering.redhat.com/gerrit/perf-dept /root/perf-dept
   echo -e "\n[servers]\n$HOSTNAME" >> /root/perf-dept/sysadmin/Inventory/repo-bootstrap.hosts
-  inv=/root/perf-dept/Inventory/repo-bootstrap.hosts
+  inv=/root/perf-dept/sysadmin/Inventory/repo-bootstrap.hosts
   cd /root/perf-dept/sysadmin/Ansible
   if ! ansible-playbook  --user=root -i ${inv} repo-bootstrap.yml; then
     UpdateSummary "CRB repo enable has failed! rerun it with ansible-playbook  --user=root -i ${inv} repo-bootstrap.yml"
