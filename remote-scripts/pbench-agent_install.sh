@@ -90,7 +90,7 @@ sed -i "s/host1/$(hostname --long)/" ~/.config/Inventories/myhosts.inv
 
 #2.1.2. Run playbook PBench agent install 
 pushd $GIT_DEST/agent/ansible/ || exit
-if ! ansible-playbook -v -i ~/.config/Inventories/myhosts.inv pbench-agent-install.yml; then
+if ! ansible-playbook -v -i ~/.config/Inventories/myhosts.inv pbench_agent_install.yml; then
   UpdateSummary "ansible-playbook has failed!"
   UpdateSummary "Rerun it with ansible-playbook -v -i ~/.config/Inventories/myhosts.inv pbench-agent-install.yml"
   SetTestStateFailed
