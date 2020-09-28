@@ -23,17 +23,17 @@ dos2unix utils.sh
 # Source constants file and initialize most common variables
 UtilsInit
 
-#
+###############################################################################
 # Start the testing
-#
-
+###############################################################################
+#Check the guest version, skip RHEL 6, as this script not suitable RHEL 6
 if [[ $DISTRO == "redhat_6" ]]; then
     SetTestStateSkipped
     exit
 fi
 
-#subscription the guest with a test account
-subscription-manager register --username leapp-devel-test --password 6VafUsaywiudCed --serverurl "subscription.rhsm.stage.redhat.com" --auto-attach
+#subscription the guest with a test account, such as  --username leapp-devel-test --password 6VafUsaywiudCed
+subscription-manager register --username ldu_test --password redhat --serverurl "subscription.rhsm.stage.redhat.com" --auto-attach
 
 #Enable RHEL7 repo
 subscription-manager repos --enable rhel-7-server-rpms
@@ -51,6 +51,9 @@ subscription-manager repos --enable rhel-7-server-extras-rpms
 #     LogMsg "INFO: yum update guest successfully"
 #     UpdateSummary "INFO: yum update guest successfully"
 # fi
+
+#Install os-tests for upgrade regression test
+pip3 install -U os-tests
 
 #Download the leapp repo
 curl -k https://copr.devel.redhat.com/coprs/oam-group/leapp/repo/rhel-7/oam-group-leapp-rhel-7.repo -o /etc/yum.repos.d/oam-group-leapp-rhel-7.repo
@@ -76,10 +79,12 @@ curl -k --create-dirs -o /etc/leapp/files/repomap.csv https://gitlab.cee.redhat.
 #permit the root login
 echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
-leapp answer --section remove_pam_pkcs11_module_check.confirm=True
+leapp answer --section remove_pam_pkcs11_module_check.confirm=True --add
 
-#upgrade the guest
-LEAPP_UNSUPPORTED= leapp upgrade --debug
+#upgrade the guest.
+#if upgrade not released RHEL version,please use command 
+LEAPP_DEVEL_SKIP_CHECK_OS_RELEASE=1 LEAPP_UNSUPPORTED=1 leapp upgrade --debug
+# LEAPP_UNSUPPORTED=1 leapp upgrade --debug
 if [ ! "$?" -eq 0 ]
 then
     LogMsg "ERROR: The leapp upgrade command failed"
@@ -90,6 +95,7 @@ else
     LogMsg "INFO:The leapp upgrade command successfully"
     UpdateSummary "INFO: The leapp upgrade command successfully"
     reboot
+    sleep 300
     SetTestStateCompleted
     exit 0
 fi

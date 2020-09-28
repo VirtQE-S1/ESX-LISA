@@ -48,7 +48,7 @@ fi
 #check the ovt package file list to confirm whether support appinfo plugin
 rpm -ql open-vm-tools | grep "libappInfo"
 if [[ $? == 0 ]]; then
-  LogMsg $version_num
+  LogMsg "Info: The OVT supoort appinfo plugin."
   UpdateSummary "Info: The OVT supoort appinfo plugin."
 else
   LogMsg "Info : skip as OVT supoort appinfo plugin."
