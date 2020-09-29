@@ -275,20 +275,37 @@
                 <suiteTest>cloud-init_check_service_status</suiteTest>
                 <suiteTest>cloud-init_check_traceback</suiteTest>
                 <suiteTest>cloud-init_check_unexpected</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- CLOUD-INIT-GT: 9 -->
+            <suiteName>gt-cloud-init</suiteName>
+            <suiteTests>
+                <suiteTest>cloud-init_yum_install</suiteTest>
+                <suiteTest>cloud-init_uninstall</suiteTest>
+                <suiteTest>cloud-init_customization_DHCP</suiteTest>
+                <suiteTest>cloud-init_check_service_status</suiteTest>
+                <suiteTest>cloud-init_check_critical</suiteTest>
+                <suiteTest>cloud-init_check_error</suiteTest>
+                <suiteTest>cloud-init_check_traceback</suiteTest>
+                <suiteTest>cloud-init_check_warning</suiteTest>
+                <suiteTest>cloud-init_customization_static</suiteTest>
+            </suiteTests>
+        </suite>
+        <suite>
+            <!-- CLOUD_UTILS_GROWPART: 2 -->
+            <suiteName>cloud_utils_growpart</suiteName>
+            <suiteTests>
                 <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
                 <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
             </suiteTests>
         </suite>
         <suite>
-            <!-- CLOUD-INIT-GT: 6 -->
-            <suiteName>gt-cloud-init</suiteName>
+            <!-- CLOUD_UTILS_GROWPART-GT: 2 -->
+            <suiteName>gt-cloud_utils_growpart</suiteName>
             <suiteTests>
-                <suiteTest>cloud-init_yum_install</suiteTest>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_critical</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <suiteTest>cloud-init_check_service_status</suiteTest>
-                <suiteTest>cloud-init_customization_static</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_gpt</suiteTest>
+                <suiteTest>cloud_utils_growpart_resize_disk_mbr</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -312,21 +329,9 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <!-- suiteTest>cloud-init_yum_install</suiteTest>
-                <suiteTest>cloud-init_uninstall</suiteTest>
-                <suiteTest>cloud-init_check_status</suiteTest>
-                <suiteTest>cloud-init_customization_DHCP</suiteTest>
-				<suiteTest>cloud-init_customization_static</suiteTest>
-				<suiteTest>cloud-init_reboot_customization_static</suiteTest>
-				<suiteTest>cloud-init_check_critical</suiteTest>
-				<suiteTest>cloud-init_check_error</suiteTest>
-				<suiteTest>cloud-init_check_warning</suiteTest>
-				<suiteTest>cloud-init_check_service_status</suiteTest>
-				<suiteTest>cloud-init_check_traceback</suiteTest>
-				<suiteTest>cloud-init_check_unexpected</suiteTest -->
-                <suiteTest>ovt_uninstall_sdmp</suiteTest>
-                <suiteTest>ovt_install_sdmp</suiteTest>
-                <suiteTest>go_fips_enable</suiteTest>
+                <suiteTest>go_reboot_100_times</suiteTest>
+                <suiteTest>go_upgrade_guest</suiteTest>
+                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -340,10 +345,6 @@
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
                 <suiteTest>perf_stor_iozone_stress</suiteTest>
                 <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
                 <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
@@ -362,8 +363,8 @@
                 <suiteTest>rdma_rping_test_diff_host</suiteTest>
                 <suiteTest>sriov_maximum_nics</suiteTest>
                 <suiteTest>sriov_manual_mac</suiteTest>
-                <!-- suiteTest>sriov_move_host_supported</suiteTest -->
-                <!-- suiteTest>sriov_ping_diff_host</suiteTest -->
+                <suiteTest>sriov_move_host_supported</suiteTest>
+                <suiteTest>sriov_ping_diff_host</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -444,7 +445,7 @@
                 <suiteTest>stor_hot_add_two_scsi</suiteTest>
                 <suiteTest>stor_hot_plug_SAS</suiteTest>
                 <suiteTest>stor_hot_plug_Parallel</suiteTest>
-                <suiteTest>stor_add_RDM_disk</suiteTest>
+                <!-- suiteTest>stor_add_RDM_disk</suiteTest -->
                 <suiteTest>stor_reset_scsi</suiteTest>
                 <suiteTest>stor_scsi_domain_validation</suiteTest>
                 <suiteTest>nw_scp_mtu_9000</suiteTest>
@@ -1006,7 +1007,7 @@
                 <param>TC_COVERED=RHEL6-0000,RHEL-182794</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1200</timeout>
+            <timeout>1500</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -1874,7 +1875,7 @@
                 <param>TC_COVERED=RHEL6-0000,RHEL-171563</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>2400</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2007,7 +2008,7 @@
             <testID>ESX-GO-010</testID>
             <testScript>testscripts\go_check_suspend_time_drift.ps1</testScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-38514,RHEL7-80223</param>
             </testParams>
@@ -2049,7 +2050,7 @@
                 <param>TC_COVERED=RHEL6-49141,RHEL7-111697</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>7200</timeout>
+            <timeout>30000</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2196,7 +2197,7 @@
             <testParams>
                 <param>TC_COVERED=RHEL6-46079,RHEL7-81369</param>
             </testParams>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2250,7 +2251,7 @@
                 remote-scripts/utils.sh,remote-scripts/fdisk.sh
             </files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>300</timeout>
+            <timeout>600</timeout>
             <testparams>
                 <param>TC_COVERED=RHEL6-38502,RHEL7-80230</param>
             </testparams>
@@ -2298,7 +2299,7 @@
                 <param>TC_COVERED=RHEL7-80195</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>1200</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2369,7 +2370,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_CDDrive.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2391,7 +2392,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2406,7 +2407,7 @@
             </testParams>
             <cleanupScript>SetupScripts\remove_hard_disk.ps1</cleanupScript>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2429,7 +2430,7 @@
                 <param>TC_COVERED=RHEL6-34890,RHEL7-50874</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2452,7 +2453,7 @@
                 <param>TC_COVERED=RHEL6-34883,RHEL7-50867</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2475,7 +2476,7 @@
                 <param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
+            <timeout>900</timeout>
             <onError>Continue</onError>
             <noReboot>False</noReboot>
         </test>
@@ -2650,7 +2651,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/nw_scp_mtu_9000.sh</files>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1800</timeout>
+            <timeout>2400</timeout>
             <testParams>
                 <param>TC_COVERED=RHEL6-34934,RHEL7-50914</param>
             </testParams>
