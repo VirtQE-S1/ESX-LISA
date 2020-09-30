@@ -16,7 +16,7 @@
 
     <testSuites>
         <suite>
-            <!-- GO: 24 -->
+            <!-- GO: 31 -->
             <suiteName>general_operation</suiteName>
             <suiteTests>
                 <suiteTest>go_check_modules</suiteTest>
@@ -66,7 +66,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- OVT: 39 -->
+            <!-- OVT: 42 -->
             <suiteName>open_vm_tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_check_build_version</suiteTest>
@@ -79,7 +79,6 @@
                 <suiteTest>ovt_check_vm-support</suiteTest>
                 <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
-
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
                 <suiteTest>ovt_take_quiesce_snapshot</suiteTest>
@@ -88,7 +87,6 @@
                 <suiteTest>ovt_customization_DHCP</suiteTest>
                 <suiteTest>ovt_snapshot_container</suiteTest>
                 <suiteTest>ovt_stop_start_synced_with_gui</suiteTest>
-
                 <suiteTest>ovt_check_vaguth_files</suiteTest>
                 <suiteTest>ovt_check_vgauth_status</suiteTest>
                 <suiteTest>ovt_check_period_timesync</suiteTest>
@@ -117,7 +115,7 @@
         </suite>
         <suite>
             <!-- OVT-GT: 10 -->
-            <suiteName>gt-ovt</suiteName>
+            <suiteName>gt-open-vm-tools</suiteName>
             <suiteTests>
                 <suiteTest>ovt_uninstall_ovt</suiteTest>
                 <suiteTest>ovt_check_vmtoolsd_status</suiteTest>
@@ -132,7 +130,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- STORAGE: 24 -->
+            <!-- STORAGE: 22 -->
             <suiteName>storage</suiteName>
             <suiteTests>
                 <suiteTest>stor_hot_plug_scsi</suiteTest>
@@ -160,7 +158,7 @@
             </suiteTests>
         </suite>
         <suite>
-            <!-- NETWORK: 23 -->
+            <!-- NETWORK: 24 -->
             <suiteName>network</suiteName>
             <suiteTests>
                 <suiteTest>nw_ping</suiteTest>
@@ -329,9 +327,7 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>go_reboot_100_times</suiteTest>
-                <suiteTest>go_upgrade_guest</suiteTest>
-                <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
+                <suiteTest>ovt_get_appinfo_host_disable</suiteTest>
             </suiteTests>
         </suite>
         <suite>
@@ -345,14 +341,6 @@
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
-                <suiteTest>perf_stor_iozone_stress</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_FS</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_FS</suiteTest>
-                <suiteTest>perf_stor_fio_SCSI_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_IDE_RAW</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_FS</suiteTest>
-                <suiteTest>perf_stor_fio_NVMe_RAW</suiteTest>
-                <suiteTest>perf_stor_max_num_disk</suiteTest>
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
@@ -477,9 +465,9 @@
                 <suiteTest>libmspack_yum_install</suiteTest>
                 <suiteTest>libmspack_uninstall</suiteTest>
                 <suiteTest>libmspack_check_status</suiteTest>
-                <!-- suiteTest>cloud-init_reboot_customization_static</suiteTest -->
+                <suiteTest>cloud-init_reboot_customization_static</suiteTest>
                 <suiteTest>cloud-init_customization_DHCP</suiteTest>
-                <!-- suiteTest>cloud-init_customization_static</suiteTest -->
+                <suiteTest>cloud-init_customization_static</suiteTest>
                 <suiteTest>cloud-init_check_error</suiteTest>
                 <suiteTest>cloud-init_check_warning</suiteTest>
                 <suiteTest>cloud-init_check_traceback</suiteTest>
@@ -549,6 +537,18 @@
     </testSuites>
 
     <testCases>
+        <test>
+            <testName>ovt_get_appinfo_host_disable</testName>
+            <testID>ESX-OVT-052</testID>
+            <testScript>testscripts/ovt_get_appinfo_host_disable.ps1</testScript>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>900</timeout>
+            <testParams>
+                <param>TC_COVERED=RHEL-189924</param>
+            </testParams>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
         <test>
             <testName>cloud_utils_growpart_resize_disk_mbr</testName>
             <testID>ESX-Stor-038</testID>

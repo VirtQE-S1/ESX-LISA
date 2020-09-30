@@ -1,12 +1,10 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  Check vscock modules version in the VM
+##	Check vscock modules version in the VM
 ##
 ## Revision:
-##  v1.0.0 - ruqin - 7/6/2018 - Build the script
-##
-###############################################################################
+##	v1.0.0 - ruqin - 7/6/2018 - Build the script.
+########################################################################################
 
 <#
 .Synopsis
@@ -34,12 +32,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -55,15 +49,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -80,9 +70,7 @@ foreach ($p in $params) {
 }
 
 
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -106,10 +94,7 @@ if ($null -eq $ipv4) {
 }
 
 
-
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -118,21 +103,16 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPASSWORD `
     $env:ENVVISPROTOCOL
 
-###############################################################################
-#
+
+########################################################################################
 # Main Body
-#
-###############################################################################
-
-
-
+########################################################################################
 $retVal = $Failed
 
 
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj) {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
     return $Aborted
 }
@@ -140,29 +120,24 @@ if (-not $vmObj) {
 
 # Get the Guest version
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-Write-Host -F Red "DEBUG: DISTRO: $DISTRO"
-Write-Output "DEBUG: DISTRO: $DISTRO"
+LogPrint "DEBUG: DISTRO: $DISTRO"
 if (-not $DISTRO) {
-    Write-Host -F Red "ERROR: Guest OS version is NULL"
-    Write-Output "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
     return $Aborted
 }
-Write-Host -F Red "INFO: Guest OS version is $DISTRO"
-Write-Output "INFO: Guest OS version is $DISTRO"
+LogPrint "INFO: Guest OS version is $DISTRO"
 
 
 # Different Guest DISTRO
 if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
     DisconnectWithVIServer
     return $Skipped
 }
 
 
 $MTU_list = 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000
-
 foreach ($Set_MTU in $MTU_list) {
     # Get current network adapter name
     $Command = "ip a|grep `$(echo `$SSH_CONNECTION| awk '{print `$3}')| awk '{print `$(NF)}'"
@@ -201,7 +176,6 @@ foreach ($Set_MTU in $MTU_list) {
     }
     $retVal = $Passed
 }
-
 
 
 DisconnectWithVIServer
