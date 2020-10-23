@@ -167,7 +167,7 @@ else
 
 
 # Set the clone vm name
-$cloneName = $vmName + "-clone-" + (Get-Random -Maximum 1500 -Minimum 1201)
+$cloneName = "cloud-init-clone-" + (Get-Random -Maximum 10000 -Minimum 1)
 LogPrint "DEBUG: cloneName: ${cloneName}."
 
 
@@ -216,7 +216,6 @@ if (-not $?) {
 else{
     LogPrint "INFO: Static NIC config done."
 }
-
 
 # Clone the vm with new OSCustomization Spec
 $clone = New-VM -VM $vmObj -Name $cloneName -OSCustomizationSpec $linuxSpec -VMHost $hvServer -Confirm:$false
