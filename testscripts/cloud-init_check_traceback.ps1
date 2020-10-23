@@ -169,7 +169,7 @@ else
 
 
 # Set the clone vm name
-$cloneName = "cloud-init-clone-" + (Get-Random -Maximum 10000 -Minimum 1))
+$cloneName = "cloud-init-clone-" + (Get-Random -Maximum 10000 -Minimum 1)
 LogPrint "DEBUG: cloneName: ${cloneName}."
 
 
