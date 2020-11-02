@@ -88,7 +88,7 @@ cp example.sh ~/.config/Inventories/myhosts.inv
 sed -i "s/host1/$(hostname --long)/" ~/.config/Inventories/myhosts.inv
 
 #copy the roles file
-cp -r /root/git/pbench/agent/ansible/pbench/agent/roles/* /root/git/pbench/agent/ansible/roles/
+cp -r /root/git/pbench/agent/ansible/pbench/agent/roles /root/git/pbench/agent/ansible
 
 #2.1.2. Run playbook PBench agent install 
 pushd $GIT_DEST/agent/ansible/ || exit
