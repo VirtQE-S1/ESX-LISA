@@ -177,7 +177,7 @@ if ($DISTRO -eq "RedHat7")
 
     #Reboot guest to check the fips
     $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-    LogPrint "INFO: reboot the guest after configure fips"
+    LogPrint "INFO: Will reboot the guest after configure fips."
     
     # Sleep for seconds to wait for the VM stopping firstly
     Start-Sleep -seconds 6
@@ -190,6 +190,7 @@ if ($DISTRO -eq "RedHat7")
         LogPrint "INFO: The guest reboot failed after configure fips enabled."
         return $Aborted
     }
+    LogPrint "INFO: VM booting works after reboot."
 }
 else
 {
@@ -205,10 +206,10 @@ else
         LogPrint "INFO: Enable fips in $DISTRO guest successfully."
         #reboot guest to check the fips
         $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'reboot'
-        LogPrint "INFO: reboot the guest after configure fips."
+        LogPrint "INFO: Will reboot the guest after configure fips."
 
         # Sleep for seconds to wait for the VM stopping firstly
-        Start-Sleep -seconds 10
+        Start-Sleep -seconds 12
 
         # Wait for the VM booting
         $ret = WaitForVMSSHReady $vmName $hvServer ${sshKey} 300
@@ -219,7 +220,7 @@ else
         }
         else
         {
-            LogPrint "INFO: The guest reboot successfully."
+    		LogPrint "INFO: VM booting works after reboot."
             $fips = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "fips-mode-setup --check |grep enabled"
             if ($fips -eq $null)
             {

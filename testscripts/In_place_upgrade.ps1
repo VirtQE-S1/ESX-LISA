@@ -1,33 +1,40 @@
 ########################################################################################
 ## Description:
-##	Reboot guet 100 times then check system status.
+## After in place upgrade from RHEL 7 to RHEL 8, run sanity check for guest.
 ##
 ## Revision:
-##	v1.0.0 - ldu - 02/28/2018 - Reboot guest 100 times then check system status.
-##	v1.1.0 - boyang - 12/18/2019 - Improve call check scope with a function.
+##  v1.0.0 - ldu - 09/27/2020 - Build scripts.
 ########################################################################################
 
 
 <#
 .Synopsis
-    Reboot guest 100 times.
 
 .Description
-    Reboot guest 100 times.
-
+        <test>
+            <testName>In_place_upgrade</testName>
+            <testID>ESX-GO-033</testID>
+            <testScript>testscripts\in_place_upgrade1.ps1</testScript>
+            <files>remote-scripts/utils.sh,remote-scripts/In_place_upgrade.sh</files>
+            <testParams>
+                <param>TC_COVERED=RHEL7-80008</param>
+            </testParams>
+            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
+            <timeout>12000</timeout>
+            <onError>Continue</onError>
+            <noReboot>False</noReboot>
+        </test>
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
+# Checking the input arguments
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -66,8 +73,6 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "VMMemory"     { $mem = $fields[1].Trim() }
-        "standard_diff"{ $standard_diff = $fields[1].Trim() }
 		default			{}
     }
 }
@@ -108,6 +113,7 @@ if ($null -eq $logdir)
 	return $False
 }
 
+
 # Source tcutils.ps1
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
@@ -120,47 +126,60 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
+
+
 $retVal = $Failed
 
+# Get the VM
+$vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
-# Reboot the guest 100 times.
-$round = 0
-while ($round -lt 100)
+$result = SendCommandToVM $ipv4 $sshKey "cd /root && dos2unix In_place_upgrade.sh && chmod u+x In_place_upgrade.sh && ./In_place_upgrade.sh"
+if (-not $result)
 {
-    $reboot = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "init 6"
-
-    Start-Sleep -seconds 18
-    
-    # Wait for the VM booting.
-    $ssh = WaitForVMSSHReady $vmName $hvServer ${sshKey} 360
-    if ($ssh -ne $true)
-    {
-        LogPrint "ERROR: Failed to start the VM in round ${round}."
-        return $Aborted
-    }
-
-    $round = $round + 1
-    LogPrint "DEBUG: Round: ${round}."
-}
-
-
-# Check rebooting times and error logs.
-if ($round -eq 100)
-{
-	$status = CheckCallTrace $ipv4 $sshKey
-	if (-not $status[-1]) {
-   	 	LogPrint "ERROR: Found $($status[-2]) in dmesg."
-	}
-	else {
-	    LogPrint "INFO: NOT found Call Trace in dmesg."
-		$retVal = $Passed
-	}
+	LogPrint "ERROR: The upgrade shell script run failed, please check the summary log."
+	$retVal = $Failed
 }
 else
 {
-    LogPrint "ERROR: The guest can't boot with 100 times, only $round times."
+	LogPrint "INFO: The in place upgrade shell schript run successfully.please wait the guest reboot."
 }
 
+# Wait for GuestA SSH ready.
+if ( -not (WaitForVMSSHReady $vmObj $hvServer $sshKey 600)) {
+    LogPrint "ERROR : Cannot start SSH."
+    DisconnectWithVIServer
+    return $Aborted
+}
+else
+{
+    LogPrint "INFO: Ready SSH."
+}
+
+#Check guest version after upgrade
+$grep = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /etc/redhat-release |grep 8."
+LogPrint "DEBUG: grep: ${grep}."
+if ($null -eq $grep)
+{
+	LogPrint "ERROR: After upgrade the RHEL version not right."
+    DisconnectWithVIServer
+	return $Failed
+}
+else
+{
+	LogPrint "INFO:  After upgrade the RHEL version as expected."
+}
+
+#Run os-test after guest upgrade
+$os_tests = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "python3 -m unittest -v os_tests.os_tests_all"
+if (-not $os_tests)
+{
+	LogPrint "ERROR: Failed to run os-tests."
+}
+else
+{
+    LogPrint "INFO: The os-tests run completed, please check the result under /tmp/."
+    $retVal = $Passed
+}
 
 DisconnectWithVIServer
 return $retVal

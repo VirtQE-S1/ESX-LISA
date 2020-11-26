@@ -1,18 +1,15 @@
-###############################################################################
-##
+########################################################################################
 ## Description:
-##  Check the guest service status after boot up.
-##
+##	Check the guest service status after boot up.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 05/19/2020 - Build Scripts
-##
-###############################################################################
+## 	v1.0.0 - ldu - 05/19/2020 - Build Scripts.
+########################################################################################
 
 
 <#
 .Synopsis
-go_check_service_status
+	go_check_service_status
 
 .Description
     <test>
@@ -37,12 +34,8 @@ go_check_service_status
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "Error: VM name cannot be null!"
@@ -61,15 +54,11 @@ if (-not $testParams)
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -88,9 +77,7 @@ foreach ($p in $params)
 }
 
 
-#
-# Check all parameters are valid
-#
+# Check all parameters are valid.
 if (-not $rootDir)
 {
     "Warn : no rootdir was specified"
@@ -108,9 +95,7 @@ else
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -120,11 +105,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
                   $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 $retVal = $Failed
 
 
@@ -136,6 +119,7 @@ if (-not $vmObj)
 	return $Aborted
 }
 
+
 # Check failed service via systemctl.
 $service = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "systemctl | grep failed"
 if ($null -eq $service)
@@ -144,11 +128,11 @@ if ($null -eq $service)
     LogPrint "INFO: After boot, NO $service failed service found."
 }
 else{
-    $cpu_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/cpuinfo |grep AMD" 
+    $cpu_check = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /proc/cpuinfo | grep AMD" 
     if ($null -ne $cpu_check) {
         if ("$service" -match "mcelog.service")
         {
-            LogPrint "INFO: The CPU is AMD $cpu_check. it's a know issue,ignore this failed log $service."
+            LogPrint "INFO: The CPU type is AMD: $cpu_check. it's a known issue, ignore this failed log $service."
             $retVal = $Passed
             DisconnectWithVIServer
         }

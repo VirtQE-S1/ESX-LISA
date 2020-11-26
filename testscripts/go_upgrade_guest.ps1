@@ -3,7 +3,7 @@
 ##  Upgrade the guest to a new version with yum update.
 ##
 ## Revision:
-##  v1.0.0 - ldu - 03/02/2018 - Draft the script
+##  v1.0.0 - ldu - 03/02/2018 - Draft the script.
 ##  v2.0.0 - boyang - 09/06/2019 - Rebuild whole script.
 ##  v2.0.1 - boyang - 09/06/2019 - Enhance errors check.
 ########################################################################################
@@ -12,24 +12,19 @@
 <#
 .Synopsis
     Upgrade the guest to a new version with yum update.
-
 .Description
     Upgrade the guest to a new version with yum update.
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter hvServer
     Name of the VIServer hosting the VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
+# Checking the input arguments.
 param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-# Checking the input arguments
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -48,10 +43,11 @@ if (-not $testParams)
 }
 
 
-# Output test parameters so they are captured in log file
+# Output test parameters so they are captured in log file.
 "TestParams : '${testParams}'"
 
-# Parse test parameters
+
+# Parse test parameters.
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -67,14 +63,14 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "Kernel"     { $kernel = $fields[1].Trim() }
+        "Kernel"     	{ $kernel = $fields[1].Trim() }
         "Kernel_Firmware"{ $kernel_firmware = $fields[1].Trim() }
 		default			{}
     }
 }
 
 
-# Check all parameters are valid
+# Check all parameters are valid.
 if (-not $rootDir)
 {
 	"Warn : no rootdir was specified"
@@ -110,7 +106,7 @@ if ($null -eq $logdir)
 }
 
 
-# Source tcutils.ps1
+# Source tcutils.ps1.
 . .\setupscripts\tcutils.ps1
 PowerCLIImport
 ConnectToVIServer $env:ENVVISIPADDR `

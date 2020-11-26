@@ -29,16 +29,6 @@
                 <suiteTest>perf_stor_max_num_disk</suiteTest>
             </suiteTests>
         </suite>
-        <suite>
-            <!-- PERF NETWORK Total Cases: 4 -->
-            <suiteName>network_performance_suite</suiteName>
-            <suiteTests>
-                <suiteTest>perf_nw_ipv4_udp</suiteTest>
-                <suiteTest>perf_nw_ipv4_tcp</suiteTest>
-                <suiteTest>perf_nw_ipv6_udp</suiteTest>
-                <suiteTest>perf_nw_ipv6_tcp</suiteTest>
-            </suiteTests>
-        </suite>
     </testSuites>
 
     <testCases>
