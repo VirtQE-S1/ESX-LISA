@@ -77,7 +77,6 @@
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
-                <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
