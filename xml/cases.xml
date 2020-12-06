@@ -326,21 +326,21 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>ovt_get_appinfo_host_disable</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
                 <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
