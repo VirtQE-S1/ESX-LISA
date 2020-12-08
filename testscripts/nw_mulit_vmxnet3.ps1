@@ -160,6 +160,7 @@ LogPrint "INFO: New NIC count is $($nics.Length)."
 # Config new NIC
 foreach ($nic in $nics) {
     $status = ConfigIPforNewDevice $ipv4 $sshKey $nic
+	LogPrint "DEBUG: status: ${status}."
     if ( $null -eq $status -or -not $status[-1]) {
         LogPrint "ERROR : Config IP Failed for $nic"
         DisconnectWithVIServer

@@ -326,21 +326,22 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>ovt_get_appinfo_host_disable</suiteTest>
+				<suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
                 <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
@@ -1888,6 +1889,7 @@
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
                 <param>rhel8_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
+                <param>rhel9_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
                 <param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2103,6 +2105,7 @@
                 <param>redhat_6_modules=vmware_balloon</param>
                 <param>redhat_7_modules=vmw_balloon</param>
                 <param>redhat_8_modules=vmw_balloon</param>
+                <param>redhat_9_modules=vmw_balloon</param>
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2813,6 +2816,7 @@
             <testParams>
                 <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
                 <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel9_version=1.0.2.0-k,1.1.6.0-k,1.0.5.0-k</param>
                 <param>TC_COVERED=RHEL-111195,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
