@@ -326,6 +326,7 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
+				<suiteTest>kdump_crash_auto_size</suiteTest>
                 <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
@@ -1888,6 +1889,7 @@
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
                 <param>rhel8_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
+                <param>rhel9_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
                 <param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2813,6 +2815,7 @@
             <testParams>
                 <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
                 <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel9_version=1.0.2.0-k,1.1.6.0-k,1.0.5.0-k</param>
                 <param>TC_COVERED=RHEL-111195,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
