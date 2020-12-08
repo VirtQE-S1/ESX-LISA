@@ -2105,6 +2105,7 @@
                 <param>redhat_6_modules=vmware_balloon</param>
                 <param>redhat_7_modules=vmw_balloon</param>
                 <param>redhat_8_modules=vmw_balloon</param>
+                <param>redhat_9_modules=vmw_balloon</param>
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

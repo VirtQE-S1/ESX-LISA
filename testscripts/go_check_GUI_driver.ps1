@@ -12,7 +12,7 @@
 .Synopsis
     Check the vmware driver xorg-x11-drv-vmware exist in guest.
 .Description
-
+    Check the vmware driver xorg-x11-drv-vmware exist in guest.
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
@@ -22,10 +22,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -64,8 +62,8 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "VMMemory"     { $mem = $fields[1].Trim() }
-        "standard_diff"{ $standard_diff = $fields[1].Trim() }
+        "VMMemory"     	{ $mem = $fields[1].Trim() }
+        "standard_diff"	{ $standard_diff = $fields[1].Trim() }
 		default			{}
     }
 }
@@ -74,7 +72,7 @@ foreach ($p in $params)
 # Check all parameters are valid
 if (-not $rootDir)
 {
-	"Warn : no rootdir was specified"
+	"WARNING: no rootdir was specified"
 }
 else
 {
@@ -84,7 +82,7 @@ else
 	}
 	else
 	{
-		"Warn : rootdir '${rootDir}' does not exist"
+		"WARNING: rootdir '${rootDir}' does not exist"
 	}
 }
 

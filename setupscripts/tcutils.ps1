@@ -1814,10 +1814,10 @@ function ConfigIPforNewDevice {
     LogPrint "INFO: Guest OS version is $DISTRO."
 
     # Different Guest DISTRO.
-    if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-        LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-        return $false
-    }
+    #if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
+    #    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
+    #    return $false
+    #}
 
     # Setup default MTU value
     if ( -not $PSBoundParameters.ContainsKey("MTU")) {
