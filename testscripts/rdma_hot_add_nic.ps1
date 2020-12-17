@@ -4,31 +4,17 @@
 ##
 ## Revision:
 ##  v1.0.0 - ruqin  - 8/16/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.1.0 - boyang - 10/16/2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 
 <#
 .Synopsis
     Boot guest with no pvrdma NIC, then add pvrdma NIC to the guest
-
 .Description
-       <test>
-            <testName>rdma_hot_add_nic</testName>
-            <testID>ESX-RDMA-003</testID>
-            <testScript>testscripts\rdma_hot_add_nic.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-111934</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-
+    Boot guest with no pvrdma NIC, then add pvrdma NIC to the guest
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
@@ -74,14 +60,14 @@ foreach ($p in $params) {
 
 # Check all parameters are valid
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARNING: no rootdir was specified"
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARNING: rootdir '${rootDir}' does not exist"
     }
 }
 
@@ -134,14 +120,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 

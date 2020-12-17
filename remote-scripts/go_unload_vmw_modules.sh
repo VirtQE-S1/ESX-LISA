@@ -89,10 +89,9 @@ do
             exit 1
         fi
     done
-
     current_time=`date +%s`
-
 done
+
 
 SetTestStateCompleted
 exit 0

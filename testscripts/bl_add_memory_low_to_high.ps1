@@ -11,24 +11,7 @@
 .Synopsis
     Hot add memory from a low size to high size (such as from 8GB to 80GB)
 .Description
-        <test>
-            <testName>bl_add_memory_low_to_high</testName>
-            <testID>ESX-BL-002</testID>
-            <setupScript>
-                <file>SetupScripts\change_memory.ps1</file>
-                <file>SetupScripts\enable_hot_memory.ps1</file>
-            </setupScript>
-            <testScript>testscripts\bl_add_memory_low_to_high.ps1</testScript>
-            <testParams>
-                <param>VMMemory=8GB</param>
-                <param>TC_COVERED=RHEL7-80171</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>400</timeout>
-            <onERROR>Continue</onERROR>
-            <noReboot>False</noReboot>
-        </test>
-
+    Hot add memory from a low size to high size (such as from 8GB to 80GB)
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -36,10 +19,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "ERROR: VM name cannot be null!"
     exit 100
@@ -55,15 +36,11 @@ if (-not $testParams) {
 }
 
 
-#
 # Output test parameters so they are captured in log file
-#
 "TestParams : '${testParams}'"
 
 
-#
 # Parse the test parameters
-#
 $rootDir = $null
 $sshKey = $null
 $ipv4 = $null
@@ -72,17 +49,14 @@ $params = $testParams.Split(";")
 foreach ($p in $params) {
     $fields = $p.Split("=")
     switch ($fields[0].Trim()) {
-        "sshKey" { $sshKey = $fields[1].Trim() }
-        "rootDir" { $rootDir = $fields[1].Trim() }
-        "ipv4" { $ipv4 = $fields[1].Trim() }
-        default {}
+        "sshKey"	{ $sshKey = $fields[1].Trim() }
+        "rootDir" 	{ $rootDir = $fields[1].Trim() }
+        "ipv4" 		{ $ipv4 = $fields[1].Trim() }
+        default 	{}
     }
 }
 
-
-#
 # Check all parameters are valid
-#
 if (-not $rootDir) {
     "Warn : no rootdir was specified"
 }
@@ -96,9 +70,7 @@ else {
 }
 
 
-#
 # Source the tcutils.ps1 file
-#
 . .\setupscripts\tcutils.ps1
 
 PowerCLIImport
@@ -129,14 +101,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO.
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 

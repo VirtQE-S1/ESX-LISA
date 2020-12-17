@@ -1,33 +1,26 @@
 ########################################################################################
-## Description:
-##   Test with ibv_rc_pingpong, perf and rping between 2 Guests on the different Hosts
+##	Description:
+##		Test with ibv_rc_pingpong, perf and rping between 2 Guests on the different Hosts
 ##
-## Revision:
-##  v1.0.0 - ldu - 11/15/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##	Revision:
+##		v1.0.0 - ldu - 11/15/2018 - Build the script.
+##  	v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 
 <#
 .Synopsis
- Test with ibv_rc_pingpong, perf and rping between 2 Guests on the different Hosts 
-
+ 	Test with ibv_rc_pingpong, perf and rping between 2 Guests on the different Hosts 
 .Description
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
-#
 # Checking the input arguments
-#
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -122,7 +115,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 
 
 ########################################################################################
-#
 # Main Body
 ######################################################################################## 
 $retVal = $Failed

@@ -4,43 +4,24 @@
 ##
 ## Revision:
 ##  v1.0.0 - ruqin - 8/16/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.1.0 - boyang - 10/16/2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 
 <#
 .Synopsis
     Load and unload the vmw_pvrdma module for 10 minx and check system status 
-
 .Description
-       <test>
-            <testName>rdma_reload_vmx_pvrdma</testName>
-            <testID>ESX-RDMA-002</testID>
-            <setupScript>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_reload_vmx_pvrdma.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-111206</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>900</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-
+    Load and unload the vmw_pvrdma module for 10 minx and check system status 
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -79,14 +60,14 @@ foreach ($p in $params) {
 
 # Check all parameters are valid
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARNING: no rootdir was specified"
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARNING: rootdir '${rootDir}' does not exist"
     }
 }
 
@@ -139,14 +120,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 

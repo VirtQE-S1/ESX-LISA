@@ -4,7 +4,7 @@
 ##
 ## Revision:
 ##  v1.0.0 - ldu - 08/23/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##  v1.1.0 - boyang - 10/16/2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 
@@ -12,21 +12,7 @@
 .Synopsis
     Boot a Guest with RDMA NIC and check the IB stata.
 .Description
-       <test>
-            <testName>rdma_check_Ibstat</testName>
-            <testID>ESX-RDMA-005</testID>
-            <setupScript>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_check_Ibstat.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL6-49155,RHEL-111208</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+    Boot a Guest with RDMA NIC and check the IB stata.
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -34,8 +20,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -74,14 +60,14 @@ foreach ($p in $params) {
 
 # Check all parameters are valid
 if (-not $rootDir) {
-    "Warn : no rootdir was specified"
+    "WARNING: no rootdir was specified"
 }
 else {
     if ( (Test-Path -Path "${rootDir}") ) {
         Set-Location $rootDir
     }
     else {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARNING: rootdir '${rootDir}' does not exist"
     }
 }
 
@@ -134,14 +120,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 
