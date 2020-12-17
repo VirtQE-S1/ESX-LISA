@@ -8,26 +8,12 @@
 ##  v1.0.0 - ruqin - 08/02/2018 - Build the script.
 ########################################################################################
 
+
 <#
 .Synopsis
     Check NIC name after unload and load vmxnet3
 .Description
-       <test>
-            <testName>nw_check_nic_name</testName>
-            <testID>ESX-NW-019</testID>
-            <setupScript>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-                <file>setupscripts\add_vmxnet3.ps1</file>
-            </setupScript>
-            <testScript>testscripts\nw_check_nic_name.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-111702</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onERROR>Continue</onERROR>
-            <noReboot>False</noReboot>
-        </test>
+    Check NIC name after unload and load vmxnet3
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -152,14 +138,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO.
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 

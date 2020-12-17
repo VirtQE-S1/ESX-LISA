@@ -360,6 +360,7 @@
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -481,7 +482,6 @@
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
-                <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_check_logs</suiteTest>
                 <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
@@ -2425,7 +2425,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=256M</param>
+                <param>crashkernel=128M</param>
                 <param>VCPU=1</param>
                 <param>VMMemory=2GB</param>
                 <param>TName=kdump_crash_single_core</param>
@@ -2472,8 +2472,8 @@
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
                 <param>crashkernel=auto</param>
-                <param>VCPU=4</param>
-                <param>VMMemory=8GB</param>
+                <param>VCPU=2</param>
+                <param>VMMemory=4GB</param>
                 <param>TName=kdump_crash_auto_size</param>
                 <param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
             </testParams>
@@ -2495,8 +2495,8 @@
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
                 <param>crashkernel=512M</param>
-                <param>VCPU=8</param>
-                <param>VMMemory=16GB</param>
+                <param>VCPU=4</param>
+                <param>VMMemory=8GB</param>
                 <param>TName=kdump_crash_diff_size</param>
                 <param>TC_COVERED=RHEL6-34888,RHEL7-50872</param>
             </testParams>

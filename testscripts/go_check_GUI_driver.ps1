@@ -136,16 +136,25 @@ if ($DISTRO -eq "RedHat6") {
 }
 
 
+# If VM is installed by text mode. Skip.
+$install_type = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /root/anaconda-ks.cfg | grep -e ^graphical"
+LogPrint "DEBUG: install_type: ${install_type}."
+if ($null -eq $install_type) {
+    LogPrint "INFO: VM is installed by text mode, skip its GUI driver checking."
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
 # Check the vmware driver xorg-x11-drv-vmware exists or not.
 $vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
-Write-Host -F Red "DEBUG: vmware_driver: $vmware_driver."
-Write-Output "DEBUG: vmware_driver: $vmware_driver."
+LogPrint "DEBUG: vmware_driver: $vmware_driver."
 if ($vmware_driver -eq $null)
 {
-	Write-Output "ERROR: There is no vmware GUI related driver."
+	LogPrint "ERROR: There is no vmware GUI related driver."
 }
 else{
-    Write-Output "INFO: Found VMware GUI related driver."
+    LogPrint "INFO: Found VMware GUI related driver."
     $retVal = $Passed
 }
 

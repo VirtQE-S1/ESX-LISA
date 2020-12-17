@@ -1,53 +1,27 @@
 ########################################################################################
-## Description:
-##  Migration to a Host with SR-IOV supported should be supported.
+##	Description:
+##  	Migration to a Host with SR-IOV supported should be supported.
 ##
-## Revision:
-##  v1.0.0 - ruqin - 09/04/2018 - Build the script.
-##  v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
+##	Revision:
+##  	v1.0.0 - ruqin - 09/04/2018 - Build the script.
+##  	v1.1.0 - boyang - 10/16.2019 - Skip test when host hardware hasn't RDMA NIC.
 ########################################################################################
 
 
 <#
 .Synopsis
     Migration to a Host with SR-IOV supported should be supported 
-
 .Description
-        <test>
-            <testName>sriov_move_host_supported</testName>
-            <testID>ESX-SRIOV-003</testID>
-            <setupScript>
-                <file>setupscripts\add_sriov.ps1</file>
-            </setupScript>
-            <cleanupScript>
-                <file>SetupScripts\disable_memory_reserve.ps1</file>
-                <file>SetupScripts\reset_migration.ps1</file>
-            </cleanupScript>
-            <testScript>testscripts\sriov_move_host_supported.ps1</testScript>
-            <testParams>
-                <param>dstHost6.7=10.73.196.95,10.73.196.97</param>
-                <param>dstHost6.5=10.73.199.191,10.73.196.230</param>
-                <param>dstDatastore=datastore</param>
-                <param>TC_COVERED=RHEL-111209,RHEL6-49156</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>1500</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
-
+    Migration to a Host with SR-IOV supported should be supported 
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
     "Error: VM name cannot be null!"
     exit 100
@@ -143,8 +117,6 @@ ConnectToVIServer $env:ENVVISIPADDR `
 ########################################################################################
 # Main Body
 ########################################################################################
-
-
 $retVal = $Failed
 
 
@@ -182,14 +154,6 @@ if (-not $DISTRO) {
     return $Aborted
 }
 LogPrint "INFO: Guest OS version is $DISTRO"
-
-
-# Different Guest DISTRO
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
-}
 
 
 # Store Old datastore
@@ -266,7 +230,7 @@ if (-not $?) {
 
 
 # Wait for SSH ready
-if ( -not (WaitForVMSSHReady $vmName $dstHost $sshKey 300)) {
+if (-not (WaitForVMSSHReady $vmName $dstHost $sshKey 300)) {
     # Poweroff VM
     $status = Stop-VM $vmObj -Confirm:$False
     # Refresh status
