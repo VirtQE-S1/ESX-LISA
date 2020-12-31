@@ -145,7 +145,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 
 # Install podman and add docker.io to container registries config file.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install podman -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
+$sts = SendCommandToVM $ipv4 $sshKey "yum install podman -y && sed -i 's/docker.io/registry.fedoraproject.org/g' /etc/containers/registries.conf"  
 LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
     LogPrint "ERROR: YUM cannot install podman packages."
@@ -155,10 +155,10 @@ if (-not $sts) {
 
 
 # Run one network container in guest.
-$run = SendCommandToVM $ipv4 $sshKey "podman run -P -d nginx" 
+$run = SendCommandToVM $ipv4 $sshKey "podman run --name test -it -P -d fedora /bin/bash" 
 LogPrint "DEBUG: run: ${run}."
-if (-not $sts) {
-    LogPrint "ERROR: run container nginx failed in guest."
+if (-not $run) {
+    LogPrint "ERROR: run container fedora failed in guest."
     DisconnectWithVIServer
     return $Failed
 }
