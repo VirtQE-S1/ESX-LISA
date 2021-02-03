@@ -134,7 +134,7 @@ $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 
 
 # Install podman and add docker.io to container registries config file.
-$sts = SendCommandToVM $ipv4 $sshKey "yum install podman -y && sed -i 's/registry.access.redhat.com/docker.io/g' /etc/containers/registries.conf" 
+$sts = SendCommandToVM $ipv4 $sshKey "yum install podman -y && sed -i 's/docker.io/registry.fedoraproject.org/g' /etc/containers/registries.conf" 
 LogPrint "DEBUG: sts: ${sts}."
 if (-not $sts) {
     LogPrint "ERROR : YUM install podman packages failed"
@@ -146,7 +146,7 @@ if (-not $sts) {
 # Run 100 containers in guest.
 for ($i = 0; $i -le 100; $i++)
 {
-    $run = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d centos /bin/bash" 
+    $run = SendCommandToVM $ipv4 $sshKey "podman run --name $i -it -P -d fedora /bin/bash" 
 	LogPrint "DEBUG: run: ${run}."
     if (-not $run) {
         LogPrint "ERROR: Run container failed in guest."
