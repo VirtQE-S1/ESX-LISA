@@ -137,11 +137,11 @@ else{
             DisconnectWithVIServer
         }
         else{
-            LogPrint "ERROR: After boot, FOUND $service failed log in demsg."
+            LogPrint "ERROR: After boot, FOUND '$service' failed log in demsg."
         }
     }
     else{
-        LogPrint "ERROR: After boot, FOUND $service failed log in demsg."
+        LogPrint "ERROR: After boot, FOUND '$service failed log in demsg."
     }
     
 }
