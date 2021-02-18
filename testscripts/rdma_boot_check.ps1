@@ -12,21 +12,7 @@
 .Synopsis
     Check RDMA NIC after boot guest
 .Description
-       <test>
-            <testName>rdma_boot_check</testName>
-            <testID>ESX-RDMA-001</testID>
-            <setupScript>
-                <file>setupscripts\add_pvrdma.ps1</file>
-            </setupScript>
-            <testScript>testscripts\rdma_boot_check.ps1</testScript>
-            <testParams>
-                <param>TC_COVERED=RHEL-111193</param>
-            </testParams>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>240</timeout>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+    Check RDMA NIC after boot guest
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -134,14 +120,6 @@ if (-not $DISTRO) {
     LogPrint "ERROR: Guest OS version is NULL."
     DisconnectWithVIServer
     return $Aborted
-}
-
-
-# Different Guest DISTRO.
-if ($DISTRO -ne "RedHat7" -and $DISTRO -ne "RedHat8" -and $DISTRO -ne "RedHat6") {
-    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script"
-    DisconnectWithVIServer
-    return $Skipped
 }
 
 

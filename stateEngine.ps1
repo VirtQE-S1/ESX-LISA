@@ -1399,7 +1399,7 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData) {
 
     # The first time we SSH into a VM, SSH will prompt to accept the server key.
     # Send a "no-op command to the VM and assume this is the first SSH connection,
-    # so pipe a 'y' respone into plink
+    # so pipe a 'y' respone into plink. HERE. Can't use -batch in the first time.
     LogMsg 9 "INFO : Call: echo y | bin\plink -i ssh\$sshKey root@$hostname exit"
     echo y | bin\plink -i ssh\${sshKey} root@${hostname} exit
 

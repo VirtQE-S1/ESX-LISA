@@ -1,17 +1,16 @@
 #!/bin/bash
 
 
-###############################################################################
+########################################################################################
+##	Description:
+##		Unload vmware driver vmw_balloon for one hour.
 ##
-## Description:
-##  Unload vmware driver vmw_balloon for one hour.
-##
-## Revision:
-##  v1.0.0 - ldu - 03/30/2018 - Draft script for case ESX-OVT-009
-##  v1.0.1 - boyang - 05/15/2018 - Support all $DISTRO and multi modules
-##  v1.0.2 - boyang - 05/31/2019 - Incorrect VAR names
-##
-###############################################################################
+##	Revision:
+##		v1.0.0 - ldu - 03/30/2018 - Draft script for case ESX-OVT-009
+##  	v1.0.1 - boyang - 05/15/2018 - Support all $DISTRO and multi modules
+##  	v1.0.2 - boyang - 05/31/2019 - Incorrect VAR names
+##  	v1.1.0 - boyang - 12/08/2020 - Support RHEL-9.0.0
+########################################################################################
 
 
 dos2unix utils.sh
@@ -35,11 +34,9 @@ dos2unix utils.sh
 UtilsInit
 
 
-#######################################################################
-#
+########################################################################################
 # Main script body
-#
-#######################################################################
+########################################################################################
 LogMsg "INFO: The Current OS: $DISTRO"
 UpdateSummary "INFO: The Current OS: $DISTRO"
 
@@ -92,10 +89,9 @@ do
             exit 1
         fi
     done
-
     current_time=`date +%s`
-
 done
+
 
 SetTestStateCompleted
 exit 0

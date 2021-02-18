@@ -12,7 +12,7 @@
 .Synopsis
     Check the vmware driver xorg-x11-drv-vmware exist in guest.
 .Description
-
+    Check the vmware driver xorg-x11-drv-vmware exist in guest.
 .Parameter vmName
     Name of the test VM.
 .Parameter hvServer
@@ -22,10 +22,8 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
     "FAIL: VM name cannot be null!"
@@ -64,8 +62,8 @@ foreach ($p in $params)
 		"sshKey"		{ $sshKey = $fields[1].Trim() }
 		"ipv4"			{ $ipv4 = $fields[1].Trim() }
 		"TestLogDir"	{ $logdir = $fields[1].Trim()}
-        "VMMemory"     { $mem = $fields[1].Trim() }
-        "standard_diff"{ $standard_diff = $fields[1].Trim() }
+        "VMMemory"     	{ $mem = $fields[1].Trim() }
+        "standard_diff"	{ $standard_diff = $fields[1].Trim() }
 		default			{}
     }
 }
@@ -74,7 +72,7 @@ foreach ($p in $params)
 # Check all parameters are valid
 if (-not $rootDir)
 {
-	"Warn : no rootdir was specified"
+	"WARNING: no rootdir was specified"
 }
 else
 {
@@ -84,7 +82,7 @@ else
 	}
 	else
 	{
-		"Warn : rootdir '${rootDir}' does not exist"
+		"WARNING: rootdir '${rootDir}' does not exist"
 	}
 }
 
@@ -138,16 +136,25 @@ if ($DISTRO -eq "RedHat6") {
 }
 
 
+# If VM is installed by text mode. Skip.
+$install_type = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "cat /root/anaconda-ks.cfg | grep -e ^graphical"
+LogPrint "DEBUG: install_type: ${install_type}."
+if ($null -eq $install_type) {
+    LogPrint "INFO: VM is installed by text mode, skip its GUI driver checking."
+    DisconnectWithVIServer
+    return $Skipped
+}
+
+
 # Check the vmware driver xorg-x11-drv-vmware exists or not.
 $vmware_driver = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "rpm -qa xorg-x11-drv-vmware"
-Write-Host -F Red "DEBUG: vmware_driver: $vmware_driver."
-Write-Output "DEBUG: vmware_driver: $vmware_driver."
+LogPrint "DEBUG: vmware_driver: $vmware_driver."
 if ($vmware_driver -eq $null)
 {
-	Write-Output "ERROR: There is no vmware GUI related driver."
+	LogPrint "ERROR: There is no vmware GUI related driver."
 }
 else{
-    Write-Output "INFO: Found VMware GUI related driver."
+    LogPrint "INFO: Found VMware GUI related driver."
     $retVal = $Passed
 }
 

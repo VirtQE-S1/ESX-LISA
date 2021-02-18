@@ -1,8 +1,7 @@
 #!/bin/bash
 
 
-###############################################################################
-##
+########################################################################################
 ## Description:
 ##  Checks open-vm-tools upgrade and downgrade.
 ##  The vmtoolsd status should be running after downgrade and upgrade.
@@ -10,14 +9,11 @@
 ## Revision:
 ##  v1.0.0 - ldu - 10/13/2017 - Draft script for case ESX-OVT-022
 ##  v1.0.1 - boyang - 05/15/2018 - Supports rhel8
-##
-###############################################################################
-
-
-dos2unix utils.sh
+########################################################################################
 
 
 # Source utils.sh
+dos2unix utils.sh
 . utils.sh || {
     echo "Error: unable to source utils.sh!"
     exit 1
@@ -30,15 +26,14 @@ dos2unix utils.sh
     exit 1
 }
 
+
 # Source constants file and initialize most common variables
 UtilsInit
 
 
-#######################################################################
-#
-# Main script body
-#
-#######################################################################
+########################################################################################
+# Main
+########################################################################################
 # If current Guest is supported in the XML <testParams>
 # "cat constant.sh | grep $DISTRO" will get the standard OVT version of $DISTRO
 distro_standard_version=`cat constants.sh | grep ${DISTRO}_standard_version | awk -F "=" '{print $2}'`
@@ -51,6 +46,7 @@ if [ -z $distro_standard_version ]; then
     SetTestStateAborted
     exit 1
 fi
+
 # Current Red Hat Enterprise Linux Server Release 6.X / (5.X) doesn't have OVT, it is VT
 if [ $distro_standard_version == "NOOVT" ]; then
     LogMsg "WARNING: Current Guest $DISTRO doesn't have OVT, will skip it"

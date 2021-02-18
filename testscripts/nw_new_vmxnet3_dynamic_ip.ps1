@@ -14,19 +14,7 @@
 .Synopsis
 	Config new vmxnet3 dynamic_ip
 .Description
-         <test>
-            <testName>nw_new_vmxnet3_dynamic_ip</testName>
-            <testID>ESX-NW-014</testID>
-            <setupscript>setupscripts\add_vmxnet3.ps1</setupscript>
-            <testScript>testscripts\nw_new_vmxnet3_dynamic_ip.ps1</testScript>
-            <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
-            <timeout>600</timeout>
-            <testParams>
-                <param>TC_COVERED=RHEL6-34942,RHEL7-50922</param>
-            </testParams>
-            <onError>Continue</onError>
-            <noReboot>False</noReboot>
-        </test>
+	Config new vmxnet3 dynamic_ip
 .Parameter vmName
     Name of the test VM.
 .Parameter testParams
@@ -34,22 +22,20 @@
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName) {
-    "Error: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit 100
 }
 
 if (-not $hvServer) {
-    "Error: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit 100
 }
 
 if (-not $testParams) {
-    Throw "Error: No test parameters specified"
+    Throw "ERROR: No test parameters specified"
 }
 
 
@@ -66,10 +52,10 @@ $params = $testParams.Split(";")
 foreach ($p in $params) {
     $fields = $p.Split("=")
     switch ($fields[0].Trim()) {
-        "sshKey" { $sshKey = $fields[1].Trim() }
-        "rootDir" { $rootDir = $fields[1].Trim() }
-        "ipv4" { $ipv4 = $fields[1].Trim() }
-        default {}
+        "sshKey" 	{ $sshKey = $fields[1].Trim() }
+        "rootDir" 	{ $rootDir = $fields[1].Trim() }
+        "ipv4" 		{ $ipv4 = $fields[1].Trim() }
+        default 	{}
     }
 }
 
@@ -109,11 +95,9 @@ ConnectToVIServer $env:ENVVISIPADDR `
     $env:ENVVISPROTOCOL
 
 
-###############################################################################
-#
+########################################################################################
 # Main Body
-#
-###############################################################################
+########################################################################################
 $retVal = $Failed
 
 
@@ -127,8 +111,7 @@ if (-not $vmObj) {
 
 # Find new add vmxnet3 nic.
 $nics += @($(FindAllNewAddNIC $ipv4 $sshKey))
-Write-Output "DEBUG: nics: $nics."
-Write-Host -F Red "DEBUG: nics: $nics."
+LogPrint "DEBUG: nics: $nics."
 if ($null -eq $nics) {
     LogPrint "ERROR: Cannot find new add NIC." 
     DisconnectWithVIServer
@@ -143,14 +126,14 @@ LogPrint "INFO: Found New NIC - ${vmxnetNic}."
 # Config new NIC
 $status = ConfigIPforNewDevice $ipv4 $sshKey $vmxnetNic
 if ( $null -eq $status -or -not $status[-1]) {
-    LogPrint "ERROR : Config IP Failed"
+    LogPrint "ERROR : Config IP Failed."
     DisconnectWithVIServer
     return $Failed
 }
 else {
     $retVal = $Passed
 }
-LogPrint "INFO: vmxnet3 NIC IP setup successfully"
+LogPrint "INFO: vmxnet3 NIC IP setup successfully."
 
 
 DisconnectWithVIServer

@@ -77,7 +77,6 @@
                 <suiteTest>ovt_check_mount_vmhgfs</suiteTest>
                 <suiteTest>ovt_check_deploypkg</suiteTest>
                 <suiteTest>ovt_check_vm-support</suiteTest>
-                <suiteTest>ovt_check_libdnet</suiteTest>
                 <suiteTest>ovt_check_privatetmp</suiteTest>
                 <suiteTest>ovt_check_reboot_vmtoolsd</suiteTest>
                 <suiteTest>ovt_check_oneshot_timesync</suiteTest>
@@ -327,21 +326,22 @@
             <!-- EACV: X -->
             <suiteName>eacv</suiteName>
             <suiteTests>
-                <suiteTest>ovt_get_appinfo_host_disable</suiteTest>
+				<suiteTest>kdump_crash_auto_size</suiteTest>
+                <suiteTest>go_vm_shutdown</suiteTest>
             </suiteTests>
         </suite>
         <suite>
             <!-- Tier3: 31 -->
             <suiteName>tier3</suiteName>
             <suiteTests>
-                <suiteTest>dpdk_compile</suiteTest>
-                <suiteTest>dpdk_bindadapter</suiteTest>
-                <suiteTest>dpdk_helloworld</suiteTest>
-                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>go_reboot_100_times</suiteTest>
                 <suiteTest>go_upgrade_guest</suiteTest>
                 <suiteTest>ovt_check_time_sync_disable_sync_with_host</suiteTest>
                 <suiteTest>perf_nw_unloadload_vmxnet3</suiteTest>
+                <suiteTest>dpdk_compile</suiteTest>
+                <suiteTest>dpdk_bindadapter</suiteTest>
+                <suiteTest>dpdk_helloworld</suiteTest>
+                <suiteTest>dpdk_kni</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_diff_host</suiteTest>
                 <suiteTest>rdma_ibv_rc_pingpong_test_same_host</suiteTest>
                 <suiteTest>rdma_ibv_srq_pingpong_test_diff_host</suiteTest>
@@ -360,6 +360,7 @@
             <suiteName>tier2</suiteName>
             <suiteTests>
                 <suiteTest>go_suspend_vm</suiteTest>
+                <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_suspend_time_drift</suiteTest>
                 <suiteTest>go_kvm_clock_adjusting</suiteTest>
                 <suiteTest>go_check_cpu</suiteTest>
@@ -481,7 +482,6 @@
                 <suiteTest>go_verify_hot_cpu_works</suiteTest>
                 <suiteTest>go_vm_install_by_iso</suiteTest>
                 <suiteTest>go_check_modules</suiteTest>
-                <suiteTest>go_unload_vmw_modules</suiteTest>
                 <suiteTest>go_check_GUI_driver</suiteTest>
                 <suiteTest>go_check_logs</suiteTest>
                 <suiteTest>go_check_dmesg_unknowsymbol</suiteTest>
@@ -1889,6 +1889,7 @@
                 <param>rhel6_modules=vmw_pvscsi,vmware_balloon,vmxnet3,vmci,vsock</param>
                 <param>rhel7_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci,vsock</param>
                 <param>rhel8_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
+                <param>rhel9_modules=vmw_pvscsi,vmw_balloon,vmxnet3,vmw_vmci</param>
                 <param>TC_COVERED=RHEL6-34874,RHEL7-50860</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2104,6 +2105,7 @@
                 <param>redhat_6_modules=vmware_balloon</param>
                 <param>redhat_7_modules=vmw_balloon</param>
                 <param>redhat_8_modules=vmw_balloon</param>
+                <param>redhat_9_modules=vmw_balloon</param>
                 <param>TC_COVERED=RHEL6-34877,RHEL7-50863</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>
@@ -2423,7 +2425,7 @@
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
-                <param>crashkernel=256M</param>
+                <param>crashkernel=128M</param>
                 <param>VCPU=1</param>
                 <param>VMMemory=2GB</param>
                 <param>TName=kdump_crash_single_core</param>
@@ -2470,8 +2472,8 @@
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
                 <param>crashkernel=auto</param>
-                <param>VCPU=4</param>
-                <param>VMMemory=8GB</param>
+                <param>VCPU=2</param>
+                <param>VMMemory=4GB</param>
                 <param>TName=kdump_crash_auto_size</param>
                 <param>TC_COVERED=RHEL6-34887,RHEL7-50871</param>
             </testParams>
@@ -2493,8 +2495,8 @@
             <files>remote-scripts/kdump_prepare.sh</files>
             <testParams>
                 <param>crashkernel=512M</param>
-                <param>VCPU=8</param>
-                <param>VMMemory=16GB</param>
+                <param>VCPU=4</param>
+                <param>VMMemory=8GB</param>
                 <param>TName=kdump_crash_diff_size</param>
                 <param>TC_COVERED=RHEL6-34888,RHEL7-50872</param>
             </testParams>
@@ -2814,6 +2816,7 @@
             <testParams>
                 <param>rhel7_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
                 <param>rhel8_version=1.0.2.0-k,1.1.4.0-k,1.0.4.0-k</param>
+                <param>rhel9_version=1.0.2.0-k,1.1.6.0-k,1.0.5.0-k</param>
                 <param>TC_COVERED=RHEL-111195,RHEL6-99999</param>
             </testParams>
             <RevertDefaultSnapshot>True</RevertDefaultSnapshot>

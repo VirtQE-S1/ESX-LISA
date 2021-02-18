@@ -3,47 +3,42 @@
 ##  Check modules in the VM
 ##
 ## Revision:
-##  v1.0.0 - hhei - 1/6/2017 - Check modules in the VM
-##  v1.0.1 - hhei - 2/6/2017 - Remove TC_COVERED and update return value
-##  v1.0.2 - boyang - 05/10/2018 - Enhance the script and exit 100 if false
-##  v1.1.0 - boyang - 07/06/2018 - Change Passed Condition to Make sure all module pass
+##  v1.0.0 - hhei - 01/06/2017 - Check modules in the VM.
+##  v1.0.1 - hhei - 02/06/2017 - Remove TC_COVERED and update return value.
+##  v1.0.2 - boyang - 05/10/2018 - Enhance the script and exit 100 if false.
+##  v1.1.0 - boyang - 07/06/2018 - Change Passed Condition to Make sure all module pass.
 ########################################################################################
 
 
 <#
 .Synopsis
     Demo script ONLY for test script.
-
 .Description
     A demo for Powershell script as test script.
-
 .Parameter vmName
     Name of the test VM.
-
 .Parameter testParams
     Semicolon separated list of test parameters.
 #>
 
 
-param([String] $vmName, [String] $hvServer, [String] $testParams)
-
-
 # Checking the input arguments
+param([String] $vmName, [String] $hvServer, [String] $testParams)
 if (-not $vmName)
 {
-    "Error: VM name cannot be null!"
+    "ERROR: VM name cannot be null!"
     exit 100
 }
 
 if (-not $hvServer)
 {
-    "Error: hvServer cannot be null!"
+    "ERROR: hvServer cannot be null!"
     exit 100
 }
 
 if (-not $testParams)
 {
-    Throw "Error: No test parameters specified"
+    Throw "ERROR: No test parameters specified"
 }
 
 
@@ -68,6 +63,7 @@ foreach ($p in $params)
     "rhel6_modules" { $rhel6_modules = $fields[1].Trim()}
     "rhel7_modules" { $rhel7_modules = $fields[1].Trim()}
     "rhel8_modules" { $rhel8_modules = $fields[1].Trim()}
+    "rhel8_modules" { $rhel9_modules = $fields[1].Trim()}
     default        {}
     }
 }
@@ -76,7 +72,7 @@ foreach ($p in $params)
 # Check all parameters are valid
 if (-not $rootDir)
 {
-    "Warn : no rootdir was specified"
+    "WARNING: no rootdir was specified"
 }
 else
 {
@@ -86,7 +82,7 @@ else
     }
     else
     {
-        "Warn : rootdir '${rootDir}' does not exist"
+        "WARNING: rootdir '${rootDir}' does not exist"
         exit 100
     }
 }
@@ -112,8 +108,7 @@ $modules_array = ""
 $vmObj = Get-VMHost -Name $hvServer | Get-VM -Name $vmName
 if (-not $vmObj)
 {
-    Write-Host -F Red "ERROR: Unable to Get-VM with $vmName"
-    Write-Output "ERROR: Unable to Get-VM with $vmName"
+    LogPrint "ERROR: Unable to Get-VM with $vmName"
     DisconnectWithVIServer
 	return $Aborted
 }
@@ -121,12 +116,10 @@ if (-not $vmObj)
 
 # Get the Guest version.
 $DISTRO = GetLinuxDistro ${ipv4} ${sshKey}
-Write-Host -F Red "INFO: Guest OS version is $DISTRO"
-Write-Output "INFO: Guest OS version is $DISTRO"
+LogPrint "INFO: Guest OS version is $DISTRO"
 if ($null -eq $DISTRO)
 {
-    Write-Host -F Red "ERROR: Guest OS version is NULL"
-    Write-Output "ERROR: Guest OS version is NULL"
+    LogPrint "ERROR: Guest OS version is NULL"
     DisconnectWithVIServer
 	return $Aborted
 }
@@ -145,10 +138,13 @@ elseif ($DISTRO -eq "RedHat8")
 {
     $modules_array = $rhel8_modules.split(",")
 }
+elseif ($DISTRO -eq "RedHat9")
+{
+    $modules_array = $rhel9_modules.split(",")
+}
 else
 {
-    Write-Host -F Red "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
-    Write-Output "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
+    LogPrint "ERROR: Guest OS ($DISTRO) isn't supported, MUST UPDATE in Framework / XML / Script."
     DisconnectWithVIServer
 	return $Aborted
 }
@@ -158,23 +154,19 @@ else
 foreach ($m in $modules_array)
 {
     $module = $m.Trim()
-    Write-Host -F Red "DEBUG: module: $module"
-    Write-Output "DEBUG: module: $module"
+    LogPrint "DEBUG: module: $module"
 
     $ret = CheckModule $ipv4 $sshKey $module
-    Write-Host -F Red "DEBUG: ret: $ret"
-    Write-Output "DEBUG: ret: $ret"	
+    LogPrint "DEBUG: ret: $ret"	
     if ($ret -ne $true)
     {
-        Write-Host -F Red "ERROR: The check of $module failed."
-        Write-Output "ERROR: The check of $module failed."
+        LogPrint "ERROR: The check of $module failed."
         DisconnectWithVIServer
         return $retVal
     }
     else
     {
-        Write-Host -F Red "INFO: Complete the check of $module"
-        Write-Output "INFO: Complete the check of $module"
+        LogPrint "INFO: Complete the check of $module"
     }
 }
 
