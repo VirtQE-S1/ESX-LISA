@@ -242,7 +242,7 @@ function GetOSType ([System.Xml.XmlElement] $vm)
 
     # plink will pending at waiting password if sshkey failed auth, so
     # pipe a 'y' to response
-    $os = echo y | bin\plink -i ssh\${sshKey} root@${hostname} "uname -s"
+    $os = echo y | bin\plink -batch -i ssh\${sshKey} root@${hostname} "uname -s"
 
     switch ($os)
     {
@@ -271,7 +271,7 @@ function GetKernelVersion ()
 
     # plink will pending at waiting password if sshkey failed auth, so
     # pipe a 'y' to response
-    $ver = echo y | bin\plink -i ssh\${sshKey} root@${hostname} "uname -r"
+    $ver = echo y | bin\plink -batch -i ssh\${sshKey} root@${hostname} "uname -r"
 
     return $ver
 }
@@ -294,7 +294,7 @@ function GetFirmwareVersion ()
 
     # plink will pending at waiting password if sshkey failed auth, so
     # pipe a 'y' to response
-    $cmdResult = echo y | bin\plink -i ssh\${sshKey} root@${hostname} "[ -d /sys/firmware/efi ] && echo 0"
+    $cmdResult = echo y | bin\plink -batch -i ssh\${sshKey} root@${hostname} "[ -d /sys/firmware/efi ] && echo 0"
 
     $firmware = "BIOS"
     if ($cmdResult -eq "0")
