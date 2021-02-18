@@ -1401,7 +1401,7 @@ function DoSystemUp([System.Xml.XmlElement] $vm, [XML] $xmlData) {
     # Send a "no-op command to the VM and assume this is the first SSH connection,
     # so pipe a 'y' respone into plink
     LogMsg 9 "INFO : Call: echo y | bin\plink -i ssh\$sshKey root@$hostname exit"
-    echo y | bin\plink -i ssh\${sshKey} root@${hostname} exit
+    echo y | bin\plink -batch -i ssh\${sshKey} root@${hostname} exit
 
     # Determine the VMs OS
     $os = (GetOSType $vm).ToString()

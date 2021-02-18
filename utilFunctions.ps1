@@ -1155,7 +1155,7 @@ function GetFileFromVM([System.Xml.XmlElement] $vm, [string] $remoteFile, [strin
     #bin\pscp -q -i ssh\${sshKey} root@${hostname}:${remoteFile} $localFile
     #if ($?)
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-batch -i ssh\${sshKey} root@${hostname}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0) {
         $retVal = $true
     }
@@ -1211,7 +1211,7 @@ function SendFileToVM([System.Xml.XmlElement] $vm, [string] $localFile, [string]
     #bin\pscp -q $recurse -i ssh\${sshKey} $localFile root@${hostname}:${remoteFile}
     #if ($?)
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${hostname}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-batch -i ssh\${sshKey} ${localFile} root@${hostname}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     if ($process.ExitCode -eq 0) {
         $retVal = $true
     }
@@ -1254,7 +1254,7 @@ function SendCommandToVM([System.Xml.XmlElement] $vm, [string] $command) {
 
     # Wait a second
     Start-Sleep 1
-    $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${hostname} ${command}" -PassThru -NoNewWindow -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
+    $process = Start-Process bin\plink -ArgumentList "-batch -i ssh\${sshKey} root@${hostname} ${command}" -PassThru -NoNewWindow -redirectStandardOutput lisaOut.tmp -redirectStandardError lisaErr.tmp
     $commandTimeout = 30
     while (!$process.hasExited) {
         LogMsg 8 "Waiting 1 second to check the process status for Command = '$command'."

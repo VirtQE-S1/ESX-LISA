@@ -228,7 +228,7 @@ function GetLinuxDistro([String] $ipv4, [String] $sshKey)
         return $null
     }
 
-    $distro = bin\plink -i ssh\${sshKey} root@${ipv4} "grep -Ehs 'Ubuntu|SUSE|Fedora|Debian|CentOS|Red Hat Enterprise Linux (Server |)release [0-9]{1,2}.[0-9]{1,2}|Oracle' /etc/{issue,*release,*version}"
+    $distro = bin\plink -batch -i ssh\${sshKey} root@${ipv4} "grep -Ehs 'Ubuntu|SUSE|Fedora|Debian|CentOS|Red Hat Enterprise Linux (Server |)release [0-9]{1,2}.[0-9]{1,2}|Oracle' /etc/{issue,*release,*version}"
 	Write-Host -F red "Debug: distro: $distro"
     if (-not $distro)
     {
@@ -328,7 +328,7 @@ function GetFileFromVM([String] $ipv4, [String] $sshKey, [string] $remoteFile, [
         return $false
     }
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} root@${ipv4}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-batch -i ssh\${sshKey} root@${ipv4}:${remoteFile} ${localFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
         $retVal = $true
@@ -539,12 +539,12 @@ function SendCommandToVM([String] $ipv4, [String] $sshKey, [string] $command)
     }
 
     # get around plink questions
-    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} 'exit 0'
+    Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} 'exit 0'
 
 
     # Wait a second
     Start-Sleep 1
-    $process = Start-Process bin\plink -ArgumentList "-i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
+    $process = Start-Process bin\plink -ArgumentList "-batch -i ssh\${sshKey} root@${ipv4} ${command}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
 
 
     # Wait a second
@@ -621,9 +621,9 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
     }
 
     # get around plink questions
-    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+    Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "exit 0"
 
-    $process = Start-Process bin\pscp -ArgumentList "-i ssh\${sshKey} ${localFile} root@${ipv4}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
+    $process = Start-Process bin\pscp -ArgumentList "-batch -i ssh\${sshKey} ${localFile} root@${ipv4}:${remoteFile}" -PassThru -NoNewWindow -Wait -redirectStandardOutput lisaOut.tmp -redirectStandardERROR lisaErr.tmp
     if ($process.ExitCode -eq 0)
     {
         $retVal = $true
@@ -638,7 +638,7 @@ function SendFileToVM([String] $ipv4, [String] $sshkey, [string] $localFile, [st
 
     if ($ChangeEOL)
     {
-        .bin\plink -i ssh\${sshKey} root@${ipv4} "dos2unix $remoteFile"
+        .bin\plink -batch -i ssh\${sshKey} root@${ipv4} "dos2unix $remoteFile"
     }
 
     return $retVal
@@ -698,8 +698,8 @@ function StopVMViaSSH ([String] $vmName, [String] $server="localhost", [int] $ti
     #
     # Tell the VM to stop
     #
-    Write-Output y | bin\plink -i ssh\${sshKey} root@${vmipv4} exit
-    .\bin\plink.exe -i ssh\${sshKey} root@${vmipv4} "init 0"
+    Write-Output y | bin\plink -batch -i ssh\${sshKey} root@${vmipv4} exit
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${vmipv4} "init 0"
     if (-not $?)
     {
         Write-ERROR -Message "StopVMViaSSH: Unable to send command via SSH" -Category ObjectNotFound -ERRORAction SilentlyContinue
@@ -874,7 +874,7 @@ function WaitForVMSSHReady([String] $vmName, [String] $hvServer, [String] $sshKe
         $vmipv4 = GetIPv4 $vmName $hvServer
         if ($vmipv4)
         {
-            $result = Write-Output y | bin\plink -i ssh\${sshKey} root@${vmipv4} "echo 911"
+            $result = Write-Output y | bin\plink -batch -i ssh\${sshKey} root@${vmipv4} "echo 911"
             if ($result -eq 911)
             {
                 $retVal = $true
@@ -1107,40 +1107,40 @@ function RunRemoteScript($remoteScript)
 
     "./${remoteScript} > ${remoteScript}.log" | out-file -encoding ASCII -filepath runtest.sh
 
-    .\bin\pscp -i ssh\${sshKey} .\runtest.sh root@${ipv4}:
+    .\bin\pscp -batch -i ssh\${sshKey} .\runtest.sh root@${ipv4}:
     if (-not $?)
     {
        LogPrint "ERROR: Unable to copy runtest.sh to the VM"
        return $false
     }
-     .\bin\pscp -i ssh\${sshKey} .\remote-scripts\${remoteScript} root@${ipv4}:
+     .\bin\pscp -batch -i ssh\${sshKey} .\remote-scripts\${remoteScript} root@${ipv4}:
     if (-not $?)
     {
         LogPrint "ERROR: Unable to copy ${remoteScript} to the VM"
        return $false
     }
 
-    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix ${remoteScript} 2> /dev/null"
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "dos2unix ${remoteScript} 2> /dev/null"
     if (-not $?)
     {
         LogPrint "ERROR: Unable to run dos2unix on ${remoteScript}"
         return $false
     }
 
-    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
     if (-not $?)
     {
         LogPrint "ERROR: Unable to run dos2unix on runtest.sh"
         return $false
     }
 
-    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
     if (-not $?)
     {
         LogPrint "ERROR: Unable to chmod +x ${remoteScript}"
         return $false
     }
-    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
     if (-not $?)
     {
         LogPrint "ERROR: Unable to chmod +x runtest.sh"
@@ -1148,12 +1148,12 @@ function RunRemoteScript($remoteScript)
     }
 
     # Run the script on the vm
-    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./runtest.sh"
+    .\bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "./runtest.sh"
 
     # Return the state file
     while ($timeout -ne 0)
     {
-    	.\bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
+    	.\bin\pscp -q -batch -i ssh\${sshKey} root@${ipv4}:${stateFile} . #| out-null
     	$sts = $?
     	if ($sts)
     	{
@@ -1211,7 +1211,7 @@ function RunRemoteScript($remoteScript)
     # Get the logs
     $remoteScriptLog = $remoteScript + ".log"
 
-    bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
+    bin\pscp -q -batch -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
     $sts = $?
     if ($sts)
     {
@@ -1291,9 +1291,9 @@ function GetModuleVersion([String] $ipv4, [String] $sshKey, [string] $module)
     }
     
     # get around plink questions
-    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+    Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "exit 0"
 
-    $module_version = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "modINFO $module | grep -w version: | awk '{print `$2}'"
+    $module_version = bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "modINFO $module | grep -w version: | awk '{print `$2}'"
 
     return $module_version.Trim()
 }
@@ -1339,9 +1339,9 @@ function CheckModule([String] $ipv4, [String] $sshKey, [string] $module)
     }
 
     # get around plink questions
-    Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "exit 0"
+    Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "exit 0"
 
-    $vm_module = bin\plink.exe -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
+    $vm_module = bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "lsmod | grep -w ^$module | awk '{print `$1}'"
     Write-Host -F Red "DEBUG: vm_module: $vm_module."
 
 	# If we can't check $vm_moudle is null or not, $vm_module.Trim() will throw error and skip if.
@@ -1886,7 +1886,7 @@ function ConfigIPforNewDevice {
 
         # Check current MTU
         $Command = "ip a | grep $deviceName | head -n 1 | awk '{print `$5}'"
-        $Current_MTU = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+        $Current_MTU = Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} $Command
         if ($Current_MTU -ne $MTU) {
            LogPrint "ERROR: Set new MTU failed or MTU is not fitting network requirement." 
            return $false
@@ -2165,7 +2165,7 @@ function FindAllNewAddNIC {
     
     # Get Old Adapter (SSH is using it) of VM
     $Command = "ip a | grep `$(echo `$SSH_CONNECTION | awk '{print `$3}') | awk '{print `$(NF)}'"
-    $Old_Adapter = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    $Old_Adapter = Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} $Command
 	Write-Host -F Red "DEBUG: Old_Adapter: ${Old_Adapter}."
 
     if ($null -eq $Old_Adapter) {
@@ -2176,7 +2176,7 @@ function FindAllNewAddNIC {
     # Get all other nics
     $retVal = $null
     $Command = "ls /sys/class/net | grep e | grep -v $Old_Adapter"
-    $new_nics = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    $new_nics = Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} $Command
 	Write-Host -F Red "DEBUG: new_nics: ${new_nics}."
     $retVal = ,$new_nics
     # Powershell  convert array to string if the array only has one element
@@ -2354,10 +2354,10 @@ function CheckCallTrace {
     $Command = 'grep -w "Call Trace" /var/log/syslog /var/log/messages /var/log/dmesg.out'
     
 	# Put dmesg content into /var/log/dmesg.out.
-    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dmesg > /var/log/dmesg.out"
+    $retVal = Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} "dmesg > /var/log/dmesg.out"
 
 	# Execute search command.
-    $retVal = Write-Output y | bin\plink.exe -i ssh\${sshKey} root@${ipv4} $Command
+    $retVal = Write-Output y | bin\plink.exe -batch -i ssh\${sshKey} root@${ipv4} $Command
     Write-Output "DEBUG: retVal: $retVal"
     if ($null -ne $retVal) {
        return $false
