@@ -2424,6 +2424,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
+            <files>remote-scripts/kdump_result.sh</files>
             <testParams>
                 <param>crashkernel=128M</param>
                 <param>VCPU=1</param>
@@ -2447,6 +2448,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
+            <files>remote-scripts/kdump_result.sh</files>
             <testParams>
                 <param>crashkernel=256M</param>
                 <param>VCPU=2</param>
@@ -2470,6 +2472,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
+            <files>remote-scripts/kdump_result.sh</files>
             <testParams>
                 <param>crashkernel=auto</param>
                 <param>VCPU=2</param>
@@ -2493,6 +2496,7 @@
             <files>remote-scripts/utils.sh</files>
             <files>remote-scripts/kdump_config.sh</files>
             <files>remote-scripts/kdump_prepare.sh</files>
+            <files>remote-scripts/kdump_result.sh</files>
             <testParams>
                 <param>crashkernel=512M</param>
                 <param>VCPU=4</param>
@@ -2517,6 +2521,7 @@
             <files>remote-scripts\utils.sh</files>
             <files>remote-scripts\kdump_config.sh</files>
             <files>remote-scripts\kdump_prepare.sh</files>
+            <files>remote-scripts/kdump_result.sh</files>
             <testParams>
                 <param>crashkernel=256M</param>
                 <param>VCPU=2</param>
